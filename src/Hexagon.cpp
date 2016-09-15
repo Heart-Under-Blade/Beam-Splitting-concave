@@ -68,11 +68,11 @@ void Hexagon::SetBases()
 	Point3f *facet;
 	Point3f *originFacet;
 
-	int halfRadius = radius/2;
 	int halfPointNumber = SIDE_NUMBER/2;
-	int incircleRadius = (sqrt(3) * radius) / 2;
+	double halfRadius = radius/2;
+	double incircleRadius = (sqrt(3) * radius) / 2;
 
-	auto SetTwoDiagonalPoints = [&] (int startPointIndex, int x, int y, int z)
+	auto SetTwoDiagonalPoints = [&] (int startPointIndex, double x, double y, double z)
 	{
 		int endPointIndex = startPointIndex + halfPointNumber;
 

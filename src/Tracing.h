@@ -135,6 +135,8 @@ private:
 	void SplitBeam(const Beam &incidentBeam, Beam &inBeam, Beam &outBeam, double Nr,
 				   IncidenceCase incidenceCase);
 
+	void InvertBeamPointOrder(Beam &outBeam, const Beam &inBeam);
+
 	inline bool isEnough(const BeamInfo &info);
 	inline void changeTrack(int &lastBeamDept, const BeamInfo &info);
 };

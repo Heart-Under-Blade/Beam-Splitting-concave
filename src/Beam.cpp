@@ -60,6 +60,8 @@ void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 
 void Beam::GetSpherical(double &fi, double &teta) const
 {
+	const float &x = direction.X;
+	const float &y = direction.Y;
 	const float &z = direction.Z;
 
 	if (fabs(z + 1.0) < DBL_EPSILON) // forward
@@ -76,18 +78,17 @@ void Beam::GetSpherical(double &fi, double &teta) const
 		return;
 	}
 
-	double sqr_z = z*z;
-	double tmp = sqr_z;
+	double tmp = y*y;
 
 	if (tmp < DBL_EPSILON)
 	{
-		tmp = (z > 0) ? 0 : M_PI;
+		tmp = (x > 0) ? 0 : M_PI;
 	}
 	else
 	{
-		tmp = acos(z/sqrt(sqr_z + tmp));
+		tmp = acos(x/sqrt(x*x + tmp));
 
-		if (direction.Y < 0)
+		if (y < 0)
 		{
 			tmp = M_2PI - tmp;
 		}
@@ -151,10 +152,10 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 	complex b00 = JMatrix.m11*cs + JMatrix.m21*sn; // first row of the result
 	complex b01 = JMatrix.m12*cs + JMatrix.m22*sn;
 
-	JMatrix.m11 = b00;
-	JMatrix.m12 = b01;
 	JMatrix.m21 = JMatrix.m21*cs - JMatrix.m11*sn;
 	JMatrix.m22 = JMatrix.m22*cs - JMatrix.m12*sn;
+	JMatrix.m11 = b00;
+	JMatrix.m12 = b01;
 
 	e = newBasis;
 }
@@ -212,7 +213,9 @@ double Beam::CrossSection() const
 		return 0;
 	}
 
-	return (e*Square()) / sqrt(Norm(normal));
+	double s = Square();
+	double n = sqrt(Norm(normal));
+	return (e*s) / n;
 }
 
 void Beam::AddVertex(const Point3f &vertex)

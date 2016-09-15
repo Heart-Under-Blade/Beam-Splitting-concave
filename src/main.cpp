@@ -24,7 +24,10 @@ clock_t totalTime;
 Point3f incidentDir(0, 0, 1);
 Point3f polarizationBasis(0, 1, 0);
 
+
+// debug
 long long ddddd = 0;
+int count = 0;
 
 void HandleBeams(std::vector<OutBeam> &outBeams)
 {
@@ -32,6 +35,12 @@ void HandleBeams(std::vector<OutBeam> &outBeams)
 	{
 		++ddddd;
 		Beam &bm = outBeams.at(i).beam;
+//		using namespace std;
+//		cout << endl << "! "
+//			 << real(bm.JMatrix.m11) << ", "
+//			 << real(bm.JMatrix.m12) << ", "
+//			 << real(bm.JMatrix.m21) << ", "
+//			 << real(bm.JMatrix.m22) << endl;
 		bm.RotateSpherical(incidentDir, polarizationBasis);
 
 		unsigned int szP = outBeams.at(i).trackSize;
@@ -70,6 +79,7 @@ void HandleBeams(std::vector<OutBeam> &outBeams)
 
 		double cross = bm.CrossSection();
 		double Area = betaDistrProbability*cross;
+//		double Area = 1;
 		matrix bf = Mueller(bm.JMatrix);
 		//----------------------------------------------------------------------------
 		// Collect the beam in array
@@ -101,13 +111,18 @@ void HandleBeams(std::vector<OutBeam> &outBeams)
 					}
 
 					tmp *= -2.0;
-					double cs = cos(tmp),
-							sn = sin(tmp);
-
-					RightRotateMueller(bf, cs, sn);
+					RightRotateMueller(bf, cos(tmp), sin(tmp));
 				}
 
+//				bf = matrix(4,4);
+//				bf.Identity();
 				mxd.insert(0, ZenAng, Area*bf);
+//				std::cout << "mxd - " << mxd(0, ZenAng, 0,0) << std::endl;
+
+//				if (i == 10)
+//				{
+//					int fff = 0;
+//				}
 			}
 		}
 	}
@@ -115,11 +130,22 @@ void HandleBeams(std::vector<OutBeam> &outBeams)
 
 void Trace(double beta, double gamma, Tracing &tracer)
 {
-	if (ddddd == 579)
-	{
-		int ff = 0;
-	}
+//	if (ddddd == 579)
+//	{
+//		int ff = 0;
+//	}
 	double square = tracer.TraceParticle(beta, gamma); /// TODO: трассировка
+//	ddddd = tracer.outcomingBeams.size()-ddddd;
+//	std::cout << ++count << " - " << ddddd << std::endl;
+//	for (int i = 0; i < tracer.outcomingBeams.size(); ++i)
+//	{
+//		for (int j = 0; j < tracer.outcomingBeams.at(i).trackSize; ++j)
+//		{
+//			std::cout << tracer.outcomingBeams.at(i).track[j] << ", ";
+//		}
+//		std::cout << std::endl;
+//	}
+
 	incomingEnergy += betaDistrProbability * square;
 //	tracer.ClearTracing();
 }
@@ -244,8 +270,8 @@ void Calculate()
 	double radius = 40;
 	double halfHeight = 100;
 	complex refractionIndex = complex(1.31, 0.0);
-	int orNumber_gamma = 101;
-	int orNumber_beta = 100;
+	int orNumber_gamma = 301;
+	int orNumber_beta = 300;
 	int ThetaNumber = 180;
 	int interReflNum = 0;
 	bool isRandom = false;
@@ -266,8 +292,6 @@ void Calculate()
 	default:
 		break;
 	}
-//	CreateParticle(particle, particleType,
-//				   halfHeight, radius, orNumber_beta, refractionIndex);
 
 	gammaNorm = M_PI/(3.0*orNumber_gamma);
 
@@ -299,8 +323,6 @@ void Calculate()
 
 		for (int i = 0; i < orNumber_beta; ++i)
 		{
-			std::cout << i << "/" << orNumber_beta << std::endl;
-
 			for (int j = 0; j < orNumber_gamma; ++j)
 			{
 				Trace(beta, gamma, tracer);
@@ -309,14 +331,14 @@ void Calculate()
 	}
 	else
 	{
-//		beta = 20;
-//		gamma = 0;
+
+//		beta = (M_PI*90)/180.0; gamma = (M_PI*30)/180.0;
+//		betaDistrProbability = sin(beta);
 //		Trace(beta, gamma, tracer);
+
 
 		for (int i = 0; i < orNumber_beta; ++i)
 		{
-			std::cout << i << "/" << orNumber_beta << std::endl;
-
 			beta = (i + 0.5)*betaNorm;
 			betaDistrProbability = sin(beta);
 
@@ -329,10 +351,12 @@ void Calculate()
 				gamma = (j + 0.5)*gammaNorm;
 				Trace(beta, gamma, tracer);
 			}
+
+			HandleBeams(tracer.outcomingBeams);
+			tracer.outcomingBeams.clear();
+			std::cout << (100*i)/orNumber_beta << "%" << std::endl;
 		}
 	}
-
-	HandleBeams(tracer.outcomingBeams);
 
 	timer = clock() - timer;
 	totalTime = timer/CLOCKS_PER_SEC;

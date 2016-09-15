@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "vector_lib.h"
+#include <iostream>
 
 #define EPS_COS89	1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS0	0.99999999998254670756866631966593		//1- cos(89.99999999)
@@ -27,7 +28,6 @@ double Tracing::TraceParticle(double beta, double gamma)
 
 	BeamInfo tree[MAX_BEAM_DEPT]; /// beam info tree (based on stack)
 	int dept = 0;
-	++trackSize;
 
 	double square = 0;
 
@@ -76,7 +76,7 @@ double Tracing::TraceParticle(double beta, double gamma)
 			SplitIncidentDirection(incidentDirection, cosIncident, facetIndex,
 								   reflDir, refrDir);
 
-			double cosRefr = DotProduct(extNormal, refrDir);
+			double cosRefr = DotProduct(normal, reflDir);
 
 			complex Tv00 = refrIndex*cosIncident;
 			complex Th00 = refrIndex*cosRefr;
@@ -84,8 +84,22 @@ double Tracing::TraceParticle(double beta, double gamma)
 			complex Tv0 = Tv00 + cosRefr;
 			complex Th0 = Th00 + cosIncident;
 
-			SetBeam(outBeam, inBeam, refrDir, inBeam.e,
-					(Tv00 - cosRefr)/Tv0, (cosIncident - Th00)/Th0);
+			complex Tv = (Tv00 - cosRefr)/Tv0;
+			complex Th = (cosIncident - Th00)/Th0;
+			SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
+
+
+//			using namespace std;
+//			cout << endl << "! "
+//				 << real(outBeam.JMatrix.m11) << ", "
+//				 << real(outBeam.JMatrix.m12) << ", "
+//				 << real(outBeam.JMatrix.m21) << ", "
+//				 << real(outBeam.JMatrix.m22) << endl;
+//			cout << endl << "! "
+//				 << real(inBeam.JMatrix.m11) << ", "
+//				 << real(inBeam.JMatrix.m12) << ", "
+//				 << real(inBeam.JMatrix.m21) << ", "
+//				 << real(inBeam.JMatrix.m22) << endl;
 
 			double cosInc2 = (2.0*cosIncident);
 			SetBeam(inBeam, inBeam, reflDir, inBeam.e,
@@ -109,7 +123,7 @@ double Tracing::TraceParticle(double beta, double gamma)
 
 		square += outBeam.Square()*cosIncident;
 
-		outBeam.RotateSpherical(incidentDirection, polarizationBasis);
+//		outBeam.RotateSpherical(incidentDirection, polarizationBasis);
 
 		outcomingBeams.push_back(OutBeam(outBeam, track, trackSize));
 	}
@@ -142,8 +156,9 @@ void Tracing::CalcOpticalPathInternal(double Nr, const Beam &incidentBeam,
 
 inline bool Tracing::isEnough(const BeamInfo &info)
 {
-	return (info.beam.JMatrix.Norm() < LOW_ENERGY_LEVEL)
-			|| (info.dept >= interReflectionNumber);
+	double j_norm = info.beam.JMatrix.Norm();
+
+	return (j_norm < LOW_ENERGY_LEVEL) || (info.dept >= interReflectionNumber);
 }
 
 inline void Tracing::changeTrack(int &lastBeamDept, const BeamInfo &info)
@@ -160,15 +175,34 @@ inline void Tracing::changeTrack(int &lastBeamDept, const BeamInfo &info)
 	track[trackSize++] = info.lastFacetIndex;
 }
 
-void Tracing::TraceInternal(BeamInfo *tree, int treeDept)
+void Tracing::InvertBeamPointOrder(Beam &outBeam, const Beam &inBeam)
 {
+	Point3f inBeamCenter = outBeam.Center();
+	Point3f p0 = outBeam.shape[0] - inBeamCenter;
+	Point3f p1 = outBeam.shape[1] - inBeamCenter;
+	Point3f normal1;
+	CrossProduct(p1, p0, normal1);
+	double cosAngle = DotProduct(normal1, outBeam.direction);
+
+	if (cosAngle < 0.0)
+	{
+		for (int i = 0; i < inBeam.shapeSize; ++i)
+		{
+			outBeam.shape[i] = inBeam.shape[(inBeam.shapeSize-1)-i];
+		}
+	}
+}
+
+void Tracing::TraceInternal(BeamInfo tree[], int treeDept)
+{
+	++trackSize;
 	const complex &refrIndex = particle->refractionIndex;
 
 	int lastBeamDept = 0;
 
 	while (treeDept != 0)
 	{
-		BeamInfo &info = tree[--treeDept];
+		BeamInfo info = tree[--treeDept];
 
 		if (isEnough(info))
 		{
@@ -189,8 +223,8 @@ void Tracing::TraceInternal(BeamInfo *tree, int treeDept)
 				continue;
 			}
 
-			const Point3f &extNormal = particle->externalNormals[facetIndex];
-			double cosIncident = DotProduct(extNormal, incidentDir);
+			const Point3f &normal = particle->externalNormals[facetIndex];
+			double cosIncident = DotProduct(normal, incidentDir);
 
 			if (cosIncident < EPS_COS89)
 			{
@@ -231,26 +265,12 @@ void Tracing::TraceInternal(BeamInfo *tree, int treeDept)
 
 				/// TODO: обеспечить единую ориентацию вершин у пучков
 				/// или переориентировать их тут
-//				{
-//					Point3f inBeamCenter = CenterOfBeam(outBeam);
-//					Point3f p0 = outBeam.shape[0] - inBeamCenter;
-//					Point3f p1 = outBeam.shape[1] - inBeamCenter;
-//					Point3f normal1;
-//					CrossProduct(p1, p0, normal1);
-//					double cosAngle = DotProduct(normal1, outBeam.direction);
-
-//					if (cosAngle < 0.0)
-//					{
-//						inBeam = ;
-//					}
-//				}
+//				InvertBeamPointOrder(outBeam, inBeam);
 
 				outcomingBeams.push_back(OutBeam(outBeam, track, trackSize));
 			}
 			else
 			{
-				const Point3f &normal = particle->normals[facetIndex];
-
 				Point3f r0 = incidentDir/cosIncident - normal;
 
 				Point3f reflDir = r0 - normal;
@@ -293,14 +313,13 @@ void Tracing::TraceInternal(BeamInfo *tree, int treeDept)
 
 					/// TODO: обеспечить единую ориентацию вершин у пучков
 					/// или переориентировать их тут
+//					InvertBeamPointOrder(outBeam, inBeam);
 
 					outcomingBeams.push_back(OutBeam(outBeam, track, trackSize));
 				}
 				else /// case of the complete internal reflection
 				{
 					const double bf = Nr*(1.0 - cosInc_sqr) - 1.0;
-
-//					assert(bf > 0.0);
 
 					double im = (bf > 0) ? sqrt(bf)
 										 : 0;
@@ -382,7 +401,11 @@ bool Tracing::Intersect(int facetIndex, const Beam &originBeam, Beam &intersectB
 	const Point3f &normal = particle->externalNormals[facetIndex];
 	__m128 _normal_to_facet = _mm_setr_ps(normal.X, normal.Y, normal.Z, 0.0);
 
-	bool isProjected = ProjectToFacetPlane(originBeam, _output_points, _normal_to_facet, facetIndex);
+	const Point3f &normal2 = particle->normals[facetIndex];
+	__m128 _normal_to_facet2 = _mm_setr_ps(normal2.X, normal2.Y, normal2.Z, 0.0);
+
+	bool isProjected = ProjectToFacetPlane(originBeam, _output_points,
+										   _normal_to_facet2, facetIndex);
 
 	if (!isProjected)
 	{

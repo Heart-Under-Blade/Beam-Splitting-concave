@@ -2,8 +2,8 @@
 
 JonesMatrix::JonesMatrix()
 {
-	m11 = 0;
-	m22 = 1;
+	m11 = m22 = 1;
+	m12 = m21 = 0;
 }
 
 double JonesMatrix::Norm() const
