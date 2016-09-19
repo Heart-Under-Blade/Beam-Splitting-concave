@@ -12,34 +12,99 @@
 
 /// TODO: алгоритм для заранее заданных траекторий
 
-Tracing::Tracing(Particle *p_particle, bool p_isOpticalPath, const Point3f &p_incidentDir,
+Tracing::Tracing(Particle *p_particle, bool p_isOpticalPath,
 				 const Point3f &p_polarizationBasis, int p_interReflectionNumber)
 {
+	trackSize = 0;
 	particle = p_particle;
 	isOpticalPath = p_isOpticalPath;
-	incidentDirection = p_incidentDir;
 	polarizationBasis = p_polarizationBasis;
 	interReflectionNumber = p_interReflectionNumber;
 }
 
-double Tracing::TraceParticle(double beta, double gamma)
+void Tracing::RotateParticle(double beta, double gamma)
 {
 	particle->Rotate(beta, gamma, 0); /// TODO: для опт. заменить на ф-цию с двумя арг
+}
+
+void Tracing::SplitExternalBeamByFacet(const Point3f &beamDirection, int facetIndex, double cosIncident,
+									   Beam &inBeam, Beam &outBeam)
+{
+	const complex &refrIndex = particle->refractionIndex;
+	const Point3f &normal = particle->normals[facetIndex];
+
+	if (cosIncident >= EPS_COS0) /// case of the normal incidence
+	{
+		inBeam.JMatrix.m11 = 2.0/(refrIndex + 1.0);
+		inBeam.JMatrix.m22 = inBeam.JMatrix.m11;
+		inBeam.e = polarizationBasis;
+		inBeam.direction = -beamDirection;
+
+		outBeam.JMatrix.m11 = (refrIndex - 1.0)/(refrIndex + 1.0);
+		outBeam.JMatrix.m22 = -outBeam.JMatrix.m11;
+		outBeam.e = polarizationBasis;
+		outBeam.direction = beamDirection;
+	}
+	else
+	{
+		/// rotate polarization plane
+		{
+			Point3f newBasis;
+			CrossProduct(normal, beamDirection, newBasis);
+			Normalize(newBasis);
+			inBeam.e = polarizationBasis;
+			inBeam.direction = -beamDirection;
+			inBeam.RotatePlane(newBasis);
+		}
+
+		Point3f refrDir, reflDir;
+		SplitIncidentDirection(beamDirection, cosIncident, facetIndex,
+							   reflDir, refrDir);
+
+		double cosRefr = DotProduct(normal, reflDir);
+
+		complex Tv00 = refrIndex*cosIncident;
+		complex Th00 = refrIndex*cosRefr;
+
+		complex Tv0 = Tv00 + cosRefr;
+		complex Th0 = Th00 + cosIncident;
+
+		complex Tv = (Tv00 - cosRefr)/Tv0;
+		complex Th = (cosIncident - Th00)/Th0;
+		SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
+
+		double cosInc2 = (2.0*cosIncident);
+		SetBeam(inBeam, inBeam, reflDir, inBeam.e,
+				cosInc2/Tv0, cosInc2/Th0);
+	}
+
+	SetBeamShapesByFacet(facetIndex, inBeam, outBeam);
+
+	if (isOpticalPath)
+	{
+		Point3f center = inBeam.Center();
+
+		inBeam.D = DotProduct(-inBeam.direction, center);
+		inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(beamDirection, center);
+
+		outBeam.D = DotProduct(-outBeam.direction, center);
+		outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
+	}
+}
+
+void Tracing::SplitBeamByParticle(const Point3f &beamDirection, std::vector<OutBeam> &outBeams, double &lightSurfaceSquare)
+{
+	/// TODO: отделить функцию высчитывания площади осв. поверхности
+	lightSurfaceSquare = 0;
 
 	BeamInfo tree[MAX_BEAM_DEPT]; /// beam info tree (based on stack)
-	int dept = 0;
-
-	double square = 0;
-
-	const complex refrIndex = particle->refractionIndex;
+	int treeSize = 0;
 
 	/// first extermal beam
 	for (int facetIndex = 0; facetIndex < particle->facetNum; ++facetIndex)
 	{
-		const Point3f &normal = particle->normals[facetIndex];
 		const Point3f &extNormal = particle->externalNormals[facetIndex];
-
-		double cosIncident = DotProduct(incidentDirection, extNormal);
+		double cosIncident = DotProduct(beamDirection, extNormal);
 
 		if (cosIncident < EPS_COS89) /// beam is not incident to this facet
 		{
@@ -47,96 +112,73 @@ double Tracing::TraceParticle(double beta, double gamma)
 		}
 
 		Beam inBeam, outBeam;
+		SplitExternalBeamByFacet(beamDirection, facetIndex, cosIncident,
+								 inBeam, outBeam);
 
-		if (cosIncident >= EPS_COS0) /// case of the normal incidence
-		{
-			inBeam.JMatrix.m11 = 2.0/(refrIndex + 1.0);
-			inBeam.JMatrix.m22 = inBeam.JMatrix.m11;
-			inBeam.e = polarizationBasis;
-			inBeam.direction = -incidentDirection;
+		outBeams.push_back(OutBeam(outBeam, track, trackSize));
 
-			outBeam.JMatrix.m11 = (refrIndex - 1.0)/(refrIndex + 1.0);
-			outBeam.JMatrix.m22 = -outBeam.JMatrix.m11;
-			outBeam.e = polarizationBasis;
-			outBeam.direction = incidentDirection;
-		}
-		else
-		{
-			/// rotate polarization plane
-			{
-				Point3f newBasis;
-				CrossProduct(normal, incidentDirection, newBasis);
-				Normalize(newBasis);
-				inBeam.e = polarizationBasis;
-				inBeam.direction = -incidentDirection;
-				inBeam.RotatePlane(newBasis);
-			}
+		tree[treeSize++] = BeamInfo{inBeam, facetIndex, 0};
 
-			Point3f refrDir, reflDir;
-			SplitIncidentDirection(incidentDirection, cosIncident, facetIndex,
-								   reflDir, refrDir);
-
-			double cosRefr = DotProduct(normal, reflDir);
-
-			complex Tv00 = refrIndex*cosIncident;
-			complex Th00 = refrIndex*cosRefr;
-
-			complex Tv0 = Tv00 + cosRefr;
-			complex Th0 = Th00 + cosIncident;
-
-			complex Tv = (Tv00 - cosRefr)/Tv0;
-			complex Th = (cosIncident - Th00)/Th0;
-			SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
-
-
-//			using namespace std;
-//			cout << endl << "! "
-//				 << real(outBeam.JMatrix.m11) << ", "
-//				 << real(outBeam.JMatrix.m12) << ", "
-//				 << real(outBeam.JMatrix.m21) << ", "
-//				 << real(outBeam.JMatrix.m22) << endl;
-//			cout << endl << "! "
-//				 << real(inBeam.JMatrix.m11) << ", "
-//				 << real(inBeam.JMatrix.m12) << ", "
-//				 << real(inBeam.JMatrix.m21) << ", "
-//				 << real(inBeam.JMatrix.m22) << endl;
-
-			double cosInc2 = (2.0*cosIncident);
-			SetBeam(inBeam, inBeam, reflDir, inBeam.e,
-					cosInc2/Tv0, cosInc2/Th0);
-		}
-
-		SetBeamShapesByFacet(facetIndex, inBeam, outBeam);
-
-		if (isOpticalPath)
-		{
-			Point3f center = inBeam.Center();
-
-			inBeam.D = DotProduct(-inBeam.direction, center);
-			inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(incidentDirection, center);
-
-			outBeam.D = DotProduct(-outBeam.direction, center);
-			outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
-		}
-
-		tree[dept++] = BeamInfo{inBeam, facetIndex, 0};
-
-		square += outBeam.Square()*cosIncident;
-
-//		outBeam.RotateSpherical(incidentDirection, polarizationBasis);
-
-		outcomingBeams.push_back(OutBeam(outBeam, track, trackSize));
+		lightSurfaceSquare += outBeam.Square()*cosIncident;
 	}
 
-	TraceInternal(tree, dept);
-/// TODO: проверить track'и
+	TraceInternalReflections(tree, treeSize, outBeams);
+
 	trackSize = 0;
-	return square;
 }
 
-void Tracing::ClearTracing()
+void Tracing::SplitBeamByParticle(const Point3f &beamDirection, const std::vector<std::vector<int>> &tracks,
+								  std::vector<OutBeam> &outBeams)
 {
-	outcomingBeams.clear();
+	for (int i = 0; i < tracks.size(); ++i)
+	{
+		int facetIndex = tracks.at(i).at(0);
+		const Point3f &extNormal = particle->externalNormals[facetIndex];
+
+		double cosIncident = DotProduct(beamDirection, extNormal);
+
+		if (cosIncident < EPS_COS89) /// beam is not incident to this facet
+		{
+			continue;
+		}
+
+		std::vector<OutBeam> buff;
+
+		Beam incidentBeam;
+
+		/// first incident beam
+		{
+			Beam outBeam;
+
+			SplitExternalBeamByFacet(beamDirection, facetIndex, cosIncident,
+									 incidentBeam, outBeam);
+
+			buff.push_back(OutBeam(outBeam, track, trackSize));
+		}
+
+		unsigned int size = tracks.at(i).size();
+
+		try /// inteernal beams
+		{
+			for (unsigned int j = 1; j < size; ++j)
+			{
+				facetIndex = tracks.at(i).at(j);
+
+				Beam inBeam;
+				SplitInternalBeamByFacet(incidentBeam, facetIndex, inBeam, buff);
+
+				incidentBeam = inBeam;
+			}
+		}
+		catch (const std::exception &)
+		{
+			continue;
+		}
+
+		outBeams.push_back(buff.back());
+	}
+
+	trackSize = 0;
 }
 
 void Tracing::CalcOpticalPathInternal(double Nr, const Beam &incidentBeam,
@@ -193,10 +235,135 @@ void Tracing::InvertBeamPointOrder(Beam &outBeam, const Beam &inBeam)
 	}
 }
 
-void Tracing::TraceInternal(BeamInfo tree[], int treeDept)
+void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
+									   Beam &inBeam, std::vector<OutBeam> &outBeams)
+{
+	Beam outBeam;
+
+	const Point3f &incidentDir = incidentBeam.direction;
+	const complex &refrIndex = particle->refractionIndex;
+
+	const Point3f &normal = particle->externalNormals[facetIndex];
+	double cosIncident = DotProduct(normal, incidentDir);
+
+	if (cosIncident < EPS_COS89) /// beam is not incident to this facet
+	{
+		throw std::exception();
+	}
+
+	bool isOk = Intersect(facetIndex, incidentBeam, outBeam);
+
+	if (!isOk)
+	{
+		throw std::exception();
+	}
+
+	inBeam = outBeam;
+
+	double cosInc_sqr = cosIncident*cosIncident;
+
+	double Nr;
+	{
+		double re = particle->refrI_sqr_re;
+		double im = particle->refrI_sqr_im;
+		Nr = (re + sqrt(re*re + im/cosInc_sqr))/2.0;
+	}
+
+	if (cosIncident >= EPS_COS0) /// case of the normal incidence
+	{
+		complex temp;
+
+		temp = (2.0*refrIndex)/(1.0 + refrIndex); /// NOTE: для опт. выделить эту константу
+		SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
+				temp, temp);
+
+		temp = (1.0 - refrIndex)/(1.0 + refrIndex);
+		SetBeam(inBeam, incidentBeam, -incidentDir, incidentBeam.e,
+				temp, -temp);
+
+		if (isOpticalPath)
+		{
+			CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+		}
+
+		outBeams.push_back(OutBeam(outBeam, track, trackSize));
+	}
+	else
+	{
+		Point3f r0 = incidentDir/cosIncident - normal;
+
+		Point3f reflDir = r0 - normal;
+		Normalize(reflDir);
+		inBeam.direction = reflDir;
+
+		Point3f scatteringNormal;
+		CrossProduct(normal, incidentDir, scatteringNormal);
+		Normalize(scatteringNormal);
+		inBeam.e = scatteringNormal;
+
+		incidentBeam.RotatePlane(scatteringNormal);
+
+		double s = 1.0/(Nr*cosInc_sqr) - Norm(r0);
+		complex tmp0 = refrIndex*cosIncident;
+
+		if (s > DBL_EPSILON)
+		{
+			Point3f refrDir = r0/sqrt(s) + normal;
+			Normalize(refrDir);
+
+			double cosRefr = DotProduct(normal, refrDir);
+
+			complex tmp1 = refrIndex*cosRefr;
+			complex tmp = 2.0*tmp0;
+			complex Tv0 = tmp1 + cosIncident;
+			complex Th0 = tmp0 + cosRefr;
+
+			SetBeam(outBeam, incidentBeam, refrDir, scatteringNormal,
+					tmp/Tv0, tmp/Th0);
+
+			complex Tv = (cosIncident - tmp1)/Tv0;
+			complex Th = (tmp0 - cosRefr)/Th0;
+			SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Tv, Th);
+
+			if (isOpticalPath)
+			{
+				CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+			}
+
+			outBeams.push_back(OutBeam(outBeam, track, trackSize));
+		}
+		else /// case of the complete internal reflection
+		{
+			const double bf = Nr*(1.0 - cosInc_sqr) - 1.0;
+
+			double im = (bf > 0) ? sqrt(bf)
+								 : 0;
+
+			const complex sq(0, im);
+			complex tmp = refrIndex*sq;
+			complex Rv = (cosIncident - tmp)/(tmp + cosIncident);
+			complex Rh = (tmp0 - sq)/(tmp0 + sq);
+
+			SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Rv, Rh);
+
+			if (isOpticalPath)
+			{
+				Point3f center = outBeam.Center();
+				inBeam.D = DotProduct(-center, inBeam.direction);
+
+				double temp = DotProduct(incidentDir, center);
+
+				inBeam.opticalPath = incidentBeam.opticalPath
+						+ sqrt(Nr)*fabs(temp + incidentBeam.D);
+			}
+		}
+	}
+}
+
+void Tracing::TraceInternalReflections(BeamInfo *tree, int treeDept,
+									   std::vector<OutBeam> &outBeams)
 {
 	++trackSize;
-	const complex &refrIndex = particle->refractionIndex;
 
 	int lastBeamDept = 0;
 
@@ -213,7 +380,6 @@ void Tracing::TraceInternal(BeamInfo tree[], int treeDept)
 
 		Beam &incidentBeam = info.beam;
 		int &lastFacetIndex = info.lastFacetIndex;
-		Point3f &incidentDir = incidentBeam.direction;
 		lastBeamDept = info.dept;
 
 		for (int facetIndex = 0; facetIndex < particle->facetNum; ++facetIndex)
@@ -223,125 +389,15 @@ void Tracing::TraceInternal(BeamInfo tree[], int treeDept)
 				continue;
 			}
 
-			const Point3f &normal = particle->externalNormals[facetIndex];
-			double cosIncident = DotProduct(normal, incidentDir);
+			Beam inBeam;
 
-			if (cosIncident < EPS_COS89)
+			try
+			{
+				SplitInternalBeamByFacet(incidentBeam, facetIndex, inBeam, outBeams);
+			}
+			catch (const std::exception &)
 			{
 				continue;
-			}
-
-			Beam outBeam;
-			bool isOk = Intersect(facetIndex, incidentBeam, outBeam);
-
-			if (!isOk)
-			{
-				continue;
-			}
-
-			Beam inBeam = outBeam;
-
-			double cosInc_sqr = cosIncident*cosIncident;
-			double re = particle->refrI_sqr_re;
-			double im = particle->refrI_sqr_im;
-			double Nr = (re + sqrt(re*re + im/cosInc_sqr))/2.0;
-
-			if (cosIncident >= EPS_COS0) /// case of the normal incidence
-			{
-				complex temp;
-
-				temp = 2.0*refrIndex/(1.0 + refrIndex); /// NOTE: для опт. выделить эту константу
-				SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
-						temp, temp);
-
-				temp = (1.0 - refrIndex)/(1.0 + refrIndex);
-				SetBeam(inBeam, incidentBeam, -incidentDir, incidentBeam.e,
-						temp, -temp);
-
-				if (isOpticalPath)
-				{
-					CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
-				}
-
-				/// TODO: обеспечить единую ориентацию вершин у пучков
-				/// или переориентировать их тут
-//				InvertBeamPointOrder(outBeam, inBeam);
-
-				outcomingBeams.push_back(OutBeam(outBeam, track, trackSize));
-			}
-			else
-			{
-				Point3f r0 = incidentDir/cosIncident - normal;
-
-				Point3f reflDir = r0 - normal;
-				Normalize(reflDir);
-				inBeam.direction = reflDir;
-
-				Point3f scatteringNormal;
-				CrossProduct(normal, incidentDir, scatteringNormal);
-				Normalize(scatteringNormal);
-				inBeam.e = scatteringNormal;
-
-				incidentBeam.RotatePlane(scatteringNormal);
-
-				double s = 1.0/(Nr*cosInc_sqr) - Norm(r0);
-				complex tmp0 = refrIndex*cosIncident;
-
-				if (s > DBL_EPSILON)
-				{
-					Point3f refrDir = r0/sqrt(s) + normal;
-					Normalize(refrDir);
-
-					double cosRefr = DotProduct(normal, refrDir);
-
-					complex tmp1 = refrIndex*cosRefr;
-					complex tmp = 2.0*tmp0;
-					complex Tv0 = tmp1 + cosIncident;
-					complex Th0 = tmp0 + cosRefr;
-
-					SetBeam(outBeam, incidentBeam, refrDir, scatteringNormal,
-							tmp/Tv0, tmp/Th0);
-
-					complex Tv = (cosIncident - tmp1)/Tv0;
-					complex Th = (tmp0 - cosRefr)/Th0;
-					SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Tv, Th);
-
-					if (isOpticalPath)
-					{
-						CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
-					}
-
-					/// TODO: обеспечить единую ориентацию вершин у пучков
-					/// или переориентировать их тут
-//					InvertBeamPointOrder(outBeam, inBeam);
-
-					outcomingBeams.push_back(OutBeam(outBeam, track, trackSize));
-				}
-				else /// case of the complete internal reflection
-				{
-					const double bf = Nr*(1.0 - cosInc_sqr) - 1.0;
-
-					double im = (bf > 0) ? sqrt(bf)
-										 : 0;
-
-					const complex sq(0, im);
-					complex tmp = refrIndex*sq;
-					complex Rv = (cosIncident - tmp)/(tmp + cosIncident);
-					complex Rh = (tmp0 - sq)/(tmp0 + sq);
-
-					SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Rv, Rh);
-
-					if (isOpticalPath)
-					{
-						Point3f center = outBeam.Center();
-						inBeam.D = DotProduct(-center, inBeam.direction);
-
-						double temp = DotProduct(incidentDir, center);
-
-						inBeam.opticalPath = incidentBeam.opticalPath
-								+ sqrt(Nr)*fabs(temp + incidentBeam.D);
-					}
-				}
 			}
 
 			tree[treeDept++] = BeamInfo{inBeam, facetIndex, lastBeamDept+1};

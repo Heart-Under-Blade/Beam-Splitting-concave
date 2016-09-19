@@ -18,94 +18,308 @@ matrix back(4,4),	///< Mueller matrix in backward direction
 Arr2D mxd(0, 0, 0, 0);
 double SizeBin;
 double gammaNorm, betaNorm;
-double betaDistrProbability;
 double incomingEnergy;
 clock_t totalTime;
 Point3f incidentDir(0, 0, 1);
 Point3f polarizationBasis(0, 1, 0);
 
-
 // debug
 long long ddddd = 0;
 int count = 0;
 
-void HandleBeams(std::vector<OutBeam> &outBeams)
+void HandleBeams(std::vector<OutBeam> &outBeams, double betaDistrProb);
+void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
+
+void WriteResultsToFile(int ThetaNumber, double NRM);
+void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM);
+void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM);
+
+void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing tracer);
+void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer);
+void TraceSingle(Tracing tracer, double beta, double gamma);
+
+void Calculate()
 {
+	/// params
+	int particleType = 0;
+	double radius = 40;
+	double halfHeight = 100;
+	complex refractionIndex = complex(1.31, 0.0);
+	int orNumber_gamma = 301;
+	int orNumber_beta = 300;
+	int ThetaNumber = 180;
+	int interReflNum = 3;
+	bool isRandom = false;
+
+	bool isOpticalPath = true;
+	bool isSorting = false;
+	int EDF = 0;
+
+	Particle *particle = nullptr;
+	switch (particleType) {
+	case 0:
+		particle = new Hexagon(radius, halfHeight, refractionIndex);
+		betaNorm = M_PI/(2.0*orNumber_beta);
+		break;
+	case 1:
+		/// TODO реализовать остальные частицы
+		break;
+	default:
+		break;
+	}
+
+	gammaNorm = M_PI/(3.0*orNumber_gamma);
+
+	incomingEnergy = 0;
+
+	// the arrays for exact backscattering and forwardscattering Mueller matrices
+	back.Fill(0);
+	forw.Fill(0);
+
+	SizeBin = M_PI/ThetaNumber; // the size of the bin (radians)
+
+	mxd = Arr2D(1, ThetaNumber + 1, 4, 4);
+	mxd.ClearArr();
+
+	Tracing tracer(particle, isOpticalPath, polarizationBasis, interReflNum);
+
+	clock_t timer = clock();
+
+	if (isRandom)
+	{
+		TraceRandom(orNumber_gamma, orNumber_beta, tracer);
+	}
+	else
+	{
+		TraceFixed(orNumber_gamma, orNumber_beta, tracer);
+	}
+
+	timer = clock() - timer;
+	totalTime = timer/CLOCKS_PER_SEC;
+
+	std::cout << "\nTotal time of calculation = " << totalTime << " seconds";
+
+	//Integrating
+	double D_tot = back[0][0] + forw[0][0];
+
+	for (int j = 0; j <= ThetaNumber; ++j)
+	{
+		D_tot += mxd(0, j, 0, 0);
+	}
+
+	//Normalizing coefficient
+	double orNumber = orNumber_gamma*orNumber_beta;
+	double NRM;
+
+	if (!isRandom)
+	{
+		NRM = M_PI/((double)orNumber*2.0);
+	}
+	else
+	{
+		NRM = 1.0/(double)orNumber;
+	}
+
+	ExtractPeaks(EDF, NRM, ThetaNumber);
+
+	WriteResultsToFile(ThetaNumber, NRM);
+
+	WriteStatisticsToFile(timer, orNumber, D_tot, NRM);
+
+	WriteStatisticsToConsole(orNumber, D_tot, NRM);
+	getchar();
+
+	delete particle;
+}
+
+int main()
+{
+//	testHexagonBuilding();
+//	testHexagonRotate();
+	Calculate();
+	return 0;
+}
+
+void TraceSingle(Tracing tracer, double beta, double gamma)
+{
+	beta = (M_PI*beta)/180.0;
+	gamma = (M_PI*gamma)/180.0;
+	double betaDistrProbability = sin(beta);
+
+	std::vector<OutBeam> outcomingBeams;
+	double square;
+
+	tracer.RotateParticle(beta, gamma);
+	tracer.SplitBeamByParticle(incidentDir, outcomingBeams, square);
+
+	incomingEnergy += betaDistrProbability * square;
+	HandleBeams(outcomingBeams, betaDistrProbability);
+
+	outcomingBeams.clear();
+}
+
+void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer)
+{
+	double beta, gamma;
+	double betaDistrProbability;
+
+	std::vector<OutBeam> outcomingBeams;
+	double square = 0;
+
+	for (int i = 0; i < orNumber_beta; ++i)
+	{
+		beta = (i + 0.5)*betaNorm;
+		betaDistrProbability = sin(beta);
+
+		for (int j = 0; j < orNumber_gamma; ++j)
+		{
+			gamma = (j + 0.5)*gammaNorm;
+
+			tracer.RotateParticle(beta, gamma);
+			tracer.SplitBeamByParticle(incidentDir, outcomingBeams, square);
+
+			/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
+//			std::vector<std::vector<int>> tracks;
+//			std::vector<int> track = {0, 7, 0};
+//			tracks.push_back(track);
+//			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
+
+			incomingEnergy += betaDistrProbability * square;
+		}
+
+		HandleBeams(outcomingBeams, betaDistrProbability);
+		outcomingBeams.clear();
+		std::cout << (100*i)/orNumber_beta << "%" << std::endl;
+	}
+}
+
+void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing tracer)
+{
+	srand(time(NULL));
+
+	std::vector<OutBeam> outcomingBeams;
+	double beta, gamma;
+	double square;
+
+	for (int i = 0; i < orNumber_beta; ++i)
+	{
+		for (int j = 0; j < orNumber_gamma; ++j)
+		{
+			gamma = 2.0*M_PI * ((double)(rand()) / ((double)RAND_MAX + 1.0));
+			beta = acos(((double)(rand()) / ((double)RAND_MAX))*2.0 - 1.0);
+
+			tracer.RotateParticle(beta, gamma);
+			tracer.SplitBeamByParticle(incidentDir, outcomingBeams, square);
+
+			incomingEnergy += square;
+		}
+
+		HandleBeams(outcomingBeams, 1);
+		outcomingBeams.clear();
+		std::cout << (100*i)/orNumber_beta << "%" << std::endl;
+	}
+}
+
+void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
+{
+	//Analytical averaging over alpha angle
+	double b[3], f[3];
+	b[0] = back[0][0];
+	b[1] = (back[1][1] - back[2][2])/2.0;
+	b[2] = back[3][3];
+
+	f[0] = forw[0][0];
+	f[1] = (forw[1][1] + forw[2][2])/2.0;
+	f[2] = forw[3][3];
+
+	// Extracting the forward and backward peak in a separate file if needed
+	if (EDF)
+	{
+		std::ofstream bck("back.dat", std::ios::out);
+		std::ofstream frw("forward.dat", std::ios::out);
+		frw << "M11 M22/M11 M33/M11 M44/M11";
+		bck << "M11 M22/M11 M33/M11 M44/M11";
+
+		if (f[0] <= DBL_EPSILON)
+		{
+			frw << "\n0 0 0 0";
+		}
+		else
+		{
+			frw << "\n" << f[0]*NRM
+				<< " " << f[1]/f[0]
+				<< " " << f[1]/f[0]
+				<< " " << f[2]/f[0];
+		}
+
+		if (b[0] <= DBL_EPSILON)
+		{
+			bck << "\n0 0 0 0";
+		}
+		else
+		{
+			bck << "\n" << b[0]*NRM
+				<< " " << b[1]/b[0]
+				<< " " << -b[1]/b[0]
+				<< " " << b[2]/b[0];
+		}
+
+		bck.close();
+		frw.close();
+	}
+	else
+	{
+		mxd(0,ThetaNumber,0,0) += f[0];
+		mxd(0,0,0,0) += b[0];
+		mxd(0,ThetaNumber,1,1) += f[1];
+		mxd(0,0,1,1) += b[1];
+		mxd(0,ThetaNumber,2,2) += f[1];
+		mxd(0,0,2,2) -= b[1];
+		mxd(0,ThetaNumber,3,3) += f[2];
+		mxd(0,0,3,3) += b[2];
+	}
+}
+
+void HandleBeams(std::vector<OutBeam> &outBeams, double betaDistrProb)
+{
+	ddddd += outBeams.size();
+
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
-		++ddddd;
-		Beam &bm = outBeams.at(i).beam;
-//		using namespace std;
-//		cout << endl << "! "
-//			 << real(bm.JMatrix.m11) << ", "
-//			 << real(bm.JMatrix.m12) << ", "
-//			 << real(bm.JMatrix.m21) << ", "
-//			 << real(bm.JMatrix.m22) << endl;
-		bm.RotateSpherical(incidentDir, polarizationBasis);
+		Beam &beam = outBeams.at(i).beam;
+		beam.RotateSpherical(incidentDir, polarizationBasis);
 
-		unsigned int szP = outBeams.at(i).trackSize;
-		// If there is a special list of the beams to take into account, check if the beam "bm" is on the list
-/// TODO: для отдельных траекторий
-//		if (isSorting)
-//		{
-//			bool flag = false;
-//			std::list<Chain>::const_iterator c = mask.begin();
-
-//			for (; c!= mask.end(); ++c)
-//			{
-//				std::list<unsigned int >::const_iterator it = c->Ch.begin();
-
-//				if (szP!=c->sz)
-//				{
-//					continue;
-//				}
-
-//				std::list<unsigned int >::const_iterator fs = bm.BeginP();
-
-//				for (;it!=c->Ch.end() && (*it)==(*fs); ++it, ++fs);
-
-//				if (it==c->Ch.end())
-//				{
-//					flag = true;
-//					break;
-//				}
-//			}
-
-//			if (!flag)
-//			{
-//				return;
-//			}
-//		}
-
-		double cross = bm.CrossSection();
-		double Area = betaDistrProbability*cross;
+		double cross = beam.CrossSection();
+		double Area = betaDistrProb*cross;
 //		double Area = 1;
-		matrix bf = Mueller(bm.JMatrix);
-		//----------------------------------------------------------------------------
-		// Collect the beam in array
+		matrix bf = Mueller(beam.JMatrix);
 
-		if(bm.direction.Z >= 1-DBL_EPSILON)
+		const float &x = beam.direction.X;
+		const float &y = beam.direction.Y;
+		const float &z = beam.direction.Z;
+
+		// Collect the beam in array
+		if (z >= 1-DBL_EPSILON)
 		{
 			back += Area*bf;
 		}
 		else
 		{
-			if(bm.direction.Z <= DBL_EPSILON-1)
+			if (z <= DBL_EPSILON-1)
 			{
 				forw += Area*bf;
 			}
 			else
 			{
 				// Rotate the Mueller matrix of the beam to appropriate coordinate system
-				const unsigned int ZenAng = round(acos(bm.direction.Z)/SizeBin);
-
-				double tmp = SQR(bm.direction.Y);
+				const unsigned int ZenAng = round(acos(z)/SizeBin);
+				double tmp = SQR(y);
 
 				if (tmp > DBL_EPSILON)
 				{
-					tmp = acos(bm.direction.X/sqrt(SQR(bm.direction.X)+tmp));
+					tmp = acos(x/sqrt(SQR(x)+tmp)); // TODO: для опт. SQR на x*x
 
-					if (bm.direction.Y < 0)
+					if (y < 0)
 					{
 						tmp = M_2PI-tmp;
 					}
@@ -117,37 +331,9 @@ void HandleBeams(std::vector<OutBeam> &outBeams)
 //				bf = matrix(4,4);
 //				bf.Identity();
 				mxd.insert(0, ZenAng, Area*bf);
-//				std::cout << "mxd - " << mxd(0, ZenAng, 0,0) << std::endl;
-
-//				if (i == 10)
-//				{
-//					int fff = 0;
-//				}
 			}
 		}
 	}
-}
-
-void Trace(double beta, double gamma, Tracing &tracer)
-{
-//	if (ddddd == 579)
-//	{
-//		int ff = 0;
-//	}
-	double square = tracer.TraceParticle(beta, gamma); /// TODO: трассировка
-//	ddddd = tracer.outcomingBeams.size()-ddddd;
-//	std::cout << ++count << " - " << ddddd << std::endl;
-//	for (int i = 0; i < tracer.outcomingBeams.size(); ++i)
-//	{
-//		for (int j = 0; j < tracer.outcomingBeams.at(i).trackSize; ++j)
-//		{
-//			std::cout << tracer.outcomingBeams.at(i).track[j] << ", ";
-//		}
-//		std::cout << std::endl;
-//	}
-
-	incomingEnergy += betaDistrProbability * square;
-//	tracer.ClearTracing();
 }
 
 void WriteResultsToFile(int ThetaNumber, double NRM)
@@ -185,18 +371,6 @@ void WriteResultsToFile(int ThetaNumber, double NRM)
 	M.close();
 }
 
-void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM)
-{
-	using namespace std;
-	cout << endl << ddddd << endl;
-	cout << "\nTotal number of body orientation = " << orNumber;
-	cout << "\nTotal scattering energy = " << D_tot/**NRM*/;
-	cout << "\nTotal incoming energy = " << incomingEnergy;
-	cout << "\nAveraged cross section = " << incomingEnergy*NRM;
-	cout << "\nAll done. Please, press ENTER.";
-	getchar();
-}
-
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM)
 {
 	std::ofstream out("out.dat", std::ios::out);
@@ -209,202 +383,14 @@ void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM)
 	out.close();
 }
 
-void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
+void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM)
 {
-	//Analytical averaging over alpha angle
-	double b[3], f[3];
-	b[0] = back[0][0];
-	b[1] = (back[1][1] - back[2][2])/2.0;
-	b[2] = back[3][3];
-
-	f[0] = forw[0][0];
-	f[1] = (forw[1][1] + forw[2][2])/2.0;
-	f[2] = forw[3][3];
-
-	// Extracting the forward and backward peak in a separate file if needed
-	if (EDF)
-	{
-		std::ofstream bck("back.dat", std::ios::out);
-		std::ofstream frw("forward.dat", std::ios::out);
-		frw << "M11 M22/M11 M33/M11 M44/M11";
-		bck << "M11 M22/M11 M33/M11 M44/M11";
-
-		if (f[0] <= DBL_EPSILON)
-		{
-			frw << "\n0 0 0 0";
-		}
-		else
-		{
-			frw << "\n" << f[0]*NRM << " " << f[1]/f[0] << " " << f[1]/f[0] << " " << f[2]/f[0];
-		}
-
-		if (b[0] <= DBL_EPSILON)
-		{
-			bck << "\n0 0 0 0";
-		}
-		else
-		{
-			bck << "\n" << b[0]*NRM << " " << b[1]/b[0] << " " << -b[1]/b[0] << " " << b[2]/b[0];
-		}
-
-		bck.close();
-		frw.close();
-	}
-	else
-	{
-		mxd(0,ThetaNumber,0,0) += f[0];
-		mxd(0,0,0,0) += b[0];
-		mxd(0,ThetaNumber,1,1) += f[1];
-		mxd(0,0,1,1) += b[1];
-		mxd(0,ThetaNumber,2,2) += f[1];
-		mxd(0,0,2,2) -= b[1];
-		mxd(0,ThetaNumber,3,3) += f[2];
-		mxd(0,0,3,3) += b[2];
-	}
-}
-
-void Calculate()
-{
-	/// params
-	int particleType = 0;
-	double radius = 40;
-	double halfHeight = 100;
-	complex refractionIndex = complex(1.31, 0.0);
-	int orNumber_gamma = 301;
-	int orNumber_beta = 300;
-	int ThetaNumber = 180;
-	int interReflNum = 0;
-	bool isRandom = false;
-
-	bool isOpticalPath = true;
-	bool isSorting = false;
-	int EDF = 0;
-
-	Particle *particle = nullptr;
-	switch (particleType) {
-	case 0:
-		particle = new Hexagon(radius, halfHeight, refractionIndex);
-		betaNorm = M_PI/(2.0*orNumber_beta);
-		break;
-	case 1:
-		/// TODO ...
-		break;
-	default:
-		break;
-	}
-
-	gammaNorm = M_PI/(3.0*orNumber_gamma);
-
-	double beta, gamma;
-	incomingEnergy = 0;
-	betaDistrProbability = 0;
-
-	srand(time(NULL));
-
-	// the arrays for exact backscattering and forwardscattering Mueller matrices
-	back.Fill(0);
-	forw.Fill(0);
-
-	SizeBin = M_PI/ThetaNumber; // the size of the bin (radians)
-
-	mxd = Arr2D(1, ThetaNumber + 1, 4, 4);
-	mxd.ClearArr();
-
-	Tracing tracer(particle, isOpticalPath, incidentDir,
-				   polarizationBasis, interReflNum);
-
-	clock_t timer = clock();
-
-	if (isRandom)
-	{
-		gamma = 2.0*M_PI * ((double)(rand()) / ((double)RAND_MAX + 1.0));
-		beta = acos(((double)(rand()) / ((double)RAND_MAX))*2.0 - 1.0);
-		betaDistrProbability = 1.0;
-
-		for (int i = 0; i < orNumber_beta; ++i)
-		{
-			for (int j = 0; j < orNumber_gamma; ++j)
-			{
-				Trace(beta, gamma, tracer);
-			}
-		}
-	}
-	else
-	{
-
-//		beta = (M_PI*90)/180.0; gamma = (M_PI*30)/180.0;
-//		betaDistrProbability = sin(beta);
-//		Trace(beta, gamma, tracer);
-
-
-		for (int i = 0; i < orNumber_beta; ++i)
-		{
-			beta = (i + 0.5)*betaNorm;
-			betaDistrProbability = sin(beta);
-
-			for (int j = 0; j < orNumber_gamma; ++j)
-			{
-//				if (ddddd == 583)
-//				{
-//					int ff = 0;
-//				}
-				gamma = (j + 0.5)*gammaNorm;
-				Trace(beta, gamma, tracer);
-			}
-
-			HandleBeams(tracer.outcomingBeams);
-			tracer.outcomingBeams.clear();
-			std::cout << (100*i)/orNumber_beta << "%" << std::endl;
-		}
-	}
-
-	timer = clock() - timer;
-	totalTime = timer/CLOCKS_PER_SEC;
-
-	std::cout << "\nTotal time of calculation = " << totalTime << " seconds";
-
-	//Integrating
-//	double aa = back[0][0];
-//	double bb = forw[0][0];
-	double D_tot = back[0][0] + forw[0][0];
-
-	for (int j = 0; j <= ThetaNumber; ++j)
-	{
-//		std::cout << j << ": " << D_tot << ", " << mxd(0, j, 0, 0) << std::endl;
-		D_tot += mxd(0, j, 0, 0);
-	}
-
-	//Normalizing coefficient
-	double orNumber = orNumber_gamma*orNumber_beta;
-	double NRM;
-
-	if (!isRandom)
-	{
-		NRM = M_PI/((double)orNumber*2.0);
-	}
-	else
-	{
-		NRM = 1.0/(double)orNumber;
-	}
-	//const double NRM = 1.0/(4.0*M_PI);
-
-	ExtractPeaks(EDF, NRM, ThetaNumber);
-
-	WriteResultsToFile(ThetaNumber, NRM);
-
-	WriteStatisticsToFile(timer, orNumber, D_tot, NRM);
-
-	WriteStatisticsToConsole(orNumber, D_tot, NRM);
+	using namespace std;
+	cout << endl << ddddd << endl;
+	cout << "\nTotal number of body orientation = " << orNumber;
+	cout << "\nTotal scattering energy = " << D_tot/**NRM*/;
+	cout << "\nTotal incoming energy = " << incomingEnergy;
+	cout << "\nAveraged cross section = " << incomingEnergy*NRM;
+	cout << "\nAll done. Please, press ENTER.";
 	getchar();
-
-	delete particle;
 }
-
-int main()
-{
-//	testHexagonBuilding();
-//	testHexagonRotate();
-	Calculate();
-	return 0;
-}
-
