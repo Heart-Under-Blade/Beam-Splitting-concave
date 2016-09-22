@@ -6,7 +6,8 @@
 
 #include <iostream>
 
-#include "Hexagon.h"
+#include "Hexagonal.h"
+#include "ConcaveHexagonal.h"
 
 void outputParticle(const Particle &particle)
 {
@@ -42,13 +43,20 @@ void outputParticle(const Particle &particle)
 
 void testHexagonBuilding()
 {
-	Particle hex = Hexagon(20, 100, 1.31);
+	Particle hex = Hexagonal(20, 100, 1.31);
 	outputParticle(hex);
+}
+
+void testConcaveHexagonBuilding()
+{
+	Particle *hex = new ConcaveHexagonal(20, 100, 1.31, 10);
+	hex->Rotate(1.5708/*90 degrees*/, 0, 0);
+	outputParticle(*hex);
 }
 
 void testHexagonRotate()
 {
-	Particle *hex = new Hexagon(20, 100, 1.31);
+	Particle *hex = new Hexagonal(20, 100, 1.31);
 	hex->Rotate(1.5708/*90 degrees*/, 0, 0);
 
 	outputParticle(*hex);

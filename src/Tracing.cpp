@@ -130,7 +130,7 @@ void Tracing::SplitBeamByParticle(const Point3f &beamDirection, std::vector<OutB
 void Tracing::SplitBeamByParticle(const Point3f &beamDirection, const std::vector<std::vector<int>> &tracks,
 								  std::vector<OutBeam> &outBeams)
 {
-	for (int i = 0; i < tracks.size(); ++i)
+	for (unsigned int i = 0; i < tracks.size(); ++i)
 	{
 		int facetIndex = tracks.at(i).at(0);
 		const Point3f &extNormal = particle->externalNormals[facetIndex];

@@ -9,17 +9,15 @@ QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
 
-INCLUDEPATH += ../src/math
+INCLUDEPATH += \
+	../src \
+	../src/math \
+	../src/particle
 
 HEADERS += \
     ../src/Beam.h \
     ../src/global.h \
-    ../src/Hexagon.h \
-    ../src/Intersection.h \
-    ../src/JonesMatrix.h \
-    ../src/Mueller.hpp \
-    ../src/Particle.h \
-    ../src/PhysMtr.hpp \
+	../src/Intersection.h \
     ../src/test.h \
     ../src/Tracing.h \
     ../src/types.h \
@@ -27,20 +25,27 @@ HEADERS += \
     ../src/intrinsic/intrinsics.h \
     ../src/math/compl.hpp \
     ../src/math/matrix.hpp \
-    ../src/math/service.hpp
+	../src/math/service.hpp \
+    ../src/particle/Hexagonal.h \
+    ../src/particle/Particle.h \
+	../src/particle/ConcaveHexagonal.h \
+    ../src/math/JonesMatrix.h \
+    ../src/math/Mueller.hpp \
+    ../src/math/PhysMtr.hpp
 
 SOURCES += \
     ../src/Beam.cpp \
-    ../src/Hexagon.cpp \
-    ../src/Intersection.cpp \
-    ../src/JonesMatrix.cpp \
-    ../src/main.cpp \
-    ../src/Mueller.cpp \
-    ../src/Particle.cpp \
-    ../src/PhysMtr.cpp \
+	../src/Intersection.cpp \
+	../src/main.cpp \
     ../src/Tracing.cpp \
     ../src/vector_lib.cpp \
     ../src/intrinsic/intrinsics.cpp \
     ../src/math/compl.cpp \
-    ../src/math/matrix.cpp
+	../src/math/matrix.cpp \
+    ../src/particle/Hexagonal.cpp \
+	../src/particle/ConcaveHexagonal.cpp \
+    ../src/particle/Particle.cpp \
+    ../src/math/JonesMatrix.cpp \
+    ../src/math/Mueller.cpp \
+    ../src/math/PhysMtr.cpp
 

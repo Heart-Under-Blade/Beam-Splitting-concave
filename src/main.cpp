@@ -1,13 +1,13 @@
 #include <iostream>
 #include <time.h>
 
-//#include "test.h"
+#include "test.h"
 
 #include <float.h>
 #include "global.h"
 
 #include "Mueller.hpp"
-#include "Hexagon.h"
+#include "Hexagonal.h"
 #include "Tracing.h"
 #include "Beam.h"
 #include "PhysMtr.hpp"
@@ -58,7 +58,7 @@ void Calculate()
 	Particle *particle = nullptr;
 	switch (particleType) {
 	case 0:
-		particle = new Hexagon(radius, halfHeight, refractionIndex);
+		particle = new Hexagonal(radius, halfHeight, refractionIndex);
 		betaNorm = M_PI/(2.0*orNumber_beta);
 		break;
 	case 1:
@@ -134,9 +134,11 @@ void Calculate()
 
 int main()
 {
+//	testConcaveHexagonBuilding();
 //	testHexagonBuilding();
 //	testHexagonRotate();
-	Calculate();
+//	Calculate();
+	getchar();
 	return 0;
 }
 

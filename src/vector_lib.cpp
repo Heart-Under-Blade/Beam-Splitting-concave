@@ -26,3 +26,24 @@ void Normalize(Point3f &v)
 	v.Z /= lenght;
 }
 
+Point3f NormalToFacet(const Point3f *facet)
+{
+	Point3f normal;
+
+	Point3f p1 = facet[1] - facet[0];
+	Point3f p2 = facet[2] - facet[0];
+	CrossProduct(p2, p1, normal);
+
+	Normalize(normal);
+	return normal;
+}
+
+void CopyPoints(Point3f *points, Point3f *result, int size)
+{
+	for (int i = 0; i <= size; ++i)
+	{
+		result[i].X = points[i].X;
+		result[i].Y = points[i].Y;
+		result[i].Z = points[i].Z;
+	}
+}

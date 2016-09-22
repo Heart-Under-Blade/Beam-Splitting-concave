@@ -23,10 +23,13 @@ public:
 
 public:
 	Point3f direction;				///< direction of the beam in 3D space
-	Point3f e;						///< basis of polarization plane
-	JonesMatrix JMatrix;				///< Jones matrix of the beam
-	double D;						///< current position of phase front from Ax+By+Cz+D=0
+	JonesMatrix JMatrix;			///< Jones matrix of the beam
+
+	/// TODO: для опт. сделать др. вариант класса или трассировки
+	/// и убрать эти параметры
 	double opticalPath;				///< optical path of the beam
+	Point3f e;						///< basis of polarization plane
+	double D;						///< current position of phase front from Ax+By+Cz+D=0
 
 	Point3f shape[MAX_VERTEX_NUM];	///< beam's vertices
 	int shapeSize;					///< current vertex number of shape

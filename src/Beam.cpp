@@ -215,7 +215,7 @@ double Beam::CrossSection() const
 
 	double s = Square();
 	double n = sqrt(Norm(normal));
-	return (e*s) / n;
+	return (e*s) / n; // TODO: опт.
 }
 
 void Beam::AddVertex(const Point3f &vertex)

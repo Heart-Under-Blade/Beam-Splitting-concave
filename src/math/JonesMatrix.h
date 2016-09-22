@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/compl.hpp"
+#include "compl.hpp"
 
 class JonesMatrix
 {

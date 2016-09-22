@@ -15,45 +15,6 @@ struct BeamInfo
 	int dept;
 };
 
-struct BeamStack
-{
-public:
-	BeamStack()
-	{
-		m_currentDept = 0;
-	}
-
-	void Push(const Beam &beam, int lastFacetIndex, int beamDept)
-	{
-		m_beams[m_currentDept] = beam;
-		m_lastFacetIndices[m_currentDept] = lastFacetIndex;
-		m_beamDepts[m_currentDept] = beamDept;
-
-		++m_currentDept;
-	}
-
-	void Pop(Beam &beam, int &lastFacetIndex, int &beamDept)
-	{
-		--m_currentDept;
-
-		beam = m_beams[m_currentDept];
-		lastFacetIndex = m_lastFacetIndices[m_currentDept];
-		beamDept = m_beamDepts[m_currentDept];
-	}
-
-	bool IsEmpty()
-	{
-		return m_currentDept == 0;
-	}
-
-private:
-	int m_currentDept;
-
-	Beam m_beams[MAX_BEAM_DEPT];
-	int m_lastFacetIndices[MAX_BEAM_DEPT];
-	int m_beamDepts[MAX_BEAM_DEPT];
-};
-
 struct OutBeam
 {
 	Beam beam;
@@ -97,12 +58,12 @@ private:
 		Normal, Slopping
 	};
 
-	Particle *particle;			///> scattering particle (crystal)
-	Point3f polarizationBasis;	///>
+	Particle *particle;			///< scattering particle (crystal)
+	Point3f polarizationBasis;	///<
 	bool isOpticalPath;
 	int interReflectionNumber;
 
-	int track[MAX_BEAM_DEPT]; ///> path of the current beam (numbers of facets refracted the beam)
+	int track[MAX_BEAM_DEPT]; ///< path of the current beam (numbers of facets refracted the beam)
 	int trackSize = 0;
 
 	const double FAR_ZONE_DISTANCE = 10000.0;
