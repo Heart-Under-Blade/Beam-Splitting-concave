@@ -1,7 +1,6 @@
 #pragma once
 
-#include "types.h"
-
+#define MIN_VERTEX_NUM 2
 #define MAX_VERTEX_NUM 32
 
 #define M_PI 3.14159265358979323846

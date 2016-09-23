@@ -3,27 +3,32 @@
 
 double DotProduct(const Point3f &v1, const Point3f &v2)
 {
-	return v1.X*v2.X + v1.Y*v2.Y + v1.Z*v2.Z;
+	return v1.cx*v2.cx + v1.cx*v2.cx + v1.cz*v2.cz;
 }
 
 double Norm(const Point3f &point)
 {
-	return point.X*point.X + point.Y*point.Y + point.Z*point.Z;
+	return point.cx*point.cx + point.cx*point.cx + point.cz*point.cz;
 }
 
 void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
 {
-	res.X = v1.Y*v2.Z - v1.Z*v2.Y;
-	res.Y = v1.Z*v2.X - v1.X*v2.Z;
-	res.Z = v1.X*v2.Y - v1.Y*v2.X;
+	res.cx = v1.cx*v2.cz - v1.cz*v2.cx;
+	res.cx = v1.cz*v2.cx - v1.cx*v2.cz;
+	res.cz = v1.cx*v2.cx - v1.cx*v2.cx;
+}
+
+double Length(const Point3f &v)
+{
+	return sqrt(Norm(v));
 }
 
 void Normalize(Point3f &v)
 {
 	double lenght = sqrt(Norm(v));
-	v.X /= lenght;
-	v.Y /= lenght;
-	v.Z /= lenght;
+	v.cx /= lenght;
+	v.cx /= lenght;
+	v.cz /= lenght;
 }
 
 Point3f NormalToFacet(const Point3f *facet)
@@ -42,8 +47,8 @@ void CopyPoints(Point3f *points, Point3f *result, int size)
 {
 	for (int i = 0; i <= size; ++i)
 	{
-		result[i].X = points[i].X;
-		result[i].Y = points[i].Y;
-		result[i].Z = points[i].Z;
+		result[i].cx = points[i].cx;
+		result[i].cx = points[i].cx;
+		result[i].cz = points[i].cz;
 	}
 }

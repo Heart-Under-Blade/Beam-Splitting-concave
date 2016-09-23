@@ -1,9 +1,9 @@
 #pragma once
 
 /// fast access for Point3f
-#define X point[0]
-#define Y point[1]
-#define Z point[2]
+#define cx point[0]
+#define cy point[1]
+#define cz point[2]
 #define D_PARAM point[3]
 
 /**
@@ -13,6 +13,12 @@
 struct Point3f
 {
 	float point[4]; /// coordinates
+
+	/// TODO: раскоментить и проверить не упала ли скорость трассировки
+//	float &X = point[0];
+//	float &Y = point[1];
+//	float &Z = point[2];
+//	float &D_PARAM = point[2];
 
 	Point3f() {}
 
@@ -37,6 +43,13 @@ struct Point3f
 		point[2] = other.point[2];
 
 		return *this;
+	}
+
+	Point3f operator * (double value) const
+	{
+		return Point3f(point[0] * value,
+				point[1] * value,
+				point[2] * value);
 	}
 
 	Point3f operator / (double value) const

@@ -84,8 +84,8 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end, Point3f *baseFacet,
 
 void ConcaveHexagonal::SetOriginCavityPoints()
 {
-	m_originCavities.top = Point3f(0, 0, m_halfHeight - m_cavityDept);
-	m_originCavities.bottom = Point3f(0, 0, -m_halfHeight + m_cavityDept);
+	m_originCavities.top = Point3f(0, 0, halfHeight - m_cavityDept);
+	m_originCavities.bottom = Point3f(0, 0, -halfHeight + m_cavityDept);
 }
 
 void ConcaveHexagonal::SetOriginNormals()

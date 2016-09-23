@@ -4,7 +4,7 @@ Particle::Particle(double p_radius, double p_halfHeight,
 				   const complex &p_refractionIndex)
 {
 	m_radius = p_radius;
-	m_halfHeight = p_halfHeight;
+	halfHeight = p_halfHeight;
 	refractionIndex = p_refractionIndex;
 
 	double re = real(refractionIndex);
@@ -74,16 +74,16 @@ void Particle::SetExternalNormals()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		externalNormals[i].X = -normals[i].X;
-		externalNormals[i].Y = -normals[i].Y;
-		externalNormals[i].Z = -normals[i].Z;
+		externalNormals[i].cx = -normals[i].cx;
+		externalNormals[i].cx = -normals[i].cx;
+		externalNormals[i].cz = -normals[i].cz;
 		externalNormals[i].D_PARAM = -normals[i].D_PARAM;
 	}
 }
 
 void Particle::RotatePoint(const Point3f &point, Point3f &result)
 {
-	result.X = point.X*m_rotMatrix[0][0] + point.Y*m_rotMatrix[0][1] + point.Z*m_rotMatrix[0][2];
-	result.Y = point.X*m_rotMatrix[1][0] + point.Y*m_rotMatrix[1][1] + point.Z*m_rotMatrix[1][2];
-	result.Z = point.X*m_rotMatrix[2][0] + point.Y*m_rotMatrix[2][1] + point.Z*m_rotMatrix[2][2];
+	result.cx = point.cx*m_rotMatrix[0][0] + point.cx*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];
+	result.cx = point.cx*m_rotMatrix[1][0] + point.cx*m_rotMatrix[1][1] + point.cz*m_rotMatrix[1][2];
+	result.cz = point.cx*m_rotMatrix[2][0] + point.cx*m_rotMatrix[2][1] + point.cz*m_rotMatrix[2][2];
 }

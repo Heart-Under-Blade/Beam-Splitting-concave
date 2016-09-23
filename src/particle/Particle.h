@@ -1,7 +1,9 @@
 #pragma once
 
 #include <math.h>
+
 #include "global.h"
+#include "types.h"
 #include "compl.hpp"
 #include "vector_lib.h"
 
@@ -34,12 +36,13 @@ public:
 	double refrI_sqr_re;		///< real part of the sqr of refraction index
 	double refrI_sqr_im;		///< imaginary part of the sqr of refraction index
 
+	double halfHeight;
+
 protected:
 	Point3f m_originNormals[MAX_FACET_NUM];
 	double m_rotMatrix[3][3];				///< matrix for rotation of vertices
 
 	double m_radius;
-	double m_halfHeight;
 
 protected:
 	virtual void SetOriginNormals() {}

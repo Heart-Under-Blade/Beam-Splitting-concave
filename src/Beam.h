@@ -1,6 +1,7 @@
 #pragma once
 
 #include "global.h"
+#include "types.h"
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
 

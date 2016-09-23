@@ -77,9 +77,9 @@ void Hexagonal::SetOriginBaseFacets()
 
 		for (int i = startPointIndex; i <= endPointIndex; i += halfPointNumber)
 		{
-			facet[i].X = x;
-			facet[i].Y = y;
-			facet[i].Z = z;
+			facet[i].cx = x;
+			facet[i].cx = y;
+			facet[i].cz = z;
 
 			x *= -1; // TODO: опт. x = -x
 			y *= -1;
@@ -88,15 +88,15 @@ void Hexagonal::SetOriginBaseFacets()
 
 	// top base facet
 	facet = m_originBases.top;
-	SetTwoDiagonalPoints(0, halfRadius, incircleRadius, m_halfHeight);
-	SetTwoDiagonalPoints(1, -halfRadius, incircleRadius, m_halfHeight);
-	SetTwoDiagonalPoints(2, -m_radius, 0, m_halfHeight);
+	SetTwoDiagonalPoints(0, halfRadius, incircleRadius, halfHeight);
+	SetTwoDiagonalPoints(1, -halfRadius, incircleRadius, halfHeight);
+	SetTwoDiagonalPoints(2, -m_radius, 0, halfHeight);
 
 	// bottom base facet
 	facet = m_originBases.bottom;
-	SetTwoDiagonalPoints(0, m_radius, 0, -m_halfHeight);
-	SetTwoDiagonalPoints(1, halfRadius, -incircleRadius, -m_halfHeight);
-	SetTwoDiagonalPoints(2, -halfRadius, -incircleRadius, -m_halfHeight);
+	SetTwoDiagonalPoints(0, m_radius, 0, -halfHeight);
+	SetTwoDiagonalPoints(1, halfRadius, -incircleRadius, -halfHeight);
+	SetTwoDiagonalPoints(2, -halfRadius, -incircleRadius, -halfHeight);
 }
 
 void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,

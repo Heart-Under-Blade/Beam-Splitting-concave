@@ -81,7 +81,8 @@ void Calculate()
 	mxd = Arr2D(1, ThetaNumber + 1, 4, 4);
 	mxd.ClearArr();
 
-	Tracing tracer(particle, isOpticalPath, polarizationBasis, interReflNum);
+	Tracing tracer(particle, incidentDir, isOpticalPath,
+				   polarizationBasis, interReflNum);
 
 	clock_t timer = clock();
 
@@ -152,7 +153,7 @@ void TraceSingle(Tracing tracer, double beta, double gamma)
 	double square;
 
 	tracer.RotateParticle(beta, gamma);
-	tracer.SplitBeamByParticle(incidentDir, outcomingBeams, square);
+	tracer.SplitBeamByParticle(outcomingBeams, square);
 
 	incomingEnergy += betaDistrProbability * square;
 	HandleBeams(outcomingBeams, betaDistrProbability);
@@ -178,7 +179,7 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer)
 			gamma = (j + 0.5)*gammaNorm;
 
 			tracer.RotateParticle(beta, gamma);
-			tracer.SplitBeamByParticle(incidentDir, outcomingBeams, square);
+			tracer.SplitBeamByParticle(outcomingBeams, square);
 
 			/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
 //			std::vector<std::vector<int>> tracks;
@@ -211,7 +212,7 @@ void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing tracer)
 			beta = acos(((double)(rand()) / ((double)RAND_MAX))*2.0 - 1.0);
 
 			tracer.RotateParticle(beta, gamma);
-			tracer.SplitBeamByParticle(incidentDir, outcomingBeams, square);
+			tracer.SplitBeamByParticle(outcomingBeams, square);
 
 			incomingEnergy += square;
 		}
@@ -296,9 +297,9 @@ void HandleBeams(std::vector<OutBeam> &outBeams, double betaDistrProb)
 //		double Area = 1;
 		matrix bf = Mueller(beam.JMatrix);
 
-		const float &x = beam.direction.X;
-		const float &y = beam.direction.Y;
-		const float &z = beam.direction.Z;
+		const float &x = beam.direction.cx;
+		const float &y = beam.direction.cx;
+		const float &z = beam.direction.cz;
 
 		// Collect the beam in array
 		if (z >= 1-DBL_EPSILON)

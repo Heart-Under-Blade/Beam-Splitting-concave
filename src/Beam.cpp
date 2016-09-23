@@ -60,9 +60,9 @@ void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 
 void Beam::GetSpherical(double &fi, double &teta) const
 {
-	const float &x = direction.X;
-	const float &y = direction.Y;
-	const float &z = direction.Z;
+	const float &x = direction.cx;
+	const float &y = direction.cx;
+	const float &z = direction.cz;
 
 	if (fabs(z + 1.0) < DBL_EPSILON) // forward
 	{

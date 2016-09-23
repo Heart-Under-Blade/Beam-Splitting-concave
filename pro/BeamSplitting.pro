@@ -12,16 +12,14 @@ QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 INCLUDEPATH += \
 	../src \
 	../src/math \
-	../src/particle
+	../src/particle \
+	../src/common \
+	../src/tracing
 
 HEADERS += \
-    ../src/Beam.h \
-    ../src/global.h \
+	../src/Beam.h \
 	../src/Intersection.h \
-    ../src/test.h \
-    ../src/Tracing.h \
-    ../src/types.h \
-    ../src/vector_lib.h \
+	../src/test.h \
     ../src/intrinsic/intrinsics.h \
     ../src/math/compl.hpp \
     ../src/math/matrix.hpp \
@@ -31,14 +29,19 @@ HEADERS += \
 	../src/particle/ConcaveHexagonal.h \
     ../src/math/JonesMatrix.h \
     ../src/math/Mueller.hpp \
-    ../src/math/PhysMtr.hpp
+    ../src/math/PhysMtr.hpp \
+    ../src/tracing/Tracing.h \
+    ../src/common/global.h \
+    ../src/common/types.h \
+    ../src/common/vector_lib.h \
+    ../src/tracing/TracingConvex.h \
+    ../src/tracing/TracingConcave.h \
+    ../src/clipper.hpp
 
 SOURCES += \
     ../src/Beam.cpp \
 	../src/Intersection.cpp \
 	../src/main.cpp \
-    ../src/Tracing.cpp \
-    ../src/vector_lib.cpp \
     ../src/intrinsic/intrinsics.cpp \
     ../src/math/compl.cpp \
 	../src/math/matrix.cpp \
@@ -47,5 +50,10 @@ SOURCES += \
     ../src/particle/Particle.cpp \
     ../src/math/JonesMatrix.cpp \
     ../src/math/Mueller.cpp \
-    ../src/math/PhysMtr.cpp
+	../src/math/PhysMtr.cpp \
+    ../src/common/vector_lib.cpp \
+	../src/tracing/Tracing.cpp \
+    ../src/tracing/TracingConvex.cpp \
+    ../src/tracing/TracingConcave.cpp \
+    ../src/clipper.cpp
 
