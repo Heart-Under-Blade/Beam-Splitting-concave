@@ -12,7 +12,7 @@ Beam::Beam()
 	shapeSize = 0;
 }
 
-void Beam::copy(const Beam &other)
+void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
 	shapeSize = other.shapeSize;
@@ -29,7 +29,7 @@ void Beam::copy(const Beam &other)
 Beam::Beam(const Beam &other)
 	: JMatrix(other.JMatrix)
 {
-	copy(other);
+	Copy(other);
 }
 
 void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
@@ -100,7 +100,7 @@ void Beam::GetSpherical(double &fi, double &teta) const
 
 Beam & Beam::operator = (const Beam &other)
 {
-	copy(other);
+	Copy(other);
 	JMatrix = other.JMatrix;
 	return *this;
 }

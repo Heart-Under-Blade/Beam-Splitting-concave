@@ -27,7 +27,7 @@ Point3f polarizationBasis(0, 1, 0);
 long long ddddd = 0;
 int count = 0;
 
-void HandleBeams(std::vector<OutBeam> &outBeams, double betaDistrProb);
+void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
 
 void WriteResultsToFile(int ThetaNumber, double NRM);
@@ -149,7 +149,7 @@ void TraceSingle(Tracing tracer, double beta, double gamma)
 	gamma = (M_PI*gamma)/180.0;
 	double betaDistrProbability = sin(beta);
 
-	std::vector<OutBeam> outcomingBeams;
+	std::vector<Beam> outcomingBeams;
 	double square;
 
 	tracer.RotateParticle(beta, gamma);
@@ -166,7 +166,7 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer)
 	double beta, gamma;
 	double betaDistrProbability;
 
-	std::vector<OutBeam> outcomingBeams;
+	std::vector<Beam> outcomingBeams;
 	double square = 0;
 
 	for (int i = 0; i < orNumber_beta; ++i)
@@ -200,7 +200,7 @@ void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing tracer)
 {
 	srand(time(NULL));
 
-	std::vector<OutBeam> outcomingBeams;
+	std::vector<Beam> outcomingBeams;
 	double beta, gamma;
 	double square;
 
@@ -283,13 +283,13 @@ void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
 	}
 }
 
-void HandleBeams(std::vector<OutBeam> &outBeams, double betaDistrProb)
+void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb)
 {
 	ddddd += outBeams.size();
 
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
-		Beam &beam = outBeams.at(i).beam;
+		Beam &beam = outBeams.at(i);
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
 		double cross = beam.CrossSection();

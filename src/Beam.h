@@ -38,5 +38,5 @@ public:
 private:
 	void RotateJMatrix(const Point3f &newBasis);
 	void GetSpherical(double &fi, double &teta) const;
-	void copy(const Beam &other);
+	void Copy(const Beam &other);
 };

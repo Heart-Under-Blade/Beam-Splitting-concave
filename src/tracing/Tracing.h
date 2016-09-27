@@ -14,27 +14,8 @@
 struct BeamInfo
 {
 	Beam beam;
-	int lastFacetIndex;
+	int facetIndex;
 	int dept;
-};
-
-struct OutBeam
-{
-	Beam beam;
-
-	int track[MAX_BEAM_DEPT];
-	int trackSize;
-
-	OutBeam(const Beam &p_beam, const int *p_track, int p_trackSize)
-	{
-		beam = p_beam;
-		trackSize = p_trackSize;
-
-		for (int i = 0; i < trackSize; ++i)
-		{
-			track[i] = p_track[i];
-		}
-	}
 };
 
 class Tracing
@@ -45,11 +26,11 @@ public:
 
 	void RotateParticle(double beta, double gamma);
 
-	virtual void SplitBeamByParticle(std::vector<OutBeam> &outBeams,
-									 double &lightSurfaceSquare) {}
+	virtual void SplitBeamByParticle(std::vector<Beam> &/*outBeams*/,
+									 double &/*lightSurfaceSquare*/) {}
 
 	virtual void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
-									  std::vector<OutBeam> &outBeams);
+									 std::vector<Beam> &outBeams);
 private:
 	/**
 	 * @brief The IncidenceCase enum
@@ -65,19 +46,18 @@ protected:
 	Point3f m_polarizationBasis;	///<
 	bool m_isOpticalPath;
 	int m_interReflectionNumber;
-	Point3f m_startBeamDirection;
-
-	int m_track[MAX_BEAM_DEPT];		///< path of the current beam (numbers of facets refracted the beam)
-	int m_trackSize = 0;
+	Beam m_startBeam;
 
 	const double FAR_ZONE_DISTANCE = 10000.0;
 	const double LOW_ENERGY_LEVEL = 2e-12;
 
 protected:
+
+	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
+										  std::vector<Beam> &/*outBeams*/) {}
+
 	void SetBeamsParamsExternal(int facetIndex, double cosIncident, Beam &inBeam, Beam &outBeam);
 
-	void TraceInternalReflections(BeamInfo *tree, int treeDept,
-								  std::vector<OutBeam> &outBeams);
 
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;
@@ -99,14 +79,13 @@ protected:
 	void SplitBeam(const Beam &incidentBeam, Beam &inBeam, Beam &outBeam, double Nr,
 				   IncidenceCase incidenceCase);
 
-	void InvertBeamPointOrder(Beam &outBeam, const Beam &inBeam);
+	void InvertBeamShapeOrder(Beam &outBeam, const Beam &inBeam);
 
-	inline bool isEnough(const BeamInfo &info);
-	inline void changeTrack(int &lastBeamDept, const BeamInfo &info);
+	bool isEnough(const BeamInfo &info);
 
 	void SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 								  Beam &inBeam, Beam &outBeam);
 
 	void SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
-								  Beam &inBeam, std::vector<OutBeam> &outBeams);
+								  Beam &inBeam, std::vector<Beam> &outBeams);
 };
