@@ -160,31 +160,6 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 	e = newBasis;
 }
 
-double Beam::Square() const
-{
-	/// NOTE: не работает на невыпуклых гранях
-	double square = 0;
-
-	const Point3f &basePoint = shape[0];
-	Point3f p1 = shape[1] - basePoint;
-
-	for (int i = 2; i < shapeSize; ++i)
-	{
-		Point3f p2 = shape[i] - basePoint;
-		Point3f res;
-		CrossProduct(p2, p1, res);
-		square += sqrt(Norm(res));
-		p1 = p2;
-	}
-
-	if (square < 0)
-	{	/// TODO: для опт. узнать в какую сторону ориентированы точки в пучке
-		square *= (-1);
-	}
-
-	return square/2.0;
-}
-
 Point3f Beam::Center() const
 {
 	Point3f p(0, 0, 0);
@@ -195,27 +170,6 @@ Point3f Beam::Center() const
 	}
 
 	return p/shapeSize;
-}
-
-double Beam::CrossSection() const
-{
-	const double Eps = 1e7*DBL_EPSILON;
-
-	Point3f normal;
-	Point3f p1 = shape[1] - shape[0];
-	Point3f p2 = shape[2] - shape[0];
-	CrossProduct(p2, p1, normal);
-
-	double e = fabs(DotProduct(normal, direction));
-
-	if (e < Eps)
-	{
-		return 0;
-	}
-
-	double s = Square();
-	double n = sqrt(Norm(normal));
-	return (e*s) / n; // TODO: опт.
 }
 
 void Beam::AddVertex(const Point3f &vertex)

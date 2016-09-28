@@ -26,6 +26,8 @@ public:
 
 	void RotateParticle(double beta, double gamma);
 
+	virtual double BeamCrossSection(const Beam &beam) const;
+
 	virtual void SplitBeamByParticle(std::vector<Beam> &/*outBeams*/,
 									 double &/*lightSurfaceSquare*/) {}
 
@@ -53,8 +55,8 @@ protected:
 
 protected:
 
-	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
-										  std::vector<Beam> &/*outBeams*/) {}
+//	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
+//										  std::vector<Beam> &/*outBeams*/) {}
 
 	void SetBeamsParamsExternal(int facetIndex, double cosIncident, Beam &inBeam, Beam &outBeam);
 

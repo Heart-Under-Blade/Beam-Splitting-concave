@@ -53,5 +53,5 @@ void computeIntersection(const Point3f &s, const Point3f &e,
 
 	x.point[0] = p[0];
 	x.point[1] = p[1];
-	x.point[2] = p[3];
+	x.point[2] = p[2];
 }

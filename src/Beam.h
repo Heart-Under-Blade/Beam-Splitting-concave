@@ -14,9 +14,7 @@ public:
 	void RotateSpherical(const Point3f &dir, const Point3f &polarBasis);
 	void RotatePlane(const Point3f& newBasis); ///< rotate Jones matrix in case of beam splitting
 
-	double Square() const;
 	Point3f Center() const;
-	double CrossSection() const;
 	void AddVertex(const Point3f &vertex);
 	void MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2);
 

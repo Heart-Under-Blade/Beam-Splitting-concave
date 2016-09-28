@@ -77,3 +77,46 @@ void TracingConvex::TraceInternalReflections(BeamInfo *tree, int treesize,
 		}
 	}
 }
+
+
+double TracingConvex::BeamCrossSection(const Beam &beam) const
+{
+	const double Eps = 1e7*DBL_EPSILON;
+
+	Point3f normal;
+	Point3f p1 = beam.shape[1] - beam.shape[0];
+	Point3f p2 = beam.shape[2] - beam.shape[0];
+	CrossProduct(p2, p1, normal);
+
+	double e = fabs(DotProduct(normal, beam.direction));
+
+	if (e < Eps)
+	{
+		return 0;
+	}
+
+	double square = 0;
+	{
+		const Point3f &basePoint = beam.shape[0];
+		Point3f p1 = beam.shape[1] - basePoint;
+
+		for (int i = 2; i < beam.shapeSize; ++i)
+		{
+			Point3f p2 = beam.shape[i] - basePoint;
+			Point3f res;
+			CrossProduct(p2, p1, res);
+			square += sqrt(Norm(res));
+			p1 = p2;
+		}
+
+		if (square < 0)
+		{	/// TODO: для опт. узнать в какую сторону ориентированы точки в пучке
+			square *= (-1);
+		}
+
+		square /= 2.0;
+	}
+
+	double n = sqrt(Norm(normal));
+	return (e*square) / n; // TODO: опт.
+}

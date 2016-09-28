@@ -12,9 +12,11 @@ public:
 	void SplitBeamByParticle(std::vector<Beam> &outBeams,
 							 double &lightSurfaceSquare) override;
 
+	double BeamCrossSection(const Beam &beam) const override;
+
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &outBeams) override; ///> for predefined trajectories
 protected:
 	void TraceInternalReflections(BeamInfo *tree, int treesize,
-								  std::vector<Beam> &outBeams) override;
+								  std::vector<Beam> &outBeams);
 };
