@@ -7,8 +7,13 @@
 #include "global.h"
 
 #include "Mueller.hpp"
+
 #include "Hexagonal.h"
-#include "Tracing.h"
+#include "ConcaveHexagonal.h"
+
+#include "TracingConcave.h"
+#include "TracingConvex.h"
+
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
@@ -20,49 +25,58 @@ double SizeBin;
 double gammaNorm, betaNorm;
 double incomingEnergy;
 clock_t totalTime;
-Point3f incidentDir(0, 0, 1);
+Point3f incidentDir(0, 0, 1); /// REF: исправить на нормальное направление
 Point3f polarizationBasis(0, 1, 0);
 
 // debug
 long long ddddd = 0;
 int count = 0;
 
-void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb);
+void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
 
 void WriteResultsToFile(int ThetaNumber, double NRM);
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM);
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM);
 
-void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing tracer);
-void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer);
-void TraceSingle(Tracing tracer, double beta, double gamma);
+void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing &tracer);
+void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer);
+void TraceSingle(Tracing &tracer, double beta, double gamma);
 
 void Calculate()
 {
 	/// params
-	int particleType = 0;
+	int particleType = 10;
 	double radius = 40;
 	double halfHeight = 100;
 	complex refractionIndex = complex(1.31, 0.0);
-	int orNumber_gamma = 301;
-	int orNumber_beta = 300;
+	int orNumber_gamma = 101;
+	int orNumber_beta = 100;
 	int ThetaNumber = 180;
-	int interReflNum = 3;
+	int interReflNum = 1;
 	bool isRandom = false;
 
 	bool isOpticalPath = true;
-	bool isSorting = false;
 	int EDF = 0;
 
+	Tracing *tracer= nullptr;
 	Particle *particle = nullptr;
+
 	switch (particleType) {
 	case 0:
 		particle = new Hexagonal(radius, halfHeight, refractionIndex);
+		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
+								   polarizationBasis, interReflNum);
 		betaNorm = M_PI/(2.0*orNumber_beta);
 		break;
 	case 1:
 		/// TODO реализовать остальные частицы
+		break;
+	case 10:
+		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, 0);
+		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
+									polarizationBasis, interReflNum);
+		betaNorm = M_PI/(2.0*orNumber_beta); /// TODO: какое д/б betaNorm?
 		break;
 	default:
 		break;
@@ -81,18 +95,15 @@ void Calculate()
 	mxd = Arr2D(1, ThetaNumber + 1, 4, 4);
 	mxd.ClearArr();
 
-	Tracing tracer(particle, incidentDir, isOpticalPath,
-				   polarizationBasis, interReflNum);
-
 	clock_t timer = clock();
 
 	if (isRandom)
 	{
-		TraceRandom(orNumber_gamma, orNumber_beta, tracer);
+		TraceRandom(orNumber_gamma, orNumber_beta, *tracer);
 	}
 	else
 	{
-		TraceFixed(orNumber_gamma, orNumber_beta, tracer);
+		TraceFixed(orNumber_gamma, orNumber_beta, *tracer);
 	}
 
 	timer = clock() - timer;
@@ -100,7 +111,7 @@ void Calculate()
 
 	std::cout << "\nTotal time of calculation = " << totalTime << " seconds";
 
-	//Integrating
+	// Integrating
 	double D_tot = back[0][0] + forw[0][0];
 
 	for (int j = 0; j <= ThetaNumber; ++j)
@@ -108,7 +119,7 @@ void Calculate()
 		D_tot += mxd(0, j, 0, 0);
 	}
 
-	//Normalizing coefficient
+	// Normalizing coefficient
 	double orNumber = orNumber_gamma*orNumber_beta;
 	double NRM;
 
@@ -138,12 +149,12 @@ int main()
 //	testConcaveHexagonBuilding();
 //	testHexagonBuilding();
 //	testHexagonRotate();
-//	Calculate();
+	Calculate();
 	getchar();
 	return 0;
 }
 
-void TraceSingle(Tracing tracer, double beta, double gamma)
+void TraceSingle(Tracing &tracer, double beta, double gamma)
 {
 	beta = (M_PI*beta)/180.0;
 	gamma = (M_PI*gamma)/180.0;
@@ -156,18 +167,25 @@ void TraceSingle(Tracing tracer, double beta, double gamma)
 	tracer.SplitBeamByParticle(outcomingBeams, square);
 
 	incomingEnergy += betaDistrProbability * square;
-	HandleBeams(outcomingBeams, betaDistrProbability);
+	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
 
 	outcomingBeams.clear();
 }
 
-void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer)
+void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 {
 	double beta, gamma;
 	double betaDistrProbability;
 
 	std::vector<Beam> outcomingBeams;
 	double square = 0;
+
+	// DEB
+	beta = 15*M_PI/180;
+	gamma = 30*M_PI/180;
+	tracer.RotateParticle(beta, gamma);
+	tracer.SplitBeamByParticle(outcomingBeams, square);
+	HandleBeams(outcomingBeams, sin(beta), tracer);
 
 	for (int i = 0; i < orNumber_beta; ++i)
 	{
@@ -177,7 +195,7 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer)
 		for (int j = 0; j < orNumber_gamma; ++j)
 		{
 			gamma = (j + 0.5)*gammaNorm;
-
+//std::cout << j  << std::endl;// DEB
 			tracer.RotateParticle(beta, gamma);
 			tracer.SplitBeamByParticle(outcomingBeams, square);
 
@@ -190,13 +208,13 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing tracer)
 			incomingEnergy += betaDistrProbability * square;
 		}
 
-		HandleBeams(outcomingBeams, betaDistrProbability);
+		HandleBeams(outcomingBeams, betaDistrProbability, tracer);
 		outcomingBeams.clear();
 		std::cout << (100*i)/orNumber_beta << "%" << std::endl;
 	}
 }
 
-void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing tracer)
+void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 {
 	srand(time(NULL));
 
@@ -217,7 +235,7 @@ void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing tracer)
 			incomingEnergy += square;
 		}
 
-		HandleBeams(outcomingBeams, 1);
+		HandleBeams(outcomingBeams, 1, tracer);
 		outcomingBeams.clear();
 		std::cout << (100*i)/orNumber_beta << "%" << std::endl;
 	}
@@ -283,23 +301,30 @@ void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
 	}
 }
 
-void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb)
+void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
 	ddddd += outBeams.size();
 
+//	double ee = 0;// DEB
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
+//std::cout << i  << std::endl;// DEB
 		Beam &beam = outBeams.at(i);
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
-		double cross = beam.CrossSection();
-		double Area = betaDistrProb*cross;
-//		double Area = 1;
-		matrix bf = Mueller(beam.JMatrix);
+//if (i == 5)
+//	std::cout << i  << std::endl; // DEB
+		double cross = tracer.BeamCrossSection(beam);
 
+//		double Area = betaDistrProb * cross;
+		double Area = 1;// DEB
+		matrix bf = Mueller(beam.JMatrix);
+//ee += Area;// DEB
 		const float &x = beam.direction.cx;
-		const float &y = beam.direction.cx;
+		const float &y = beam.direction.cy;
 		const float &z = beam.direction.cz;
+
+//		std::cout << z << std::endl; // DEB
 
 		// Collect the beam in array
 		if (z >= 1-DBL_EPSILON)
@@ -320,7 +345,7 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb)
 
 				if (tmp > DBL_EPSILON)
 				{
-					tmp = acos(x/sqrt(SQR(x)+tmp)); // TODO: для опт. SQR на x*x
+					tmp = acos(x/sqrt(SQR(x)+tmp)); // OPT: SQR на x*x
 
 					if (y < 0)
 					{
@@ -331,12 +356,15 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb)
 					RightRotateMueller(bf, cos(tmp), sin(tmp));
 				}
 
+				// DEB
 //				bf = matrix(4,4);
 //				bf.Identity();
+
 				mxd.insert(0, ZenAng, Area*bf);
 			}
 		}
 	}
+//	ee = 0;// DEB
 }
 
 void WriteResultsToFile(int ThetaNumber, double NRM)

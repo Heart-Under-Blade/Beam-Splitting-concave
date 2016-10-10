@@ -24,7 +24,7 @@ void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
 	sincos(beta, &sinB, &cosB);
 	sincos(gamma, &sinG, &cosG);
 #else
-	// TODO: опт. заменить на sincos'ы
+	// OPT: заменить на sincos'ы
 	cosA = cos(alpha);
 	cosB = cos(beta);
 	cosG = cos(gamma);
@@ -34,7 +34,7 @@ void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
 	sinG = sin(gamma);
 #endif
 
-	/// TODO: дооптимизировать
+	// OPT: дооптимизировать
 	double cosAcosB = cosA*cosB;
 
 	m_rotMatrix[0][0] = cosAcosB*cosG - sinA*sinG;
@@ -75,7 +75,7 @@ void Particle::SetExternalNormals()
 	for (int i = 0; i < facetNum; ++i)
 	{
 		externalNormals[i].cx = -normals[i].cx;
-		externalNormals[i].cx = -normals[i].cx;
+		externalNormals[i].cy = -normals[i].cy;
 		externalNormals[i].cz = -normals[i].cz;
 		externalNormals[i].D_PARAM = -normals[i].D_PARAM;
 	}
@@ -83,7 +83,7 @@ void Particle::SetExternalNormals()
 
 void Particle::RotatePoint(const Point3f &point, Point3f &result)
 {
-	result.cx = point.cx*m_rotMatrix[0][0] + point.cx*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];
-	result.cx = point.cx*m_rotMatrix[1][0] + point.cx*m_rotMatrix[1][1] + point.cz*m_rotMatrix[1][2];
-	result.cz = point.cx*m_rotMatrix[2][0] + point.cx*m_rotMatrix[2][1] + point.cz*m_rotMatrix[2][2];
+	result.cx = point.cx*m_rotMatrix[0][0] + point.cy*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];
+	result.cy = point.cx*m_rotMatrix[1][0] + point.cy*m_rotMatrix[1][1] + point.cz*m_rotMatrix[1][2];
+	result.cz = point.cx*m_rotMatrix[2][0] + point.cy*m_rotMatrix[2][1] + point.cz*m_rotMatrix[2][2];
 }

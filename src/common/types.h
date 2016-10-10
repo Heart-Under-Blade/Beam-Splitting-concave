@@ -14,7 +14,7 @@ struct Point3f
 {
 	float point[4]; /// coordinates
 
-	/// TODO: раскоментить и проверить не упала ли скорость трассировки
+	/// REF: раскоментить и проверить не упала ли скорость трассировки
 //	float &X = point[0];
 //	float &Y = point[1];
 //	float &Z = point[2];

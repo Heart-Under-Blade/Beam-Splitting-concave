@@ -21,7 +21,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 		const Point3f &extNormal = m_particle->externalNormals[facetIndex];
 		double cosIncident = DotProduct(m_startBeam.direction, extNormal);
 
-		if (cosIncident < EPS_COS89) /// beam is not incident to this facet
+		if (cosIncident < EPS_COS_89) /// beam is not incident to this facet
 		{
 			continue;
 		}
@@ -31,7 +31,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 
 		outBeams.push_back(outBeam);
 		tree[treeSize++] = BeamInfo{inBeam, facetIndex, 0};
-		lightSurfaceSquare += outBeam.Square()*cosIncident;
+//		lightSurfaceSquare += outBeam.Square()*cosIncident;
 	}
 
 	TraceInternalReflections(tree, treeSize, outBeams);
@@ -57,7 +57,7 @@ void TracingConvex::TraceInternalReflections(BeamInfo *tree, int treesize,
 
 		for (int facetIndex = 0; facetIndex < m_particle->facetNum; ++facetIndex)
 		{
-			if (facetIndex == info.facetIndex)
+			if (facetIndex == info.facetId)
 			{
 				continue;
 			}
@@ -86,7 +86,7 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 	Point3f normal;
 	Point3f p1 = beam.shape[1] - beam.shape[0];
 	Point3f p2 = beam.shape[2] - beam.shape[0];
-	CrossProduct(p2, p1, normal);
+	CrossProduct(p1, p2, normal);
 
 	double e = fabs(DotProduct(normal, beam.direction));
 
@@ -104,13 +104,13 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 		{
 			Point3f p2 = beam.shape[i] - basePoint;
 			Point3f res;
-			CrossProduct(p2, p1, res);
+			CrossProduct(p1, p2, res);
 			square += sqrt(Norm(res));
 			p1 = p2;
 		}
 
 		if (square < 0)
-		{	/// TODO: для опт. узнать в какую сторону ориентированы точки в пучке
+		{	/// OPT: узнать в какую сторону ориентированы точки в пучке
 			square *= (-1);
 		}
 
@@ -118,5 +118,5 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 	}
 
 	double n = sqrt(Norm(normal));
-	return (e*square) / n; // TODO: опт.
+	return (e*square) / n; // OPT:
 }

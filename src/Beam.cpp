@@ -61,7 +61,7 @@ void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 void Beam::GetSpherical(double &fi, double &teta) const
 {
 	const float &x = direction.cx;
-	const float &y = direction.cx;
+	const float &y = direction.cy;
 	const float &z = direction.cz;
 
 	if (fabs(z + 1.0) < DBL_EPSILON) // forward
@@ -112,7 +112,7 @@ void Beam::RotatePlane(const Point3f &newBasis)
 
 void Beam::RotateJMatrix(const Point3f &newBasis)
 {
-	/// TODO: потом заменить обратно на DBL_EPSILON
+	// REF: потом заменить обратно на DBL_EPSILON
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
 	double cs = DotProduct(newBasis, e);
 

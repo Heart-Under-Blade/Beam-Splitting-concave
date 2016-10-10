@@ -4,17 +4,18 @@
 #include "Particle.h"
 #include "Intersection.h"
 
+#include <float.h>
 #include <vector>
 
 #define MAX_BEAM_DEPT 128
 
-#define EPS_COS89	1.7453292519943295769148298069306e-10	//cos(89.99999999)
-#define EPS_COS0	0.99999999998254670756866631966593		//1- cos(89.99999999)
+#define EPS_COS_89	1.7453292519943295769148298069306e-10	//cos(89.99999999)
+#define EPS_COS_00	0.99999999998254670756866631966593		//1- cos(89.99999999)
 
 struct BeamInfo
 {
 	Beam beam;
-	int facetIndex;
+	int facetId;
 	int dept;
 };
 
@@ -26,7 +27,7 @@ public:
 
 	void RotateParticle(double beta, double gamma);
 
-	virtual double BeamCrossSection(const Beam &beam) const;
+	virtual double BeamCrossSection(const Beam &/*beam*/) const {}
 
 	virtual void SplitBeamByParticle(std::vector<Beam> &/*outBeams*/,
 									 double &/*lightSurfaceSquare*/) {}
@@ -66,8 +67,8 @@ protected:
 
 	bool Intersect(int facetIndex, const Beam& originBeam, Beam &intersectBeam) const;
 
-	void SplitIncidentDirection(const Point3f &incidentDir, double cosIncident, const Point3f &normal,
-								Point3f &reflectionDir, Point3f &refractionDir) const;
+	void SplitBeamDirection(const Point3f &incidentDir, double cosIncident, const Point3f &normal,
+								Point3f &refleDir, Point3f &refraDir) const;
 
 	void SetBeamShapesByFacet(int facetIndex, Beam &inBeam, Beam &outBeam) const;
 

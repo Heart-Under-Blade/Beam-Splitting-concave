@@ -78,10 +78,10 @@ void Hexagonal::SetOriginBaseFacets()
 		for (int i = startPointIndex; i <= endPointIndex; i += halfPointNumber)
 		{
 			facet[i].cx = x;
-			facet[i].cx = y;
+			facet[i].cy = y;
 			facet[i].cz = z;
 
-			x *= -1; // TODO: опт. x = -x
+			x *= -1; // OPT: x = -x
 			y *= -1;
 		}
 	};
@@ -123,7 +123,7 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 	}
 }
 
-/// TODO: добавить потом
+/// OPT: добавить потом
 //void Hexagon::Rotate(double beta, double gamma)
 //{
 //#ifdef __FASTMATH_H
@@ -140,7 +140,7 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 //	double sinG = sin(gamma);
 //#endif
 
-//	/// TODO: дооптимизировать
+//	/// OPT: дооптимизировать
 //	double m11 = cosB*cosG;
 //	double m21 = sinG;
 //	double m31 = -sinB*cosG;

@@ -24,7 +24,7 @@ public:
 	Point3f direction;				///< direction of the beam in 3D space
 	JonesMatrix JMatrix;			///< Jones matrix of the beam
 
-	/// TODO: для опт. сделать др. вариант класса или трассировки
+	/// OPT: сделать др. вариант класса или трассировки
 	/// и убрать эти параметры
 	double opticalPath;				///< optical path of the beam
 	Point3f e;						///< basis of polarization plane

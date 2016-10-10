@@ -13,7 +13,11 @@ public:
 					 double cavityDept);
 
 	void Rotate(double beta, double gamma, double alpha) override;
-
+/**
+ * OPT: сделать список граней, пучок, вышедший из которых,
+ * не встретит затеняющих граней.
+ * + добавить такую проверку в трассировку, чтобы избежать лишних операций
+  */
 private:
 	double m_cavityDept;
 

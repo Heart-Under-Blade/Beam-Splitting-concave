@@ -7,13 +7,13 @@
 #include "vector_lib.h"
 //#include <iostream>
 
-#define NORM_CEIL 1 + FLT_EPSILON
+#define NORM_CEIL	FLT_EPSILON + 1
 
 Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOpticalPath,
 				 const Point3f &polarizationBasis, int interReflectionNumber)
 {
 	assert(startBeamDir.cx <= NORM_CEIL
-		   && startBeamDir.cx <= NORM_CEIL
+		   && startBeamDir.cy <= NORM_CEIL
 		   && startBeamDir.cz <= NORM_CEIL
 		   && "Direction of the start beam is not normalized.");
 
@@ -26,52 +26,40 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 
 void Tracing::RotateParticle(double beta, double gamma)
 {
-	m_particle->Rotate(beta, gamma, 0); /// TODO: для опт. заменить на ф-цию с двумя арг
+	m_particle->Rotate(beta, gamma, 0); // OPT: заменить на ф-цию с двумя арг
 }
 
 void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
 									 Beam &inBeam, Beam &outBeam)
 {
 	const complex &refrIndex = m_particle->refractionIndex;
-	const Point3f &normal = m_particle->normals[facetIndex];
+	const Point3f &facetNormal = m_particle->normals[facetIndex];
+	const Point3f &startDir = m_startBeam.direction;
 
-	if (cosIncident >= EPS_COS0) /// case of the normal incidence
-	{
-		inBeam.JMatrix.m11 = 2.0/(refrIndex + 1.0);
-		inBeam.JMatrix.m22 = inBeam.JMatrix.m11;
-		inBeam.e = m_polarizationBasis;
-		inBeam.direction = -m_startBeam.direction;
-
-		outBeam.JMatrix.m11 = (refrIndex - 1.0)/(refrIndex + 1.0);
-		outBeam.JMatrix.m22 = -outBeam.JMatrix.m11;
-		outBeam.e = m_polarizationBasis;
-		outBeam.direction = m_startBeam.direction;
-	}
-	else
+	if (cosIncident < EPS_COS_00)
 	{
 		/// rotate polarization plane
 		{
 			Point3f newBasis;
-			CrossProduct(normal, m_startBeam.direction, newBasis);
-			Normalize(newBasis);
+			CrossProduct(facetNormal, startDir, newBasis);
+			Normalize(newBasis); 
 			inBeam.e = m_polarizationBasis;
-			inBeam.direction = -m_startBeam.direction;
+			inBeam.direction = -startDir;
 			inBeam.RotatePlane(newBasis);
 		}
 
 		Point3f refrDir, reflDir;
-		SplitIncidentDirection(m_startBeam.direction, cosIncident, normal,
-							   reflDir, refrDir);
+		SplitBeamDirection(startDir, cosIncident, -facetNormal, reflDir, refrDir);
 
-		double cosRefr = DotProduct(normal, reflDir);
+		double cosRelr = DotProduct(facetNormal, reflDir);
 
 		complex Tv00 = refrIndex*cosIncident;
-		complex Th00 = refrIndex*cosRefr;
+		complex Th00 = refrIndex*cosRelr;
 
-		complex Tv0 = Tv00 + cosRefr;
+		complex Tv0 = Tv00 + cosRelr;
 		complex Th0 = Th00 + cosIncident;
 
-		complex Tv = (Tv00 - cosRefr)/Tv0;
+		complex Tv = (Tv00 - cosRelr)/Tv0; // OPT
 		complex Th = (cosIncident - Th00)/Th0;
 		SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
 
@@ -79,12 +67,24 @@ void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
 		SetBeam(inBeam, inBeam, reflDir, inBeam.e,
 				cosInc2/Tv0, cosInc2/Th0);
 	}
+	else /// normal incidence
+	{
+		inBeam.JMatrix.m11 = 2.0/(refrIndex + 1.0); // OPT
+		inBeam.JMatrix.m22 = inBeam.JMatrix.m11;
+		inBeam.e = m_polarizationBasis;
+		inBeam.direction = -startDir;
+
+		outBeam.JMatrix.m11 = (refrIndex - 1.0)/(refrIndex + 1.0); // OPT
+		outBeam.JMatrix.m22 = -outBeam.JMatrix.m11;
+		outBeam.e = m_polarizationBasis;
+		outBeam.direction = startDir;
+	}
 }
 
 void Tracing::SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 									   Beam &inBeam, Beam &outBeam)
 {
-	SetBeamsParamsExternal(facetIndex, cosIncident, outBeam, inBeam);
+	SetBeamsParamsExternal(facetIndex, cosIncident, inBeam, outBeam); // REF: по факту параметры вызываются не в том порядке - исправить
 
 	SetBeamShapesByFacet(facetIndex, inBeam, outBeam);
 
@@ -110,7 +110,7 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 
 		double cosIncident = DotProduct(m_startBeam.direction, extNormal);
 
-		if (cosIncident < EPS_COS89) /// beam is not incident to this facet
+		if (cosIncident < EPS_COS_89) /// beam is not incident to this facet
 		{
 			continue;
 		}
@@ -174,12 +174,12 @@ bool Tracing::isEnough(const BeamInfo &info)
 
 void Tracing::InvertBeamShapeOrder(Beam &outBeam, const Beam &inBeam)
 {
-	Point3f inBeamCenter = outBeam.Center();
-	Point3f p0 = outBeam.shape[0] - inBeamCenter;
-	Point3f p1 = outBeam.shape[1] - inBeamCenter;
-	Point3f normal1;
-	CrossProduct(p1, p0, normal1);
-	double cosAngle = DotProduct(normal1, outBeam.direction);
+	Point3f center = outBeam.Center();
+	Point3f p0 = outBeam.shape[0] - center;
+	Point3f p1 = outBeam.shape[1] - center;
+	Point3f normal;
+	CrossProduct(p0, p1, normal);
+	double cosAngle = DotProduct(normal, outBeam.direction);
 
 	if (cosAngle < 0.0)
 	{
@@ -198,10 +198,10 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 	const Point3f &incidentDir = incidentBeam.direction;
 	const complex &refrIndex = m_particle->refractionIndex;
 
-	const Point3f &normal = m_particle->externalNormals[facetIndex];
+	const Point3f &normal = m_particle->externalNormals[facetIndex]; /// ext. normal uses in this calculating
 	double cosIncident = DotProduct(normal, incidentDir);
 
-	if (cosIncident < EPS_COS89) /// beam is not incident to this facet
+	if (cosIncident < EPS_COS_89) /// beam is not incident to this facet
 	{
 		throw std::exception();
 	}
@@ -214,7 +214,6 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 	}
 
 	inBeam = outBeam;
-
 	double cosInc_sqr = cosIncident*cosIncident;
 
 	double Nr;
@@ -224,11 +223,11 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 		Nr = (re + sqrt(re*re + im/cosInc_sqr))/2.0;
 	}
 
-	if (cosIncident >= EPS_COS0) /// case of the normal incidence
+	if (cosIncident >= EPS_COS_00) /// case of the normal incidence
 	{
 		complex temp;
 
-		temp = (2.0*refrIndex)/(1.0 + refrIndex); /// NOTE: для опт. выделить эту константу
+		temp = (2.0*refrIndex)/(1.0 + refrIndex); // OPT: выделить эту константу
 		SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
 				temp, temp);
 
@@ -329,7 +328,7 @@ bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
 								  __m128 _normal, int facetIndex) const
 {
 	const Point3f &dir = inputBeam.direction;
-	__m128 _direction = _mm_setr_ps(dir.cx, dir.cx, dir.cz, 0.0);
+	__m128 _direction = _mm_setr_ps(dir.cx, dir.cy, dir.cz, 0.0);
 
 	__m128 _d_param = _mm_set_ps1(m_particle->normals[facetIndex].D_PARAM);
 	__m128 _dp0 = _mm_dp_ps(_direction, _normal, MASK_FULL);
@@ -345,7 +344,7 @@ bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
 	for (int i = 0; i < inputBeam.shapeSize; ++i)
 	{
 		const Point3f &p = inputBeam.shape[i];
-		__m128 _point = _mm_setr_ps(p.cx, p.cx, p.cz, 0.0);
+		__m128 _point = _mm_setr_ps(p.cx, p.cy, p.cz, 0.0);
 		__m128 _dp1 = _mm_dp_ps(_point, _normal, MASK_FULL);
 		__m128 _add = _mm_add_ps(_dp1, _d_param);
 		__m128 _t = _mm_div_ps(_add, _dp0);
@@ -359,17 +358,17 @@ bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
 
 bool Tracing::Intersect(int facetIndex, const Beam &originBeam, Beam &intersectBeam) const
 {
-	/// TODO: попробовать заменить на Clipper
+	/// OPT: попробовать заменить на Clipper
 	__m128 _output_points[MAX_VERTEX_NUM];
 	__m128 *_output_ptr = _output_points;
 
 	int outputSize = originBeam.shapeSize;
 
 	const Point3f &normal = m_particle->externalNormals[facetIndex];
-	__m128 _normal_to_facet = _mm_setr_ps(normal.cx, normal.cx, normal.cz, 0.0);
+	__m128 _normal_to_facet = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
 
 	const Point3f &normal2 = m_particle->normals[facetIndex];
-	__m128 _normal_to_facet2 = _mm_setr_ps(normal2.cx, normal2.cx, normal2.cz, 0.0);
+	__m128 _normal_to_facet2 = _mm_setr_ps(normal2.cx, normal2.cy, normal2.cz, 0.0);
 
 	bool isProjected = ProjectToFacetPlane(originBeam, _output_points,
 										   _normal_to_facet2, facetIndex);
@@ -444,7 +443,7 @@ bool Tracing::Intersect(int facetIndex, const Beam &originBeam, Beam &intersectB
 	}
 
 	SetOutputBeam(_output_ptr, outputSize, intersectBeam);
-	return intersectBeam.shapeSize > 2;
+	return intersectBeam.shapeSize >= MIN_VERTEX_NUM;
 }
 
 void Tracing::SetOutputBeam(__m128 *_output_points, int outputSize, Beam &outputBeam) const
@@ -467,7 +466,7 @@ void Tracing::SetOutputBeam(__m128 *_output_points, int outputSize, Beam &output
 		if (res != 0)
 		{
 			p.cx = _output_points[i][0];
-			p.cx = _output_points[i][1];
+			p.cy = _output_points[i][1];
 			p.cz = _output_points[i][2];
 			outputBeam.AddVertex(p);
 		}
@@ -476,30 +475,33 @@ void Tracing::SetOutputBeam(__m128 *_output_points, int outputSize, Beam &output
 	}
 }
 
-void Tracing::SplitIncidentDirection(const Point3f &incidentDir, double cosIncident, const Point3f &normal,
-									 Point3f &reflectionDir, Point3f &refractionDir) const
+void Tracing::SplitBeamDirection(const Point3f &incidentDir, double cosIncident,
+								 const Point3f &normal,
+								 Point3f &refleDir, Point3f &refraDir) const
 {
 	const double &re = m_particle->refrI_sqr_re;
 	const double &im = m_particle->refrI_sqr_im;
 
 	Point3f tmp0 = normal - incidentDir/cosIncident;
 
-	refractionDir = normal + tmp0;
-	Normalize(refractionDir);
+	refraDir = normal + tmp0;
+	Normalize(refraDir);
 
-	double cosI_sqr = cosIncident*cosIncident;
+	double cosI_sqr = cosIncident * cosIncident;
 	double tmp1 = re + cosI_sqr - 1.0;
 
 	tmp1 = (im - FLT_EPSILON < 0) ? tmp1
 								  : sqrt(tmp1*tmp1 + im);
 
 	tmp1 = (re + 1.0 - cosI_sqr + tmp1)/2.0;
+
+	assert(Norm(tmp0) < (tmp1/cosI_sqr));
+
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
 	tmp1 = sqrt(tmp1);
 
-	assert(!isnan(tmp1));
-	reflectionDir = (tmp0/tmp1) - normal;
-	Normalize(reflectionDir);
+	refleDir = (tmp0/tmp1) - normal;
+	Normalize(refleDir);
 }
 
 void Tracing::SetBeamShapesByFacet(int facetIndex, Beam &inBeam, Beam &outBeam) const
