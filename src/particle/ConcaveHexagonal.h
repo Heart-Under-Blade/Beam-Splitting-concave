@@ -28,7 +28,7 @@ private:
 	}
 	m_originCavities;
 
-	const int CAVITY_FACET_VERTEX_NUMBER = 3;	///< number of vertex of the each facet into the cavity
+	const int CAVITY_FACET_VERTEX_NUM = 3;	///< number of vertex of the each facet into the cavity
 
 protected:
 	void SetFacetParams() override;
@@ -40,4 +40,6 @@ private:
 	void SetCavityFacets(int start, int end, Point3f *baseFacet,
 						 const Point3f &cavityPoint);
 	void SetOriginCavityPoints();
+	void SetBaseNormals();
+	void SetSideNormals();
 };

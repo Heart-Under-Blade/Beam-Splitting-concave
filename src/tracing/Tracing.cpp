@@ -100,6 +100,7 @@ void Tracing::SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 	}
 }
 
+// TODO: пофиксить
 void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 								  std::vector<Beam> &outBeams)
 {
@@ -115,7 +116,7 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 			continue;
 		}
 
-		std::vector<Beam> buff;
+		std::vector<Beam> outBuff;
 		Beam incidentBeam;
 
 		/// first incident beam
@@ -124,19 +125,19 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 
 			SplitExternalBeamByFacet(facetIndex, cosIncident, incidentBeam, outBeam);
 
-			buff.push_back(outBeam);
+			outBuff.push_back(outBeam);
 		}
 
 		unsigned int size = tracks.at(i).size();
 
-		try /// inteernal beams
+		try /// internal beams
 		{
 			for (unsigned int j = 1; j < size; ++j)
 			{
 				facetIndex = tracks.at(i).at(j);
 
 				Beam inBeam;
-				SplitInternalBeamByFacet(incidentBeam, facetIndex, inBeam, buff);
+				SplitInternalBeamByFacet(incidentBeam, facetIndex, inBeam, outBuff);
 
 				incidentBeam = inBeam;
 			}
@@ -146,7 +147,7 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 			continue;
 		}
 
-		outBeams.push_back(buff.back());
+		outBeams.push_back(outBuff.back());
 	}
 }
 
@@ -356,7 +357,7 @@ bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
 	return true;
 }
 
-bool Tracing::Intersect(int facetIndex, const Beam &originBeam, Beam &intersectBeam) const
+bool Tracing::Intersect(int facetId, const Beam &originBeam, Beam &intersectBeam) const
 {
 	/// OPT: попробовать заменить на Clipper
 	__m128 _output_points[MAX_VERTEX_NUM];
@@ -364,14 +365,14 @@ bool Tracing::Intersect(int facetIndex, const Beam &originBeam, Beam &intersectB
 
 	int outputSize = originBeam.shapeSize;
 
-	const Point3f &normal = m_particle->externalNormals[facetIndex];
+	const Point3f &normal = m_particle->externalNormals[facetId];
 	__m128 _normal_to_facet = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
 
-	const Point3f &normal2 = m_particle->normals[facetIndex];
+	const Point3f &normal2 = m_particle->normals[facetId];
 	__m128 _normal_to_facet2 = _mm_setr_ps(normal2.cx, normal2.cy, normal2.cz, 0.0);
 
 	bool isProjected = ProjectToFacetPlane(originBeam, _output_points,
-										   _normal_to_facet2, facetIndex);
+										   _normal_to_facet2, facetId);
 	if (!isProjected)
 	{
 		return false;
@@ -381,19 +382,19 @@ bool Tracing::Intersect(int facetIndex, const Beam &originBeam, Beam &intersectB
 	__m128 *_buffer_ptr = _buffer;
 	int bufferSize;
 
-	int facetSize = m_particle->vertexNums[facetIndex];
+	int facetSize = m_particle->vertexNums[facetId];
 
 	__m128 _p1, _p2; /// vertices of facet
 	__m128 _s_point, _e_point; /// points of projection
 	bool isInsideE, isInsideS;
 
-	Point3f p2 = m_particle->facets[facetIndex][facetSize-1];
+	Point3f p2 = m_particle->facets[facetId][facetSize-1];
 	_p2 = _mm_load_ps(p2.point);
 
 	for (int i = 0; i < facetSize; ++i)
 	{
 		_p1 = _p2;
-		p2 = m_particle->facets[facetIndex][i];
+		p2 = m_particle->facets[facetId][i];
 		_p2 = _mm_load_ps(p2.point);
 
 		bufferSize = outputSize;
@@ -518,4 +519,27 @@ void Tracing::SetBeamShapesByFacet(int facetIndex, Beam &inBeam, Beam &outBeam) 
 		inBeam.shape[i] = m_particle->facets[facetIndex][vertexNum-i];
 		outBeam.shape[i] = m_particle->facets[facetIndex][vertexNum-i];
 	}
+}
+
+double Tracing::Square(const Beam &beam)
+{
+	double square = 0;
+	const Point3f &basePoint = beam.shape[0];
+	Point3f p1 = beam.shape[1] - basePoint;
+
+	for (int i = 2; i < beam.shapeSize; ++i)
+	{
+		Point3f p2 = beam.shape[i] - basePoint;
+		Point3f res;
+		CrossProduct(p1, p2, res);
+		square += sqrt(Norm(res));
+		p1 = p2;
+	}
+
+	if (square < 0)
+	{	/// OPT: узнать в какую сторону ориентированы точки в пучке
+		square *= (-1);
+	}
+
+	return square / 2.0;
 }

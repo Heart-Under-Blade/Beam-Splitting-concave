@@ -1,8 +1,8 @@
 #include "Hexagonal.h"
 
-const int Hexagonal::BASE_FACET_NUMBER;
+const int Hexagonal::BASE_FACET_NUM;
 const int Hexagonal::SIDE_VERTEX_NUMBER;
-const int Hexagonal::BASE_VERTEX_NUMBER;
+const int Hexagonal::BASE_VERTEX_NUM;
 
 Hexagonal::Hexagonal(const ParticleParams &params)
 	: Particle(params.radius, params.halfHeight, params.refractionIndex)
@@ -20,7 +20,7 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 	CopyPoints(m_originBases.top, facets[0], vertexNums[0]);
 	CopyPoints(m_originBases.bottom, facets[7], vertexNums[7]);
 
-	SetSideFacets(facets[0], facets[7], 1, BASE_VERTEX_NUMBER);
+	SetSideFacets(facets[0], facets[7], 1, BASE_VERTEX_NUM);
 
 	SetOriginNormals();
 }
@@ -50,11 +50,11 @@ void Hexagonal::SetOriginNormals()
 
 void Hexagonal::SetFacetParams()
 {
-	facetNum = BASE_VERTEX_NUMBER + BASE_FACET_NUMBER;
+	facetNum = BASE_VERTEX_NUM + BASE_FACET_NUM;
 
 	// base facet number
-	vertexNums[0] = BASE_VERTEX_NUMBER;
-	vertexNums[facetNum-1] = BASE_VERTEX_NUMBER;
+	vertexNums[0] = BASE_VERTEX_NUM;
+	vertexNums[facetNum-1] = BASE_VERTEX_NUM;
 
 	// side facet number
 	for (int i = 1; i < facetNum-1; ++i)
@@ -67,22 +67,22 @@ void Hexagonal::SetOriginBaseFacets()
 {
 	Point3f *facet;
 
-	int halfPointNumber = BASE_VERTEX_NUMBER/2;
+	int halfNumber = BASE_VERTEX_NUM/2;
 	double halfRadius = m_radius/2;
 	double incircleRadius = (sqrt(3) * m_radius) / 2;
 
 	auto SetTwoDiagonalPoints = [&] (int startPointIndex, double x, double y, double z)
 	{
-		int endPointIndex = startPointIndex + halfPointNumber;
+		int endPointIndex = startPointIndex + halfNumber;
 
-		for (int i = startPointIndex; i <= endPointIndex; i += halfPointNumber)
+		for (int i = startPointIndex; i <= endPointIndex; i += halfNumber)
 		{
 			facet[i].cx = x;
 			facet[i].cy = y;
 			facet[i].cz = z;
 
-			x *= -1; // OPT: x = -x
-			y *= -1;
+			x = -x;
+			y = -y;
 		}
 	};
 
@@ -103,7 +103,7 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 							  int startIndex, int endIndex)
 {
 	Point3f *facet;
-	int endPointIndex = BASE_VERTEX_NUMBER-1;
+	int endPointIndex = BASE_VERTEX_NUM-1;
 
 	int i1 = endPointIndex;
 	int i2 = 0;
@@ -167,7 +167,7 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 
 void Hexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
 {
-	for (int i = 0; i < BASE_VERTEX_NUMBER; ++i)
+	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
 		RotatePoint(m_originBases.top[i], baseTop[i]);
 		RotatePoint(m_originBases.bottom[i], baseBottom[i]);
@@ -178,6 +178,6 @@ void Hexagonal::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);
 	RotateBaseFacets(facets[0], facets[7]);
-	SetSideFacets(facets[0], facets[7], 1, BASE_VERTEX_NUMBER);
+	SetSideFacets(facets[0], facets[7], 1, BASE_VERTEX_NUM);
 	RotateNormals();
 }

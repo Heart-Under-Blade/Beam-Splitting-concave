@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <tgmath.h>
-#include <iostream> // DEB: del
 
 #define MULTI_INDEX		10000000l			// index for poligon's clip operations
 #define EPS_MULTI		MULTI_INDEX/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
@@ -28,7 +27,7 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 										 double &lightSurfaceSquare)
 {
-	BeamInfoConcave tree[MAX_BEAM_DEPT]; /// beam info tree (based on stack)
+	BeamInfoConcave tree[MAX_BEAM_REFL_NUM]; /// beam info tree (based on stack)
 	int treeSize = 0;
 
 	/// first extermal beam
@@ -80,8 +79,8 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 			outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 		}
 
-//double d = BeamCrossSection(outBeam);
-//		std::cout << "refrDir: " << outBeam.direction.cz << std::endl; // DEB
+//		inBeam.track.push_back(facetId);// DEB
+//		outBeam.track.push_back(facetId);// DEB
 		tree[treeSize++] = BeamInfoConcave(inBeam, facetId, 0, false); // OPT
 		tree[treeSize++] = BeamInfoConcave(outBeam, facetId, 0, true);
 //		lightSurfaceSquare += outBeam.Square() * cosIncident;
@@ -160,9 +159,9 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 		{
 			int facetId = facetIds[i];
 
-			if (facetId == beamInfo.facetId)
+			if (facetId == beamInfo.facetId) // same facet
 			{
-				continue;
+				continue; // OPT: проверить, проходит ли хоть раз эта проверка
 			}
 
 			Beam inBeam, outBeam;
@@ -237,7 +236,9 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 					CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 				}
 
-//				std::cout << "refrDir: " << incidentDir.cz << std::endl; // DEB
+				assert(treeSize < MAX_BEAM_REFL_NUM);
+//				outBeam.track = incidentBeam.track;// DEB
+//				outBeam.track.push_back(facetId); // DEB
 				tree[treeSize++] = BeamInfoConcave(outBeam, facetId, beamInfo.dept+1, true);
 			}
 			else /// slopping incidence
@@ -262,7 +263,6 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 				{
 					Point3f refrDir = r0/sqrt(s) + normal;
 					Normalize(refrDir);
-//					std::cout << "refrDir: " << refrDir.cz << std::endl; // DEB
 
 					double cosRefr = DotProduct(normal, refrDir);
 
@@ -283,6 +283,9 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 						CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 					}
 
+					assert(treeSize < MAX_BEAM_REFL_NUM);
+//					outBeam.track = incidentBeam.track;// DEB
+//					outBeam.track.push_back(facetId); // DEB
 					tree[treeSize++] = BeamInfoConcave(outBeam, facetId, beamInfo.dept+1, true);
 				}
 				else /// case of the complete internal reflection
@@ -312,6 +315,9 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 				}
 			}
 
+			assert(treeSize < MAX_BEAM_REFL_NUM);
+//			inBeam.track = incidentBeam.track;// DEB
+//			inBeam.track.push_back(facetId); // DEB
 			tree[treeSize++] = BeamInfoConcave(inBeam, facetId, beamInfo.dept+1, false);
 		}
 
@@ -350,16 +356,19 @@ void TracingConcave::SelectVisibleFacetsInternal(const BeamInfoConcave &beamInfo
 	Point3f *normals = (beamInfo.isExternal) ? m_particle->normals
 											 : m_particle->externalNormals;
 
+	Point3f cob = beamInfo.beam.Center();
+
 	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
 		double cosIncident = DotProduct(beamInfo.beam.direction, normals[i]);
 
 		if (cosIncident >= EPS_COS_89) /// beam incidents to this facet
 		{
-			Point3f vectorToFacet = m_particle->facets[i][0] - beamInfo.beam.shape[0];
-			double cosFacets = DotProduct(beamInfo.beam.direction, vectorToFacet);
+			Point3f cof = CenterOfFacet(m_particle->facets[i], m_particle->vertexNums[i]);
+			Point3f vectorToFacet = cof - cob;
+			double cosFacets = DotProduct(-normals[beamInfo.facetId]/*OPT:опр.др.норм.*/, vectorToFacet);
 
-			if (cosFacets >= EPS_COS_89) /// facet is in front of begin of beam
+			if (cosFacets >= 0.0001/*TODO: подобрать норм значение и вынести*/) /// facet is in front of begin of beam
 			{
 				facetIndices[indicesNumber] = i;
 				++indicesNumber;
@@ -383,13 +392,13 @@ void TracingConcave::SetPolygonByFacet(const Point3f *facet, int size, Paths &po
 void TracingConcave::CutFacetByFacetShadows(int *facetIds, const Point3f *facet,
 											int size, int previewFacetCount,
 											Paths &resultPolygon)
-{
-	int originFacetId = facetIds[previewFacetCount]; // facet id of current facet
+{ // TODO: вызывать только если нужно (поставить проверку)
+	int originFacetId = facetIds[previewFacetCount]; /// facet id of current facet
 	Point3f &normal = m_particle->externalNormals[originFacetId];
 
-	{	/// set origin polygon
-		SetPolygonByFacet(facet, size, resultPolygon);
-	}
+
+	SetPolygonByFacet(facet, size, resultPolygon); /// set origin polygon
+
 
 	if (fabs(normal.cx) > 0.5)
 	{
@@ -488,7 +497,7 @@ void TracingConcave::SetBeamShapeByPolygon(Beam &beam, const Paths &result)
 		beam.shape[--vertexNum] = tmp;
 	}
 
-	if (beam.shapeSize <= 0 || beam.shapeSize > MAX_VERTEX_NUM) // DEB
+//	if (beam.shapeSize <= 0 || beam.shapeSize > MAX_VERTEX_NUM) // DEB
 	assert(beam.shapeSize > 0 && beam.shapeSize <= MAX_VERTEX_NUM);
 }
 
@@ -616,6 +625,10 @@ void TracingConcave::SortFacets(int number, const Point3f &beamDir, int *facetId
 void TracingConcave::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 										 std::vector<Beam> &outBeams)
 {
+	for (unsigned int i = 0; i < tracks.size(); ++i)
+	{
+		/// TODO: realize
+	}
 }
 
 void TracingConcave::ExchangeCoords(Axis oldAxis, Axis newAxis, Paths &origin)

@@ -24,6 +24,8 @@ void Beam::Copy(const Beam &other)
 	{
 		shape[i] = other.shape[i];
 	}
+
+//	track = other.track; // DEB
 }
 
 Beam::Beam(const Beam &other)

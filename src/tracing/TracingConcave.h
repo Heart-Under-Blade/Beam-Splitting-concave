@@ -6,7 +6,7 @@
 typedef std::vector<std::vector<Point3f>> Polygons;
 
 struct BeamInfoConcave : public BeamInfo
-{
+{// OPT: попробовать объеденить с Beam
 	bool isExternal;
 
 	BeamInfoConcave() {}

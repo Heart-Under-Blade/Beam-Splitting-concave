@@ -12,7 +12,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 	/// TODO: отделить функцию высчитывания площади осв. поверхности
 	lightSurfaceSquare = 0;
 
-	BeamInfo tree[MAX_BEAM_DEPT]; /// beam info tree (based on stack)
+	BeamInfo tree[MAX_BEAM_REFL_NUM]; /// beam info tree (based on stack)
 	int treeSize = 0;
 
 	/// first extermal beam

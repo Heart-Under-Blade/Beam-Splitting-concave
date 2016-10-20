@@ -52,3 +52,16 @@ void CopyPoints(Point3f *points, Point3f *result, int size)
 		result[i].cz = points[i].cz;
 	}
 }
+
+Point3f CenterOfFacet(const Point3f *facet, int size)
+{
+	Point3f p(0, 0, 0);
+
+	for (int i = 0; i < size; ++i)
+	{
+		p = p + facet[i];
+	}
+
+	return p/size;
+}
+

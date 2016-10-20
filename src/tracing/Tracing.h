@@ -7,7 +7,7 @@
 #include <float.h>
 #include <vector>
 
-#define MAX_BEAM_DEPT 128
+#define MAX_BEAM_REFL_NUM 128
 
 #define EPS_COS_89	1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00	0.99999999998254670756866631966593		//1- cos(89.99999999)
@@ -34,6 +34,8 @@ public:
 
 	virtual void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &outBeams);
+
+	double Square(const Beam &beam);
 private:
 	/**
 	 * @brief The IncidenceCase enum
