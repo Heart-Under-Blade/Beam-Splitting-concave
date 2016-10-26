@@ -4,7 +4,7 @@
 #include "types.h"
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
-//#include <vector> // DEB
+#include <vector> // DEB
 
 class Beam
 {
@@ -34,7 +34,7 @@ public:
 	Point3f shape[MAX_VERTEX_NUM];	///< beam's vertices
 	int shapeSize;					///< current vertex number of shape
 
-//	std::vector<int> track; // DEB
+	std::vector<int> track; // DEB
 
 private:
 	void RotateJMatrix(const Point3f &newBasis);

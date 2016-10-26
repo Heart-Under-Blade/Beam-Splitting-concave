@@ -357,6 +357,7 @@ bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
 	return true;
 }
 
+/// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
 bool Tracing::Intersect(int facetId, const Beam &originBeam, Beam &intersectBeam) const
 {
 	/// OPT: попробовать заменить на Clipper

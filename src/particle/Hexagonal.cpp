@@ -20,7 +20,7 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 	CopyPoints(m_originBases.top, facets[0], vertexNums[0]);
 	CopyPoints(m_originBases.bottom, facets[7], vertexNums[7]);
 
-	SetSideFacets(facets[0], facets[7], 1, BASE_VERTEX_NUM);
+	SetSideFacets(facets[0], facets[7], 1, facetNum-1);
 
 	SetOriginNormals();
 }

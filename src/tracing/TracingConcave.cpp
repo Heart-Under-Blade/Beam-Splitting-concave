@@ -24,6 +24,14 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 	m_clipper.ZFillFunction(MeasureZ);
 }
 
+bool TracingConcave::isOrderReversed(const Point3f *newFacet, int oldFacetId)
+{
+	Point3f newNormal = NormalToFacet(newFacet);
+	Point3f &oldNormal = m_particle->externalNormals[oldFacetId];
+	double cosNN = DotProduct(newNormal, oldNormal);
+	return (cosNN < 0);
+}
+
 void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 										 double &lightSurfaceSquare)
 {
@@ -47,6 +55,8 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 		Beam inBeam, outBeam;
 		SetBeamsParamsExternal(facetId, cosIncident, inBeam, outBeam);
 
+//		if (facetId == 0)//DEB
+//			int fff = 0;
 		if (i == 0) /// facet in front of beam
 		{
 			SetBeamShapesByFacet(facetId, inBeam, outBeam);
@@ -55,8 +65,8 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 		{
 			Paths cuttedFacet(1);
 
-			const Point3f *facet = m_particle->facets[facetIds[i]];
-			int size = m_particle->vertexNums[facetIds[i]];
+			const Point3f *facet = m_particle->facets[facetId];
+			int size = m_particle->vertexNums[facetId];
 			CutFacetByFacetShadows(facetIds, facet, size, i, cuttedFacet);
 
 			if (cuttedFacet.empty()) /// facet is totaly shadowed by others
@@ -66,6 +76,16 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 
 			SetBeamShapeByPolygon(inBeam, cuttedFacet);
 			SetBeamShapeByPolygon(outBeam, cuttedFacet);
+
+//			if (isOrderReversed(facetId, inBeam.shape))
+//			{
+//				for (int vi = 0; vi < total; ++vi)
+//				{
+//					inBeam.shape = vi;
+//				}
+//			}
+
+//			outBeam = inBeam;
 		}
 
 		if (m_isOpticalPath)
@@ -79,14 +99,32 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 			outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 		}
 
-//		inBeam.track.push_back(facetId);// DEB
-//		outBeam.track.push_back(facetId);// DEB
+		inBeam.track.push_back(facetId);// DEB
+		outBeam.track.push_back(facetId);// DEB
 		tree[treeSize++] = BeamInfoConcave(inBeam, facetId, 0, false); // OPT
 		tree[treeSize++] = BeamInfoConcave(outBeam, facetId, 0, true);
 //		lightSurfaceSquare += outBeam.Square() * cosIncident;
 	}
 
 	TraceInternalReflections(tree, treeSize, outBeams);
+
+//	double s = 0;
+//	double d = 0;
+//	for (const Beam &b : outBeams)
+//	{
+////		std::cout << b.beam.direction.Z << std::endl;
+////		switch (b.track[0]) {
+////		case 2:
+////		case 0:
+////			if (b.trackSize > 1 /*&& b.track[1] == 5*/)
+////				s += Square(b);
+////			break;
+////		default:
+//			d += Square(b);
+////		}
+//	}
+
+//	int fff = 0;
 }
 
 void TracingConcave::CutReflectedBeam(const BeamInfoConcave &beamInfo, Beam &incidentBeam)
@@ -237,8 +275,8 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 				}
 
 				assert(treeSize < MAX_BEAM_REFL_NUM);
-//				outBeam.track = incidentBeam.track;// DEB
-//				outBeam.track.push_back(facetId); // DEB
+				outBeam.track = incidentBeam.track;// DEB
+				outBeam.track.push_back(facetId); // DEB
 				tree[treeSize++] = BeamInfoConcave(outBeam, facetId, beamInfo.dept+1, true);
 			}
 			else /// slopping incidence
@@ -284,8 +322,8 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 					}
 
 					assert(treeSize < MAX_BEAM_REFL_NUM);
-//					outBeam.track = incidentBeam.track;// DEB
-//					outBeam.track.push_back(facetId); // DEB
+					outBeam.track = incidentBeam.track;// DEB
+					outBeam.track.push_back(facetId); // DEB
 					tree[treeSize++] = BeamInfoConcave(outBeam, facetId, beamInfo.dept+1, true);
 				}
 				else /// case of the complete internal reflection
@@ -316,8 +354,8 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 			}
 
 			assert(treeSize < MAX_BEAM_REFL_NUM);
-//			inBeam.track = incidentBeam.track;// DEB
-//			inBeam.track.push_back(facetId); // DEB
+			inBeam.track = incidentBeam.track;// DEB
+			inBeam.track.push_back(facetId); // DEB
 			tree[treeSize++] = BeamInfoConcave(inBeam, facetId, beamInfo.dept+1, false);
 		}
 
@@ -392,13 +430,11 @@ void TracingConcave::SetPolygonByFacet(const Point3f *facet, int size, Paths &po
 void TracingConcave::CutFacetByFacetShadows(int *facetIds, const Point3f *facet,
 											int size, int previewFacetCount,
 											Paths &resultPolygon)
-{ // TODO: вызывать только если нужно (поставить проверку)
+{	// TODO: вызывать только если нужно (поставить проверку)
 	int originFacetId = facetIds[previewFacetCount]; /// facet id of current facet
 	Point3f &normal = m_particle->externalNormals[originFacetId];
 
-
 	SetPolygonByFacet(facet, size, resultPolygon); /// set origin polygon
-
 
 	if (fabs(normal.cx) > 0.5)
 	{
@@ -631,34 +667,35 @@ void TracingConcave::SplitBeamByParticle(const std::vector<std::vector<int>> &tr
 	}
 }
 
-void TracingConcave::ExchangeCoords(Axis oldAxis, Axis newAxis, Paths &origin)
+void TracingConcave::ExchangeCoords(Axis oldAxis, Axis newAxis, Paths &origin) const
 {
+	cInt *oldP, *newP;
+
 	for (IntPoint &p : origin[0])
 	{
-		cInt oldP, newP;
-
 		// REF: do smth
 		switch (oldAxis) {
-		case Axis::aX: oldP = p.X;
+		case Axis::aX: oldP = &p.X;
 			break;
-		case Axis::aY: oldP = p.Y;
+		case Axis::aY: oldP = &p.Y;
 			break;
-		case Axis::aZ: oldP = p.Z;
+		case Axis::aZ: oldP = &p.Z;
 			break;
 		}
 
 		switch (newAxis) {
-		case Axis::aX: newP = p.X;
+		case Axis::aX: newP = &p.X;
 			break;
-		case Axis::aY: newP = p.Y;
+		case Axis::aY: newP = &p.Y;
 			break;
-		case Axis::aZ: newP = p.Z;
+		case Axis::aZ: newP = &p.Z;
 			break;
 		}
 
-		cInt tmp = oldP;
-		oldP = newP;
-		newP = tmp;
+		cInt oldP1 = *oldP;
+		cInt newP1 = *newP;
+		*oldP = newP1;
+		*newP = oldP1;
 	}
 }
 
@@ -879,6 +916,62 @@ void MeasureZ(IntPoint &a1, IntPoint &a2, IntPoint &, IntPoint &, IntPoint &poin
 	point.Z = (top.Z - bot.Z) * sqrt(normBotVec) / sqrt(normVec) + bot.Z;
 }
 
+double TracingConcave::AreaByClipper(const Beam &beam, const Point3f &normal) const
+{
+	double area = 0;
+
+	Paths polygon(1);
+	SetPolygonByFacet(beam.shape, beam.shapeSize, polygon);
+
+	Point3f normal1 = normal;
+
+	Point3f n_normal = normal1;
+	Normalize(n_normal); // REF: перегрузить функцию, чтобы возвращала значение
+
+	if (fabs(n_normal.cx) > 0.5)
+	{
+		ExchangeCoords(Axis::aX, Axis::aZ, polygon);
+		float tmp = normal1.cx;
+		normal1.cx = normal1.cz;
+		normal1.cz = tmp;
+	}
+	else if (fabs(n_normal.cy) > 0.5)
+	{
+		ExchangeCoords(Axis::aY, Axis::aZ, polygon);
+		float tmp = normal1.cy;
+		normal1.cy = normal1.cz;
+		normal1.cz = tmp;
+	}
+
+	area = ClipperLib::Area(polygon[0]);
+	area /= (cInt)MULTI_INDEX * MULTI_INDEX; // OPT
+
+	Point3f z(0, 0, 1);
+	double cosNormZ = DotProduct(normal1, z);
+
+	if (cosNormZ > 0)
+	{
+		cosNormZ = DotProduct(normal1, -z); // OPT ?
+	}
+
+	area = (area*sqrt(Norm(normal1)))/cosNormZ;
+//	Polygons polygons;
+//	DivideConcavePolygon(beam.shape, beam.shapeSize, normal,
+//						 polygons);
+
+//	for (unsigned int i = 0; i < polygons.size(); ++i)
+//	{
+//		square += SquareOfPolygon(polygons[i]);
+//	}
+
+	if (area < 0)
+	{
+		area = -area;
+	}
+
+	return area;
+}
+
 double TracingConcave::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON; // OPT
@@ -888,7 +981,7 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 	Point3f p2 = beam.shape[2] - beam.shape[0];
 	CrossProduct(p1, p2, normal);
 
-	double dir = DotProduct(normal, beam.direction);
+	double cosND = DotProduct(normal, beam.direction);
 //	Normalize(normal);
 
 //	if (fabs(normal.cz) < 0.5)
@@ -912,44 +1005,14 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 //		normal.cz = -normal.cz;
 //	}
 
-	double e = fabs(dir);
+	double e = fabs(cosND);
 
 	if (e < eps)
 	{
 		return 0;
 	}
 
-	double square = 0;
-
-	Paths polygon(1);
-	SetPolygonByFacet(beam.shape, beam.shapeSize, polygon);
-	square = ClipperLib::Area(polygon[0]);
-	square /= (cInt)MULTI_INDEX*MULTI_INDEX; // OPT
-
+	double square = AreaByClipper(beam, normal);
 	double n = sqrt(Norm(normal));
-
-	Point3f z(0,0,1);
-	double cosD = DotProduct(normal, z);
-
-	if (cosD > 0)
-	{
-		cosD = DotProduct(normal, -z);
-	}
-
-	square = (square*n)/cosD;
-//	Polygons polygons;
-//	DivideConcavePolygon(beam.shape, beam.shapeSize, normal,
-//						 polygons);
-
-//	for (unsigned int i = 0; i < polygons.size(); ++i)
-//	{
-//		square += SquareOfPolygon(polygons[i]);
-//	}
-
-	if (square < 0)
-	{
-		square = -square;
-	}
-
-	return (e*square) / n; // OPT
+	return (e*square) / n; // REF сделать функ length
 }

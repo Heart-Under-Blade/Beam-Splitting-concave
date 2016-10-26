@@ -81,11 +81,15 @@ private:
 
 	double SquareOfPolygon(const std::vector<Point3f> &polygon) const;
 
-	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin); ///< заменяем координаты, для устранения погрешности при клиппинге
+	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
 	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
 
 	void CutReflectedBeam(const BeamInfoConcave &beamInfo, Beam &incidentBeam);
+        
+	double AreaByClipper(const Beam &beam, const Point3f &normal) const;
+
+	bool isOrderReversed(const Point3f *newFacet, int oldFacetId);
         
 protected:
 	void TraceInternalReflections(BeamInfoConcave *tree, int size,

@@ -53,10 +53,10 @@ void Calculate()
 	int orNumber_gamma = 801;
 	int orNumber_beta = 800;
 	int ThetaNumber = 180;
-	int interReflNum = 4;
+	int interReflNum = 3;
 	bool isRandom = false;
 
-	bool isOpticalPath = true;
+	bool isOpticalPath = false;
 	int EDF = 0;
 
 	Tracing *tracer= nullptr;
@@ -74,7 +74,7 @@ void Calculate()
 		break;
 	case 10:
 //		particle = new Hexagonal(radius, halfHeight, refractionIndex); // DEB
-		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, 1);
+		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, 20);
 		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
 									polarizationBasis, interReflNum);
 		betaNorm = M_PI/(2.0*orNumber_beta); /// TODO: какое д/б betaNorm?
@@ -93,7 +93,7 @@ void Calculate()
 
 	SizeBin = M_PI/ThetaNumber; // the size of the bin (radians)
 
-	mxd = Arr2D(1, ThetaNumber + 1, 4, 4);
+	mxd = Arr2D(1, ThetaNumber+1, 4, 4);
 	mxd.ClearArr();
 
 	clock_t timer = clock();
@@ -140,7 +140,6 @@ void Calculate()
 	WriteStatisticsToFile(timer, orNumber, D_tot, NRM);
 
 	WriteStatisticsToConsole(orNumber, D_tot, NRM);
-	getchar();
 
 	delete particle;
 }
@@ -184,8 +183,10 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 	// DEB
 //	beta = 15*M_PI/180;
 //	gamma = 30*M_PI/180;
-//	tracer.RotateParticle(beta, gamma);
-//	tracer.SplitBeamByParticle(outcomingBeams, square);
+	beta = (38 + 0.5)*betaNorm;
+	gamma = (43 + 0.5)*gammaNorm;
+	tracer.RotateParticle(beta, gamma);
+	tracer.SplitBeamByParticle(outcomingBeams, square);
 	HandleBeams(outcomingBeams, sin(beta), tracer);
 
 	for (int i = 0; i < orNumber_beta; ++i)
@@ -304,13 +305,16 @@ void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
 
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
-	ddddd += outBeams.size();
+	ddddd += outBeams.size();//DEB
 
+//	double ee = 0;
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams.at(i);
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
+//		if (i == 149)
+//			int fff = 0;
 		double cross = tracer.BeamCrossSection(beam);
 
 		double Area = betaDistrProb * cross;
@@ -319,44 +323,45 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 		const float &x = beam.direction.cx;
 		const float &y = beam.direction.cy;
 		const float &z = beam.direction.cz;
-
+//ee += Area;
 		// Collect the beam in array
 		if (z >= 1-DBL_EPSILON)
 		{
 			back += Area*bf;
 		}
+		else if (z <= DBL_EPSILON-1)
+		{
+			forw += Area*bf;
+		}
 		else
 		{
-			if (z <= DBL_EPSILON-1)
-			{
-				forw += Area*bf;
-			}
-			else
-			{
-				// Rotate the Mueller matrix of the beam to appropriate coordinate system
-				const unsigned int ZenAng = round(acos(z)/SizeBin);
-				double tmp = SQR(y);
+			// Rotate the Mueller matrix of the beam to appropriate coordinate system
+			const unsigned int ZenAng = round(acos(z)/SizeBin);
+			double tmp = SQR(y);
 
-				if (tmp > DBL_EPSILON)
+			if (tmp > DBL_EPSILON)
+			{
+				tmp = acos(x/sqrt(SQR(x)+tmp)); // OPT: SQR на x*x
+
+				if (y < 0)
 				{
-					tmp = acos(x/sqrt(SQR(x)+tmp)); // OPT: SQR на x*x
-
-					if (y < 0)
-					{
-						tmp = M_2PI-tmp;
-					}
-
-					tmp *= -2.0;
-					RightRotateMueller(bf, cos(tmp), sin(tmp));
+					tmp = M_2PI-tmp;
 				}
 
-				// DEB
-//				bf = matrix(4,4);
-//				bf.Identity();
-				mxd.insert(0, ZenAng, Area*bf);
+				tmp *= -2.0;
+				RightRotateMueller(bf, cos(tmp), sin(tmp));
 			}
+
+			// DEB
+//			bf = matrix(4,4);
+//			bf.Identity();
+			mxd.insert(0, ZenAng, Area*bf);
+
+//			if (isinf(mxd(0, ZenAng, 0, 0)))
+//				int fff = 0; // DEB
 		}
 	}
+//	ee = 0;// DEB
 }
 
 void WriteResultsToFile(int ThetaNumber, double NRM)
