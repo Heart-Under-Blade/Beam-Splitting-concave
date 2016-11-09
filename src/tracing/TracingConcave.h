@@ -50,12 +50,13 @@ private:
 									 int &indicesNumber);
 	void SelectVisibleFacetsInternal(const BeamInfoConcave &beamInfo, int *facetIndices,
 									 int &indicesNumber);
-	void CutFacetByFacetShadows(int *facetIds, const Point3f *facet, int size, int previewFacetCount,
-						   ClipperLib::Paths &resultFacet);
+	void CutShadowsFromFacet(const Point3f *facet, int size, int *facetIds,
+								int previewFacetCount, const BeamInfoConcave &beamInfo,
+								ClipperLib::Paths &resultFacet);
 
 	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
 							 const Point3f &facetNormal, Point3f &projection);
-	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &b_normal,
+	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &a_dir, const Point3f &b_normal,
 							 ClipperLib::Paths &projection);
 
 	void SetBeamShapeByPolygon(Beam &beam, const ClipperLib::Paths &result);
@@ -89,8 +90,12 @@ private:
         
 	double AreaByClipper(const Beam &beam, const Point3f &normal) const;
 
-	bool isOrderReversed(const Point3f *newFacet, int oldFacetId);
-        
+	bool isOrderReversed(const Point3f oldNormal, const ClipperLib::Path polygon);
+
+	void InversePolygonOrder(ClipperLib::Path &polygon);
+
+	void CatchExternalBeam(const BeamInfoConcave &beamInfo, std::vector<Beam> &outBeams);
+
 protected:
 	void TraceInternalReflections(BeamInfoConcave *tree, int size,
 								  std::vector<Beam> &outBeams);

@@ -3,6 +3,7 @@
 
 #include "test.h"
 
+#include <assert.h>
 #include <float.h>
 #include "global.h"
 
@@ -20,6 +21,8 @@
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
 
+std::ofstream WW("WW.dat", std::ios::out); //DEB
+
 Arr2D mxd(0, 0, 0, 0);
 double SizeBin;
 double gammaNorm, betaNorm;
@@ -28,7 +31,7 @@ clock_t totalTime;
 Point3f incidentDir(0, 0, 1); /// REF: исправить на нормальное направление
 Point3f polarizationBasis(0, 1, 0);
 
-// debug
+// DEB
 long long ddddd = 0;
 int count = 0;
 
@@ -74,7 +77,7 @@ void Calculate()
 		break;
 	case 10:
 //		particle = new Hexagonal(radius, halfHeight, refractionIndex); // DEB
-		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, 20);
+		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, -10);
 		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
 									polarizationBasis, interReflNum);
 		betaNorm = M_PI/(2.0*orNumber_beta); /// TODO: какое д/б betaNorm?
@@ -146,7 +149,7 @@ void Calculate()
 
 int main()
 {
-//	testConcaveHexagonBuilding();
+//	testConcaveHexagonRot();
 //	testHexagonBuilding();
 //	testHexagonRotate();
 	Calculate();
@@ -183,8 +186,8 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 	// DEB
 //	beta = 15*M_PI/180;
 //	gamma = 30*M_PI/180;
-	beta = (38 + 0.5)*betaNorm;
-	gamma = (43 + 0.5)*gammaNorm;
+	beta = (68 + 0.5)*betaNorm;
+	gamma = (98 + 0.5)*gammaNorm;
 	tracer.RotateParticle(beta, gamma);
 	tracer.SplitBeamByParticle(outcomingBeams, square);
 	HandleBeams(outcomingBeams, sin(beta), tracer);
@@ -307,7 +310,7 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 {
 	ddddd += outBeams.size();//DEB
 
-//	double ee = 0;
+	double ee = 0;//DEB
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams.at(i);
@@ -323,7 +326,7 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 		const float &x = beam.direction.cx;
 		const float &y = beam.direction.cy;
 		const float &z = beam.direction.cz;
-//ee += Area;
+ee += Area;//DEB
 		// Collect the beam in array
 		if (z >= 1-DBL_EPSILON)
 		{
@@ -357,11 +360,18 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 //			bf.Identity();
 			mxd.insert(0, ZenAng, Area*bf);
 
+			count += (int)Area;
+			if (ZenAng == 123 /*&& Area > 941.782 && Area < 941.784*/)
+				WW << count << std::endl;//int fff = 0;
+
+			if (count < 0)
+				int fff = 0;
+			assert(Area >= 0);
 //			if (isinf(mxd(0, ZenAng, 0, 0)))
 //				int fff = 0; // DEB
 		}
 	}
-//	ee = 0;// DEB
+	ee = 0;// DEB
 }
 
 void WriteResultsToFile(int ThetaNumber, double NRM)

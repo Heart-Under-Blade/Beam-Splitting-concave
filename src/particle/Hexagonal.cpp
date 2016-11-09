@@ -178,6 +178,6 @@ void Hexagonal::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);
 	RotateBaseFacets(facets[0], facets[7]);
-	SetSideFacets(facets[0], facets[7], 1, BASE_VERTEX_NUM);
+	SetSideFacets(facets[0], facets[7], 1, facetNum-1);
 	RotateNormals();
 }
