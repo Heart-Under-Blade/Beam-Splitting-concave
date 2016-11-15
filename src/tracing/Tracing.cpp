@@ -42,7 +42,7 @@ void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
 		{
 			Point3f newBasis;
 			CrossProduct(facetNormal, startDir, newBasis);
-			Normalize(newBasis); 
+			Normalize(newBasis);
 			inBeam.e = m_polarizationBasis;
 			inBeam.direction = -startDir;
 			inBeam.RotatePlane(newBasis);
@@ -497,6 +497,7 @@ void Tracing::SplitBeamDirection(const Point3f &incidentDir, double cosIncident,
 
 	tmp1 = (re + 1.0 - cosI_sqr + tmp1)/2.0;
 
+	if (Norm(tmp0) >= (tmp1/cosI_sqr))//DEB
 	assert(Norm(tmp0) < (tmp1/cosI_sqr));
 
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);

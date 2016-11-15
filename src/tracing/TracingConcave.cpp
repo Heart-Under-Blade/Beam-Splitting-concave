@@ -142,11 +142,11 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 	TraceInternalReflections(tree, treeSize, outBeams);
 
 	//DEB
-	int co = 0;
-	double s = 0;
-	double d = 0;
-	for (const Beam &b : outBeams)
-	{
+//	int co = 0;
+//	double s = 0;
+//	double d = 0;
+//	for (const Beam &b : outBeams)
+//	{
 //		switch (b.track[0]) {
 //		case 0: case 7:
 //			if (b.track.size() > 1 /*&& b.track[1] == 5*/)
@@ -159,17 +159,17 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 //		}
 
 //		if (b.track.size() == 3)
-		{
+//		{
 //			for (int a : b.track)
 //				std::cout << a;
 //		std::cout << std::endl;
 //			co++;
-			d += Square(b);
+//			d += Square(b);
 //			std::cout << d << std::endl;
-		}
-	}
+//		}
+//	}
 
-	int fff = 0;
+//	int fff = 0;
 }
 
 void TracingConcave::CutReflectedBeam(const BeamInfoConcave &beamInfo, Beam &incidentBeam)
@@ -218,11 +218,11 @@ void TracingConcave::CatchExternalBeam(const BeamInfoConcave &beamInfo,
 	if (incidentBeam.shapeSize != 0) // посылаем обрезанный всеми гранями внешний пучок на сферу
 	{
 		outBeams.push_back(incidentBeam);
-		++outBeamNum;//DEB
+//		++outBeamNum;//DEB
 	}
 }
 
-void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSize,
+void TracingConcave::TraceInternalReflections(BeamInfoConcave tree[], int treeSize,
 											  std::vector<Beam> &outBeams)
 {
 	while (treeSize != 0)
@@ -239,11 +239,16 @@ void TracingConcave::TraceInternalReflections(BeamInfoConcave *tree, int treeSiz
 			continue;
 		}
 
-if (beamInfo.beam.track.size() == 6
-//		&& beamInfo.beam.track.at(2) == 1
-		&& beamInfo.beam.track.at(1) == 7
-		&& beamInfo.beam.track.at(0) == 4) //DEB
-	int fff = 0;
+//if (beamInfo.beam.track.size() == 3
+//		&& beamInfo.beam.track.at(2) == 13
+//		&& beamInfo.beam.track.at(1) == 16
+//		&& beamInfo.beam.track.at(0) == 8) //DEB
+//	int fff = 0;
+
+//if (beamInfo.beam.track.size() == 2
+//		&& beamInfo.beam.track.at(1) == 16
+//		&& beamInfo.beam.track.at(0) == 8) //DEB
+//	int fff = 0;
 
 		Beam &incidentBeam = beamInfo.beam;
 		Point3f &incidentDir = incidentBeam.direction;
@@ -254,6 +259,10 @@ if (beamInfo.beam.track.size() == 6
 
 		incidentDir.D_PARAM = m_particle->normals[beamInfo.facetId].D_PARAM;
 		SortFacets(idCount, incidentDir, facetIds); // OPT: выполнять по условию только если есть видимые вершины
+
+//if (beamInfo.beam.track.size() == 1
+//		&& beamInfo.beam.track.at(0) == 8) //DEB
+//	int fff = 0;
 
 		for (int i = 0; i < idCount; ++i)
 		{
@@ -276,13 +285,13 @@ if (beamInfo.beam.track.size() == 6
 				continue;
 			}
 
-if (facetId == 7 && beamInfo.facetId == 4) //DEB
-	int fff = 0;
+//if (facetId == 16 && beamInfo.facetId == 8) //DEB
+//	int fff = 0;
 
-if (facetId == 6 && beamInfo.beam.track.size() == 2
-		&& beamInfo.beam.track.at(1) == 7
-		&& beamInfo.beam.track.at(0) == 4) //DEB
-	int fff = 0;
+//if (facetId == 13 && beamInfo.beam.track.size() == 2
+//		&& beamInfo.beam.track.at(1) == 16
+//		&& beamInfo.beam.track.at(0) == 8) //DEB
+//	int fff = 0;
 			if (i != 0)
 			{
 				Paths cuttedFacet(1);
@@ -290,6 +299,7 @@ if (facetId == 6 && beamInfo.beam.track.size() == 2
 				bi.beam = incidentBeam/*outBeam*/;
 				bi.isExternal = true;
 				bi.facetId = facetId;
+				// обрезаем пучок попадающий на грань facetId
 				CutShadowsFromFacet(outBeam.shape, outBeam.shapeSize, facetIds,
 									i, bi, cuttedFacet);
 
@@ -364,40 +374,122 @@ if (facetId == 6 && beamInfo.beam.track.size() == 2
 			}
 			else /// slopping incidence
 			{
-				Point3f r0 = incidentDir/cosIncident - normal;
-
-				Point3f reflDir = r0 - normal;
-				Normalize(reflDir);
-				inBeam.direction = reflDir;
-
-				Point3f scatteringNormal;
-				CrossProduct(normal, incidentDir, scatteringNormal);
-				Normalize(scatteringNormal);
-				inBeam.e = scatteringNormal;
-
-				incidentBeam.RotatePlane(scatteringNormal);
-
-				double s = 1.0/(Nr*cosI_sqr) - Norm(r0);
-				complex tmp0 = refrIndex*cosIncident;
-
-				if (s > DBL_EPSILON)
+				if (/*true*/!beamInfo.isExternal)
 				{
-					Point3f refrDir = r0/sqrt(s) + normal;
-					Normalize(refrDir);
+					Point3f r0 = incidentDir/cosIncident - normal;
 
-					double cosRefr = DotProduct(normal, refrDir);
+					Point3f reflDir = r0 - normal;
+					Normalize(reflDir);
+					inBeam.direction = reflDir;
 
-					complex tmp1 = refrIndex*cosRefr;
-					complex tmp = 2.0*tmp0;
-					complex Tv0 = tmp1 + cosIncident;
-					complex Th0 = tmp0 + cosRefr;
+					Point3f scatteringNormal;
+					CrossProduct(normal, incidentDir, scatteringNormal);
+					Normalize(scatteringNormal);
+					incidentBeam.RotatePlane(scatteringNormal);
 
-					SetBeam(outBeam, incidentBeam, refrDir, scatteringNormal,
-							tmp/Tv0, tmp/Th0);
+					inBeam.e = scatteringNormal;
 
-					complex Tv = (cosIncident - tmp1)/Tv0;
-					complex Th = (tmp0 - cosRefr)/Th0;
-					SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Tv, Th);
+					double s = 1.0/(Nr*cosI_sqr) - Norm(r0);
+					complex tmp0 = refrIndex*cosIncident;
+
+					if (s > DBL_EPSILON)
+					{
+						Point3f refrDir = r0/sqrt(s) + normal;
+						Normalize(refrDir);
+
+						double cosRefr = DotProduct(normal, refrDir);
+
+						complex tmp1 = refrIndex*cosRefr;
+						complex tmp = 2.0*tmp0;
+						complex Tv0 = tmp1 + cosIncident;
+						complex Th0 = tmp0 + cosRefr;
+
+						SetBeam(outBeam, incidentBeam, refrDir, scatteringNormal,
+								tmp/Tv0, tmp/Th0);
+
+						complex Tv = (cosIncident - tmp1)/Tv0;
+						complex Th = (tmp0 - cosRefr)/Th0;
+						SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Tv, Th);
+
+						if (m_isOpticalPath)
+						{
+							CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+						}
+
+						assert(treeSize < MAX_BEAM_REFL_NUM);
+						outBeam.track = incidentBeam.track;// DEB
+						outBeam.track.push_back(facetId); // DEB
+
+//						if (beamInfo.beam.track.size() == 1
+//								&& facetId == 16
+//								&& beamInfo.beam.track.at(0) == 8) //DEB
+//							int fff = 0;
+						tree[treeSize++] = BeamInfoConcave(outBeam, facetId, beamInfo.dept+1, true);
+					}
+					else /// case of the complete internal reflection
+					{
+						const double bf = Nr*(1.0 - cosI_sqr) - 1.0;
+
+						double im = (bf > 0) ? sqrt(bf)
+											 : 0;
+
+						const complex sq(0, im);
+						complex tmp = refrIndex*sq;
+						complex Rv = (cosIncident - tmp)/(tmp + cosIncident);
+						complex Rh = (tmp0 - sq)/(tmp0 + sq);
+
+						SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Rv, Rh);
+
+						if (m_isOpticalPath)
+						{
+							Point3f center = outBeam.Center();
+							inBeam.D = DotProduct(-center, inBeam.direction);
+
+							double temp = DotProduct(incidentDir, center);
+
+							inBeam.opticalPath = incidentBeam.opticalPath
+									+ sqrt(Nr)*fabs(temp + incidentBeam.D);
+						}
+					}
+				}
+				else /// case of external beam incidents to facet
+				{
+//					/// rotate polarization plane // TODO: доделать
+//					{
+//						Point3f newBasis;
+//						CrossProduct(normal, -incidentDir, newBasis);
+//						Normalize(newBasis);
+//						inBeam.e = ???;
+//						inBeam.direction = incidentDir;
+//						inBeam.RotatePlane(newBasis);
+//					}
+
+					Point3f refrDir, reflDir;
+
+//					double cosI = cosIncident;
+//					Point3f incDir = incidentDir;
+
+					double cosI = DotProduct(normal, -incidentDir);// NOTE: используется косинус между двумя сонаправленными векторами (в отличие от остальных случаев)
+					Point3f incDir = -incidentDir;
+
+					SplitBeamDirection(incDir, cosI, normal,
+									   reflDir, refrDir);
+
+					double cosRelr = DotProduct(normal, reflDir);
+
+					complex Tv00 = refrIndex*cosIncident;
+					complex Th00 = refrIndex*cosRelr;
+
+					complex Tv0 = Tv00 + cosRelr;
+					complex Th0 = Th00 + cosIncident;
+
+					complex Tv = (Tv00 - cosRelr)/Tv0; // OPT
+					complex Th = (cosIncident - Th00)/Th0;
+					SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
+
+					double cosInc2 = (2.0*cosIncident);
+					SetBeam(inBeam, inBeam, reflDir, inBeam.e,
+							cosInc2/Tv0, cosInc2/Th0);
 
 					if (m_isOpticalPath)
 					{
@@ -407,35 +499,15 @@ if (facetId == 6 && beamInfo.beam.track.size() == 2
 					assert(treeSize < MAX_BEAM_REFL_NUM);
 					outBeam.track = incidentBeam.track;// DEB
 					outBeam.track.push_back(facetId); // DEB
-					tree[treeSize++] = BeamInfoConcave(outBeam, facetId, beamInfo.dept+1, true);
-				}
-				else /// case of the complete internal reflection
-				{
-					const double bf = Nr*(1.0 - cosI_sqr) - 1.0;
 
-					double im = (bf > 0) ? sqrt(bf)
-										 : 0;
-
-					const complex sq(0, im);
-					complex tmp = refrIndex*sq;
-					complex Rv = (cosIncident - tmp)/(tmp + cosIncident);
-					complex Rh = (tmp0 - sq)/(tmp0 + sq);
-
-					SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Rv, Rh);
-
-					if (m_isOpticalPath)
-					{
-						Point3f center = outBeam.Center();
-						inBeam.D = DotProduct(-center, inBeam.direction);
-
-						double temp = DotProduct(incidentDir, center);
-
-						inBeam.opticalPath = incidentBeam.opticalPath
-								+ sqrt(Nr)*fabs(temp + incidentBeam.D);
-					}
+					tree[treeSize++] = BeamInfoConcave(outBeam, facetId, beamInfo.dept+1, false/*true*/);
 				}
 			}
 
+//if (beamInfo.beam.track.size() == 1
+//		&& facetId == 16
+//		&& beamInfo.beam.track.at(0) == 8) //DEB
+//	int fff = 0;
 			assert(treeSize < MAX_BEAM_REFL_NUM);
 			inBeam.track = incidentBeam.track;// DEB
 			inBeam.track.push_back(facetId); // DEB
@@ -523,10 +595,10 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 
 	SetPolygonByFacet(facet, size, resultPolygon); /// set origin polygon
 
-	if (DotProduct(originNormal, beamInfo.beam.direction) < 0)
-	{
-		return;
-	}
+//	if (DotProduct(originNormal, beamInfo.beam.direction) < 0)
+//	{
+//		return;
+//	}
 
 	if (fabs(originNormal.cx) > 0.5)
 	{

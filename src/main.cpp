@@ -53,10 +53,10 @@ void Calculate()
 	double radius = 40;
 	double halfHeight = 100;
 	complex refractionIndex = complex(1.31, 0.0);
-	int orNumber_gamma = 801;
-	int orNumber_beta = 800;
+	int orNumber_gamma = 101;
+	int orNumber_beta = 100;
 	int ThetaNumber = 180;
-	int interReflNum = 3;
+	int interReflNum = 4;
 	bool isRandom = false;
 
 	bool isOpticalPath = false;
@@ -77,7 +77,7 @@ void Calculate()
 		break;
 	case 10:
 //		particle = new Hexagonal(radius, halfHeight, refractionIndex); // DEB
-		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, -10);
+		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, 10);
 		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
 									polarizationBasis, interReflNum);
 		betaNorm = M_PI/(2.0*orNumber_beta); /// TODO: какое д/б betaNorm?
@@ -186,18 +186,18 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 	// DEB
 //	beta = 15*M_PI/180;
 //	gamma = 30*M_PI/180;
-	beta = (68 + 0.5)*betaNorm;
-	gamma = (98 + 0.5)*gammaNorm;
-	tracer.RotateParticle(beta, gamma);
-	tracer.SplitBeamByParticle(outcomingBeams, square);
-	HandleBeams(outcomingBeams, sin(beta), tracer);
+//	beta = (68 + 0.5)*betaNorm;
+//	gamma = (98 + 0.5)*gammaNorm;
+//	tracer.RotateParticle(beta, gamma);
+//	tracer.SplitBeamByParticle(outcomingBeams, square);
+//	HandleBeams(outcomingBeams, sin(beta), tracer);
 
-	for (int i = 0; i < orNumber_beta; ++i)
+	for (int i = 0; i < /*101*/orNumber_beta; ++i)
 	{
 		beta = (i + 0.5)*betaNorm;
 		betaDistrProbability = sin(beta);
 
-		for (int j = 0; j < orNumber_gamma; ++j)
+		for (int j = 0; j < /*251*/orNumber_gamma; ++j)
 		{
 			gamma = (j + 0.5)*gammaNorm;
 
@@ -306,6 +306,24 @@ void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
 	}
 }
 
+bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compared)
+{
+	if (track.size() != compared.size())
+	{
+		return false;
+	}
+
+	for (int i = 0; i < compared.size(); ++i)
+	{
+		if (track.at(i) != compared.at(i))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
 	ddddd += outBeams.size();//DEB
@@ -314,6 +332,14 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams.at(i);
+
+//		if (!(IsMatchTrack(beam.track, {8,16,13,8})
+//				/*|| IsMatchTrack(beam.track, {7,11,15,9})
+//				|| IsMatchTrack(beam.track, {8,11,13,8})*/))
+//		{
+//			continue;
+//		}
+
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
 //		if (i == 149)
@@ -360,12 +386,12 @@ ee += Area;//DEB
 //			bf.Identity();
 			mxd.insert(0, ZenAng, Area*bf);
 
-			count += (int)Area;
-			if (ZenAng == 123 /*&& Area > 941.782 && Area < 941.784*/)
-				WW << count << std::endl;//int fff = 0;
+//			count += (int)Area;
+//			if (ZenAng == 123 /*&& Area > 941.782 && Area < 941.784*/)
+//				WW << count << std::endl;//int fff = 0;
 
-			if (count < 0)
-				int fff = 0;
+//			if (count < 0)
+//				int fff = 0;
 			assert(Area >= 0);
 //			if (isinf(mxd(0, ZenAng, 0, 0)))
 //				int fff = 0; // DEB
