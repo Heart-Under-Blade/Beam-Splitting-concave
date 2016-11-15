@@ -148,8 +148,7 @@ int main(int argc, char* argv[])
 		}
 
 		double re = atof(argv[i++]);
-		double im = atof(argv[i++]);
-		refractionIndex = complex(re, im);
+		refractionIndex = complex(re, 0.0);
 
 		orNumber.gamma = atoi(argv[i++]);
 		orNumber.beta = atoi(argv[i++]);
