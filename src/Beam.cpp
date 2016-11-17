@@ -9,21 +9,26 @@
 Beam::Beam()
 {
 	opticalPath = 0;
-	shapeSize = 0;
+	size = 0;
 }
 
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
-	shapeSize = other.shapeSize;
 	D = other.D;
 	e = other.e;
 	direction = other.direction;
 
-	for (int i = 0; i < other.shapeSize; ++i)
+	size = other.size;
+
+	for (int i = 0; i < other.size; ++i)
 	{
-		shape[i] = other.shape[i];
+		polygon[i] = other.polygon[i];
 	}
+
+	facetId = other.facetId;
+	dept = other.dept;
+	isExternal = other.isExternal;
 
 	track = other.track; // DEB
 }
@@ -162,22 +167,10 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 	e = newBasis;
 }
 
-Point3f Beam::Center() const
-{
-	Point3f p(0, 0, 0);
-
-	for (int i = 0; i < shapeSize; ++i)
-	{
-		p = p + shape[i];
-	}
-
-	return p/shapeSize;
-}
-
 void Beam::AddVertex(const Point3f &vertex)
 {
-	shape[shapeSize] = vertex;
-	++shapeSize;
+	polygon[size] = vertex;
+	++size;
 }
 
 void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2)

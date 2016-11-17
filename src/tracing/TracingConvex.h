@@ -16,7 +16,7 @@ public:
 
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &outBeams) override; ///> for predefined trajectories
+
 protected:
-	void TraceInternalReflections(BeamInfo *tree, int treesize,
-								  std::vector<Beam> &outBeams);
+	void TraceInternalReflections(std::vector<Beam> &outBeams);
 };

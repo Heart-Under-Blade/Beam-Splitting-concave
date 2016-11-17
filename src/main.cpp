@@ -367,12 +367,16 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 	{
 		Beam &beam = outBeams.at(i);
 
-//		if (!(IsMatchTrack(beam.track, {8,16,13,8})
-//				/*|| IsMatchTrack(beam.track, {7,11,15,9})
-//				|| IsMatchTrack(beam.track, {8,11,13,8})*/))
+//#ifdef _DEBUG
+//		if (!(IsMatchTrack(beam.track, {2,13,6,5,4})
+//			  || IsMatchTrack(beam.track, {2,12,6,5,4})
+//			|| IsMatchTrack(beam.track, {2,17,6,5,4})
+//			  || IsMatchTrack(beam.track, {5,4,15,3,1})
+//				/*|| IsMatchTrack(beam.track, {9,11,17,6,7})*/))
 //		{
 //			continue;
 //		}
+//#endif
 
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 

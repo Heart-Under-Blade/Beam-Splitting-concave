@@ -11,9 +11,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 {
 	/// TODO: отделить функцию высчитывания площади осв. поверхности
 	lightSurfaceSquare = 0;
-
-	BeamInfo tree[MAX_BEAM_REFL_NUM]; /// beam info tree (based on stack)
-	int treeSize = 0;
+	m_treeSize = 0;
 
 	/// first extermal beam
 	for (int facetIndex = 0; facetIndex < m_particle->facetNum; ++facetIndex)
@@ -21,7 +19,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 		const Point3f &extNormal = m_particle->externalNormals[facetIndex];
 		double cosIncident = DotProduct(m_startBeam.direction, extNormal);
 
-		if (cosIncident < EPS_COS_89) /// beam is not incident to this facet
+		if (cosIncident < EPS_COS_90) /// beam is not incident to this facet
 		{
 			continue;
 		}
@@ -30,11 +28,14 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 		SplitExternalBeamByFacet(facetIndex, cosIncident, inBeam, outBeam);
 
 		outBeams.push_back(outBeam);
-		tree[treeSize++] = BeamInfo{inBeam, facetIndex, 0};
+		m_tree[m_treeSize] = inBeam;
+		m_tree[m_treeSize].facetId = facetIndex;
+		m_tree[m_treeSize].dept = 0;
+		++m_treeSize;
 //		lightSurfaceSquare += outBeam.Square()*cosIncident;
 	}
 
-	TraceInternalReflections(tree, treeSize, outBeams);
+	TraceInternalReflections(outBeams);
 }
 
 void TracingConvex::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
@@ -43,21 +44,20 @@ void TracingConvex::SplitBeamByParticle(const std::vector<std::vector<int>> &tra
 
 }
 
-void TracingConvex::TraceInternalReflections(BeamInfo *tree, int treesize,
-											 std::vector<Beam> &outBeams)
+void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 {
-	while (treesize != 0)
+	while (m_treeSize != 0)
 	{
-		BeamInfo info = tree[--treesize];
+		Beam beam = m_tree[--m_treeSize];
 
-		if (isEnough(info))
+		if (isEnough(beam))
 		{
 			continue;
 		}
 
 		for (int facetIndex = 0; facetIndex < m_particle->facetNum; ++facetIndex)
 		{
-			if (facetIndex == info.facetId)
+			if (facetIndex == beam.facetId)
 			{
 				continue;
 			}
@@ -66,14 +66,17 @@ void TracingConvex::TraceInternalReflections(BeamInfo *tree, int treesize,
 
 			try
 			{
-				SplitInternalBeamByFacet(info.beam, facetIndex, inBeam, outBeams);
+				SplitInternalBeamByFacet(beam, facetIndex, inBeam, outBeams);
 			}
 			catch (const std::exception &)
 			{
 				continue;
 			}
 
-			tree[treesize++] = BeamInfo{inBeam, facetIndex, info.dept+1};
+			m_tree[m_treeSize] = inBeam;
+			m_tree[m_treeSize].facetId = facetIndex;
+			m_tree[m_treeSize].dept = beam.dept+1;
+			++m_treeSize;
 		}
 	}
 }
@@ -84,8 +87,8 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 	const double Eps = 1e7*DBL_EPSILON;
 
 	Point3f normal;
-	Point3f p1 = beam.shape[1] - beam.shape[0];
-	Point3f p2 = beam.shape[2] - beam.shape[0];
+	Point3f p1 = beam.polygon[1] - beam.polygon[0];
+	Point3f p2 = beam.polygon[2] - beam.polygon[0];
 	CrossProduct(p1, p2, normal);
 
 	double e = fabs(DotProduct(normal, beam.direction));
@@ -97,12 +100,12 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 
 	double square = 0;
 	{
-		const Point3f &basePoint = beam.shape[0];
-		Point3f p1 = beam.shape[1] - basePoint;
+		const Point3f &basePoint = beam.polygon[0];
+		Point3f p1 = beam.polygon[1] - basePoint;
 
-		for (int i = 2; i < beam.shapeSize; ++i)
+		for (int i = 2; i < beam.size; ++i)
 		{
-			Point3f p2 = beam.shape[i] - basePoint;
+			Point3f p2 = beam.polygon[i] - basePoint;
 			Point3f res;
 			CrossProduct(p1, p2, res);
 			square += sqrt(Norm(res));

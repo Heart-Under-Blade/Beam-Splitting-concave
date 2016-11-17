@@ -9,15 +9,8 @@
 
 #define MAX_BEAM_REFL_NUM 128
 
-#define EPS_COS_89	1.7453292519943295769148298069306e-10	//cos(89.99999999)
+#define EPS_COS_90	1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00	0.99999999998254670756866631966593		//1- cos(89.99999999)
-
-struct BeamInfo
-{
-	Beam beam;
-	int facetId;
-	int dept;
-};
 
 class Tracing
 {
@@ -53,6 +46,9 @@ protected:
 	int m_interReflectionNumber;
 	Beam m_startBeam;
 
+	Beam m_tree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
+	int m_treeSize;
+
 	const double FAR_ZONE_DISTANCE = 10000.0;
 	const double LOW_ENERGY_LEVEL = 2e-12;
 
@@ -72,7 +68,7 @@ protected:
 	void SplitBeamDirection(const Point3f &incidentDir, double cosIncident, const Point3f &normal,
 								Point3f &refleDir, Point3f &refraDir) const;
 
-	void SetBeamShapesByFacet(int facetIndex, Beam &inBeam, Beam &outBeam) const;
+	void SetBeamByFacet(int facetId, Beam &beam) const;
 
 	void SetOutputBeam(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
 
@@ -86,7 +82,7 @@ protected:
 
 	void InvertBeamShapeOrder(Beam &outBeam, const Beam &inBeam);
 
-	bool isEnough(const BeamInfo &info);
+	bool isEnough(const Beam &beam);
 
 	void SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 								  Beam &inBeam, Beam &outBeam);

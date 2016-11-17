@@ -15,4 +15,4 @@ Point3f NormalToFacet(const Point3f *facet);
 
 void CopyPoints(Point3f *points, Point3f *result, int size);
 
-Point3f CenterOfFacet(const Point3f *facet, int size);
+Point3f CenterOfPolygon(const Point3f *facet, int size);

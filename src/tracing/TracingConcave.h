@@ -5,20 +5,6 @@
 
 typedef std::vector<std::vector<Point3f>> Polygons;
 
-struct BeamInfoConcave : public BeamInfo
-{// OPT: попробовать объеденить с Beam
-	bool isExternal;
-
-	BeamInfoConcave() {}
-	BeamInfoConcave(Beam b, int fi, int d, bool ie)
-	{
-		beam = b;
-		facetId = fi;
-		dept = d;
-		isExternal = ie;
-	}
-};
-
 /** NOTE: пучки выходят со случайно ориентированными вершинами */
 class TracingConcave : public Tracing
 {
@@ -46,12 +32,9 @@ private:
 private:
 	double MeasureMinDistanceToFacet(int facetId, const Point3f &beamDir);
 	void SortFacets(int number, const Point3f &beamDir, int *facetIds); ///< use fast sort algorithm
-	void SelectVisibleFacetsExternal(const Beam &beam, int *facetIndices,
-									 int &indicesNumber);
-	void SelectVisibleFacetsInternal(const BeamInfoConcave &beamInfo, int *facetIndices,
-									 int &indicesNumber);
+//	void FindVisibleFacets(const Beam &beam, int *facetIds, int &idNumber);
 	void CutShadowsFromFacet(const Point3f *facet, int size, int *facetIds,
-								int previewFacetCount, const BeamInfoConcave &beamInfo,
+								int previewFacetCount, const Beam &beam,
 								ClipperLib::Paths &resultFacet);
 
 	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
@@ -82,11 +65,11 @@ private:
 
 	double SquareOfPolygon(const std::vector<Point3f> &polygon) const;
 
-	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
+	void SwapCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
 	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
 
-	void CutReflectedBeam(const BeamInfoConcave &beamInfo, Beam &incidentBeam);
+	void CutReflectedBeam(const Beam &beam, Beam &incidentBeam);
         
 	double AreaByClipper(const Beam &beam, const Point3f &normal) const;
 
@@ -94,11 +77,20 @@ private:
 
 	void InversePolygonOrder(ClipperLib::Path &polygon);
 
-	void CatchExternalBeam(const BeamInfoConcave &beamInfo, std::vector<Beam> &outBeams);
+	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &outBeams);
+
+	void PushBeamToTree(/*const*/ Beam &beam, int facetId, int dept, bool isExternal);
+
+	void PrepareVisibleFacets(const Beam &beam, int *facetIds, int &idNumber);
+
+	void SelectVisibleFacetsExternal(const Beam &beam, int *facetIndices,
+									 int &indicesNumber);
+	void SelectVisibleFacetsInternal(const Beam &beam, int *facetIndices,
+									 int &indicesNumber);
+	void TurnPolygonToPlaneXOY(Paths &resultPolygon, Point3f &beamNormal);
 
 protected:
-	void TraceInternalReflections(BeamInfoConcave *tree, int size,
-								  std::vector<Beam> &outBeams);
+	void TraceInternalReflections(std::vector<Beam> &outBeams);
 };
 
 void MeasureZ(ClipperLib::IntPoint & a1, ClipperLib::IntPoint & a2,
