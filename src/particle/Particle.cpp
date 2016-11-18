@@ -10,8 +10,8 @@ Particle::Particle(double p_radius, double p_halfHeight,
 	double re = real(refractionIndex);
 	double im = imag(refractionIndex);
 	double re_sqr = re*re;
-	refrI_sqr_re = re_sqr - im*im;
-	refrI_sqr_im = 4*re_sqr*im;
+	refrI_coef_re = re_sqr - im*im;
+	refrI_coef_im = 4*re_sqr*im;
 }
 
 void Particle::SetRotateMatrix(double beta, double gamma, double alpha)

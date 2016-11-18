@@ -42,9 +42,13 @@ private:
 	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &a_dir, const Point3f &b_normal,
 							 ClipperLib::Paths &projection);
 
-	void SetBeamShapeByPolygon(Beam &beam, const ClipperLib::Paths &result);
+	void SetBeamShapeByPolygon(Beam &beam, const ClipperLib::Path &result);
 
 	void CutBeamShapeByFacet(int facetId, const Beam &beam, const Point3f &shapeNormal,
+							 ClipperLib::Paths &result);
+
+	void CutBeamShapeByFacet(ClipperLib::Paths &beam, int facetId,
+							 const Point3f &direction, const Point3f &shapeNormal,
 							 ClipperLib::Paths &result);
 
 	void DivideConcavePolygon(const Point3f *polygon, int size,
@@ -65,7 +69,7 @@ private:
 
 	double SquareOfPolygon(const std::vector<Point3f> &polygon) const;
 
-	void SwapCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
+	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
 	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
 
@@ -87,8 +91,6 @@ private:
 									 int &indicesNumber);
 	void SelectVisibleFacetsInternal(const Beam &beam, int *facetIndices,
 									 int &indicesNumber);
-	void TurnPolygonToPlaneXOY(Paths &resultPolygon, Point3f &beamNormal);
-
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);
 };

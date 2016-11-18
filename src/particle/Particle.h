@@ -34,8 +34,8 @@ public:
 	int vertexNums[MAX_FACET_NUM];
 
 	complex refractionIndex;	///< complex value of refraction index of the particle
-	double refrI_sqr_re;		///< real part of the sqr of refraction index
-	double refrI_sqr_im;		///< imaginary part of the sqr of refraction index
+	double refrI_coef_re;		///< real part of the sqr of refraction index
+	double refrI_coef_im;		///< imaginary part of the sqr of refraction index
 
 	double halfHeight;
 

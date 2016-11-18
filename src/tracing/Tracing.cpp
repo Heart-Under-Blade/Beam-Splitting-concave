@@ -219,8 +219,8 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 
 	double Nr;
 	{
-		double re = m_particle->refrI_sqr_re;
-		double im = m_particle->refrI_sqr_im;
+		double re = m_particle->refrI_coef_re;
+		double im = m_particle->refrI_coef_im;
 		Nr = (re + sqrt(re*re + im/cosInc_sqr))/2.0;
 	}
 
@@ -481,8 +481,8 @@ void Tracing::SplitBeamDirection(const Point3f &incidentDir, double cosIncident,
 								 const Point3f &normal,
 								 Point3f &refleDir, Point3f &refraDir) const
 {
-	const double &re = m_particle->refrI_sqr_re;
-	const double &im = m_particle->refrI_sqr_im;
+	const double &re = m_particle->refrI_coef_re;
+	const double &im = m_particle->refrI_coef_im;
 
 	Point3f tmp0 = normal - incidentDir/cosIncident;
 

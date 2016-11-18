@@ -5,6 +5,7 @@
 
 #include "global.h"
 #include "vector_lib.h"
+#include <assert.h>
 
 Beam::Beam()
 {
@@ -137,9 +138,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 		return;
 	}
 
-#ifdef _DEBUG
-	if(fabs(cs) > 1.0+DBL_EPSILON)  throw " Rot: Error!";
-#endif
+	assert(fabs(cs) <= 1.0+DBL_EPSILON);
 
 	Point3f k;
 	CrossProduct(e, newBasis, k);
