@@ -218,10 +218,8 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 	double square = 0;
 
 	// DEB
-//	beta = 15*M_PI/180;
-//	gamma = 30*M_PI/180;
-//	beta = (68 + 0.5)*betaNorm;
-//	gamma = (98 + 0.5)*gammaNorm;
+//	beta = (29 + 0.5)*betaNorm;
+//	gamma = (35 + 0.5)*gammaNorm;
 //	tracer.RotateParticle(beta, gamma);
 //	tracer.SplitBeamByParticle(outcomingBeams, square);
 //	HandleBeams(outcomingBeams, sin(beta), tracer);
@@ -233,6 +231,8 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 
 		for (int j = 0; j < /*251*/orNumber_gamma; ++j)
 		{
+//			std::cout << j << std::endl;
+
 			gamma = (j + 0.5)*gammaNorm;
 
 			tracer.RotateParticle(beta, gamma);

@@ -40,7 +40,7 @@ private:
 	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
 							 const Point3f &facetNormal, Point3f &projection);
 	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &a_dir, const Point3f &b_normal,
-							 ClipperLib::Paths &projection);
+							 ClipperLib::Path &projection);
 
 	void SetBeamShapeByPolygon(Beam &beam, const ClipperLib::Path &result);
 
@@ -69,7 +69,7 @@ private:
 
 	double SquareOfPolygon(const std::vector<Point3f> &polygon) const;
 
-	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
+	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Path &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
 	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
 
@@ -91,6 +91,8 @@ private:
 									 int &indicesNumber);
 	void SelectVisibleFacetsInternal(const Beam &beam, int *facetIndices,
 									 int &indicesNumber);
+	void RemoveEmptyPolygons(ClipperLib::Paths &result);
+        
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);
 };
