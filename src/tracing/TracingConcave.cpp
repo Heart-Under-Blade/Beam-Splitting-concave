@@ -367,6 +367,8 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				SetBeamShapeByPolygon(outBeam, cuttedFacet.at(0));
 			}
 
+			bool isIncidentDiveided = false;
+
 			if (isExternal)
 			{
 				const Point3f &previewNormal = m_particle->externalNormals[incidentBeam.facetId];
@@ -395,9 +397,11 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						{
 							Beam b = incidentBeam;
 							SetBeamShapeByPolygon(b, p);
-							outBeams.push_back(b);
+							PushBeamToTree(b, b.facetId, b.dept, b.isExternal);
+//							outBeams.push_back(b);
 						}
 
+						isIncidentDiveided = true;
 						incidentBeam.size = 0;
 					}
 				}
@@ -563,6 +567,11 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					outBeam.track = incidentBeam.track;// DEB
 
 					PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
+				}
+
+				if (isIncidentDiveided)
+				{
+					break;
 				}
 			}
 
