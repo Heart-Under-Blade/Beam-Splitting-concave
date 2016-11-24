@@ -170,7 +170,7 @@ void Tracing::CalcOpticalPathInternal(double Nr, const Beam &incidentBeam,
 bool Tracing::isEnough(const Beam &beam)
 {
 	double j_norm = beam.JMatrix.Norm();
-	return (j_norm < LOW_ENERGY_LEVEL) || (beam.dept >= m_interReflectionNumber);
+	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
 }
 
 void Tracing::InvertBeamShapeOrder(Beam &outBeam, const Beam &inBeam)
@@ -331,7 +331,7 @@ bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
 	const Point3f &dir = inputBeam.direction;
 	__m128 _direction = _mm_setr_ps(dir.cx, dir.cy, dir.cz, 0.0);
 
-	__m128 _d_param = _mm_set_ps1(m_particle->normals[facetIndex].D_PARAM);
+	__m128 _d_param = _mm_set_ps1(m_particle->normals[facetIndex].d_param);
 	__m128 _dp0 = _mm_dp_ps(_direction, _normal, MASK_FULL);
 
 	__m128 _sign_mask = _mm_set1_ps(-0.f);

@@ -6,6 +6,11 @@ double DotProduct(const Point3f &v1, const Point3f &v2)
 	return v1.cx*v2.cx + v1.cy*v2.cy + v1.cz*v2.cz;
 }
 
+double DotProductD(const Point3d &v1, const Point3d &v2)
+{
+	return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+}
+
 double Norm(const Point3f &point)
 {
 	return point.cx*point.cx + point.cy*point.cy + point.cz*point.cz;

@@ -4,7 +4,7 @@
 #define cx point[0]
 #define cy point[1]
 #define cz point[2]
-#define D_PARAM point[3]
+#define d_param point[3]
 
 /**
  * @brief The Point3 struct
@@ -13,12 +13,6 @@
 struct Point3f
 {
 	float point[4]; /// coordinates
-
-	/// REF: раскоментить и проверить не упала ли скорость трассировки
-//	float &X = point[0];
-//	float &Y = point[1];
-//	float &Z = point[2];
-//	float &D_PARAM = point[2];
 
 	Point3f() {}
 
@@ -85,13 +79,25 @@ struct Point3d
 	double x;
 	double y;
 	double z;
+	double d;
 
 	Point3d() {}
 
-	Point3d(double p_x, double p_y, double p_z) {
+	Point3d(double p_x, double p_y, double p_z, double p_d = 0.0) {
 		x = p_x;
 		y = p_y;
 		z = p_z;
+		d = p_d;
+	}
+
+	Point3d operator * (double value) const
+	{
+		return Point3d(x*value, y*value, z*value);
+	}
+
+	Point3d operator - (const Point3d &value) const
+	{
+		return Point3d(x - value.x, y - value.y, z - value.z);
 	}
 };
 

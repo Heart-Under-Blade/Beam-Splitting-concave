@@ -17,6 +17,7 @@ public:
 
 	void AddVertex(const Point3f &vertex);
 	void MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2);
+	void SetFormByOther(const Beam &other);
 
 	Beam & operator = (const Beam &other);
 
@@ -26,7 +27,7 @@ public:
 	Point3f e;						///< basis of polarization plane
 
 	int facetId;					///< last reflected facet
-	int dept;						///< number of preview reflections
+	int level;						///< number of preview reflections
 	bool isExternal;				///< beam state towards the particle (inside or outside)
 
 	/// OPT: сделать др. вариант класса или трассировки

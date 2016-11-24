@@ -28,7 +28,7 @@ void Beam::Copy(const Beam &other)
 	}
 
 	facetId = other.facetId;
-	dept = other.dept;
+	level = other.level;
 	isExternal = other.isExternal;
 
 	track = other.track; // DEB
@@ -178,4 +178,14 @@ void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &co
 	JMatrix.m12 = coef1 * other.JMatrix.m12;
 	JMatrix.m21 = coef2 * other.JMatrix.m21;
 	JMatrix.m22 = coef2 * other.JMatrix.m22;
+}
+
+void Beam::SetFormByOther(const Beam &other)
+{
+	size = other.size;
+
+	for (int i = 0; i < other.size; ++i)
+	{
+		polygon[i] = other.polygon[i];
+	}
 }

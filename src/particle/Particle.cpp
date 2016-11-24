@@ -66,7 +66,7 @@ void Particle::SetDParams()
 	for (int i = 0; i < facetNum; ++i)
 	{
 		double d = DotProduct(facets[i][0], normals[i]);
-		normals[i].D_PARAM = -d;
+		normals[i].d_param = -d;
 	}
 }
 
@@ -77,7 +77,7 @@ void Particle::SetExternalNormals()
 		externalNormals[i].cx = -normals[i].cx;
 		externalNormals[i].cy = -normals[i].cy;
 		externalNormals[i].cz = -normals[i].cz;
-		externalNormals[i].D_PARAM = -normals[i].D_PARAM;
+		externalNormals[i].d_param = -normals[i].d_param;
 	}
 }
 

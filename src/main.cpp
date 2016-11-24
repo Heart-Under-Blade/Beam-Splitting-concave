@@ -28,7 +28,7 @@ orNumber;
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
 
-std::ofstream WW("WW.dat", std::ios::out); //DEB
+//std::ofstream WW("WW.dat", std::ios::out); //DEB
 
 Arr2D mxd(0, 0, 0, 0);
 double SizeBin;
@@ -127,8 +127,8 @@ int main(int argc, char* argv[])
 	double radius = 40;
 	double cavityDept = 10;
 	complex refractionIndex = complex(1.31, 0.0);
-	orNumber.gamma = 101;
-	orNumber.beta = 100;
+	orNumber.gamma = 301;
+	orNumber.beta = 300;
 	int thetaNumber = 180;
 	int interReflNum = 4;
 	bool isRandom = false;
@@ -218,8 +218,8 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 	double square = 0;
 
 	// DEB
-//	beta = (29 + 0.5)*betaNorm;
-//	gamma = (35 + 0.5)*gammaNorm;
+//	beta = (166 + 0.5)*betaNorm;
+//	gamma = (261 + 0.5)*gammaNorm;
 //	tracer.RotateParticle(beta, gamma);
 //	tracer.SplitBeamByParticle(outcomingBeams, square);
 //	HandleBeams(outcomingBeams, sin(beta), tracer);
@@ -229,7 +229,7 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 		beta = (i + 0.5)*betaNorm;
 		betaDistrProbability = sin(beta);
 
-		for (int j = 0; j < /*251*/orNumber_gamma; ++j)
+		for (int j = 0; j < orNumber_gamma; ++j)
 		{
 //			std::cout << j << std::endl;
 

@@ -30,7 +30,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 		outBeams.push_back(outBeam);
 		m_tree[m_treeSize] = inBeam;
 		m_tree[m_treeSize].facetId = facetIndex;
-		m_tree[m_treeSize].dept = 0;
+		m_tree[m_treeSize].level = 0;
 		++m_treeSize;
 //		lightSurfaceSquare += outBeam.Square()*cosIncident;
 	}
@@ -75,7 +75,7 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 			m_tree[m_treeSize] = inBeam;
 			m_tree[m_treeSize].facetId = facetIndex;
-			m_tree[m_treeSize].dept = beam.dept+1;
+			m_tree[m_treeSize].level = beam.level+1;
 			++m_treeSize;
 		}
 	}

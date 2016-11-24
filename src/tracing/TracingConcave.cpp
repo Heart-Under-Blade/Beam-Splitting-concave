@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <tgmath.h>
 #include <iostream> // DEB
+#include <fstream> // DEB
 
 #define MULTI_INDEX		10000000l			// index for poligon's clip operations
 #define EPS_MULTI		MULTI_INDEX/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
@@ -13,6 +14,8 @@ using namespace ClipperLib;
 
 static int outBeamNum = 0; // REF: del
 
+std::ofstream trackMapFile("WW.dat", std::ios::out);
+
 TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   bool isOpticalPath, const Point3f &polarizationBasis,
 							   int interReflectionNumber)
@@ -20,7 +23,7 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 {
 	m_startBeam.polygon[0] = -m_startBeam.direction * m_particle->halfHeight*2;
 	++m_startBeam.size;
-	m_startBeam.direction.D_PARAM = DotProduct(m_startBeam.polygon[0], m_startBeam.direction);
+	m_startBeam.direction.d_param = DotProduct(m_startBeam.polygon[0], m_startBeam.direction);
 	m_startBeam.isExternal = true;
 
 	m_clipper.ZFillFunction(MeasureZ);
@@ -73,6 +76,10 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 	SelectVisibleFacetsExternal(m_startBeam, facetIds, idNum);
 	SortFacets(idNum, m_startBeam.direction, facetIds);
 
+#ifdef _OUTPUT_TRACK
+	trackMapFile << "0 lvl: "; // DEB
+#endif
+
 	// reflecting the beam to each visible facet
 	for (int i = 0; i < idNum; ++i)
 	{
@@ -99,7 +106,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 								cuttedFacet);
 
 			if (cuttedFacet.empty() ||
-					(!cuttedFacet.empty() && cuttedFacet.at(0).empty())) /// facet is totaly shadowed by others
+					/*WTF*/(!cuttedFacet.empty() && cuttedFacet.at(0).empty())) /// facet is totaly shadowed by others
 			{
 				continue;
 			}
@@ -124,10 +131,17 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 			outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 		}
 
+#ifdef _OUTPUT_TRACK
+		trackMapFile << facetId << ", ";
+#endif
 		PushBeamToTree(inBeam, facetId, 0, false);
 		PushBeamToTree(outBeam, facetId, 0, true);
 //		lightSurfaceSquare += outBeam.Square() * cosIncident;
 	}
+
+#ifdef _OUTPUT_TRACK
+	trackMapFile.flush();
+#endif
 
 	//DEB
 //	double c = 0;
@@ -222,7 +236,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &outB
 	int idCount = 0;
 	SelectVisibleFacetsInternal(beam, facetIds, idCount);
 
-	incidentDir.D_PARAM = m_particle->normals[beam.facetId].D_PARAM;
+	incidentDir.d_param = m_particle->normals[beam.facetId].d_param;
 	SortFacets(idCount, incidentDir, facetIds);
 
 	Paths origin(1);
@@ -261,19 +275,46 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &outB
 //	}
 }
 
-void TracingConcave::PushBeamToTree(/*const */Beam &beam, int facetId, int dept,
+void TracingConcave::PushBeamToTree(/*const */Beam &beam, int facetId, int level,
 									bool isExternal)
 {
+
+/*	if (beam.track.size() >= 1
+			&& beam.track.at(0) == 11)// DEB
+		int fff = 0;
+
+	if (beam.track.size() == 0
+			&& facetId == 11) // DEB
+		int fff = 0*/;
+
+if (beam.track.size() == 0 ||
+		(beam.track.size() > 0 && facetId != beam.track.at(beam.track.size()-1)))
 	beam.track.push_back(facetId);// DEB
+
 	m_tree[m_treeSize] = beam;
 	m_tree[m_treeSize].facetId = facetId;
-	m_tree[m_treeSize].dept = dept;
+	m_tree[m_treeSize].level = level;
 	m_tree[m_treeSize].isExternal = isExternal;
 	++m_treeSize;
 }
 
+void TracingConcave::printTrack(const Beam &incidentBeam, int facetId)
+{
+	trackMapFile << "(" << incidentBeam.track.at(0);
+
+	for (int i = 1; i < incidentBeam.track.size(); ++i)
+	{
+		trackMapFile << ", ";
+		trackMapFile << incidentBeam.track.at(i);
+	}
+
+	trackMapFile << ", " << facetId << "), ";
+}
+
 void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 {
+	std::vector<Beam> buff; // для хранения разделённых пучков
+
 	while (m_treeSize != 0)
 	{
 		Beam incidentBeam = m_tree[--m_treeSize]; // OPT: попробовать поменять на ссылку
@@ -288,36 +329,39 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 			continue;
 		}
 
-//if (beamInfo.beam.track.size() == 3
-//		&& beamInfo.beam.track.at(2) == 13
-//		&& beamInfo.beam.track.at(1) == 16
-//		&& beamInfo.beam.track.at(0) == 8) //DEB
+//if (incidentBeam.track.size() >= 2
+//		&& incidentBeam.track.at(3) == 17
+//		&& incidentBeam.track.at(2) == 9
+//		&& incidentBeam.track.at(1) == 1
+//		&& incidentBeam.track.at(0) == 1) //DEB
 //	int fff = 0;
 
-//if (beamInfo.beam.track.size() == 2
-//		&& beamInfo.beam.track.at(1) == 16
-//		&& beamInfo.beam.track.at(0) == 8) //DEB
-//	int fff = 0;
+		if (incidentBeam.track.size() >= 1
+				&& incidentBeam.track.at(0) == 11)//DEB
+			int fff = 0;
 
 		Point3f &incidentDir = incidentBeam.direction;
 		const bool isExternal = incidentBeam.isExternal;
 
 		int facetIds[MAX_FACET_NUM]; // OPT: заменить макс размер на 18
 		int idCount = 0;
-		incidentDir.D_PARAM = m_particle->normals[incidentBeam.facetId].D_PARAM;
+		incidentDir.d_param = m_particle->normals[incidentBeam.facetId].d_param;
 
 		// OPT: выполнять по условию только если есть видимые вершины
 //		PrepareVisibleFacets(beam, facetIds, idCount);
 		SelectVisibleFacetsInternal(incidentBeam, facetIds, idCount);
 		SortFacets(idCount, incidentDir, facetIds);
 
-//if (beamInfo.beam.track.size() == 1
-//		&& beamInfo.beam.track.at(0) == 8) //DEB
-//	int fff = 0;
-
+#ifdef _OUTPUT_TRACK
+		trackMapFile << "\n" << incidentBeam.level << " lvl: ";//DEB
+		trackMapFile.flush();
+#endif
 		for (int i = 0; i < idCount; ++i)
 		{
 			int facetId = facetIds[i];
+
+//			if (facetId == 1 && incidentBeam.track.at(0) == 1) // DEB
+//				int fff = 0;
 
 			if (facetId == incidentBeam.facetId) // same facet
 			{
@@ -336,38 +380,58 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				continue;
 			}
 
-//if (facetId == 16 && beamInfo.facetId == 8) //DEB
-//	int fff = 0;
+			bool isDivided = false;
 
-//if (facetId == 13 && beamInfo.beam.track.size() == 2
-//		&& beamInfo.beam.track.at(1) == 16
-//		&& beamInfo.beam.track.at(0) == 8) //DEB
-//	int fff = 0;
 			if (i != 0)
 			{
-				Paths cuttedFacet(1);
+				Paths clippedBeam(1);
 				Beam bi = incidentBeam;
 				bi.isExternal = true;
 				bi.facetId = facetId;
 
 				// обрезаем пучок попадающий на грань facetId
 				CutShadowsFromFacet(outBeam.polygon, outBeam.size, facetIds,
-									i, bi, cuttedFacet);
+									i, bi, clippedBeam);
 
-				if (cuttedFacet.empty()) /// facet is totaly shadowed by others
+				if (clippedBeam.empty()) /// facet is totaly shadowed by others
 				{
 					continue;
 				}
-
-				if (isOrderReversed(NormalToFacet(outBeam.polygon), cuttedFacet.at(0)))
+				else
 				{
-					InversePolygonOrder(cuttedFacet.at(0));
-				}
+					if (clippedBeam.size() == MAX_POLYGON_RESULT)
+					{
+						if (isOrderReversed(NormalToFacet(outBeam.polygon), clippedBeam.at(0)))
+						{// OPT: попробовать удалить (возможно лишнее)
+							InversePolygonOrder(clippedBeam.at(0));
+						}
 
-				SetBeamShapeByPolygon(outBeam, cuttedFacet.at(0));
+						SetBeamShapeByPolygon(outBeam, clippedBeam.at(0));
+					}
+					else // beam had divided in several parts by facet
+					{
+						isDivided = true;
+						incidentBeam.size = 0;
+
+						for (const Path &p : clippedBeam)
+						{
+//							Beam b = outBeam;
+							Beam b = incidentBeam;
+//							b.track = incidentBeam.track;
+							SetBeamShapeByPolygon(b, p);
+							buff.push_back(b);
+						}
+					}
+//					if (isOrderReversed(NormalToFacet(outBeam.polygon), clippedBeam.at(0)))
+//					{// OPT: попробовать удалить (возможно лишнее)
+//						InversePolygonOrder(clippedBeam.at(0));
+//					}
+
+//					SetBeamShapeByPolygon(outBeam, clippedBeam.at(0));
+				}
 			}
 
-			bool isIncidentDiveided = false;
+			bool isIncidentDivided = false;
 
 			if (isExternal)
 			{
@@ -397,11 +461,14 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						{
 							Beam b = incidentBeam;
 							SetBeamShapeByPolygon(b, p);
-							PushBeamToTree(b, b.facetId, b.dept, b.isExternal);
+#ifdef _OUTPUT_TRACK
+							printTrack(incidentBeam); // DEB
+#endif
+							PushBeamToTree(b, b.facetId, b.level, b.isExternal);
 //							outBeams.push_back(b);
 						}
 
-						isIncidentDiveided = true;
+						isIncidentDivided = true;
 						incidentBeam.size = 0;
 					}
 				}
@@ -439,9 +506,27 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				}
 
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
-				outBeam.track = incidentBeam.track;// DEB
 
-				PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
+//				PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
+
+				if (isDivided)
+				{
+					for (/*const*/ Beam &b : buff)
+					{
+#ifdef _OUTPUT_TRACK
+						printTrack(incidentBeam); // DEB
+#endif
+						PushBeamToTree(b, incidentBeam.facetId, incidentBeam.level, incidentBeam.isExternal);
+					}
+				}
+				else
+				{
+#ifdef _OUTPUT_TRACK
+					printTrack(incidentBeam, facetId); // DEB
+#endif
+					outBeam.track = incidentBeam.track;// DEB
+					PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
+				}
 			}
 			else /// slopping incidence
 			{
@@ -489,10 +574,26 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 							CalcOpticalPathInternal(Nr, incBeam, inBeam, outBeam);
 						}
 
-						assert(m_treeSize < MAX_BEAM_REFL_NUM);
-						outBeam.track = incidentBeam.track;// DEB
 
-						PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
+						if (isDivided)
+						{
+							for (/*const*/ Beam &b : buff)
+							{
+#ifdef _OUTPUT_TRACK
+								printTrack(incidentBeam); // DEB
+#endif
+								PushBeamToTree(b, incidentBeam.facetId, incidentBeam.level, incidentBeam.isExternal);
+							}
+						}
+						else
+						{
+#ifdef _OUTPUT_TRACK
+							printTrack(incidentBeam, facetId); // DEB
+#endif
+							outBeam.track = incidentBeam.track;// DEB
+							PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
+						}
+//						PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
 					}
 					else /// case of the complete internal reflection
 					{
@@ -566,30 +667,62 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					assert(m_treeSize < MAX_BEAM_REFL_NUM);
 					outBeam.track = incidentBeam.track;// DEB
 
-					PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
-				}
-
-				if (isIncidentDiveided)
-				{
-					break;
+					if (isDivided)
+					{
+						for (/*const*/ Beam &b : buff)
+						{
+#ifdef _OUTPUT_TRACK
+							printTrack(incidentBeam); // DEB
+#endif
+							PushBeamToTree(b, incidentBeam.facetId, incidentBeam.level, incidentBeam.isExternal);
+						}
+					}
+					else
+					{
+#ifdef _OUTPUT_TRACK
+						printTrack(incidentBeam, facetId); // DEB
+#endif
+						PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
+					}
+//					PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
 				}
 			}
 
-//if (beamInfo.beam.track.size() == 1
-//		&& facetId == 16
-//		&& beamInfo.beam.track.at(0) == 8) //DEB
-//	int fff = 0;
+			if (isDivided)
+			{
+//				break;
+				continue;
+			}
+
 			assert(m_treeSize < MAX_BEAM_REFL_NUM);
 			inBeam.track = incidentBeam.track;// DEB
 
-			PushBeamToTree(inBeam, facetId, incidentBeam.dept+1, false);
+			if (incidentBeam.track.size() == 1
+					&& incidentBeam.track.at(0) == 11) // DEB
+				int fff = 0;
+#ifdef _OUTPUT_TRACK
+			printTrack(incidentBeam, facetId); // DEB
+			trackMapFile << "[in], ";
+#endif
+			PushBeamToTree(inBeam, facetId, incidentBeam.level+1, false);
+
+			if (isIncidentDivided)
+			{
+				break;
+			}
 		}
 
 		if (isExternal && incidentBeam.size != 0)
 		{
+//			if (incidentBeam.track.size() == 5
+//					&& incidentBeam.track.at(3) == 17
+//					&& incidentBeam.track.at(2) == 9
+//					&& incidentBeam.track.at(1) == 11
+//					&& incidentBeam.track.at(0) == 8) //DEB
+//				int fff = 0;
+
 			// посылаем обрезанный всеми гранями внешний пучок на сферу
 			outBeams.push_back(incidentBeam);
-//			++outBeamNum;// DEB
 		}
 	}
 }
@@ -745,6 +878,15 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 	}
 }
 
+void TracingConcave::ProjectPointToFacet(const Point3d &point, const Point3d &direction, const Point3d &facetNormal, Point3d &projection)
+{
+	double t = DotProductD(point, facetNormal);
+	t = t + facetNormal.d;
+	double dp = DotProductD(direction, facetNormal);
+	t = t/dp;
+	projection = point - (direction * t);
+}
+
 void TracingConcave::SetBeamShapeByPolygon(Beam &beam, const Path &result)
 {
 	int vertexNum = result.size();
@@ -759,7 +901,7 @@ void TracingConcave::SetBeamShapeByPolygon(Beam &beam, const Path &result)
 		beam.polygon[--vertexNum] = tmp;
 	}
 
-	if (beam.size <= 0 || beam.size > MAX_VERTEX_NUM) // DEB
+//	if (beam.size <= 0 || beam.size > MAX_VERTEX_NUM) // DEB
 	assert(beam.size > 0 && beam.size <= MAX_VERTEX_NUM);
 }
 
@@ -767,7 +909,7 @@ void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &di
 										 const Point3f &facetNormal, Point3f &projection)
 {
 	double t = DotProduct(point, facetNormal);
-	t = t + facetNormal.D_PARAM;
+	t = t + facetNormal.d_param;
 	double dp = DotProduct(direction, facetNormal);
 	t = t/dp;
 	projection = point - (direction * t);
@@ -782,12 +924,17 @@ void TracingConcave::ProjectFacetToFacet(const Point3f *a_facet, int a_size,
 {
 	for (int i = 0; i < a_size; ++i)
 	{
-		Point3f p;
-		ProjectPointToFacet(a_facet[i], a_dir, b_normal, p);
+//		Point3f p;
+//		ProjectPointToFacet(a_facet[i], a_dir, b_normal, p);
 
-		projection << IntPoint((cInt)std::round(p.cx * MULTI_INDEX),
-							   (cInt)std::round(p.cy * MULTI_INDEX),
-							   (cInt)std::round(p.cz * MULTI_INDEX));
+		Point3d p;
+		ProjectPointToFacet(Point3d(a_facet[i].cx, a_facet[i].cy, a_facet[i].cz),
+							Point3d(a_dir.cx, a_dir.cy, a_dir.cz),
+							Point3d(b_normal.cx, b_normal.cy, b_normal.cz, b_normal.d_param), p);
+
+		projection << IntPoint((cInt)std::round(p.x * MULTI_INDEX),
+							   (cInt)std::round(p.y * MULTI_INDEX),
+							   (cInt)std::round(p.z * MULTI_INDEX));
 	}
 }
 
@@ -976,7 +1123,7 @@ void TracingConcave::CutBeamShapeByFacet(Paths &beam, int facetId, const Point3f
 			}
 		}
 
-		ClipperLib::CleanPolygon(result[0], EPS_MULTI);
+		ClipperLib::CleanPolygons(result, EPS_MULTI);
 	}
 
 	RemoveEmptyPolygons(result);
@@ -1048,10 +1195,19 @@ void TracingConcave::CutBeamShapeByFacet(int facetId, const Beam &beam,
 			}
 		}
 
+//		if (result.size() > 1) // DEB
+//			int ggg = 0 ;
 		ClipperLib::CleanPolygons(result, EPS_MULTI);
 	}
 
+//	int a = result.size();
+//	if (result.size() > 1) // DEB
+//		int ggg = 0 ;
 	RemoveEmptyPolygons(result);
+//	if (a == 2) // DEB
+//	{
+//		int ggg = 0 ;
+//	}
 }
 
 void TracingConcave::FindDividePoint(const std::vector<Point3f> &polygon,

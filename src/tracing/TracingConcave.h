@@ -37,8 +37,12 @@ private:
 								int previewFacetCount, const Beam &beam,
 								ClipperLib::Paths &resultFacet);
 
+	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
+							 const Point3d &facetNormal, Point3d &projection);
+
 	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
 							 const Point3f &facetNormal, Point3f &projection);
+
 	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &a_dir, const Point3f &b_normal,
 							 ClipperLib::Path &projection);
 
@@ -83,7 +87,7 @@ private:
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &outBeams);
 
-	void PushBeamToTree(/*const*/ Beam &beam, int facetId, int dept, bool isExternal);
+	void PushBeamToTree(/*const*/ Beam &beam, int facetId, int level, bool isExternal);
 
 	void PrepareVisibleFacets(const Beam &beam, int *facetIds, int &idNumber);
 
@@ -93,6 +97,8 @@ private:
 									 int &indicesNumber);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
         
+	void printTrack(const Beam &incidentBeam, int facetId = 999);
+
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);
 };
