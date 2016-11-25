@@ -38,7 +38,9 @@ public:
 	Point3f polygon[MAX_VERTEX_NUM];	///< array of beam vertices (shape)
 	int size;							///< current vertex number
 
-	std::vector<int> track; // DEB
+#ifdef _WRITE_TRACK
+	std::vector<int> track;
+#endif
 
 private:
 	void RotateJMatrix(const Point3f &newBasis);

@@ -9,4 +9,4 @@
 
 // for debug
 //#define _OUTPUT_TRACK // tracks of beams outputs in file
-
+//#define _WRITE_TRACK // tracks of beams writes to beams

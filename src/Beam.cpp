@@ -31,7 +31,9 @@ void Beam::Copy(const Beam &other)
 	level = other.level;
 	isExternal = other.isExternal;
 
-	track = other.track; // DEB
+#ifdef _WRITE_TRACK
+	track = other.track;
+#endif
 }
 
 Beam::Beam(const Beam &other)

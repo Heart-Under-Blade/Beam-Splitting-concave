@@ -87,7 +87,7 @@ private:
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &outBeams);
 
-	void PushBeamToTree(/*const*/ Beam &beam, int facetId, int level, bool isExternal);
+	void PushBeamToTree(Beam &beam, int facetId, int level, bool isExternal);
 
 	void PrepareVisibleFacets(const Beam &beam, int *facetIds, int &idNumber);
 
@@ -97,7 +97,9 @@ private:
 									 int &indicesNumber);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
         
-	void printTrack(const Beam &incidentBeam, int facetId = 999);
+	void printTrack(const Beam &beam, int facetId);
+
+	void PushOutputBeamToTree(Beam &outBeam, std::vector<Beam> &buff, int facetId, bool isDivided, const Beam &incidentBeam);
 
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);

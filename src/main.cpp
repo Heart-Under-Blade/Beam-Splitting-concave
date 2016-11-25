@@ -127,8 +127,8 @@ int main(int argc, char* argv[])
 	double radius = 40;
 	double cavityDept = 10;
 	complex refractionIndex = complex(1.31, 0.0);
-	orNumber.gamma = 301;
-	orNumber.beta = 300;
+	orNumber.gamma = 101;
+	orNumber.beta = 100;
 	int thetaNumber = 180;
 	int interReflNum = 4;
 	bool isRandom = false;
@@ -218,8 +218,8 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 	double square = 0;
 
 	// DEB
-//	beta = (166 + 0.5)*betaNorm;
-//	gamma = (261 + 0.5)*gammaNorm;
+//	beta = (20 + 0.5)*betaNorm;
+//	gamma = (47 + 0.5)*gammaNorm;
 //	tracer.RotateParticle(beta, gamma);
 //	tracer.SplitBeamByParticle(outcomingBeams, square);
 //	HandleBeams(outcomingBeams, sin(beta), tracer);
@@ -422,18 +422,22 @@ ee += Area;//DEB
 			// DEB
 //			bf = matrix(4,4);
 //			bf.Identity();
+//			if (ZenAng == 3 && (int)Area == 107)
 			mxd.insert(0, ZenAng, Area*bf);
 
+//			if (ZenAng == 3)
+//				std::cout << (int)Area << std::endl;
 //			count += (int)Area;
-//			if (ZenAng == 123 /*&& Area > 941.782 && Area < 941.784*/)
+//			if (ZenAng == 3 /*&& Area > 941.782 && Area < 941.784*/)
 //				WW << count << std::endl;//int fff = 0;
 
 //			if (count < 0)
 //				int fff = 0;
-			assert(Area >= 0);
 //			if (isinf(mxd(0, ZenAng, 0, 0)))
 //				int fff = 0; // DEB
 		}
+
+		assert(Area >= 0);
 	}
 	ee = 0;// DEB
 }
