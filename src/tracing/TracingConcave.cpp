@@ -6,7 +6,7 @@
 #include <fstream> // DEB
 
 #define MULTI_INDEX		10000000l			// index for poligon's clip operations
-#define EPS_MULTI		(1.415*MULTI_INDEX)/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
+#define EPS_MULTI		(1.415*MULTI_INDEX*2)/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
 
 #define MAX_POLYGON_RESULT 1
 
@@ -111,7 +111,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 				continue;
 			}
 
-//			if (cuttedFacet.size() >= 2)
+			if (cuttedFacet.size() >= 2)
 			assert(cuttedFacet.size() < 2);
 
 			if (isOrderReversed(extNormal, cuttedFacet.at(0)))
@@ -236,6 +236,13 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &outB
 	Paths origin(1);
 	SetPolygonByFacet(beam.polygon, beam.size, origin);
 
+	if (beam.track.size() == 5
+			&& beam.track.at(4) == 12
+			&& beam.track.at(3) == 11
+			&& beam.track.at(2) == 8
+			&& beam.track.at(1) == 11
+			&& beam.track.at(0) == 8)
+		int fff = 0;
 	// cut facet projections out of beam one by one
 	for (int i = 0; i < idCount; ++i)
 	{
@@ -255,7 +262,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &outB
 		}
 	}
 
-	if (origin.size() >= 2)
+//	if (origin.size() >= 2)
 	assert(origin.size() < 2);
 
 	for (const Path &p : origin)
@@ -412,7 +419,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				CutShadowsFromFacet(outBeam.polygon, outBeam.size, facetIds,
 									i, bi, clippedBeam);
 
-				if (clippedBeam.empty()) /// facet is totaly shadowed by others
+				if (clippedBeam.empty()) /// facet is totaly shadowed by others (beam do not incedent on it)
 				{
 					continue;
 				}
@@ -741,11 +748,11 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 
 	if (fabs(originNormal.cx) > 0.5)
 	{
-		ExchangeCoords(Axis::aX, Axis::aZ, resultPolygon[0]);
+		ExchangeCoords(Axis::aX, Axis::aZ, resultPolygon);
 	}
 	else if (fabs(originNormal.cy) > 0.5)
 	{
-		ExchangeCoords(Axis::aY, Axis::aZ, resultPolygon[0]);
+		ExchangeCoords(Axis::aY, Axis::aZ, resultPolygon);
 	}
 
 	Paths clip(previewFacetCount);
@@ -757,15 +764,6 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 		const Point3f *fac = m_particle->facets[facetId];
 		int size = m_particle->vertexNums[facetId];
 		ProjectFacetToFacet(fac, size, beam.direction, originNormal, clip[i]);
-
-		if (fabs(originNormal.cx) > 0.5)
-		{
-			ExchangeCoords(Axis::aX, Axis::aZ, clip[i]);
-		}
-		else if (fabs(originNormal.cy) > 0.5)
-		{
-			ExchangeCoords(Axis::aY, Axis::aZ, clip[i]);
-		}
 
 		{	// equate similar points /// REF: возможная замена ClearPolygon
 //			for (IntPoint &p0 : resultPolygon[0])
@@ -781,6 +779,15 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 //				}
 //			}
 		}
+	}
+
+	if (fabs(originNormal.cx) > 0.5)
+	{
+		ExchangeCoords(Axis::aX, Axis::aZ, clip);
+	}
+	else if (fabs(originNormal.cy) > 0.5)
+	{
+		ExchangeCoords(Axis::aY, Axis::aZ, clip);
 	}
 
 	Paths result;
@@ -799,25 +806,14 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 	else /*if (result.size() == MAX_POLYGON_RESULT
 			 && result.at(0).size() >= MIN_VERTEX_NUM)*/
 	{
-//		ClipperLib::CleanPolygons(result, EPS_MULTI);
-
-//		if (result.size() > MAX_POLYGON_RESULT)
-//		{
-//			RemoveEmptyPolygons(result);
-//		}
-
-//			int fff = 0;
 		// обратно
-		for (int i = 0; i < result.size(); ++i)
+		if (fabs(originNormal.cx) > 0.5)
 		{
-			if (fabs(originNormal.cx) > 0.5)
-			{
-				ExchangeCoords(Axis::aZ, Axis::aX, result[i]);
-			}
-			else if (fabs(originNormal.cy) > 0.5)
-			{
-				ExchangeCoords(Axis::aZ, Axis::aY, result[i]);
-			}
+			ExchangeCoords(Axis::aZ, Axis::aX, result);
+		}
+		else if (fabs(originNormal.cy) > 0.5)
+		{
+			ExchangeCoords(Axis::aZ, Axis::aY, result);
 		}
 
 		ClipperLib::CleanPolygons(result, EPS_MULTI);
@@ -991,35 +987,38 @@ void TracingConcave::SplitBeamByParticle(const std::vector<std::vector<int>> &tr
 	}
 }
 
-void TracingConcave::ExchangeCoords(Axis oldAxis, Axis newAxis, Path &origin) const
+void TracingConcave::ExchangeCoords(Axis oldAxis, Axis newAxis, Paths &origin) const
 {
 	cInt *oldP, *newP;
 
-	for (IntPoint &p : origin)
+	for (Path &path : origin)
 	{
-		// REF: do smth
-		switch (oldAxis) {
-		case Axis::aX: oldP = &p.X;
-			break;
-		case Axis::aY: oldP = &p.Y;
-			break;
-		case Axis::aZ: oldP = &p.Z;
-			break;
-		}
+		for (IntPoint &p : path)
+		{
+			// REF: do smth
+			switch (oldAxis) {
+			case Axis::aX: oldP = &p.X;
+				break;
+			case Axis::aY: oldP = &p.Y;
+				break;
+			case Axis::aZ: oldP = &p.Z;
+				break;
+			}
 
-		switch (newAxis) {
-		case Axis::aX: newP = &p.X;
-			break;
-		case Axis::aY: newP = &p.Y;
-			break;
-		case Axis::aZ: newP = &p.Z;
-			break;
-		}
+			switch (newAxis) {
+			case Axis::aX: newP = &p.X;
+				break;
+			case Axis::aY: newP = &p.Y;
+				break;
+			case Axis::aZ: newP = &p.Z;
+				break;
+			}
 
-		cInt oldP1 = *oldP;
-		cInt newP1 = *newP;
-		*oldP = newP1;
-		*newP = oldP1;
+			cInt oldP1 = *oldP;
+			cInt newP1 = *newP;
+			*oldP = newP1;
+			*newP = oldP1;
+		}
 	}
 }
 
@@ -1029,11 +1028,11 @@ void TracingConcave::CutBeamShapeByFacet(Paths &beam, int facetId, const Point3f
 {
 	if (fabs(shapeNormal.cx) > 0.5)
 	{
-		ExchangeCoords(Axis::aX, Axis::aZ, beam[0]);
+		ExchangeCoords(Axis::aX, Axis::aZ, beam);
 	}
 	else if (fabs(shapeNormal.cy) > 0.5)
 	{
-		ExchangeCoords(Axis::aY, Axis::aZ, beam[0]);
+		ExchangeCoords(Axis::aY, Axis::aZ, beam);
 	}
 
 	Paths clip(1);
@@ -1045,11 +1044,11 @@ void TracingConcave::CutBeamShapeByFacet(Paths &beam, int facetId, const Point3f
 
 	if (fabs(shapeNormal.cx) > 0.5)
 	{
-		ExchangeCoords(Axis::aX, Axis::aZ, clip[0]);
+		ExchangeCoords(Axis::aX, Axis::aZ, clip);
 	}
 	else if (fabs(shapeNormal.cy) > 0.5)
 	{
-		ExchangeCoords(Axis::aY, Axis::aZ, clip[0]);
+		ExchangeCoords(Axis::aY, Axis::aZ, clip);
 	}
 
 	m_clipper.AddPaths(beam, ptSubject, true);
@@ -1060,16 +1059,13 @@ void TracingConcave::CutBeamShapeByFacet(Paths &beam, int facetId, const Point3f
 	if (!result.empty())
 	{
 		// обратно
-		for (int i = 0; i < result.size(); ++i)
+		if (fabs(shapeNormal.cx) > 0.5)
 		{
-			if (fabs(shapeNormal.cx) > 0.5)
-			{
-				ExchangeCoords(Axis::aZ, Axis::aX, result[i]);
-			}
-			else if (fabs(shapeNormal.cy) > 0.5)
-			{
-				ExchangeCoords(Axis::aZ, Axis::aY, result[i]);
-			}
+			ExchangeCoords(Axis::aZ, Axis::aX, result);
+		}
+		else if (fabs(shapeNormal.cy) > 0.5)
+		{
+			ExchangeCoords(Axis::aZ, Axis::aY, result);
 		}
 
 		ClipperLib::CleanPolygons(result, EPS_MULTI);
@@ -1106,11 +1102,11 @@ void TracingConcave::CutBeamShapeByFacet(int facetId, const Beam &beam,
 
 	if (fabs(shapeNormal.cx) > 0.5)
 	{
-		ExchangeCoords(Axis::aX, Axis::aZ, origin[0]);
+		ExchangeCoords(Axis::aX, Axis::aZ, origin);
 	}
 	else if (fabs(shapeNormal.cy) > 0.5)
 	{
-		ExchangeCoords(Axis::aY, Axis::aZ, origin[0]);
+		ExchangeCoords(Axis::aY, Axis::aZ, origin);
 	}
 
 	Paths clip(1);
@@ -1122,11 +1118,11 @@ void TracingConcave::CutBeamShapeByFacet(int facetId, const Beam &beam,
 
 	if (fabs(shapeNormal.cx) > 0.5)
 	{
-		ExchangeCoords(Axis::aX, Axis::aZ, clip[0]);
+		ExchangeCoords(Axis::aX, Axis::aZ, clip);
 	}
 	else if (fabs(shapeNormal.cy) > 0.5)
 	{
-		ExchangeCoords(Axis::aY, Axis::aZ, clip[0]);
+		ExchangeCoords(Axis::aY, Axis::aZ, clip);
 	}
 
 	m_clipper.AddPaths(origin, ptSubject, true);
@@ -1137,16 +1133,13 @@ void TracingConcave::CutBeamShapeByFacet(int facetId, const Beam &beam,
 	if (!result.empty())
 	{
 		// обратно
-		for (int i = 0; i < result.size(); ++i)
+		if (fabs(shapeNormal.cx) > 0.5)
 		{
-			if (fabs(shapeNormal.cx) > 0.5)
-			{
-				ExchangeCoords(Axis::aZ, Axis::aX, result[i]);
-			}
-			else if (fabs(shapeNormal.cy) > 0.5)
-			{
-				ExchangeCoords(Axis::aZ, Axis::aY, result[i]);
-			}
+			ExchangeCoords(Axis::aZ, Axis::aX, result);
+		}
+		else if (fabs(shapeNormal.cy) > 0.5)
+		{
+			ExchangeCoords(Axis::aZ, Axis::aY, result);
 		}
 
 		ClipperLib::CleanPolygons(result, EPS_MULTI);
@@ -1340,14 +1333,14 @@ double TracingConcave::AreaByClipper(const Beam &beam, const Point3f &normal) co
 
 	if (fabs(n_normal.cx) > 0.5)
 	{
-		ExchangeCoords(Axis::aX, Axis::aZ, polygon[0]);
+		ExchangeCoords(Axis::aX, Axis::aZ, polygon);
 		float tmp = normal1.cx;
 		normal1.cx = normal1.cz;
 		normal1.cz = tmp;
 	}
 	else if (fabs(n_normal.cy) > 0.5)
 	{
-		ExchangeCoords(Axis::aY, Axis::aZ, polygon[0]);
+		ExchangeCoords(Axis::aY, Axis::aZ, polygon);
 		float tmp = normal1.cy;
 		normal1.cy = normal1.cz;
 		normal1.cz = tmp;

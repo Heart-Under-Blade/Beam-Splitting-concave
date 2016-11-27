@@ -73,7 +73,7 @@ private:
 
 	double SquareOfPolygon(const std::vector<Point3f> &polygon) const;
 
-	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Path &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
+	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
 	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
 
