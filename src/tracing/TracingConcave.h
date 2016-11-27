@@ -99,7 +99,7 @@ private:
         
 	void printTrack(const Beam &beam, int facetId);
 
-	void PushOutputBeamToTree(Beam &outBeam, std::vector<Beam> &buff, int facetId, bool isDivided, const Beam &incidentBeam);
+	void PushOutputBeamToTree(Beam &outBeam, ClipperLib::Paths &buff, int facetId, bool isDivided, const Beam &incidentBeam, bool isExternal);
 
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);

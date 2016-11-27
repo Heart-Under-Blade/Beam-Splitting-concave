@@ -224,7 +224,7 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 //	tracer.SplitBeamByParticle(outcomingBeams, square);
 //	HandleBeams(outcomingBeams, sin(beta), tracer);
 
-	for (int i = 0; i < /*101*/orNumber_beta; ++i)
+	for (int i = /*86*/0; i < /*101*/orNumber_beta; ++i)
 	{
 		beta = (i + 0.5)*betaNorm;
 		betaDistrProbability = sin(beta);

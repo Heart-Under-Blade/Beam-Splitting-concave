@@ -319,32 +319,35 @@ void TracingConcave::printTrack(const Beam &beam, int facetId)
 #endif
 }
 
-void TracingConcave::PushOutputBeamToTree(Beam &outBeam, std::vector<Beam> &buff,
+void TracingConcave::PushOutputBeamToTree(Beam &outBeam, Paths &buff,
 										  int facetId, bool isDivided,
-										  const Beam &incidentBeam)
+										  const Beam &incidentBeam,
+										  bool isExternal)
 {
+#ifdef _WRITE_TRACK
+	outBeam.track = incidentBeam.track;
+#endif
+
+	int level = incidentBeam.level+1;
+
 	if (isDivided)
 	{
-		for (Beam &b : buff)
+		for (Path &p : buff)
 		{
-			m_tree[m_treeSize++] = b;
+			SetBeamShapeByPolygon(outBeam, p);
+			PushBeamToTree(outBeam, facetId, level, isExternal);
 		}
-
-		buff.clear();
 	}
 	else
 	{
-#ifdef _WRITE_TRACK
-		outBeam.track = incidentBeam.track;
-#endif
-		PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
+		PushBeamToTree(outBeam, facetId, level, isExternal);
 	}
 //	PushBeamToTree(outBeam, facetId, incidentBeam.dept+1, true);
 }
 
 void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 {
-	std::vector<Beam> buff; // для хранения разделённых пучков
+	Paths buff; // для хранения разделённых пучков
 
 	while (m_treeSize != 0)
 	{
@@ -440,9 +443,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 						for (const Path &p : clippedBeam)
 						{
-							Beam b = incidentBeam;
-							SetBeamShapeByPolygon(b, p);
-							buff.push_back(b);
+							buff.push_back(p);
 						}
 
 						incidentBeam.size = 0;
@@ -526,7 +527,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 				}
 
-				PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam);
+				PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam, true);
 			}
 			else /// slopping incidence
 			{
@@ -574,7 +575,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 							CalcOpticalPathInternal(Nr, incBeam, inBeam, outBeam);
 						}
 
-						PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam);
+						PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam, true);
 					}
 					else /// case of the complete internal reflection
 					{
@@ -645,19 +646,21 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 					}
 
-					PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam);
+					PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam, true);
 				}
 			}
 
-			if (isDivided)
-			{
-				continue;
-			}
+//			if (isDivided)
+//			{
+//				continue;
+//			}
 
 #ifdef _WRITE_TRACK
 			inBeam.track = incidentBeam.track;
 #endif
-			PushBeamToTree(inBeam, facetId, incidentBeam.level+1, false);
+//			PushBeamToTree(inBeam, facetId, incidentBeam.level+1, false);
+			PushOutputBeamToTree(inBeam, buff, facetId, isDivided, incidentBeam, false);
+			buff.clear();
 
 #ifdef _OUTPUT_TRACK
 			trackMapFile << "[in], ";

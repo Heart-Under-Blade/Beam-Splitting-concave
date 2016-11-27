@@ -182,7 +182,7 @@ void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &co
 	JMatrix.m22 = coef2 * other.JMatrix.m22;
 }
 
-void Beam::SetFormByOther(const Beam &other)
+void Beam::SetPolygonByOther(const Beam &other)
 {
 	size = other.size;
 

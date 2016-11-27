@@ -17,7 +17,7 @@ public:
 
 	void AddVertex(const Point3f &vertex);
 	void MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2);
-	void SetFormByOther(const Beam &other);
+	void SetPolygonByOther(const Beam &other);
 
 	Beam & operator = (const Beam &other);
 
