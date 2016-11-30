@@ -172,11 +172,11 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 //		}
 //	}
 
-//	int fff = 0;
+	int fff = 0;
 	}
 }
 
-void TracingConcave::SelectVisibleFacets(const Beam &beam, int *facetIds, int facetIdCount)
+void TracingConcave::SelectVisibleFacets(const Beam &beam, int *facetIds, int &facetIdCount)
 {
 	FindVisibleFacetsInternal(beam, facetIds, facetIdCount);
 
@@ -310,7 +310,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 		{
 			if (incidentBeam.isExternal) // отлов и отсечение отраженных пучков
 			{
-//				CatchExternalBeam(incidentBeam, outBeams);
+				CatchExternalBeam(incidentBeam, outBeams);
 			}
 
 			continue;
@@ -634,7 +634,7 @@ void TracingConcave::SelectVisibleFacetsExternal(const Beam &beam, int *facetInd
 }
 
 void TracingConcave::FindVisibleFacetsInternal(const Beam &beam, int *facetIndices,
-												 int &indicesNumber)
+											   int &facetIdCount)
 {
 	Point3f *normals = (beam.isExternal) ? m_particle->normals
 										 : m_particle->externalNormals;
@@ -653,8 +653,8 @@ void TracingConcave::FindVisibleFacetsInternal(const Beam &beam, int *facetIndic
 
 			if (cosFacets >= 0.0001/*TODO: подобрать норм значение и вынести*/) /// facet is in front of begin of beam
 			{
-				facetIndices[indicesNumber] = i;
-				++indicesNumber;
+				facetIndices[facetIdCount] = i;
+				++facetIdCount;
 			}
 		}
 	}
@@ -669,6 +669,90 @@ void TracingConcave::SetPolygonByFacet(const Point3f *facet, int size, Paths &po
 		polygon[0] << IntPoint((cInt)std::round(p.cx * MULTI_INDEX),
 							   (cInt)std::round(p.cy * MULTI_INDEX),
 							   (cInt)std::round(p.cz * MULTI_INDEX));
+	}
+}
+
+void TracingConcave::RemoveHole(Paths &result)
+{
+	Path &pol1 = result.front();
+	Path &pol2 = result.back();
+
+	bool or1 = ClipperLib::Orientation(pol1);
+	bool or2 = ClipperLib::Orientation(pol2);
+
+	if (or1 == or2)
+	{
+		return;
+	}
+
+	int first = 0, second = 0;
+	cInt len;
+	cInt min_len = LONG_MAX;
+	IntPoint diff;
+
+	for (int i = 0; i < pol1.size(); ++i)
+	{
+		for (int j = 0; j < pol2.size(); ++j)
+		{
+			diff.X = pol1.at(i).X - pol2.at(j).X;
+			diff.Y = pol1.at(i).Y - pol2.at(j).Y;
+			diff.Z = pol1.at(i).Z - pol2.at(j).Z;
+
+			len = diff.X*diff.X + diff.Y*diff.Y + diff.Z*diff.Z;
+			len = (cInt)std::round(sqrt((double)len));
+
+			if (len < min_len)
+			{
+				first = i;
+				second = j;
+				min_len = len;
+			}
+		}
+	}
+
+	Paths newResult(1);
+
+	for (int i = 0; i < pol1.size(); ++i)
+	{
+		newResult[0] << pol1.at(i);
+
+		if (i == first)
+		{
+			int j = second;
+
+			do
+			{
+				if (j == pol2.size())
+				{
+					j = 0;
+				}
+				else
+				{
+					newResult[0] << pol2.at(j);
+					++j;
+				}
+			}
+			while (j != second);
+
+			newResult[0] << pol2.at(second);
+			newResult[0] << pol1.at(first);
+		}
+	}
+
+	result = newResult;
+}
+
+void TracingConcave::HandleResultPolygon(Axis axis, Paths &result)
+{
+	SwapCoords(Axis::aZ, axis, result); // обратно
+	ClipperLib::CleanPolygons(result, EPS_MULTI);
+	RemoveEmptyPolygons(result);
+
+	assert(result.size() < 3);
+
+	if (result.size() == 2)
+	{
+		RemoveHole(result);
 	}
 }
 
@@ -722,72 +806,7 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 
 	if (!result.empty())
 	{
-		SwapCoords(Axis::aZ, axis, result); // обратно
-		ClipperLib::CleanPolygons(result, EPS_MULTI);
-		RemoveEmptyPolygons(result);
-
-		assert(result.size() < 3);
-
-		if (result.size() == 2)
-		{
-//			Path &pol1 = result.front();
-//			Path &pol2 = result.back();
-
-//			bool or1 = ClipperLib::Orientation(pol1);
-//			bool or2 = ClipperLib::Orientation(pol2);
-
-//			if (or1 != or2)
-//			{
-//				int first = 0, second = 0;
-//				cInt len;
-//				cInt min_len = LONG_MAX;
-//				IntPoint diff;
-
-//				for (int i = 0; i < pol1.size(); ++i)
-//				{
-//					for (int j = 0; j < pol2.size(); ++j)
-//					{
-//						diff.X = pol1.at(i).X - pol2.at(i).X;
-//						diff.Y = pol1.at(i).Y - pol2.at(i).Y;
-//						diff.Z = pol1.at(i).Z - pol2.at(i).Z;
-
-//						len = diff.X*diff.X + diff.Y*diff.Y + diff.Z*diff.Z;
-//						len = (cInt)std::round(sqrt((double)len));
-
-//						if (len < min_len)
-//						{
-//							first = i;
-//							second = j;
-//							min_len = len;
-//						}
-//					}
-//				}
-
-//				Path newResult;
-
-//				for (int i = 0; i < pol1.size(); ++i)
-//				{
-//					newResult << pol1.at(i);
-
-//					if (i == first)
-//					{
-//						for (int j = second; j != second; ++j)
-//						{
-//							if (j == pol2.size())
-//							{
-//								j = -1;
-//								continue;
-//							}
-
-//							newResult << pol2.at(j);
-//						}
-
-//						newResult << pol1.at(first);
-//					}
-//				}
-//			}
-		}
-
+		HandleResultPolygon(axis, result);
 	}
 
 	resultPolygon = result;
@@ -1022,12 +1041,12 @@ void TracingConcave::ClipDifference(const Paths &subject, const Paths &clip,
 	m_clipper.Clear();
 }
 
-void TracingConcave::CutBeamByFacet(Paths &beamPolygon, int facetId, const Point3f &direction,
-										 const Point3f &shapeNormal,
-										 Paths &result)
+void TracingConcave::CutBeamByFacet(Paths &beamPolygon, int facetId,
+									const Point3f &direction,
+									const Point3f &shapeNormal,
+									Paths &result)
 {
 	Axis axis = GetSwapAxis(shapeNormal);
-
 	SwapCoords(axis, Axis::aZ, beamPolygon);
 
 	Paths clip(1);
@@ -1042,9 +1061,7 @@ void TracingConcave::CutBeamByFacet(Paths &beamPolygon, int facetId, const Point
 
 	if (!result.empty())
 	{
-		SwapCoords(Axis::aZ, axis, result); // обратно
-		ClipperLib::CleanPolygons(result, EPS_MULTI);
-		RemoveEmptyPolygons(result);
+		HandleResultPolygon(axis, result);
 	}
 }
 

@@ -26,12 +26,13 @@ public:
 	virtual void Rotate(double /*beta*/, double /*gamma*/, double /*alpha*/) {}
 
 public:
-	Point3f facets[MAX_FACET_NUM][MAX_VERTEX_NUM];
+	int facetNum;
+	Point3f facets[MAX_FACET_NUM][MAX_VERTEX_NUM]; // REF: попробовать сделать структуру из facets и vertexNums
+	int vertexNums[MAX_FACET_NUM];
+
 	// REF: попробовать сделать структуру из 2 нормалей (снизит ли время трассировки?)
 	Point3f normals[MAX_FACET_NUM];					///< internal normals of facets
 	Point3f externalNormals[MAX_FACET_NUM];			///< external normals of facets
-	int facetNum;
-	int vertexNums[MAX_FACET_NUM];
 
 	complex refractionIndex;	///< complex value of refraction index of the particle
 	double refrI_coef_re;		///< real part of the sqr of refraction index

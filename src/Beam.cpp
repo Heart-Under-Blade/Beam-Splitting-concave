@@ -11,6 +11,7 @@ Beam::Beam()
 {
 	opticalPath = 0;
 	size = 0;
+	e = Point3f(1.0,0,0);
 }
 
 void Beam::Copy(const Beam &other)

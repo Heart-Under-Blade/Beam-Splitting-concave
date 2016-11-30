@@ -89,7 +89,7 @@ private:
 	void SelectVisibleFacetsExternal(const Beam &beam, int *facetIndices,
 									 int &indicesNumber);
 	void FindVisibleFacetsInternal(const Beam &beam, int *facetIndices,
-									 int &indicesNumber);
+								   int &facetIdCount);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
         
 	void PrintTrack(const Beam &beam, int facetId);
@@ -101,7 +101,11 @@ private:
 	void ClipDifference(const ClipperLib::Paths &subject, const ClipperLib::Paths &clip,
 						ClipperLib::Paths &difference);
 
-	void SelectVisibleFacets(const Beam &beam, int *facetIds, int facetIdCount);
+	void SelectVisibleFacets(const Beam &beam, int *facetIds, int &facetIdCount);
+
+	void RemoveHole(ClipperLib::Paths &result);
+
+	void HandleResultPolygon(Axis axis, ClipperLib::Paths &result);
 
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);

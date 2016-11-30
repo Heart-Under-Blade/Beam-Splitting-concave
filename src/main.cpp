@@ -152,13 +152,13 @@ int main(int argc, char* argv[])
 	int particleType = 10;
 	double halfHeight = 100;
 	double radius = 40;
-	double cavityDept = 10;
+	double cavityDept = 34.6410;
 	complex refractionIndex = complex(1.31, 0.0);
 	OrNumber orNumber;
-	orNumber.gamma = 101;
-	orNumber.beta = 100;
+	orNumber.gamma = 301;
+	orNumber.beta = 300;
 	int thetaNumber = 180;
-	int interReflNum = 4;
+	int interReflNum = 1;
 	bool isRandom = false;
 
 	if (argc > 1) // has command line arguments
@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 	Calculate(particleType, halfHeight, radius, cavityDept, refractionIndex,
 			  orNumber, thetaNumber, interReflNum, isRandom);
 //	Calculate(particleType, halfHeight, radius, 34.6410, refractionIndex,
-//			  OrNumber{300,301}, thetaNumber, 0, isRandom);
+//			  OrNumber{300,301}, thetaNumber, 1, isRandom);
 	getchar();
 	return 0;
 }
@@ -375,21 +375,21 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 		Beam &beam = outBeams.at(i);
 
 		// DEB
-		if (!(IsMatchTrack(beam.track, {0})
-			  || IsMatchTrack(beam.track, {1})
-			|| IsMatchTrack(beam.track, {2})
-			  || IsMatchTrack(beam.track, {3})
-			  || IsMatchTrack(beam.track, {4})
-			|| IsMatchTrack(beam.track, {5})
-			  || IsMatchTrack(beam.track, {7})
-			  || IsMatchTrack(beam.track, {8})
-			|| IsMatchTrack(beam.track, {9})
-			  || IsMatchTrack(beam.track, {10})
-			|| IsMatchTrack(beam.track, {11})
-				/*|| IsMatchTrack(beam.track, {9,11,17,6,7})*/))
-		{
-			continue;
-		}
+//		if (!(IsMatchTrack(beam.track, {0})
+//			  || IsMatchTrack(beam.track, {1})
+//			|| IsMatchTrack(beam.track, {2})
+//			  || IsMatchTrack(beam.track, {3})
+//			  || IsMatchTrack(beam.track, {4})
+//			|| IsMatchTrack(beam.track, {5})
+//			  || IsMatchTrack(beam.track, {7})
+//			  || IsMatchTrack(beam.track, {8})
+//			|| IsMatchTrack(beam.track, {9})
+//			  || IsMatchTrack(beam.track, {10})
+//			|| IsMatchTrack(beam.track, {11})
+//				/*|| IsMatchTrack(beam.track, {9,11,17,6,7})*/))
+//		{
+//			continue;
+//		}
 
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
