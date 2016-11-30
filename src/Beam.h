@@ -38,7 +38,7 @@ public:
 	Point3f polygon[MAX_VERTEX_NUM];	///< array of beam vertices (shape)
 	int size;							///< current vertex number
 
-#ifdef _WRITE_TRACK
+#ifdef _TRACK_ALLOW
 	std::vector<int> track;
 #endif
 

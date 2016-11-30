@@ -22,8 +22,7 @@ struct OrNumber
 {
 	int beta;
 	int gamma;
-}
-orNumber;
+};
 
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
@@ -53,8 +52,36 @@ void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing &tracer);
 void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer);
 void TraceSingle(Tracing &tracer, double beta, double gamma);
 
-void Calculate(Particle *particle, Tracing *tracer, bool isRandom, int thetaNumber)
+void Calculate(int particleType, double halfHeight, double radius,
+			   double cavityDept, complex refractionIndex, OrNumber orNumber,
+			   int thetaNumber, int interReflNum, bool isRandom)
 {
+	bool isOpticalPath = false;
+
+	Tracing *tracer = nullptr;
+	Particle *particle = nullptr;
+
+	switch (particleType) {
+	case 0:
+		particle = new Hexagonal(radius, halfHeight, refractionIndex);
+		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
+								   polarizationBasis, interReflNum);
+		betaNorm = M_PI/(2.0*orNumber.beta);
+		break;
+	case 1:
+		/// TODO реализовать остальные частицы
+		break;
+	case 10:
+//		particle = new Hexagonal(radius, halfHeight, refractionIndex); // DEB
+		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, cavityDept);
+		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
+									polarizationBasis, interReflNum);
+		betaNorm = M_PI/(2.0*orNumber.beta); /// TODO: какое д/б betaNorm?
+		break;
+	default:
+		break;
+	}
+
 	int EDF = 0;
 	gammaNorm = M_PI/(3.0*orNumber.gamma);
 
@@ -127,12 +154,12 @@ int main(int argc, char* argv[])
 	double radius = 40;
 	double cavityDept = 10;
 	complex refractionIndex = complex(1.31, 0.0);
+	OrNumber orNumber;
 	orNumber.gamma = 101;
 	orNumber.beta = 100;
 	int thetaNumber = 180;
 	int interReflNum = 4;
 	bool isRandom = false;
-	bool isOpticalPath = false;
 
 	if (argc > 1) // has command line arguments
 	{
@@ -158,35 +185,14 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		std::cout << "Argument list is not found. Using default params"
+		std::cout << "Argument list is not found. Using default params."
 				  << std::endl << std::endl;
 	}
 
-	Tracing *tracer = nullptr;
-	Particle *particle = nullptr;
-
-	switch (particleType) {
-	case 0:
-		particle = new Hexagonal(radius, halfHeight, refractionIndex);
-		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
-								   polarizationBasis, interReflNum);
-		betaNorm = M_PI/(2.0*orNumber.beta);
-		break;
-	case 1:
-		/// TODO реализовать остальные частицы
-		break;
-	case 10:
-//		particle = new Hexagonal(radius, halfHeight, refractionIndex); // DEB
-		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, cavityDept);
-		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
-									polarizationBasis, interReflNum);
-		betaNorm = M_PI/(2.0*orNumber.beta); /// TODO: какое д/б betaNorm?
-		break;
-	default:
-		break;
-	}
-
-	Calculate(particle, tracer, isRandom, thetaNumber);
+	Calculate(particleType, halfHeight, radius, cavityDept, refractionIndex,
+			  orNumber, thetaNumber, interReflNum, isRandom);
+//	Calculate(particleType, halfHeight, radius, 34.6410, refractionIndex,
+//			  OrNumber{300,301}, thetaNumber, 0, isRandom);
 	getchar();
 	return 0;
 }
@@ -224,7 +230,7 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 //	tracer.SplitBeamByParticle(outcomingBeams, square);
 //	HandleBeams(outcomingBeams, sin(beta), tracer);
 
-	for (int i = /*86*/0; i < /*101*/orNumber_beta; ++i)
+	for (int i = 0/*49*3*/; i < orNumber_beta; ++i)
 	{
 		beta = (i + 0.5)*betaNorm;
 		betaDistrProbability = sin(beta);
@@ -368,30 +374,37 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 	{
 		Beam &beam = outBeams.at(i);
 
-//#ifdef _DEBUG
-//		if (!(IsMatchTrack(beam.track, {2,13,6,5,4})
-//			  || IsMatchTrack(beam.track, {2,12,6,5,4})
-//			|| IsMatchTrack(beam.track, {2,17,6,5,4})
-//			  || IsMatchTrack(beam.track, {5,4,15,3,1})
-//				/*|| IsMatchTrack(beam.track, {9,11,17,6,7})*/))
-//		{
-//			continue;
-//		}
-//#endif
+		// DEB
+		if (!(IsMatchTrack(beam.track, {0})
+			  || IsMatchTrack(beam.track, {1})
+			|| IsMatchTrack(beam.track, {2})
+			  || IsMatchTrack(beam.track, {3})
+			  || IsMatchTrack(beam.track, {4})
+			|| IsMatchTrack(beam.track, {5})
+			  || IsMatchTrack(beam.track, {7})
+			  || IsMatchTrack(beam.track, {8})
+			|| IsMatchTrack(beam.track, {9})
+			  || IsMatchTrack(beam.track, {10})
+			|| IsMatchTrack(beam.track, {11})
+				/*|| IsMatchTrack(beam.track, {9,11,17,6,7})*/))
+		{
+			continue;
+		}
 
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
-//		if (i == 149)
-//			int fff = 0;
 		double cross = tracer.BeamCrossSection(beam);
 
 		double Area = betaDistrProb * cross;
 //		double Area = 1;// DEB
+ee += Area;//DEB
+
 		matrix bf = Mueller(beam.JMatrix);
+
 		const float &x = beam.direction.cx;
 		const float &y = beam.direction.cy;
 		const float &z = beam.direction.cz;
-ee += Area;//DEB
+
 		// Collect the beam in array
 		if (z >= 1-DBL_EPSILON)
 		{
@@ -405,11 +418,11 @@ ee += Area;//DEB
 		{
 			// Rotate the Mueller matrix of the beam to appropriate coordinate system
 			const unsigned int ZenAng = round(acos(z)/SizeBin);
-			double tmp = SQR(y);
+			double tmp = y*y;
 
 			if (tmp > DBL_EPSILON)
 			{
-				tmp = acos(x/sqrt(SQR(x)+tmp)); // OPT: SQR на x*x
+				tmp = acos(x/sqrt(x*x+tmp));
 
 				if (y < 0)
 				{

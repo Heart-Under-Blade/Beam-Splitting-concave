@@ -5,6 +5,11 @@
 
 typedef std::vector<std::vector<Point3f>> Polygons;
 
+enum class Axis : int
+{
+	aX, aY, aZ
+};
+
 /** NOTE: пучки выходят со случайно ориентированными вершинами */
 class TracingConcave : public Tracing
 {
@@ -22,17 +27,11 @@ public:
 							 std::vector<Beam> &outBeams) override;
 
 private:
-	enum class Axis : int
-	{
-		aX, aY, aZ
-	};
-
 	ClipperLib::Clipper m_clipper;
 
 private:
 	double MeasureMinDistanceToFacet(int facetId, const Point3f &beamDir);
 	void SortFacets(int number, const Point3f &beamDir, int *facetIds); ///< use fast sort algorithm
-//	void FindVisibleFacets(const Beam &beam, int *facetIds, int &idNumber);
 	void CutShadowsFromFacet(const Point3f *facet, int size, int *facetIds,
 								int previewFacetCount, const Beam &beam,
 								ClipperLib::Paths &resultFacet);
@@ -46,13 +45,13 @@ private:
 	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &a_dir, const Point3f &b_normal,
 							 ClipperLib::Path &projection);
 
-	void SetBeamShapeByPolygon(Beam &beam, const ClipperLib::Path &result);
+	void SetBeamByPath(Beam &beam, const ClipperLib::Path &result);
 
-	void CutBeamShapeByFacet(int facetId, const Beam &beam, const Point3f &shapeNormal,
+	void CutBeamByFacet(int facetId, const Beam &beam, const Point3f &shapeNormal,
 							 ClipperLib::Paths &result);
 
-	void CutBeamShapeByFacet(ClipperLib::Paths &beam, int facetId,
-							 const Point3f &direction, const Point3f &shapeNormal,
+	void CutBeamByFacet(ClipperLib::Paths &beamPolygon, int facetId,
+							 const Point3f &direction, const Point3f &polygonNormal,
 							 ClipperLib::Paths &result);
 
 	void DivideConcavePolygon(const Point3f *polygon, int size,
@@ -73,11 +72,9 @@ private:
 
 	double SquareOfPolygon(const std::vector<Point3f> &polygon) const;
 
-	void ExchangeCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
+	void SwapCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
 	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
-
-	void CutReflectedBeam(const Beam &beam, Beam &incidentBeam);
         
 	double AreaByClipper(const Beam &beam, const Point3f &normal) const;
 
@@ -89,22 +86,27 @@ private:
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, bool isExternal);
 
-	void PrepareVisibleFacets(const Beam &beam, int *facetIds, int &idNumber);
-
 	void SelectVisibleFacetsExternal(const Beam &beam, int *facetIndices,
 									 int &indicesNumber);
-	void SelectVisibleFacetsInternal(const Beam &beam, int *facetIndices,
+	void FindVisibleFacetsInternal(const Beam &beam, int *facetIndices,
 									 int &indicesNumber);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
         
-	void printTrack(const Beam &beam, int facetId);
+	void PrintTrack(const Beam &beam, int facetId);
 
 	void PushOutputBeamToTree(Beam &outBeam, ClipperLib::Paths &buff, int facetId, bool isDivided, const Beam &incidentBeam, bool isExternal);
+
+	Axis GetSwapAxis(const Point3f &normal);
+        
+	void ClipDifference(const ClipperLib::Paths &subject, const ClipperLib::Paths &clip,
+						ClipperLib::Paths &difference);
+
+	void SelectVisibleFacets(const Beam &beam, int *facetIds, int facetIdCount);
 
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);
 };
 
-void MeasureZ(ClipperLib::IntPoint & a1, ClipperLib::IntPoint & a2,
+void FindZCoord(ClipperLib::IntPoint & a1, ClipperLib::IntPoint & a2,
 			  ClipperLib::IntPoint &, ClipperLib::IntPoint &,
 			  ClipperLib::IntPoint & point);
