@@ -386,8 +386,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						{
 							buff.push_back(p);
 						}
-
-						incidentBeam.size = 0;
+//						incidentBeam.size = 0;
 					}
 				}
 			}
