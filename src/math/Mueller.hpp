@@ -5,7 +5,7 @@
 #define __Mueller_hpp_
 
 #ifndef MATRIX_HPP
-#include "math/matrix.hpp"
+#include "matrix.hpp"
 #endif
 
 #include "JonesMatrix.h"

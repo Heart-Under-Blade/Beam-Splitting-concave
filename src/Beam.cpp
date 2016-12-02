@@ -5,31 +5,42 @@
 
 #include "global.h"
 #include "vector_lib.h"
+#include <assert.h>
 
 Beam::Beam()
 {
 	opticalPath = 0;
-	shapeSize = 0;
+	size = 0;
+	e = Point3f(0,1,0);
 }
 
-void Beam::copy(const Beam &other)
+void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
-	shapeSize = other.shapeSize;
 	D = other.D;
 	e = other.e;
 	direction = other.direction;
 
-	for (int i = 0; i < other.shapeSize; ++i)
+	size = other.size;
+
+	for (int i = 0; i < other.size; ++i)
 	{
-		shape[i] = other.shape[i];
+		polygon[i] = other.polygon[i];
 	}
+
+	facetId = other.facetId;
+	level = other.level;
+	isExternal = other.isExternal;
+
+#ifdef _TRACK_ALLOW
+	track = other.track;
+#endif
 }
 
 Beam::Beam(const Beam &other)
 	: JMatrix(other.JMatrix)
 {
-	copy(other);
+	Copy(other);
 }
 
 void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
@@ -60,9 +71,9 @@ void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 
 void Beam::GetSpherical(double &fi, double &teta) const
 {
-	const float &x = direction.X;
-	const float &y = direction.Y;
-	const float &z = direction.Z;
+	const float &x = direction.cx;
+	const float &y = direction.cy;
+	const float &z = direction.cz;
 
 	if (fabs(z + 1.0) < DBL_EPSILON) // forward
 	{
@@ -100,7 +111,7 @@ void Beam::GetSpherical(double &fi, double &teta) const
 
 Beam & Beam::operator = (const Beam &other)
 {
-	copy(other);
+	Copy(other);
 	JMatrix = other.JMatrix;
 	return *this;
 }
@@ -112,7 +123,7 @@ void Beam::RotatePlane(const Point3f &newBasis)
 
 void Beam::RotateJMatrix(const Point3f &newBasis)
 {
-	/// TODO: потом заменить обратно на DBL_EPSILON
+	// REF: потом заменить обратно на DBL_EPSILON
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
 	double cs = DotProduct(newBasis, e);
 
@@ -130,9 +141,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 		return;
 	}
 
-#ifdef _DEBUG
-	if(fabs(cs) > 1.0+DBL_EPSILON)  throw " Rot: Error!";
-#endif
+	assert(fabs(cs) <= 1.0+DBL_EPSILON);
 
 	Point3f k;
 	CrossProduct(e, newBasis, k);
@@ -160,68 +169,10 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 	e = newBasis;
 }
 
-double Beam::Square() const
-{
-	/// NOTE: не работает на невыпуклых гранях
-	double square = 0;
-
-	const Point3f &basePoint = shape[0];
-	Point3f p1 = shape[1] - basePoint;
-
-	for (int i = 2; i < shapeSize; ++i)
-	{
-		Point3f p2 = shape[i] - basePoint;
-		Point3f res;
-		CrossProduct(p2, p1, res);
-		square += sqrt(Norm(res));
-		p1 = p2;
-	}
-
-	if (square < 0)
-	{	/// TODO: для опт. узнать в какую сторону ориентированы точки в пучке
-		square *= (-1);
-	}
-
-	return square/2.0;
-}
-
-Point3f Beam::Center() const
-{
-	Point3f p(0, 0, 0);
-
-	for (int i = 0; i < shapeSize; ++i)
-	{
-		p = p + shape[i];
-	}
-
-	return p/shapeSize;
-}
-
-double Beam::CrossSection() const
-{
-	const double Eps = 1e7*DBL_EPSILON;
-
-	Point3f normal;
-	Point3f p1 = shape[1] - shape[0];
-	Point3f p2 = shape[2] - shape[0];
-	CrossProduct(p2, p1, normal);
-
-	double e = fabs(DotProduct(normal, direction));
-
-	if (e < Eps)
-	{
-		return 0;
-	}
-
-	double s = Square();
-	double n = sqrt(Norm(normal));
-	return (e*s) / n;
-}
-
 void Beam::AddVertex(const Point3f &vertex)
 {
-	shape[shapeSize] = vertex;
-	++shapeSize;
+	polygon[size] = vertex;
+	++size;
 }
 
 void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2)
@@ -230,4 +181,14 @@ void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &co
 	JMatrix.m12 = coef1 * other.JMatrix.m12;
 	JMatrix.m21 = coef2 * other.JMatrix.m21;
 	JMatrix.m22 = coef2 * other.JMatrix.m22;
+}
+
+void Beam::SetPolygonByOther(const Beam &other)
+{
+	size = other.size;
+
+	for (int i = 0; i < other.size; ++i)
+	{
+		polygon[i] = other.polygon[i];
+	}
 }
