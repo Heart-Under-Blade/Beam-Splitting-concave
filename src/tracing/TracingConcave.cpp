@@ -539,15 +539,16 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				}
 				else /// case of external beam incidents to facet
 				{
-//					/// rotate polarization plane // TODO: доделать
-//					{
-//						Point3f newBasis;
-//						CrossProduct(normal, -incidentDir, newBasis);
-//						Normalize(newBasis);
-//						inBeam.e = ???;
-//						inBeam.direction = incidentDir;
-//						inBeam.RotatePlane(newBasis);
-//					}
+					// rotate polarization plane
+					{
+						Point3f newBasis;
+						CrossProduct(normal, -incidentDir, newBasis);
+						Normalize(newBasis);
+						inBeam.JMatrix = incidentBeam.JMatrix;
+						inBeam.e = incidentBeam.e;
+						inBeam.direction = incidentDir;
+						inBeam.RotatePlane(newBasis);
+					}
 
 					Point3f refrDir, reflDir;
 
