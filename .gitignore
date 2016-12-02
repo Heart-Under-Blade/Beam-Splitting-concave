@@ -13,3 +13,17 @@ bin/compare2000or/
 build-maki_particle_builder-Desktop-Debug/
 bin/h10_p4_or100.bat
 bin/compare800or_5/
+=======
+bin/compare800or/
+bin/compare200or/
+*.crystal
+*.user
+*.o
+build-maki_particle_builder-Desktop-Debug/Makefile
+build-maki_particle_builder-Desktop-Debug/Makefile.Debug
+build-maki_particle_builder-Desktop-Debug/Makefile.Release
+src.zip
+src.7z
+BSc_0.non7z
+*.dat
+>>>>>>> hotfix/fix

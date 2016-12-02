@@ -1,7 +1,14 @@
 #include "Particle.h"
 
+Particle::Particle() {}
+
 Particle::Particle(double p_radius, double p_halfHeight,
 				   const complex &p_refractionIndex)
+{
+	Init(p_radius, p_halfHeight, p_refractionIndex);
+}
+
+void Particle::Init(double p_radius, double p_halfHeight, const complex &p_refractionIndex)
 {
 	m_radius = p_radius;
 	halfHeight = p_halfHeight;
@@ -9,9 +16,8 @@ Particle::Particle(double p_radius, double p_halfHeight,
 
 	double re = real(refractionIndex);
 	double im = imag(refractionIndex);
-	double re_sqr = re*re;
-	refrI_coef_re = re_sqr - im*im;
-	refrI_coef_im = 4*re_sqr*im;
+	refrI_coef_re = re*re - im*im;
+	refrI_coef_im = 4*re*re*im;
 }
 
 void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
