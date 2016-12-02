@@ -3,3 +3,13 @@ pro/BeamSplitting.pro.user.3.0-pre1
 build/
 bin/M2.dat
 bin/M3.dat
+*.dat
+bin/compare_convex/
+bin/compare800or_4/
+bin/compare_h10_012345/
+bin/compare800or_3/
+bin/compare2000or/
+*.crystal
+build-maki_particle_builder-Desktop-Debug/
+bin/h10_p4_or100.bat
+bin/compare800or_5/
