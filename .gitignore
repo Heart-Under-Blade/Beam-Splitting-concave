@@ -5,7 +5,6 @@ bin/M2.dat
 bin/M3.dat
 bin/compare800or/
 bin/compare200or/
-bin/
 *.crystal
 *.user
 *.o
@@ -15,3 +14,4 @@ build-maki_particle_builder-Desktop-Debug/Makefile.Release
 src.zip
 src.7z
 BSc_0.non7z
+*.dat

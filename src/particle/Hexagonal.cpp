@@ -4,10 +4,7 @@ const int Hexagonal::BASE_FACET_NUM;
 const int Hexagonal::SIDE_VERTEX_NUMBER;
 const int Hexagonal::BASE_VERTEX_NUM;
 
-Hexagonal::Hexagonal(const ParticleParams &params)
-	: Particle(params.radius, params.halfHeight, params.refractionIndex)
-{
-}
+Hexagonal::Hexagonal() {}
 
 Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refractionIndex)
 	: Particle(radius, halfHeight, refractionIndex)

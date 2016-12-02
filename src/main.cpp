@@ -18,10 +18,31 @@
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
-struct OrNumber
+struct OrientationRange
 {
-	int beta;
-	int gamma;
+	int begin;
+	int end;
+};
+
+enum class ParticleType : int
+{
+	Hexagonal = 1,
+	ConcaveHexagonal = 10
+};
+
+struct CLArguments
+{
+	ParticleType particleType;
+	double halfHeight;
+	double radius;
+	double cavityDepth;
+	complex refractionIndex;
+	OrientationRange betaRange;
+	OrientationRange gammaRange;
+	int thetaNumber;
+	int interReflNum;
+	bool isRandom = false;
+	std::string outfile;
 };
 
 matrix back(4,4),	///< Mueller matrix in backward direction
@@ -39,7 +60,6 @@ Point3f polarizationBasis(0, 1, 0);
 
 // DEB
 long long ddddd = 0;
-int count = 0;
 
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
@@ -48,42 +68,46 @@ void WriteResultsToFile(int ThetaNumber, double NRM);
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM);
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM);
 
-void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing &tracer);
-void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer);
+void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+				 Tracing &tracer);
+void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+				Tracing &tracer);
 void TraceSingle(Tracing &tracer, double beta, double gamma);
 
-void Calculate(int particleType, double halfHeight, double radius,
-			   double cavityDept, complex refractionIndex, OrNumber orNumber,
-			   int thetaNumber, int interReflNum, bool isRandom)
+void Calculate(const CLArguments &params)
 {
 	bool isOpticalPath = false;
 
 	Tracing *tracer = nullptr;
 	Particle *particle = nullptr;
 
-	switch (particleType) {
-	case 0:
-		particle = new Hexagonal(radius, halfHeight, refractionIndex);
+	int orNumBeta = params.betaRange.end - params.betaRange.begin;
+	int orNumGamma = params.gammaRange.end - params.gammaRange.begin;
+
+	switch (params.particleType) {
+	case ParticleType::Hexagonal:
+		particle = new Hexagonal(params.radius, params.halfHeight, params.refractionIndex);
 		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
-								   polarizationBasis, interReflNum);
-		betaNorm = M_PI/(2.0*orNumber.beta);
+								   polarizationBasis, params.interReflNum);
+		betaNorm = M_PI/(2.0*orNumBeta);
 		break;
-	case 1:
+//	case 1:
 		/// TODO реализовать остальные частицы
-		break;
-	case 10:
+//		break;
+	case ParticleType::ConcaveHexagonal:
 //		particle = new Hexagonal(radius, halfHeight, refractionIndex); // DEB
-		particle = new ConcaveHexagonal(radius, halfHeight, refractionIndex, cavityDept);
+		particle = new ConcaveHexagonal(params.radius, params.halfHeight,
+										params.refractionIndex, params.cavityDepth);
 		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
-									polarizationBasis, interReflNum);
-		betaNorm = M_PI/(2.0*orNumber.beta); /// TODO: какое д/б betaNorm?
+									polarizationBasis, params.interReflNum);
+		betaNorm = M_PI/(2.0*orNumBeta); /// TODO: какое д/б betaNorm?
 		break;
 	default:
 		break;
 	}
 
 	int EDF = 0;
-	gammaNorm = M_PI/(3.0*orNumber.gamma);
+	gammaNorm = M_PI/(3.0*orNumGamma);
 
 	incomingEnergy = 0;
 
@@ -91,20 +115,20 @@ void Calculate(int particleType, double halfHeight, double radius,
 	back.Fill(0);
 	forw.Fill(0);
 
-	SizeBin = M_PI/thetaNumber; // the size of the bin (radians)
+	SizeBin = M_PI/params.thetaNumber; // the size of the bin (radians)
 
-	mxd = Arr2D(1, thetaNumber+1, 4, 4);
+	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
 	mxd.ClearArr();
 
 	clock_t timer = clock();
 
-	if (isRandom)
+	if (params.isRandom)
 	{
-		TraceRandom(orNumber.gamma, orNumber.beta, *tracer);
+		TraceRandom(params.gammaRange, params.betaRange, *tracer);
 	}
 	else
 	{
-		TraceFixed(orNumber.gamma, orNumber.beta, *tracer);
+		TraceFixed(params.gammaRange, params.betaRange, *tracer);
 	}
 
 	timer = clock() - timer;
@@ -115,31 +139,67 @@ void Calculate(int particleType, double halfHeight, double radius,
 	// Integrating
 	double D_tot = back[0][0] + forw[0][0];
 
-	for (int j = 0; j <= thetaNumber; ++j)
+	for (int j = 0; j <= params.thetaNumber; ++j)
 	{
 		D_tot += mxd(0, j, 0, 0);
 	}
 
 	// Normalizing coefficient
-	double orNum = orNumber.gamma * orNumber.beta;
+	double orNum = orNumGamma * orNumBeta;
 	double NRM;
 
-	if (!isRandom)
-	{
-		NRM = M_PI/((double)orNum*2.0);
-	}
-	else
+	if (params.isRandom)
 	{
 		NRM = 1.0/(double)orNum;
 	}
+	else
+	{
+		NRM = M_PI/((double)orNum*2.0);
+	}
 
-	ExtractPeaks(EDF, NRM, thetaNumber);
+	ExtractPeaks(EDF, NRM, params.thetaNumber);
 
-	WriteResultsToFile(thetaNumber, NRM);
+	WriteResultsToFile(params.thetaNumber, NRM);
 	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
 	WriteStatisticsToConsole(orNum, D_tot, NRM);
 
 	delete particle;
+}
+
+int GetNextArgValue(char* argv[], int argc, int i)
+{
+	if (argc <= i)
+	{
+		throw std::string("Not enouth arguments");
+	}
+
+	char *end;
+	int val = strtol(argv[i], &end, 10);
+
+	if (strlen(end) != 0)
+	{
+		throw std::string("Some argument is incorrect.");
+	}
+
+	return val;
+}
+
+double GetArgValueD(char* argv[], int argc, int i)
+{
+	if (argc <= i)
+	{
+		throw std::string("Not enouth arguments");
+	}
+
+	char *end;
+	double val = strtod(argv[i], &end);
+
+	if (strlen(end) != 0)
+	{
+		throw std::string("Some argument is incorrect.");
+	}
+
+	return val;
 }
 
 int main(int argc, char* argv[])
@@ -147,52 +207,125 @@ int main(int argc, char* argv[])
 //	testConcaveHexagonRot();
 //	testHexagonBuilding();
 //	testHexagonRotate();
-
-	// default params
-	int particleType = 10;
-	double halfHeight = 100;
-	double radius = 40;
-	double cavityDept = 34.6410;
-	complex refractionIndex = complex(1.31, 0.0);
-	OrNumber orNumber;
-	orNumber.gamma = 301;
-	orNumber.beta = 300;
-	int thetaNumber = 180;
-	int interReflNum = 1;
-	bool isRandom = false;
+// TODO: добавить файл лога и записывать туда ассерты
+	CLArguments params;
 
 	if (argc > 1) // has command line arguments
 	{
-		int i = 1;
-
-		particleType = atoi(argv[i++]);
-		halfHeight = atof(argv[i++]);
-		radius = atof(argv[i++]);
-
-		if (particleType == 10)
+		try
 		{
-			cavityDept = atof(argv[i++]);
+			int paramsNum = 0;
+
+			for (int i = 1; i < argc; ++i)
+			{
+				std::string arg(argv[i]);
+
+				if (arg == "-p")
+				{
+					params.particleType = (ParticleType)GetNextArgValue(argv, argc, ++i);
+					params.halfHeight = GetArgValueD(argv, argc, ++i);
+					params.radius = GetArgValueD(argv, argc, ++i);
+
+					if (params.particleType == ParticleType::ConcaveHexagonal)
+					{
+						params.cavityDepth = GetArgValueD(argv, argc, ++i);
+					}
+
+					++paramsNum;
+				}
+				else if (arg == "-ri")
+				{
+					params.refractionIndex = GetArgValueD(argv, argc, ++i);
+					++paramsNum;
+				}
+				else if (arg == "-rn")
+				{
+					params.interReflNum = GetNextArgValue(argv, argc, ++i);
+					++paramsNum;
+				}
+				else if (arg == "-b")
+				{
+					params.betaRange.begin = GetNextArgValue(argv, argc, ++i);
+					params.betaRange.end = GetNextArgValue(argv, argc, ++i);
+					++paramsNum;
+				}
+				else if (arg == "-g")
+				{
+					params.gammaRange.begin = GetNextArgValue(argv, argc, ++i);
+					params.gammaRange.end = GetNextArgValue(argv, argc, ++i);
+					++paramsNum;
+				}
+				else if (arg == "-t")
+				{
+					params.thetaNumber = GetNextArgValue(argv, argc, ++i);
+					++paramsNum;
+				}
+				else if (arg == "-r")
+				{
+					params.isRandom = true;
+				}
+				else if (arg == "-o")
+				{
+					if (argc <= i)
+					{
+						throw "Not enouth arguments.";
+					}
+
+					params.outfile = argv[++i];
+				}
+			}
+
+			if (paramsNum == 6) // REF: выделить как константу
+			{
+				throw std::string("Too few arguments.");
+			}
+		}
+		catch (const std::string &e)
+		{
+			std::cout << "Error! " << e << " Please check it and restart the program."
+					  << std::endl << "Press any key to exit...";
+			getchar();
+			exit(1);
 		}
 
-		double re = atof(argv[i++]);
-		refractionIndex = complex(re, 0.0);
+//		particleType = atoi(argv[i++]);
+//		halfHeight = atof(argv[i++]);
+//		radius = atof(argv[i++]);
 
-		orNumber.gamma = atoi(argv[i++]);
-		orNumber.beta = atoi(argv[i++]);
-		thetaNumber = atoi(argv[i++]);
-		interReflNum = atoi(argv[i++]);
-		isRandom = atoi(argv[i++]);
+//		if (particleType == 10)
+//		{
+//			cavityDept = atof(argv[i++]);
+//		}
+
+//		double re = atof(argv[i++]);
+//		refractionIndex = complex(re, 0.0);
+
+//		orNumber.gamma = atoi(argv[i++]);
+//		orNumber.beta = atoi(argv[i++]);
+//		thetaNumber = atoi(argv[i++]);
+//		interReflNum = atoi(argv[i++]);
+//		isRandom = atoi(argv[i++]);
 	}
-	else
+	else // DEB
 	{
 		std::cout << "Argument list is not found. Using default params."
 				  << std::endl << std::endl;
+
+		params.particleType = ParticleType::ConcaveHexagonal;
+		params.halfHeight = 100;
+		params.radius = 40;
+		params.cavityDepth = 10;
+		params.refractionIndex = complex(1.31, 0.0);
+		params.betaRange.begin = 0;
+		params.betaRange.end = 100;
+		params.gammaRange.begin = 0;
+		params.gammaRange.end = 101;
+		params.thetaNumber = 180;
+		params.interReflNum = 4;
+		params.isRandom = false;
 	}
 
-	Calculate(particleType, halfHeight, radius, cavityDept, refractionIndex,
-			  orNumber, thetaNumber, interReflNum, isRandom);
-//	Calculate(particleType, halfHeight, radius, 34.6410, refractionIndex,
-//			  OrNumber{300,301}, thetaNumber, 1, isRandom);
+	Calculate(params);
 	getchar();
 	return 0;
 }
@@ -215,7 +348,8 @@ void TraceSingle(Tracing &tracer, double beta, double gamma)
 	outcomingBeams.clear();
 }
 
-void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
+void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+				Tracing &tracer)
 {
 	double beta, gamma;
 	double betaDistrProbability;
@@ -230,12 +364,15 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 //	tracer.SplitBeamByParticle(outcomingBeams, square);
 //	HandleBeams(outcomingBeams, sin(beta), tracer);
 
-	for (int i = 0/*49*3*/; i < orNumber_beta; ++i)
+	int orNumBeta = betaRange.end - betaRange.begin;
+	int count = 0;
+
+	for (int i = betaRange.begin; i < betaRange.end; ++i)
 	{
 		beta = (i + 0.5)*betaNorm;
 		betaDistrProbability = sin(beta);
 
-		for (int j = 0; j < orNumber_gamma; ++j)
+		for (int j = gammaRange.begin; j < gammaRange.end; ++j)
 		{
 #ifdef _DEBUG
 //			std::cout << j << std::endl;
@@ -256,21 +393,24 @@ void TraceFixed(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 			outcomingBeams.clear();
 		}
 
-		std::cout << (100*i)/orNumber_beta << "%" << std::endl;
+		std::cout << (100*(++count))/orNumBeta << "%" << std::endl;
 	}
 }
 
-void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
+void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+				 Tracing &tracer)
 {
 	srand(time(NULL));
 
 	std::vector<Beam> outcomingBeams;
 	double beta, gamma;
 	double square;
+	int orNumBeta = betaRange.end - betaRange.begin;
+	int count = 0;
 
-	for (int i = 0; i < orNumber_beta; ++i)
+	for (int i = betaRange.begin; i < betaRange.end; ++i)
 	{
-		for (int j = 0; j < orNumber_gamma; ++j)
+		for (int j = gammaRange.begin; j < gammaRange.end; ++j)
 		{
 			gamma = 2.0*M_PI * ((double)(rand()) / ((double)RAND_MAX + 1.0));
 			beta = acos(((double)(rand()) / ((double)RAND_MAX))*2.0 - 1.0);
@@ -283,7 +423,7 @@ void TraceRandom(int orNumber_gamma, int orNumber_beta, Tracing &tracer)
 			outcomingBeams.clear();
 		}
 
-		std::cout << (100*i)/orNumber_beta << "%" << std::endl;
+		std::cout << (100*(++count))/orNumBeta << "%" << std::endl;
 	}
 }
 

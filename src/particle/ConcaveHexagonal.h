@@ -9,6 +9,7 @@
 class ConcaveHexagonal : public Hexagonal
 {
 public:
+	ConcaveHexagonal(double cavityDept);
 	ConcaveHexagonal(double m_radius, double halfHeight, const complex &refractionIndex,
 					 double cavityDept);
 

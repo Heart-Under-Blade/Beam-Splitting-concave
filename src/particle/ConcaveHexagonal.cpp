@@ -1,8 +1,13 @@
 #include "ConcaveHexagonal.h"
 
+ConcaveHexagonal::ConcaveHexagonal(double cavityDept)
+{
+	m_cavityDept = cavityDept;
+}
+
 ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const complex &refractionIndex,
 								   double cavityDept)
-	: Hexagonal(ParticleParams{radius, halfHeight, refractionIndex})
+	: Hexagonal(radius, halfHeight, refractionIndex)
 {
 	m_cavityDept = cavityDept;
 

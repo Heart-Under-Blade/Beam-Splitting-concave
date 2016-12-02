@@ -2,12 +2,6 @@
 
 #include "Particle.h"
 
-struct ParticleParams {
-	double radius;
-	double halfHeight;
-	complex refractionIndex;
-};
-
 /**
  * @brief The Hexagon class
  * The prism particle with 6 number of side facets.
@@ -15,7 +9,7 @@ struct ParticleParams {
 class Hexagonal : public Particle
 {
 public:
-	Hexagonal(const ParticleParams &params);
+	Hexagonal();
 	Hexagonal(double m_radius, double halfHeight, const complex &refractionIndex);
 
 	void Rotate(double beta, double gamma, double alpha) override;

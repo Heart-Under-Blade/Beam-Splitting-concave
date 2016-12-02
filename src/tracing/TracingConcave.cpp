@@ -523,7 +523,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						complex Rv = (cosIncident - tmp)/(tmp + cosIncident);
 						complex Rh = (tmp0 - sq)/(tmp0 + sq);
 
-						SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Rv, Rh);
+						SetBeam(inBeam, incBeam, reflDir, scatteringNormal, Rv, Rh);
 
 						if (m_isOpticalPath)
 						{
