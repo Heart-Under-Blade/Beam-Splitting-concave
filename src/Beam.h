@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Particle.h"
 #include "global.h"
 #include "types.h"
 #include "math/compl.hpp"

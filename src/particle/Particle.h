@@ -2,12 +2,15 @@
 
 #include <math.h>
 
-#include "global.h"
+//#include "global.h"
 #include "types.h"
 #include "compl.hpp"
 #include "vector_lib.h"
 
 #define MAX_FACET_NUM 64
+#define MIN_VERTEX_NUM 3
+//#define MAX_VERTEX_NUM 32
+#define MAX_VERTEX_NUM 64
 
 /**
  * @brief The Particle class

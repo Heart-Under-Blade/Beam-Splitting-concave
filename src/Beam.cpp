@@ -3,7 +3,7 @@
 #include <float.h>
 #include <math.h>
 
-#include "global.h"
+#include "macro.h"
 #include "vector_lib.h"
 #include <assert.h>
 
@@ -141,7 +141,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 		return;
 	}
 
-	assert(fabs(cs) <= 1.0+DBL_EPSILON);
+	LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
 
 	Point3f k;
 	CrossProduct(e, newBasis, k);

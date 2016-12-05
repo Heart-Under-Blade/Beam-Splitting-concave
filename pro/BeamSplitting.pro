@@ -36,6 +36,7 @@ HEADERS += \
     ../src/common/global.h \
     ../src/common/types.h \
     ../src/common/vector_lib.h \
+	../src/common/macro.h \
     ../src/tracing/TracingConvex.h \
     ../src/tracing/TracingConcave.h \
     ../src/clipper.hpp

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "global.h"
 #include <fstream>
 #include <iostream>
 

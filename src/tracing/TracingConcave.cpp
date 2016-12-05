@@ -1,6 +1,6 @@
 #include "TracingConcave.h"
 
-#include <assert.h>
+#include "macro.h"
 #include <tgmath.h>
 #include <iostream> // DEB
 #include <fstream> // DEB
@@ -69,7 +69,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 	SelectVisibleFacetsExternal(m_startBeam, facetIds, idNum);
 	SortFacets(idNum, m_startBeam.direction, facetIds);
 
-#ifdef _OUTPUT_TRACK
+#ifdef _TRACK_OUTPUT
 	trackMapFile << "0 lvl: "; // DEB
 #endif
 
@@ -100,8 +100,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 
 			if (!cuttedFacet.empty())
 			{
-	//			if (cuttedFacet.size() >= 2)
-				assert(cuttedFacet.size() < 2);
+				LOG_ASSERT(cuttedFacet.size() < 2);
 
 				if (isOrderReversed(extNormal, cuttedFacet.at(0)))
 				{
@@ -128,7 +127,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 			outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 		}
 
-#ifdef _OUTPUT_TRACK
+#ifdef _TRACK_OUTPUT
 		trackMapFile << facetId << ", ";
 #endif
 		PushBeamToTree(inBeam, facetId, 0, false);
@@ -137,7 +136,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 //		lightSurfaceSquare += outBeam.Square() * cosIncident;
 	}
 
-#ifdef _OUTPUT_TRACK
+#ifdef _TRACK_OUTPUT
 	trackMapFile.flush();
 #endif
 
@@ -216,9 +215,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &outB
 		}
 	}
 
-//	if (origin.size() >= 2)
-//	assert(origin.size() < 2);
-
 	Beam b = beam;
 
 	for (const Path &p : originPolygon)
@@ -239,8 +235,8 @@ if (size == 0 || (size > 0 && facetId != tr.at(size-1)))
 	tr.push_back(facetId);
 #endif
 
-#ifdef _OUTPUT_TRACK
-	printTrack(beam, facetId);
+#ifdef _TRACK_OUTPUT
+	PrintTrack(beam, facetId);
 #endif
 
 	beam.facetId = facetId;
@@ -302,7 +298,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 	while (m_treeSize != 0)
 	{
-		assert(m_treeSize < MAX_BEAM_REFL_NUM);
+		LOG_ASSERT(m_treeSize < MAX_BEAM_REFL_NUM);
 
 		Beam incidentBeam = m_tree[--m_treeSize]; // OPT: попробовать поменять на ссылку
 
@@ -325,7 +321,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 		// OPT: выполнять по условию только если есть видимые вершины
 		SelectVisibleFacets(incidentBeam, facetIds, facetIdCount);
 
-#ifdef _OUTPUT_TRACK
+#ifdef _TRACK_OUTPUT
 		trackMapFile << "\n" << incidentBeam.level << " lvl: ";//DEB
 		trackMapFile.flush();
 #endif
@@ -598,7 +594,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 			PushOutputBeamToTree(inBeam, buff, facetId, isDivided, incidentBeam, false);
 			buff.clear();
 
-#ifdef _OUTPUT_TRACK
+#ifdef _TRACK_OUTPUT
 			trackMapFile << "[in], ";
 #endif
 			if (isIncidentDivided)
@@ -748,7 +744,7 @@ void TracingConcave::HandleResultPolygon(Axis axis, Paths &result)
 	ClipperLib::CleanPolygons(result, EPS_MULTI);
 	RemoveEmptyPolygons(result);
 
-	assert(result.size() < 3);
+	LOG_ASSERT(result.size() < 3);
 
 	if (result.size() == 2)
 	{
@@ -835,8 +831,7 @@ void TracingConcave::SetBeamByPath(Beam &beam, const Path &result)
 		beam.polygon[--vertexNum] = tmp;
 	}
 
-	if (beam.size <= 0 || beam.size > MAX_VERTEX_NUM) // DEB
-	assert(beam.size > 0 && beam.size <= MAX_VERTEX_NUM);
+	LOG_ASSERT(beam.size > 0 && beam.size <= MAX_VERTEX_NUM);
 }
 
 void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
@@ -1116,7 +1111,7 @@ void TracingConcave::FindDividePoint(const std::vector<Point3f> &polygon,
 		j = i;
 	}
 
-	assert(false && "Divide point is not found");
+	LOG_ASSERT(false && "Divide point is not found");
 }
 
 void TracingConcave::FillSubpolygon(int begin, int end,

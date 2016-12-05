@@ -1,11 +1,11 @@
 #include <iostream>
 #include <time.h>
 
+#include "macro.h"
 #include "test.h"
 
 #include <assert.h>
 #include <float.h>
-#include "global.h"
 
 #include "Mueller.hpp"
 
@@ -283,6 +283,8 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 
 int main(int argc, char* argv[])
 {
+//	logfile->open("log.txt", std::ios::out);
+
 //	testConcaveHexagonRot();
 //	testHexagonBuilding();
 //	testHexagonRotate();
@@ -578,21 +580,27 @@ ee += Area;//DEB
 //				int fff = 0; // DEB
 		}
 
-		assert(Area >= 0);
+		LOG_ASSERT(Area >= 0);
 	}
 	ee = 0;// DEB
 }
 
-void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename)
+std::string GetFileName(const std::string &filename)
 {
-
 	std::string fname = std::string("M_") + filename;
 	std::string name = fname;
 
-	for (int i = 0; std::ifstream(name += ".dat") != NULL; ++i)
+	for (int i = 1; std::ifstream(name += ".dat") != NULL; ++i)
 	{
 		name = fname + "(" + std::to_string(i) + ")";
 	}
+
+	return name;
+}
+
+void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename)
+{
+	std::string name = GetFileName(filename);
 
 	std::ofstream M(name, std::ios::out);
 

@@ -4,6 +4,7 @@
 #include <float.h>
 #include <assert.h>
 
+#include "macro.h"
 #include "vector_lib.h"
 //#include <iostream>
 
@@ -12,7 +13,7 @@
 Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOpticalPath,
 				 const Point3f &polarizationBasis, int interReflectionNumber)
 {
-	assert(startBeamDir.cx <= NORM_CEIL
+	LOG_ASSERT(startBeamDir.cx <= NORM_CEIL
 		   && startBeamDir.cy <= NORM_CEIL
 		   && startBeamDir.cz <= NORM_CEIL
 		   && "Direction of the start beam is not normalized.");
@@ -497,8 +498,7 @@ void Tracing::SplitBeamDirection(const Point3f &incidentDir, double cosIncident,
 
 	tmp1 = (re + 1.0 - cosI_sqr + tmp1)/2.0;
 
-	if (Norm(tmp0) >= (tmp1/cosI_sqr))//DEB
-	assert(Norm(tmp0) < (tmp1/cosI_sqr));
+	LOG_ASSERT(Norm(tmp0) < (tmp1/cosI_sqr));
 
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
 	tmp1 = sqrt(tmp1);
