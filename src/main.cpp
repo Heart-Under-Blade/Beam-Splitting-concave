@@ -64,7 +64,7 @@ long long ddddd = 0;
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
 
-void WriteResultsToFile(int ThetaNumber, double NRM);
+void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename);
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM);
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM);
 
@@ -159,14 +159,14 @@ void Calculate(const CLArguments &params)
 
 	ExtractPeaks(EDF, NRM, params.thetaNumber);
 
-	WriteResultsToFile(params.thetaNumber, NRM);
+	WriteResultsToFile(params.thetaNumber, NRM, params.outfile);
 	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
 	WriteStatisticsToConsole(orNum, D_tot, NRM);
 
 	delete particle;
 }
 
-int GetNextArgValue(char* argv[], int argc, int i)
+int GetArgValue(char* argv[], int argc, int i)
 {
 	if (argc <= i)
 	{
@@ -202,6 +202,85 @@ double GetArgValueD(char* argv[], int argc, int i)
 	return val;
 }
 
+void SetParams(int argc, char* argv[], CLArguments &params)
+{
+	try
+	{
+		int paramsNum = 0;
+
+		for (int i = 1; i < argc; ++i)
+		{
+			std::string arg(argv[i]);
+
+			if (arg == "-p")
+			{
+				params.particleType = (ParticleType)GetArgValue(argv, argc, ++i);
+				params.halfHeight = GetArgValueD(argv, argc, ++i);
+				params.radius = GetArgValueD(argv, argc, ++i);
+
+				if (params.particleType == ParticleType::ConcaveHexagonal)
+				{
+					params.cavityDepth = GetArgValueD(argv, argc, ++i);
+				}
+
+				++paramsNum;
+			}
+			else if (arg == "-ri")
+			{
+				params.refractionIndex = GetArgValueD(argv, argc, ++i);
+				++paramsNum;
+			}
+			else if (arg == "-rn")
+			{
+				params.interReflNum = GetArgValue(argv, argc, ++i);
+				++paramsNum;
+			}
+			else if (arg == "-b")
+			{
+				params.betaRange.begin = GetArgValue(argv, argc, ++i);
+				params.betaRange.end = GetArgValue(argv, argc, ++i);
+				++paramsNum;
+			}
+			else if (arg == "-g")
+			{
+				params.gammaRange.begin = GetArgValue(argv, argc, ++i);
+				params.gammaRange.end = GetArgValue(argv, argc, ++i);
+				++paramsNum;
+			}
+			else if (arg == "-t")
+			{
+				params.thetaNumber = GetArgValue(argv, argc, ++i);
+				++paramsNum;
+			}
+			else if (arg == "-r")
+			{
+				params.isRandom = true;
+			}
+			else if (arg == "-o")
+			{
+				if (argc <= i)
+				{
+					throw "Not enouth arguments.";
+				}
+
+				params.outfile = argv[++i];
+			}
+		}
+
+		if (paramsNum < 6) // REF: выделить как константу
+		{
+			throw std::string("Too few arguments.");
+		}
+	}
+	catch (const std::string &e)
+	{
+		std::cout << "Error! " << e << " Please check it and restart the program."
+				  << std::endl << "Press any key to exit...";
+		getchar();
+		exit(1);
+	}
+}
+
 int main(int argc, char* argv[])
 {
 //	testConcaveHexagonRot();
@@ -212,99 +291,7 @@ int main(int argc, char* argv[])
 
 	if (argc > 1) // has command line arguments
 	{
-		try
-		{
-			int paramsNum = 0;
-
-			for (int i = 1; i < argc; ++i)
-			{
-				std::string arg(argv[i]);
-
-				if (arg == "-p")
-				{
-					params.particleType = (ParticleType)GetNextArgValue(argv, argc, ++i);
-					params.halfHeight = GetArgValueD(argv, argc, ++i);
-					params.radius = GetArgValueD(argv, argc, ++i);
-
-					if (params.particleType == ParticleType::ConcaveHexagonal)
-					{
-						params.cavityDepth = GetArgValueD(argv, argc, ++i);
-					}
-
-					++paramsNum;
-				}
-				else if (arg == "-ri")
-				{
-					params.refractionIndex = GetArgValueD(argv, argc, ++i);
-					++paramsNum;
-				}
-				else if (arg == "-rn")
-				{
-					params.interReflNum = GetNextArgValue(argv, argc, ++i);
-					++paramsNum;
-				}
-				else if (arg == "-b")
-				{
-					params.betaRange.begin = GetNextArgValue(argv, argc, ++i);
-					params.betaRange.end = GetNextArgValue(argv, argc, ++i);
-					++paramsNum;
-				}
-				else if (arg == "-g")
-				{
-					params.gammaRange.begin = GetNextArgValue(argv, argc, ++i);
-					params.gammaRange.end = GetNextArgValue(argv, argc, ++i);
-					++paramsNum;
-				}
-				else if (arg == "-t")
-				{
-					params.thetaNumber = GetNextArgValue(argv, argc, ++i);
-					++paramsNum;
-				}
-				else if (arg == "-r")
-				{
-					params.isRandom = true;
-				}
-				else if (arg == "-o")
-				{
-					if (argc <= i)
-					{
-						throw "Not enouth arguments.";
-					}
-
-					params.outfile = argv[++i];
-				}
-			}
-
-			if (paramsNum == 6) // REF: выделить как константу
-			{
-				throw std::string("Too few arguments.");
-			}
-		}
-		catch (const std::string &e)
-		{
-			std::cout << "Error! " << e << " Please check it and restart the program."
-					  << std::endl << "Press any key to exit...";
-			getchar();
-			exit(1);
-		}
-
-//		particleType = atoi(argv[i++]);
-//		halfHeight = atof(argv[i++]);
-//		radius = atof(argv[i++]);
-
-//		if (particleType == 10)
-//		{
-//			cavityDept = atof(argv[i++]);
-//		}
-
-//		double re = atof(argv[i++]);
-//		refractionIndex = complex(re, 0.0);
-
-//		orNumber.gamma = atoi(argv[i++]);
-//		orNumber.beta = atoi(argv[i++]);
-//		thetaNumber = atoi(argv[i++]);
-//		interReflNum = atoi(argv[i++]);
-//		isRandom = atoi(argv[i++]);
+		SetParams(argc, argv, params);
 	}
 	else // DEB
 	{
@@ -596,9 +583,18 @@ ee += Area;//DEB
 	ee = 0;// DEB
 }
 
-void WriteResultsToFile(int ThetaNumber, double NRM)
+void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename)
 {
-	std::ofstream M("M.dat", std::ios::out);
+
+	std::string fname = std::string("M_") + filename;
+	std::string name = fname;
+
+	for (int i = 0; std::ifstream(name += ".dat") != NULL; ++i)
+	{
+		name = fname + "(" + std::to_string(i) + ")";
+	}
+
+	std::ofstream M(name, std::ios::out);
 
 	M <<  "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
 
