@@ -1,5 +1,5 @@
 #include <iostream>
-#include <time.h>
+//#include <time.h>
 
 #include "macro.h"
 #include "test.h"
@@ -17,6 +17,9 @@
 
 #include "Beam.h"
 #include "PhysMtr.hpp"
+#include <chrono>
+
+using namespace std::chrono;
 
 struct OrientationRange
 {
@@ -54,7 +57,6 @@ Arr2D mxd(0, 0, 0, 0);
 double SizeBin;
 double gammaNorm, betaNorm;
 double incomingEnergy;
-clock_t totalTime;
 Point3f incidentDir(0, 0, 1); /// REF: исправить на нормальное направление
 Point3f polarizationBasis(0, 1, 0);
 
@@ -120,7 +122,7 @@ void Calculate(const CLArguments &params)
 	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
 	mxd.ClearArr();
 
-	clock_t timer = clock();
+	time_point<system_clock> startCalc = system_clock::now();
 
 	if (params.isRandom)
 	{
@@ -131,10 +133,14 @@ void Calculate(const CLArguments &params)
 		TraceFixed(params.gammaRange, params.betaRange, *tracer);
 	}
 
-	timer = clock() - timer;
-	totalTime = timer/CLOCKS_PER_SEC;
+	auto total = system_clock::now() - startCalc;
 
-	std::cout << "\nTotal time of calculation = " << totalTime << " seconds";
+	if (assertNum > 0)
+	{
+		std::cout << std::endl << "WARRNING! Asserts are occured (see log file) " << assertNum << std::endl;
+	}
+
+	std::cout << "\nTotal time of calculation = " << duration_cast<seconds>(total).count() << " seconds";
 
 	// Integrating
 	double D_tot = back[0][0] + forw[0][0];
@@ -160,7 +166,7 @@ void Calculate(const CLArguments &params)
 	ExtractPeaks(EDF, NRM, params.thetaNumber);
 
 	WriteResultsToFile(params.thetaNumber, NRM, params.outfile);
-	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
+//	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
 	WriteStatisticsToConsole(orNum, D_tot, NRM);
 
 	delete particle;
@@ -382,7 +388,9 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 			outcomingBeams.clear();
 		}
 
-		std::cout << (100*(++count))/orNumBeta << "%" << std::endl;
+		std::cout << (100*(++count))/orNumBeta << "%";
+
+		std::cout << std::endl;
 	}
 }
 

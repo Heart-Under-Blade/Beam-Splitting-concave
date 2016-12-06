@@ -156,13 +156,14 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 void Tracing::CalcOpticalPathInternal(double Nr, const Beam &incidentBeam,
 									  Beam &outBeam, Beam &inBeam) const
 {
+	double coef = (incidentBeam.isExternal) ? 1 : sqrt(Nr);
 	Point3f center = CenterOfPolygon(outBeam.polygon, outBeam.size);
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 
 	double temp = DotProduct(incidentBeam.direction, center);
 	outBeam.opticalPath = incidentBeam.opticalPath
-			+ sqrt(Nr)*fabs(temp + incidentBeam.D);
+			+ coef*fabs(temp + incidentBeam.D);
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
 	inBeam.opticalPath = outBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + inBeam.D);
