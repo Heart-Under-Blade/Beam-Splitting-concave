@@ -6,3 +6,5 @@
 // debug
 #define _TRACK_ALLOW // tracks of beams writes to beams
 #define _TRACK_OUTPUT // tracks of beams outputs in file
+
+void Dellines(int count);

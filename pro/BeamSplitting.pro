@@ -39,6 +39,7 @@ HEADERS += \
 	../src/common/macro.h \
     ../src/tracing/TracingConvex.h \
     ../src/tracing/TracingConcave.h \
+	../src/CalcTimer.h \
     ../src/clipper.hpp
 
 SOURCES += \
@@ -55,8 +56,10 @@ SOURCES += \
     ../src/math/Mueller.cpp \
 	../src/math/PhysMtr.cpp \
     ../src/common/vector_lib.cpp \
+	../src/common/common.cpp \
 	../src/tracing/Tracing.cpp \
     ../src/tracing/TracingConvex.cpp \
     ../src/tracing/TracingConcave.cpp \
+	../src/CalcTimer.cpp \
     ../src/clipper.cpp
 

@@ -1,6 +1,6 @@
 #include <iostream>
-//#include <time.h>
 
+#include "CalcTimer.h"
 #include "macro.h"
 #include "test.h"
 
@@ -15,6 +15,7 @@
 #include "TracingConcave.h"
 #include "TracingConvex.h"
 
+#include "global.h"
 #include "Beam.h"
 #include "PhysMtr.hpp"
 #include <chrono>
@@ -53,6 +54,7 @@ matrix back(4,4),	///< Mueller matrix in backward direction
 
 //std::ofstream WW("WW.dat", std::ios::out); //DEB
 
+long long lastMsTime = LONG_MAX;
 Arr2D mxd(0, 0, 0, 0);
 double SizeBin;
 double gammaNorm, betaNorm;
@@ -122,6 +124,8 @@ void Calculate(const CLArguments &params)
 	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
 	mxd.ClearArr();
 
+	std::cout << std::endl;
+
 	time_point<system_clock> startCalc = system_clock::now();
 
 	if (params.isRandom)
@@ -151,7 +155,7 @@ void Calculate(const CLArguments &params)
 	}
 
 	// Normalizing coefficient
-	double orNum = orNumGamma * orNumBeta;
+	long long orNum = orNumGamma * orNumBeta;
 	double NRM;
 
 	if (params.isRandom)
@@ -343,9 +347,18 @@ void TraceSingle(Tracing &tracer, double beta, double gamma)
 	outcomingBeams.clear();
 }
 
+void PrintTime(long long &msLeft, CalcTimer &time)
+{
+	time.Left(msLeft);
+	std::cout << "time left: " << time.ToString();
+	std::cout << ", ends at " << std::ctime(&time.End(msLeft));
+}
+
 void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
 				Tracing &tracer)
 {
+	CalcTimer time;
+
 	double beta, gamma;
 	double betaDistrProbability;
 
@@ -360,7 +373,12 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 //	HandleBeams(outcomingBeams, sin(beta), tracer);
 
 	int orNumBeta = betaRange.end - betaRange.begin;
-	int count = 0;
+	int orNumGamma = gammaRange.end - gammaRange.begin;
+	long long orNum = orNumGamma * orNumBeta;
+
+	long long count = 0;
+
+	time.Start();
 
 	for (int i = betaRange.begin; i < betaRange.end; ++i)
 	{
@@ -383,14 +401,23 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 //			tracks.push_back(track);
 //			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
 
-			incomingEnergy += betaDistrProbability * square;
-			HandleBeams(outcomingBeams, betaDistrProbability, tracer);
-			outcomingBeams.clear();
 		}
 
-		std::cout << (100*(++count))/orNumBeta << "%";
+		incomingEnergy += betaDistrProbability * square;
+		HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+		outcomingBeams.clear();
 
-		std::cout << std::endl;
+		Dellines(2);
+		std::cout << ((100*count)/orNumBeta) << "% ";
+
+		time.Stop();
+		long long durMs = time.Duration();
+		long long msLeft = (durMs/orNumGamma)*(orNum - count*orNumGamma);
+
+		PrintTime(msLeft, time);
+
+		time.Start();
+		++count;
 	}
 }
 
@@ -491,7 +518,7 @@ bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compare
 		return false;
 	}
 
-	for (int i = 0; i < compared.size(); ++i)
+	for (unsigned int i = 0; i < compared.size(); ++i)
 	{
 		if (track.at(i) != compared.at(i))
 		{

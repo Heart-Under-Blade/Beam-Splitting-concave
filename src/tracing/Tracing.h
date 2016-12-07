@@ -21,7 +21,7 @@ public:
 
 	void RotateParticle(double beta, double gamma);
 
-	virtual double BeamCrossSection(const Beam &/*beam*/) const {}
+	virtual double BeamCrossSection(const Beam &/*beam*/) const { return 0.0; }
 
 	virtual void SplitBeamByParticle(std::vector<Beam> &/*outBeams*/,
 									 double &/*lightSurfaceSquare*/) {}
