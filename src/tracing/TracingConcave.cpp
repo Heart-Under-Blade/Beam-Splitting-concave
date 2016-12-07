@@ -348,7 +348,6 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						{
 							buff.push_back(p);
 						}
-//						incidentBeam.size = 0;
 					}
 				}
 			}
@@ -474,7 +473,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 						PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam, true);
 					}
-					else /// case of the complete internal reflection
+					else // case of the complete internal reflection
 					{
 						const double bf = Nr*(1.0 - cosI_sqr) - 1.0;
 
@@ -499,7 +498,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						}
 					}
 				}
-				else /// case of external beam incidents to facet
+				else // case of external beam incidents to facet
 				{
 					// rotate polarization plane
 					{
@@ -513,9 +512,6 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					}
 
 					Point3f refrDir, reflDir;
-
-//					double cosI = cosIncident;
-//					Point3f incDir = incidentDir;
 
 					double cosI = DotProduct(normal, -incidentDir);// NOTE: используется косинус между двумя сонаправленными векторами (в отличие от остальных случаев)
 					Point3f incDir = -incidentDir;
@@ -548,15 +544,9 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				}
 			}
 
-//			if (isDivided)
-//			{
-//				continue;
-//			}
-
 #ifdef _TRACK_ALLOW
 			inBeam.track = incidentBeam.track;
 #endif
-//			PushBeamToTree(inBeam, facetId, incidentBeam.level+1, false);
 			PushOutputBeamToTree(inBeam, buff, facetId, isDivided, incidentBeam, false);
 			buff.clear();
 
@@ -727,10 +717,9 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 										 : m_particle->normals;
 	Point3f &originNormal = normals[beam.facetId];
 
-	SetPolygonByFacet(facet, size, resultPolygon); /// set origin polygon
-
 	Axis axis = GetSwapAxis(originNormal);
 
+	SetPolygonByFacet(facet, size, resultPolygon); // set origin polygon
 	SwapCoords(axis, Axis::aZ, resultPolygon);
 
 	Paths clip(previewFacetCount);
@@ -819,9 +808,6 @@ void TracingConcave::ProjectFacetToFacet(const Point3f *a_facet, int a_size,
 {
 	for (int i = 0; i < a_size; ++i)
 	{
-//		Point3f p;
-//		ProjectPointToFacet(a_facet[i], a_dir, b_normal, p);
-
 		Point3d p;
 		ProjectPointToFacet(Point3d(a_facet[i].cx, a_facet[i].cy, a_facet[i].cz),
 							Point3d(a_dir.cx, a_dir.cy, a_dir.cz),

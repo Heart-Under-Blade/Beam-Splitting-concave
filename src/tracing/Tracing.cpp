@@ -327,13 +327,13 @@ void Tracing::SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const P
 }
 
 /// Projection of beam to facet
-bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
-								  __m128 _normal, int facetIndex) const
+bool Tracing::ProjectToFacetPlane(const Point3f *polygon, int size, const Point3f &dir,
+								  const Point3f &normal, __m128 *_projection) const
 {
-	const Point3f &dir = inputBeam.direction;
+	__m128 _normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
 	__m128 _direction = _mm_setr_ps(dir.cx, dir.cy, dir.cz, 0.0);
 
-	__m128 _d_param = _mm_set_ps1(m_particle->normals[facetIndex].d_param);
+	__m128 _d_param = _mm_set_ps1(normal.d_param);
 	__m128 _dp0 = _mm_dp_ps(_direction, _normal, MASK_FULL);
 
 	__m128 _sign_mask = _mm_set1_ps(-0.f);
@@ -344,42 +344,37 @@ bool Tracing::ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
 		return false; /// beam is parallel to facet
 	}
 
-	for (int i = 0; i < inputBeam.size; ++i)
+	for (int i = 0; i < size; ++i)
 	{
-		const Point3f &p = inputBeam.polygon[i];
+		const Point3f &p = polygon[i];
 		__m128 _point = _mm_setr_ps(p.cx, p.cy, p.cz, 0.0);
 		__m128 _dp1 = _mm_dp_ps(_point, _normal, MASK_FULL);
 		__m128 _add = _mm_add_ps(_dp1, _d_param);
 		__m128 _t = _mm_div_ps(_add, _dp0);
 		__m128 _mul = _mm_mul_ps(_t, _direction);
 
-		_output_points[i] = _mm_sub_ps(_point, _mul);
+		_projection[i] = _mm_sub_ps(_point, _mul);
 	}
 
 	return true;
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
-bool Tracing::Intersect(int facetId, const Beam &originBeam, Beam &intersectBeam) const
+bool Tracing::Intersect(int facetId, const Beam &beam, Beam &intersection) const
 {
-	/// OPT: попробовать заменить на Clipper
 	__m128 _output_points[MAX_VERTEX_NUM];
-	__m128 *_output_ptr = _output_points;
 
-	int outputSize = originBeam.size;
-
-	const Point3f &normal = m_particle->externalNormals[facetId];
-	__m128 _normal_to_facet = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
-
-	const Point3f &normal2 = m_particle->normals[facetId];
-	__m128 _normal_to_facet2 = _mm_setr_ps(normal2.cx, normal2.cy, normal2.cz, 0.0);
-
-	bool isProjected = ProjectToFacetPlane(originBeam, _output_points,
-										   _normal_to_facet2, facetId);
+	const Point3f &normal = m_particle->normals[facetId];
+	bool isProjected = ProjectToFacetPlane(beam.polygon, beam.size, beam.direction,
+										   normal, _output_points);
 	if (!isProjected)
 	{
 		return false;
 	}
+
+	__m128 _normal_to_facet = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
+	__m128 *_output_ptr = _output_points;
+	int outputSize = beam.size;
 
 	__m128 _buffer[MAX_VERTEX_NUM];
 	__m128 *_buffer_ptr = _buffer;
@@ -446,8 +441,8 @@ bool Tracing::Intersect(int facetId, const Beam &originBeam, Beam &intersectBeam
 		}
 	}
 
-	SetOutputBeam(_output_ptr, outputSize, intersectBeam);
-	return intersectBeam.size >= MIN_VERTEX_NUM;
+	SetOutputBeam(_output_ptr, outputSize, intersection);
+	return intersection.size >= MIN_VERTEX_NUM;
 }
 
 void Tracing::SetOutputBeam(__m128 *_output_points, int outputSize, Beam &outputBeam) const

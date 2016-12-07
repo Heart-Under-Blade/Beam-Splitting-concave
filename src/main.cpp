@@ -391,11 +391,10 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 //			tracks.push_back(track);
 //			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
 
+			incomingEnergy += betaDistrProbability * square;
+			HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+			outcomingBeams.clear();
 		}
-
-		incomingEnergy += betaDistrProbability * square;
-		HandleBeams(outcomingBeams, betaDistrProbability, tracer);
-		outcomingBeams.clear();
 
 		Dellines(2);
 		std::cout << ((100*count)/orNumBeta) << "% ";

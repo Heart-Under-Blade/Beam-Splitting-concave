@@ -64,7 +64,7 @@ protected:
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;
 
-	bool Intersect(int facetIndex, const Beam& originBeam, Beam &intersectBeam) const;
+	bool Intersect(int facetIndex, const Beam& beam, Beam &intersection) const;
 
 	void SplitBeamDirection(const Point3f &incidentDir, double cosIncident, const Point3f &normal,
 								Point3f &refleDir, Point3f &refraDir) const;
@@ -73,8 +73,8 @@ protected:
 
 	void SetOutputBeam(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
 
-	bool ProjectToFacetPlane(const Beam& inputBeam, __m128 *_output_points,
-							 __m128 _normal, int facetIndex) const;
+	bool ProjectToFacetPlane(const Point3f *polygon, int size, const Point3f &dir,
+							 const Point3f &normal, __m128 *_projection) const;
 
 	void CalcOpticalPathInternal(double Nr, const Beam &incidentBeam, Beam &outBeam, Beam &inBeam) const;
 
