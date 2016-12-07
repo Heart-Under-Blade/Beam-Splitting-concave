@@ -2,8 +2,6 @@
 
 #include "macro.h"
 #include <tgmath.h>
-#include <iostream> // DEB
-#include <fstream> // DEB
 
 #define MULTI_INDEX		10000000l			// index for poligon's clip operations
 #define EPS_MULTI		(1.415*MULTI_INDEX*2)/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
@@ -70,7 +68,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 	SortFacets(idNum, m_startBeam.direction, facetIds);
 
 #ifdef _TRACK_OUTPUT
-	trackMapFile << "0 lvl: "; // DEB
+	trackMapFile << "0 lvl: ";
 #endif
 
 	// reflecting the beam to each visible facet
@@ -141,38 +139,6 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 #endif
 
 	TraceInternalReflections(outBeams);
-
-	//DEB
-	{
-//	int co = 0;
-//	double s = 0;
-//	double d = 0;
-//	for (const Beam &b : outBeams)
-//	{
-//		switch (b.track[0]) {
-//		case 0: case 7:
-//			if (b.track.size() > 1 /*&& b.track[1] == 5*/)
-//				s += Square(b);
-//			break;
-////		case 2:
-//		default:
-//			if (b.track.size() > 2)
-//				d += Square(b);
-//		}
-
-//		if (b.track.size() == 3)
-//		{
-//			for (int a : b.track)
-//				std::cout << a;
-//		std::cout << std::endl;
-//			co++;
-//			d += Square(b);
-//			std::cout << d << std::endl;
-//		}
-//	}
-
-	int fff = 0;
-	}
 }
 
 void TracingConcave::SelectVisibleFacets(const Beam &beam, int *facetIds, int &facetIdCount)
@@ -322,7 +288,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 		SelectVisibleFacets(incidentBeam, facetIds, facetIdCount);
 
 #ifdef _TRACK_OUTPUT
-		trackMapFile << "\n" << incidentBeam.level << " lvl: ";//DEB
+		trackMapFile << "\n" << incidentBeam.level << " lvl: ";
 		trackMapFile.flush();
 #endif
 		for (int i = 0; i < facetIdCount; ++i)

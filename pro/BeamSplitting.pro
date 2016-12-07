@@ -40,6 +40,7 @@ HEADERS += \
     ../src/tracing/TracingConvex.h \
     ../src/tracing/TracingConcave.h \
 	../src/CalcTimer.h \
+	../src/Tracer.h \
     ../src/clipper.hpp
 
 SOURCES += \
@@ -61,5 +62,6 @@ SOURCES += \
     ../src/tracing/TracingConvex.cpp \
     ../src/tracing/TracingConcave.cpp \
 	../src/CalcTimer.cpp \
+	../src/Tracer.cpp \
     ../src/clipper.cpp
 

@@ -1,7 +1,6 @@
 #include "CalcTimer.h"
 
 #include <limits.h>
-#include <iostream>//DEB
 
 #define MSEC_PER_SEC 1000
 #define SEC_PER_MIN 60
@@ -66,7 +65,6 @@ const time_t &CalcTimer::End(const long long &ms)
 		auto now = m_nowPoint;
 		now += milliseconds(m_lastTimeLeft);
 		m_lastEndTime = system_clock::to_time_t(now);
-//		std::cout << " !!" << std::ctime(&m_lastEndTime);
 	}
 
 	return m_lastEndTime;
