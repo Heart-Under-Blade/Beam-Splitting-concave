@@ -79,7 +79,7 @@ private:
         
 	double AreaByClipper(const Beam &beam, const Point3f &normal) const;
 
-	bool isOrderReversed(const Point3f oldNormal, const ClipperLib::Path polygon);
+//	bool isOrderReversed(const Point3f oldNormal, const ClipperLib::Path polygon);
 
 	void InversePolygonOrder(ClipperLib::Path &polygon);
 

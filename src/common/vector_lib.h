@@ -3,7 +3,8 @@
 class Point3f;
 class Point3d;
 
-double DotProduct(const Point3f &v1, const Point3f &v2);
+float DotProduct(const Point3f &v1, const Point3f &v2);
+
 double DotProductD(const Point3d &v1, const Point3d &v2);
 
 double Norm(const Point3f &point);

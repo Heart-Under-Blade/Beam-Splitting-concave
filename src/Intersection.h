@@ -23,13 +23,13 @@ inline __m128 computeIntersection_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _
 	__m128 _v_a = _mm_sub_ps(_a2, _a1);
 	__m128 _v_b = _mm_sub_ps(_b2, _b1);
 
-	/// normal of new plane
+	// normal of new plane
 	__m128 _normal_to_line = _cross_product(_v_b, _normal_to_facet);
 
-	/// normalize normal
-	__m128 _normal_n = _mm_mul_ps(_normal_to_line, _mm_rsqrt_ps(_mm_dp_ps(_normal_to_line, _normal_to_line, MASK_FULL)));
+	// normalize normal
+	__m128 _normal_n = _normalize(_normal_to_line);
 
-	/// intersection vector and new plane
+	// intersection vector and new plane
 	__m128 _dp0 = _mm_dp_ps(_v_a, _normal_n, MASK_FULL);
 
 	__m128 _sign_mask = _mm_set1_ps(-0.f);

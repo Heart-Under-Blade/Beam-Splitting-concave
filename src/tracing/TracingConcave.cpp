@@ -27,21 +27,21 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 	m_clipper.ZFillFunction(FindZCoord);
 }
 
-bool TracingConcave::isOrderReversed(const Point3f oldNormal, const Path polygon)
-{
-	Point3f facet[MAX_VERTEX_NUM];
+//bool TracingConcave::isOrderReversed(const Point3f oldNormal, const Path polygon)
+//{
+//	Point3f facet[MAX_VERTEX_NUM];
 
-	for (int i = 0; i < 3; ++i)
-	{
-		facet[i].cx = (float)polygon[i].X / MULTI_INDEX;
-		facet[i].cy = (float)polygon[i].Y / MULTI_INDEX;
-		facet[i].cz = (float)polygon[i].Z / MULTI_INDEX;
-	}
+//	for (int i = 0; i < 3; ++i)
+//	{
+//		facet[i].cx = (float)polygon[i].X / MULTI_INDEX;
+//		facet[i].cy = (float)polygon[i].Y / MULTI_INDEX;
+//		facet[i].cz = (float)polygon[i].Z / MULTI_INDEX;
+//	}
 
-	Point3f newNormal = NormalToFacet(facet);
-	double cosNO = DotProduct(newNormal, oldNormal);
-	return (cosNO < 0);
-}
+//	Point3f newNormal = NormalToFacet(facet);
+//	double cosNO = DotProduct(newNormal, oldNormal);
+//	return (cosNO < 0);
+//}
 
 void TracingConcave::InversePolygonOrder(Path &polygon)
 {
@@ -99,11 +99,6 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 			if (!cuttedFacet.empty())
 			{
 				LOG_ASSERT(cuttedFacet.size() < 2);
-
-				if (isOrderReversed(extNormal, cuttedFacet.at(0)))
-				{
-					InversePolygonOrder(cuttedFacet.at(0));
-				}
 
 				SetBeamByPath(inBeam, cuttedFacet.at(0));
 				SetBeamByPath(outBeam, cuttedFacet.at(0));
@@ -281,10 +276,9 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 		Point3f &incidentDir = incidentBeam.direction;
 		const bool isExternal = incidentBeam.isExternal;
 
-		int facetIds[MAX_FACET_NUM]; // OPT: заменить макс размер на 18
+		int facetIds[MAX_FACET_NUM];
 		int facetIdCount = 0;
 
-		// OPT: выполнять по условию только если есть видимые вершины
 		SelectVisibleFacets(incidentBeam, facetIds, facetIdCount);
 
 #ifdef _TRACK_OUTPUT
@@ -295,13 +289,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 		{
 			int facetId = facetIds[i];
 
-			if (facetId == incidentBeam.facetId) // same facet
-			{
-				continue; // OPT: проверить, проходит ли хоть раз эта проверка
-			}
-
 			Beam inBeam, outBeam;
-
 			const Point3f &normal = m_particle->externalNormals[facetId];
 			double cosIncident = DotProduct(normal, incidentDir);
 
@@ -333,11 +321,6 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				{
 					if (clippedBeam.size() == MAX_POLYGON_RESULT)
 					{
-						if (isOrderReversed(NormalToFacet(outBeam.polygon), clippedBeam.at(0)))
-						{// OPT: попробовать удалить (возможно лишнее)
-							InversePolygonOrder(clippedBeam.at(0));
-						}
-
 						SetBeamByPath(outBeam, clippedBeam.at(0));
 					}
 					else // beam had divided in several parts by facet
@@ -370,11 +353,6 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				{
 					if (clippedFacet.size() == MAX_POLYGON_RESULT)
 					{
-						if (isOrderReversed(NormalToFacet(incidentBeam.polygon), clippedFacet.at(0)))
-						{// OPT: попробовать удалить (возможно лишнее)
-							InversePolygonOrder(clippedFacet.at(0));
-						}
-
 						SetBeamByPath(incidentBeam, clippedFacet.at(0));
 					}
 					else // beam had divided by facet

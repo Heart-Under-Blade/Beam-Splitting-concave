@@ -1,9 +1,13 @@
 #include <math.h>
 #include "types.h"
+#include "intrinsic/intrinsics.h"
 
-double DotProduct(const Point3f &v1, const Point3f &v2)
+float DotProduct(const Point3f &v1, const Point3f &v2)
 {
-	return v1.cx*v2.cx + v1.cy*v2.cy + v1.cz*v2.cz;
+	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
+	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
+	__m128 _dp0 = _mm_dp_ps(_v1, _v2, MASK_FULL);
+	return _dp0[0];
 }
 
 double DotProductD(const Point3d &v1, const Point3d &v2)
@@ -18,9 +22,13 @@ double Norm(const Point3f &point)
 
 void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
 {
-	res.cx = v1.cy*v2.cz - v1.cz*v2.cy;
-	res.cy = v1.cz*v2.cx - v1.cx*v2.cz;
-	res.cz = v1.cx*v2.cy - v1.cy*v2.cx;
+	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
+	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
+	__m128 _cp = _cross_product(_v1, _v2);
+
+	res.cx = _cp[0];
+	res.cy = _cp[1];
+	res.cz = _cp[2];
 }
 
 double Length(const Point3f &v)
