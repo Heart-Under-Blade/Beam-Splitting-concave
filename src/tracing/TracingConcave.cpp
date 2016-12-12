@@ -590,9 +590,9 @@ void TracingConcave::SetPolygonByFacet(const Point3f *facet, int size, Paths &po
 	{
 		const Point3f &p = facet[i];
 
-		polygon[0] << IntPoint((cInt)std::round(p.cx * MULTI_INDEX),
-							   (cInt)std::round(p.cy * MULTI_INDEX),
-							   (cInt)std::round(p.cz * MULTI_INDEX));
+		polygon[0] << IntPoint((cInt)(p.cx * MULTI_INDEX),
+							   (cInt)(p.cy * MULTI_INDEX),
+							   (cInt)(p.cz * MULTI_INDEX));
 	}
 }
 
@@ -785,9 +785,9 @@ void TracingConcave::ProjectFacetToFacet(const Point3f *a_facet, int a_size,
 							Point3d(a_dir.cx, a_dir.cy, a_dir.cz),
 							Point3d(b_normal.cx, b_normal.cy, b_normal.cz, b_normal.d_param), p);
 
-		projection << IntPoint((cInt)std::round(p.x * MULTI_INDEX),
-							   (cInt)std::round(p.y * MULTI_INDEX),
-							   (cInt)std::round(p.z * MULTI_INDEX));
+		projection << IntPoint((cInt)(p.x * MULTI_INDEX),
+							   (cInt)(p.y * MULTI_INDEX),
+							   (cInt)(p.z * MULTI_INDEX));
 	}
 }
 
