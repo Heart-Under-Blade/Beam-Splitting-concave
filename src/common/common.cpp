@@ -1,10 +1,14 @@
 #include "global.h"
-#include <windows.h>
 #include <string>
 #include <iostream>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 void Dellines(int count)
 {
+#ifdef _WIN32
 	std::string mask;
 
 	for (int i = 0; i < count*80; ++i)
@@ -21,4 +25,8 @@ void Dellines(int count)
 	SetConsoleCursorPosition(hConsole, ci.dwCursorPosition);
 	std::cout<< mask;
 	SetConsoleCursorPosition(hConsole, ci.dwCursorPosition);
+#else
+	++count;
+	--count;
+#endif
 }
