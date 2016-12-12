@@ -121,5 +121,5 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 	}
 
 	double n = sqrt(Norm(normal));
-	return (e*square) / n; // OPT:
+	return (e*square) / n;
 }

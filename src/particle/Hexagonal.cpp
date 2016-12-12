@@ -120,48 +120,6 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 	}
 }
 
-/// OPT: добавить потом
-//void Hexagon::Rotate(double beta, double gamma)
-//{
-//#ifdef __FASTMATH_H
-//	double cosB, cosG,
-//			sinB, sinG;
-
-//	sincos(beta, &sinB, &cosB);
-//	sincos(gamma, &sinG, &cosG);
-//#else
-//	double cosB = cos(beta);
-//	double cosG = cos(gamma);
-
-//	double sinB = sin(beta);
-//	double sinG = sin(gamma);
-//#endif
-
-//	/// OPT: дооптимизировать
-//	double m11 = cosB*cosG;
-//	double m21 = sinG;
-//	double m31 = -sinB*cosG;
-
-//	double m12 = -cosB*sinG;
-//	double m22 = cosG;
-//	double m32 = sinB*sinG;
-
-//	double m13 = sinB;
-//	double m23 = 0;
-//	double m33 = cosB;
-
-//	for (int i = 0; i < m_facetNum; ++i)
-//	{
-//		for (int j = 0; j < m_vertexNums[i]; ++j)
-//		{
-//			Point3 oldVertex = m_facets[i][j];
-//			m_facets[i][j].X = oldVertex.X*m11 + oldVertex.Y*m12 + oldVertex.Z*m13;
-//			m_facets[i][j].Y = oldVertex.X*m21 + oldVertex.Y*m22 + oldVertex.Z*m23;
-//			m_facets[i][j].Z = oldVertex.X*m31 + oldVertex.Y*m32 + oldVertex.Z*m33;
-//		}
-//	}
-//}
-
 void Hexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
 {
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)

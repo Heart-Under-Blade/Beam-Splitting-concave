@@ -1,11 +1,11 @@
 #include <iostream>
-#include <time.h>
-
-#include "macro.h"
-#include "test.h"
-
 #include <assert.h>
 #include <float.h>
+#include <chrono>
+
+#include "CalcTimer.h"
+#include "macro.h"
+#include "test.h"
 
 #include "Mueller.hpp"
 
@@ -15,8 +15,11 @@
 #include "TracingConcave.h"
 #include "TracingConvex.h"
 
+#include "global.h"
 #include "Beam.h"
 #include "PhysMtr.hpp"
+
+using namespace std::chrono;
 
 struct OrientationRange
 {
@@ -48,18 +51,15 @@ struct CLArguments
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
 
-//std::ofstream WW("WW.dat", std::ios::out); //DEB
-
 Arr2D mxd(0, 0, 0, 0);
-double SizeBin;
+double sizeBin;
 double gammaNorm, betaNorm;
 double incomingEnergy;
-clock_t totalTime;
 Point3f incidentDir(0, 0, 1); /// REF: исправить на нормальное направление
 Point3f polarizationBasis(0, 1, 0);
 
 // DEB
-long long ddddd = 0;
+long long beamCount = 0;
 
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
@@ -79,12 +79,14 @@ void Calculate(const CLArguments &params)
 	bool isOpticalPath = false;
 
 	Tracing *tracer = nullptr;
-	Particle *particle = nullptr;
 
 	int orNumBeta = params.betaRange.end - params.betaRange.begin;
 	int orNumGamma = params.gammaRange.end - params.gammaRange.begin;
 
-	switch (params.particleType) {
+	Particle *particle = nullptr;
+
+	switch (params.particleType)
+	{
 	case ParticleType::Hexagonal:
 		particle = new Hexagonal(params.radius, params.halfHeight, params.refractionIndex);
 		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
@@ -95,12 +97,11 @@ void Calculate(const CLArguments &params)
 		/// TODO реализовать остальные частицы
 //		break;
 	case ParticleType::ConcaveHexagonal:
-//		particle = new Hexagonal(radius, halfHeight, refractionIndex); // DEB
 		particle = new ConcaveHexagonal(params.radius, params.halfHeight,
 										params.refractionIndex, params.cavityDepth);
 		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
 									polarizationBasis, params.interReflNum);
-		betaNorm = M_PI/(2.0*orNumBeta); /// TODO: какое д/б betaNorm?
+		betaNorm = M_PI/(2.0*orNumBeta);
 		break;
 	default:
 		break;
@@ -115,12 +116,14 @@ void Calculate(const CLArguments &params)
 	back.Fill(0);
 	forw.Fill(0);
 
-	SizeBin = M_PI/params.thetaNumber; // the size of the bin (radians)
+	sizeBin = M_PI/params.thetaNumber; // the size of the bin (radians)
 
 	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
 	mxd.ClearArr();
 
-	clock_t timer = clock();
+	std::cout << std::endl;
+
+	time_point<system_clock> startCalc = system_clock::now();
 
 	if (params.isRandom)
 	{
@@ -131,10 +134,14 @@ void Calculate(const CLArguments &params)
 		TraceFixed(params.gammaRange, params.betaRange, *tracer);
 	}
 
-	timer = clock() - timer;
-	totalTime = timer/CLOCKS_PER_SEC;
+	auto total = system_clock::now() - startCalc;
 
-	std::cout << "\nTotal time of calculation = " << totalTime << " seconds";
+	if (assertNum > 0)
+	{
+		std::cout << std::endl << "WARRNING! Asserts are occured (see log file) " << assertNum << std::endl;
+	}
+
+	std::cout << "\nTotal time of calculation = " << duration_cast<seconds>(total).count() << " seconds";
 
 	// Integrating
 	double D_tot = back[0][0] + forw[0][0];
@@ -145,7 +152,7 @@ void Calculate(const CLArguments &params)
 	}
 
 	// Normalizing coefficient
-	double orNum = orNumGamma * orNumBeta;
+	long long orNum = orNumGamma * orNumBeta;
 	double NRM;
 
 	if (params.isRandom)
@@ -160,7 +167,7 @@ void Calculate(const CLArguments &params)
 	ExtractPeaks(EDF, NRM, params.thetaNumber);
 
 	WriteResultsToFile(params.thetaNumber, NRM, params.outfile);
-	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
+//	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
 	WriteStatisticsToConsole(orNum, D_tot, NRM);
 
 	delete particle;
@@ -337,24 +344,31 @@ void TraceSingle(Tracing &tracer, double beta, double gamma)
 	outcomingBeams.clear();
 }
 
+void PrintTime(long long &msLeft, CalcTimer &time)
+{
+	time.Left(msLeft);
+	std::cout << "time left: " << time.ToString();
+	std::cout << "\t\tends at " << std::ctime(&time.End(msLeft));
+}
+
 void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
 				Tracing &tracer)
 {
+	CalcTimer time;
+
 	double beta, gamma;
 	double betaDistrProbability;
 
 	std::vector<Beam> outcomingBeams;
 	double square = 0;
 
-	// DEB
-//	beta = (45 + 0.5)*betaNorm;
-//	gamma = (54 + 0.5)*gammaNorm;
-//	tracer.RotateParticle(beta, gamma);
-//	tracer.SplitBeamByParticle(outcomingBeams, square);
-//	HandleBeams(outcomingBeams, sin(beta), tracer);
-
 	int orNumBeta = betaRange.end - betaRange.begin;
-	int count = 0;
+	int orNumGamma = gammaRange.end - gammaRange.begin;
+	long long orNum = orNumGamma * orNumBeta;
+
+	long long count = 0;
+
+	time.Start();
 
 	for (int i = betaRange.begin; i < betaRange.end; ++i)
 	{
@@ -382,7 +396,17 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 			outcomingBeams.clear();
 		}
 
-		std::cout << (100*(++count))/orNumBeta << "%" << std::endl;
+		Dellines(2);
+		std::cout << ((100*count)/orNumBeta) << "% ";
+
+		time.Stop();
+		long long durMs = time.Duration();
+		long long msLeft = (durMs/orNumGamma)*(orNum - count*orNumGamma);
+
+		PrintTime(msLeft, time);
+
+		time.Start();
+		++count;
 	}
 }
 
@@ -483,7 +507,7 @@ bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compare
 		return false;
 	}
 
-	for (int i = 0; i < compared.size(); ++i)
+	for (unsigned int i = 0; i < compared.size(); ++i)
 	{
 		if (track.at(i) != compared.at(i))
 		{
@@ -496,9 +520,8 @@ bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compare
 
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
-	ddddd += outBeams.size();//DEB
+	beamCount += outBeams.size();
 
-	double ee = 0;//DEB
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams.at(i);
@@ -523,10 +546,7 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
 		double cross = tracer.BeamCrossSection(beam);
-
 		double Area = betaDistrProb * cross;
-//		double Area = 1;// DEB
-ee += Area;//DEB
 
 		matrix bf = Mueller(beam.JMatrix);
 
@@ -546,7 +566,7 @@ ee += Area;//DEB
 		else
 		{
 			// Rotate the Mueller matrix of the beam to appropriate coordinate system
-			const unsigned int ZenAng = round(acos(z)/SizeBin);
+			const unsigned int ZenAng = round(acos(z)/sizeBin);
 			double tmp = y*y;
 
 			if (tmp > DBL_EPSILON)
@@ -562,27 +582,15 @@ ee += Area;//DEB
 				RightRotateMueller(bf, cos(tmp), sin(tmp));
 			}
 
-			// DEB
-//			bf = matrix(4,4);
-//			bf.Identity();
-//			if (ZenAng == 3 && (int)Area == 107)
+#ifdef _CALC_AREA_CONTIBUTION_ONLY
+			bf = matrix(4,4);
+			bf.Identity();
+#endif
 			mxd.insert(0, ZenAng, Area*bf);
-
-//			if (ZenAng == 3)
-//				std::cout << (int)Area << std::endl;
-//			count += (int)Area;
-//			if (ZenAng == 3 /*&& Area > 941.782 && Area < 941.784*/)
-//				WW << count << std::endl;//int fff = 0;
-
-//			if (count < 0)
-//				int fff = 0;
-//			if (isinf(mxd(0, ZenAng, 0, 0)))
-//				int fff = 0; // DEB
 		}
 
 		LOG_ASSERT(Area >= 0);
 	}
-	ee = 0;// DEB
 }
 
 std::string GetFileName(const std::string &filename)
@@ -612,7 +620,7 @@ void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename
 
 		//Special case in first and last step
 		M << '\n' << 180.0/ThetaNumber*(ThetaNumber-j) + (j==0 ?-0.25*180.0/ThetaNumber:0)+(j==(int)ThetaNumber ?0.25*180.0/ThetaNumber:0);
-		sn = (j==0 || j==(int)ThetaNumber) ? 1-cos(SizeBin/2.0) : (cos((j-0.5)*SizeBin)-cos((j+0.5)*SizeBin));
+		sn = (j==0 || j==(int)ThetaNumber) ? 1-cos(sizeBin/2.0) : (cos((j-0.5)*sizeBin)-cos((j+0.5)*sizeBin));
 
 		matrix bf = mxd(0,j);
 
@@ -650,7 +658,7 @@ void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM)
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM)
 {
 	using namespace std;
-	cout << endl << ddddd << endl;
+	cout << endl << beamCount << endl;
 	cout << "\nTotal number of body orientation = " << orNumber;
 	cout << "\nTotal scattering energy = " << D_tot/**NRM*/;
 	cout << "\nTotal incoming energy = " << incomingEnergy;

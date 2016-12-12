@@ -30,6 +30,7 @@ private:
 	ClipperLib::Clipper m_clipper;
 
 private:
+
 	double MeasureMinDistanceToFacet(int facetId, const Point3f &beamDir);
 	void SortFacets(int number, const Point3f &beamDir, int *facetIds); ///< use fast sort algorithm
 	void CutShadowsFromFacet(const Point3f *facet, int size, int *facetIds,
@@ -78,7 +79,7 @@ private:
         
 	double AreaByClipper(const Beam &beam, const Point3f &normal) const;
 
-	bool isOrderReversed(const Point3f oldNormal, const ClipperLib::Path polygon);
+//	bool isOrderReversed(const Point3f oldNormal, const ClipperLib::Path polygon);
 
 	void InversePolygonOrder(ClipperLib::Path &polygon);
 

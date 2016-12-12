@@ -5,7 +5,10 @@
 #include "types.h"
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
-#include <vector> // DEB
+
+#ifdef _TRACK_ALLOW
+#include <vector>
+#endif
 
 class Beam
 {

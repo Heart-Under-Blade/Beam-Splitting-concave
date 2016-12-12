@@ -17,6 +17,8 @@
 										_mm_mul_ps(_mm_shuffle_ps(a, a, _MM_SHUFFLE(3,1,0,2)),\
 													_mm_shuffle_ps(b, b, _MM_SHUFFLE(3,0,2,1))))
 
+#define _normalize(n) _mm_mul_ps(n, _mm_rsqrt_ps(_mm_dp_ps(n, n, MASK_FULL)));
+
 /**
  * @brief The PointPosition struct
  * Position of point on the facet (uses in 'inFacet' function)
