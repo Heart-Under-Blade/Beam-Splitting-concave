@@ -8,6 +8,8 @@
 
 #define SIMPLE_CLIP_RESULT 1
 
+#define EPS_ORTO_FACET 0.0001 //TODO: подобрать норм значение
+
 using namespace ClipperLib;
 
 #ifdef _TRACK_ALLOW
@@ -152,7 +154,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &outB
 	Point3f dir = beam.direction; // OPT: ссылку
 	Point3f &preNormal = m_particle->externalNormals[beam.facetId];
 
-	int facetIds[MAX_FACET_NUM]; // OPT: заменить макс размер на 18
+	int facetIds[MAX_FACET_NUM];
 	int facetIdCount = 0;
 	SelectVisibleFacets(beam, facetIds, facetIdCount);
 
@@ -559,6 +561,8 @@ void TracingConcave::FindVisibleFacetsInternal(const Beam &beam, int *facetIndic
 	Point3f *normals = (beam.isExternal) ? m_particle->normals
 										 : m_particle->externalNormals;
 
+	const Point3f &invNormal = -normals[beam.facetId];
+
 	Point3f cob = CenterOfPolygon(beam.polygon, beam.size);
 
 	for (int i = 0; i < m_particle->facetNum; ++i)
@@ -569,9 +573,9 @@ void TracingConcave::FindVisibleFacetsInternal(const Beam &beam, int *facetIndic
 		{
 			Point3f cof = CenterOfPolygon(m_particle->facets[i], m_particle->vertexNums[i]);
 			Point3f vectorToFacet = cof - cob;
-			double cosFacets = DotProduct(-normals[beam.facetId]/*OPT:опр.др.норм.*/, vectorToFacet);
+			double cosFacets = DotProduct(invNormal, vectorToFacet);
 
-			if (cosFacets >= 0.0001/*TODO: подобрать норм значение и вынести*/) /// facet is in front of begin of beam
+			if (cosFacets >= EPS_ORTO_FACET) // facet is in front of begin of beam
 			{
 				facetIndices[facetIdCount] = i;
 				++facetIdCount;
@@ -1266,6 +1270,6 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 	}
 
 	double square = AreaByClipper(beam, normal);
-	double n = sqrt(Norm(normal));
-	return (e*square) / n; // REF сделать функ length
+	double n = Length(normal);
+	return (e*square) / n;
 }
