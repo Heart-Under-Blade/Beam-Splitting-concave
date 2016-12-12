@@ -535,6 +535,7 @@ double Tracing::Square(const Beam &beam)
 	if (square < 0)
 	{	/// OPT: узнать в какую сторону ориентированы точки в пучке
 		square *= (-1);
+		LOG_ASSERT(false);
 	}
 
 	return square / 2.0;

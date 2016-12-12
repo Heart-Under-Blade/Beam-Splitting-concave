@@ -151,7 +151,7 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, int *facetIds, int &f
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &outBeams)
 {
-	Point3f dir = beam.direction; // OPT: ссылку
+	const Point3f &dir = beam.direction;
 	Point3f &preNormal = m_particle->externalNormals[beam.facetId];
 
 	int facetIds[MAX_FACET_NUM];
@@ -1135,39 +1135,30 @@ double TracingConcave::SquareOfPolygon(const std::vector<Point3f> &polygon) cons
 
 void FindZCoord(IntPoint &a1, IntPoint &a2, IntPoint &, IntPoint &, IntPoint &point)
 {
-	IntPoint top, bot; // OPT: реализовать на указателях
+	IntPoint *top, *bot;
 
 	if (a2.Z > a1.Z)
 	{
-		top = a2;
-		bot = a1;
+		top = &a2;
+		bot = &a1;
 	}
 	else
 	{
-		top = a1;
-		bot = a2;
+		top = &a1;
+		bot = &a2;
 	}
 
 	double x, y;
 
-	IntPoint vec;
-	vec.X = top.X - bot.X;
-	vec.Y = top.Y - bot.Y;
-
-	x = vec.X;
-	y = vec.Y;
+	x = top->X - bot->X;
+	y = top->Y - bot->Y;
 	double normVec = x*x + y*y;
 
-	IntPoint botVec;
-	botVec.X = point.X - bot.X;
-	botVec.Y = point.Y - bot.Y;
-
-	x = botVec.X;
-	y = botVec.Y;
+	x = point.X - bot->X;
+	y = point.Y - bot->Y;
 	double normBotVec = x*x + y*y;
 
-	point.Z = (top.Z - bot.Z) * sqrt(normBotVec) / sqrt(normVec) + bot.Z;
-	int fff = 0;
+	point.Z = (top->Z - bot->Z) * sqrt(normBotVec) / sqrt(normVec) + bot->Z;
 }
 
 double TracingConcave::AreaByClipper(const Beam &beam, const Point3f &normal) const
