@@ -57,6 +57,7 @@ double gammaNorm, betaNorm;
 double incomingEnergy;
 Point3f incidentDir(0, 0, 1); /// REF: исправить на нормальное направление
 Point3f polarizationBasis(0, 1, 0);
+int assertNum = 0;
 
 // DEB
 long long beamCount = 0;
@@ -382,17 +383,27 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 #endif
 			gamma = (j + 0.5)*gammaNorm;
 
-			tracer.RotateParticle(beta, gamma);
-			tracer.SplitBeamByParticle(outcomingBeams, square);
+			try
+			{
+				tracer.RotateParticle(beta, gamma);
+				tracer.SplitBeamByParticle(outcomingBeams, square);
 
-			/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
-//			std::vector<std::vector<int>> tracks;
-//			std::vector<int> track = {0, 7, 0};
-//			tracks.push_back(track);
-//			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
+				/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
+	//			std::vector<std::vector<int>> tracks;
+	//			std::vector<int> track = {0, 7, 0};
+	//			tracks.push_back(track);
+	//			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
 
-			incomingEnergy += betaDistrProbability * square;
-			HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+				incomingEnergy += betaDistrProbability * square;
+				HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+			}
+			catch (const bool &)
+			{
+				logfile << ", i: " << i << ", j: " << j << std::endl;
+				logfile.flush();
+				++assertNum;
+			}
+
 			outcomingBeams.clear();
 		}
 
