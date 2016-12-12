@@ -6,13 +6,15 @@
 #define MULTI_INDEX		10000000l			// index for poligon's clip operations
 #define EPS_MULTI		(1.415*MULTI_INDEX*2)/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
 
-#define MAX_POLYGON_RESULT 1
+#define SIMPLE_CLIP_RESULT 1
 
 using namespace ClipperLib;
 
 #ifdef _TRACK_ALLOW
 std::ofstream trackMapFile("tracks.dat", std::ios::out);
 #endif
+
+static const cInt mm = MULTI_INDEX * MULTI_INDEX;
 
 TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   bool isOpticalPath, const Point3f &polarizationBasis,
@@ -255,7 +257,7 @@ void TracingConcave::PushOutputBeamToTree(Beam &outBeam, Paths &buff,
 
 void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 {
-	Paths buff; // для хранения разделённых пучков
+	Paths clippedBeam; // для хранения разделённых пучков
 
 	while (m_treeSize != 0)
 	{
@@ -288,11 +290,10 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 		for (int i = 0; i < facetIdCount; ++i)
 		{
 			int facetId = facetIds[i];
+			const Point3f &normal = m_particle->externalNormals[facetId];
+			double cosIN = DotProduct(incidentDir, normal);
 
 			Beam inBeam, outBeam;
-			const Point3f &normal = m_particle->externalNormals[facetId];
-			double cosIncident = DotProduct(normal, incidentDir);
-
 			bool isOk = Intersect(facetId, incidentBeam, outBeam);
 
 			if (!isOk)
@@ -304,7 +305,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 			if (i > 0) // is not nearest facet
 			{
-				Paths clippedBeam(1);
+				clippedBeam = Paths(1);
 				Beam bi = incidentBeam;
 				bi.isExternal = true;
 				bi.facetId = facetId;
@@ -313,25 +314,17 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				CutShadowsFromFacet(outBeam.polygon, outBeam.size, facetIds,
 									i, bi, clippedBeam);
 
-				if (clippedBeam.empty()) /// facet is totaly shadowed by others (beam do not incedent on it)
+				if (clippedBeam.empty()) // facet is totaly shadowed by others (beam do not incedent on it)
 				{
 					continue;
 				}
-				else
+				else if (clippedBeam.size() == SIMPLE_CLIP_RESULT)
 				{
-					if (clippedBeam.size() == MAX_POLYGON_RESULT)
-					{
-						SetBeamByPath(outBeam, clippedBeam.at(0));
-					}
-					else // beam had divided in several parts by facet
-					{
-						isDivided = true;
-
-						for (const Path &p : clippedBeam)
-						{
-							buff.push_back(p);
-						}
-					}
+					SetBeamByPath(outBeam, clippedBeam.at(0));
+				}
+				else // beam had divided by facet in several parts
+				{
+					isDivided = true;
 				}
 			}
 
@@ -349,31 +342,28 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				{
 					incidentBeam.size = 0;
 				}
-				else
+				else if (clippedFacet.size() == SIMPLE_CLIP_RESULT)
 				{
-					if (clippedFacet.size() == MAX_POLYGON_RESULT)
-					{
-						SetBeamByPath(incidentBeam, clippedFacet.at(0));
-					}
-					else // beam had divided by facet
-					{
-						Beam b = incidentBeam;
+					SetBeamByPath(incidentBeam, clippedFacet.at(0));
+				}
+				else // beam had divided by facet
+				{
+					Beam b = incidentBeam;
 
-						for (const Path &p : clippedFacet)
-						{
-							SetBeamByPath(b, p);
-							PushBeamToTree(b, b.facetId, b.level, b.isExternal);
-						}
-
-						isIncidentDivided = true;
-						incidentBeam.size = 0;
+					for (const Path &p : clippedFacet)
+					{
+						SetBeamByPath(b, p);
+						PushBeamToTree(b, b.facetId, b.level, b.isExternal);
 					}
+
+					isIncidentDivided = true;
+					incidentBeam.size = 0;
 				}
 			}
 
 			inBeam = outBeam;
 
-			double cosI_sqr = cosIncident * cosIncident;
+			double cosI_sqr = cosIN * cosIN;
 
 			double Nr;
 			{
@@ -384,7 +374,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 			const complex &refrIndex = m_particle->refractionIndex;
 
-			if (cosIncident >= EPS_COS_00) /// normal incidence
+			if (cosIN >= EPS_COS_00) /// normal incidence
 			{
 				complex temp;
 
@@ -401,13 +391,13 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 				}
 
-				PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam, true);
+				PushOutputBeamToTree(outBeam, clippedBeam, facetId, isDivided, incidentBeam, true);
 			}
 			else /// slopping incidence
 			{
 				if (!isExternal)
 				{
-					Point3f r0 = incidentDir/cosIncident - normal;
+					Point3f r0 = incidentDir/cosIN - normal;
 
 					Point3f reflDir = r0 - normal;
 					Normalize(reflDir);
@@ -423,7 +413,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					inBeam.e = scatteringNormal;
 
 					double s = 1.0/(Nr*cosI_sqr) - Norm(r0);
-					complex tmp0 = refrIndex*cosIncident;
+					complex tmp0 = refrIndex*cosIN;
 
 					if (s > DBL_EPSILON)
 					{
@@ -434,13 +424,13 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 						complex tmp1 = refrIndex*cosRefr;
 						complex tmp = 2.0*tmp0;
-						complex Tv0 = tmp1 + cosIncident;
+						complex Tv0 = tmp1 + cosIN;
 						complex Th0 = tmp0 + cosRefr;
 
 						SetBeam(outBeam, incBeam, refrDir, scatteringNormal,
 								tmp/Tv0, tmp/Th0);
 
-						complex Tv = (cosIncident - tmp1)/Tv0;
+						complex Tv = (cosIN - tmp1)/Tv0;
 						complex Th = (tmp0 - cosRefr)/Th0;
 						SetBeam(inBeam, incBeam, reflDir, scatteringNormal, Tv, Th);
 
@@ -449,7 +439,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 							CalcOpticalPathInternal(Nr, incBeam, inBeam, outBeam);
 						}
 
-						PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam, true);
+						PushOutputBeamToTree(outBeam, clippedBeam, facetId, isDivided, incidentBeam, true);
 					}
 					else // case of the complete internal reflection
 					{
@@ -459,7 +449,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 						const complex sq(0, im);
 						complex tmp = refrIndex*sq;
-						complex Rv = (cosIncident - tmp)/(tmp + cosIncident);
+						complex Rv = (cosIN - tmp)/(tmp + cosIN);
 						complex Rh = (tmp0 - sq)/(tmp0 + sq);
 
 						SetBeam(inBeam, incBeam, reflDir, scatteringNormal, Rv, Rh);
@@ -499,17 +489,17 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 					double cosRelr = DotProduct(normal, reflDir);
 
-					complex Tv00 = refrIndex*cosIncident;
+					complex Tv00 = refrIndex*cosIN;
 					complex Th00 = refrIndex*cosRelr;
 
 					complex Tv0 = Tv00 + cosRelr;
-					complex Th0 = Th00 + cosIncident;
+					complex Th0 = Th00 + cosIN;
 
 					complex Tv = (Tv00 - cosRelr)/Tv0; // OPT
-					complex Th = (cosIncident - Th00)/Th0;
+					complex Th = (cosIN - Th00)/Th0;
 					SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
 
-					double cosInc2 = (2.0*cosIncident);
+					double cosInc2 = (2.0*cosIN);
 					SetBeam(inBeam, inBeam, reflDir, inBeam.e,
 							cosInc2/Tv0, cosInc2/Th0);
 
@@ -518,15 +508,15 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 					}
 
-					PushOutputBeamToTree(outBeam, buff, facetId, isDivided, incidentBeam, true);
+					PushOutputBeamToTree(outBeam, clippedBeam, facetId, isDivided, incidentBeam, true);
 				}
 			}
 
 #ifdef _TRACK_ALLOW
 			inBeam.track = incidentBeam.track;
 #endif
-			PushOutputBeamToTree(inBeam, buff, facetId, isDivided, incidentBeam, false);
-			buff.clear();
+			PushOutputBeamToTree(inBeam, clippedBeam, facetId, isDivided, incidentBeam, false);
+			clippedBeam.clear();
 
 #ifdef _TRACK_OUTPUT
 			trackMapFile << "[in], ";
@@ -997,7 +987,7 @@ void TracingConcave::RemoveEmptyPolygons(Paths &result)
 
 	for (int i = 0; i < buff.size(); ++i)
 	{
-		if (buff.at(i).size() >= MAX_POLYGON_RESULT)
+		if (buff.at(i).size() >= SIMPLE_CLIP_RESULT)
 		{
 			result.push_back(buff.at(i));
 		}

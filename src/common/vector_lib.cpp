@@ -36,9 +36,9 @@ double Length(const Point3f &v)
 	return sqrt(Norm(v));
 }
 
-void Normalize(Point3f &v) // OPT: всю функцию попробовать на интринсиках
+void Normalize(Point3f &v)
 {
-	double lenght = sqrt(Norm(v)); // OPT: расписать
+	double lenght = sqrt(Norm(v));
 	v.cx /= lenght;
 	v.cy /= lenght;
 	v.cz /= lenght;
