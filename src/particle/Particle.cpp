@@ -25,30 +25,20 @@ void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
 	double cosA, cosB, cosG,
 			sinA, sinB, sinG;
 
-#ifdef __FASTMATH_H
 	sincos(alpha, &sinA, &cosA);
 	sincos(beta, &sinB, &cosB);
 	sincos(gamma, &sinG, &cosG);
-#else
-	// OPT: заменить на sincos'ы
-	cosA = cos(alpha);
-	cosB = cos(beta);
-	cosG = cos(gamma);
 
-	sinA = sin(alpha);
-	sinB = sin(beta);
-	sinG = sin(gamma);
-#endif
-
-	// OPT: дооптимизировать
 	double cosAcosB = cosA*cosB;
+	double sinAcosG = sinA*cosG;
+	double sinAsinG = sinA*sinG;
 
-	m_rotMatrix[0][0] = cosAcosB*cosG - sinA*sinG;
-	m_rotMatrix[1][0] = sinA*cosB*cosG + cosA*sinG;
+	m_rotMatrix[0][0] = cosAcosB*cosG - sinAsinG;
+	m_rotMatrix[1][0] = sinAcosG*cosB + cosA*sinG;
 	m_rotMatrix[2][0] = -sinB*cosG;
 
-	m_rotMatrix[0][1] = -(cosAcosB*sinG + sinA*cosG);
-	m_rotMatrix[1][1] = cosA*cosG - sinA*cosB*sinG;
+	m_rotMatrix[0][1] = -(cosAcosB*sinG + sinAcosG);
+	m_rotMatrix[1][1] = cosA*cosG - sinAsinG*cosB;
 	m_rotMatrix[2][1] = sinB*sinG;
 
 	m_rotMatrix[0][2] = cosA*sinB;

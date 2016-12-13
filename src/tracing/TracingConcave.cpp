@@ -16,8 +16,6 @@ using namespace ClipperLib;
 std::ofstream trackMapFile("tracks.dat", std::ios::out);
 #endif
 
-static const cInt mm = MULTI_INDEX * MULTI_INDEX;
-
 TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   bool isOpticalPath, const Point3f &polarizationBasis,
 							   int interReflectionNumber)
@@ -380,7 +378,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 			{
 				complex temp;
 
-				temp = (2.0*refrIndex)/(1.0 + refrIndex); /// OPT: выделить эту константу
+				temp = (2.0*refrIndex)/(1.0 + refrIndex);
 				SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
 						temp, temp);
 
@@ -497,7 +495,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					complex Tv0 = Tv00 + cosRelr;
 					complex Th0 = Th00 + cosIN;
 
-					complex Tv = (Tv00 - cosRelr)/Tv0; // OPT
+					complex Tv = (Tv00 - cosRelr)/Tv0;
 					complex Th = (cosIN - Th00)/Th0;
 					SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
 
@@ -1063,7 +1061,7 @@ void TracingConcave::DividePolygon(const std::vector<Point3f> &polygon,
 
 	for (int i = 1; i < size; ++i)
 	{
-		Point3f v1 = polygon[i-1] - polygon[baseI]; // OPT:
+		Point3f v1 = polygon[i-1] - polygon[baseI];
 		Point3f v2 = polygon[i] - polygon[baseI];
 		Point3f res;
 		CrossProduct(v1, v2, res);
@@ -1185,14 +1183,14 @@ double TracingConcave::AreaByClipper(const Beam &beam, const Point3f &normal) co
 	}
 
 	area = ClipperLib::Area(polygon[0]);
-	area /= (cInt)MULTI_INDEX * MULTI_INDEX; // OPT
+	area /= (cInt)MULTI_INDEX * MULTI_INDEX;
 
 	Point3f z(0, 0, 1);
 	double cosNormZ = DotProduct(normal1, z);
 
 	if (cosNormZ > 0)
 	{
-		cosNormZ = DotProduct(normal1, -z); // OPT ?
+		cosNormZ = DotProduct(normal1, -z);
 	}
 
 	area = (area*sqrt(Norm(normal1)))/cosNormZ;
@@ -1215,7 +1213,7 @@ double TracingConcave::AreaByClipper(const Beam &beam, const Point3f &normal) co
 
 double TracingConcave::BeamCrossSection(const Beam &beam) const
 {
-	const double eps = 1e7*DBL_EPSILON; // OPT
+	const double eps = 1e7*DBL_EPSILON;
 
 //	Point3f normal;
 //	Point3f p1 = beam.polygon[1] - beam.polygon[0];

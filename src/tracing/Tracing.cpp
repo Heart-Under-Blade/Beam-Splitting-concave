@@ -60,7 +60,7 @@ void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
 		complex Tv0 = Tv00 + cosRelr;
 		complex Th0 = Th00 + cosIncident;
 
-		complex Tv = (Tv00 - cosRelr)/Tv0; // OPT
+		complex Tv = (Tv00 - cosRelr)/Tv0;
 		complex Th = (cosIncident - Th00)/Th0;
 		SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
 
@@ -70,12 +70,12 @@ void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
 	}
 	else /// normal incidence
 	{
-		inBeam.JMatrix.m11 = 2.0/(refrIndex + 1.0); // OPT
+		inBeam.JMatrix.m11 = 2.0/(refrIndex + 1.0);
 		inBeam.JMatrix.m22 = inBeam.JMatrix.m11;
 		inBeam.e = m_polarizationBasis;
 		inBeam.direction = -startDir;
 
-		outBeam.JMatrix.m11 = (refrIndex - 1.0)/(refrIndex + 1.0); // OPT
+		outBeam.JMatrix.m11 = (refrIndex - 1.0)/(refrIndex + 1.0);
 		outBeam.JMatrix.m22 = -outBeam.JMatrix.m11;
 		outBeam.e = m_polarizationBasis;
 		outBeam.direction = startDir;
@@ -85,7 +85,7 @@ void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
 void Tracing::SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 									   Beam &inBeam, Beam &outBeam)
 {
-	SetBeamsParamsExternal(facetIndex, cosIncident, inBeam, outBeam); // REF: по факту параметры вызываются не в том порядке - исправить
+	SetBeamsParamsExternal(facetIndex, cosIncident, inBeam, outBeam);
 
 	SetBeamByFacet(facetIndex, inBeam);
 	SetBeamByFacet(facetIndex, outBeam);
@@ -230,7 +230,7 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 	{
 		complex temp;
 
-		temp = (2.0*refrIndex)/(1.0 + refrIndex); // OPT: выделить эту константу
+		temp = (2.0*refrIndex)/(1.0 + refrIndex);
 		SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
 				temp, temp);
 
@@ -503,10 +503,9 @@ void Tracing::SplitBeamDirection(const Point3f &incidentDir, double cosIncident,
 	Normalize(refleDir);
 }
 
+/** NOTE: Result beams are ordered in inverse direction */
 void Tracing::SetBeamByFacet(int facetId, Beam &beam) const
 {
-	/** NOTE: Result beams are ordered in inverse direction */
-
 	int vertexNum = m_particle->vertexNums[facetId];
 	beam.size = vertexNum;
 	--vertexNum;
