@@ -21,7 +21,7 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   int interReflectionNumber)
 	: Tracing(particle, startBeamDir, isOpticalPath, polarizationBasis, interReflectionNumber)
 {
-	m_startBeam.polygon[0] = -m_startBeam.direction * m_particle->halfHeight*2;
+	m_startBeam.polygon[0] = m_startBeam.direction * m_particle->halfHeight*2;
 	++m_startBeam.size;
 	m_startBeam.direction.d_param = DotProduct(m_startBeam.polygon[0], m_startBeam.direction);
 	m_startBeam.isExternal = true;
@@ -65,7 +65,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 
 	int facetIds[MAX_FACET_NUM];
 	int idNum = 0;
-//	PrepareVisibleFacets(m_startBeam, facetIds, idNum);
+
 	SelectVisibleFacetsExternal(m_startBeam, facetIds, idNum);
 	SortFacets(idNum, m_startBeam.direction, facetIds);
 
@@ -77,8 +77,8 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 	for (int i = 0; i < idNum; ++i)
 	{
 		int facetId = facetIds[i];
-		const Point3f &extNormal = m_particle->externalNormals[facetId];
-		double cosBN = DotProduct(m_startBeam.direction, extNormal);
+		const Point3f &normal = m_particle->normals[facetId];
+		double cosBN = DotProduct(m_startBeam.direction, normal);
 
 		Beam inBeam, outBeam;
 		SetBeamsParamsExternal(facetId, cosBN, inBeam, outBeam);
@@ -116,7 +116,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 			Point3f center = CenterOfPolygon(inBeam.polygon, inBeam.size);
 
 			inBeam.D = DotProduct(-inBeam.direction, center);
-			inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_startBeam.direction, center);
+			inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(-m_startBeam.direction, center);
 
 			outBeam.D = DotProduct(-outBeam.direction, center);
 			outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
@@ -471,21 +471,19 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					// rotate polarization plane
 					{
 						Point3f newBasis;
-						CrossProduct(normal, -incidentDir, newBasis);
+						CrossProduct(normal, incidentDir, newBasis);
 						Normalize(newBasis);
 						inBeam.JMatrix = incidentBeam.JMatrix;
 						inBeam.e = incidentBeam.e;
-						inBeam.direction = incidentDir;
+						inBeam.direction = -incidentDir;
 						inBeam.RotatePlane(newBasis);
 					}
 
 					Point3f refrDir, reflDir;
 
-					double cosI = DotProduct(normal, -incidentDir);// NOTE: используется косинус между двумя сонаправленными векторами (в отличие от остальных случаев)
-					Point3f incDir = -incidentDir;
+					double cosI = DotProduct(-normal, incidentDir);// NOTE: используется косинус между двумя сонаправленными векторами (в отличие от остальных случаев)
 
-					SplitBeamDirection(incDir, cosI, normal,
-									   reflDir, refrDir);
+					SplitBeamDirection(incidentDir, cosI, normal, reflDir, refrDir);
 
 					double cosRelr = DotProduct(normal, reflDir);
 
@@ -539,13 +537,13 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 void TracingConcave::SelectVisibleFacetsExternal(const Beam &beam, int *facetIndices,
 												 int &indicesNumber)
 {
-	Point3f *normals = m_particle->externalNormals;
+	Point3f *normals = m_particle->normals;
 
 	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
 		double cosIncident = DotProduct(beam.direction, normals[i]);
 
-		if (cosIncident >= EPS_COS_90) /// beam incidents to this facet
+		if (cosIncident > EPS_COS_90) /// beam incidents to this facet
 		{
 			facetIndices[indicesNumber] = i;
 			++indicesNumber;

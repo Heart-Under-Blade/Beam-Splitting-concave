@@ -42,10 +42,10 @@ void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
 		/// rotate polarization plane
 		{
 			Point3f newBasis;
-			CrossProduct(facetNormal, startDir, newBasis);
+			CrossProduct(facetNormal, -startDir, newBasis);
 			Normalize(newBasis);
 			inBeam.e = m_polarizationBasis;
-			inBeam.direction = -startDir;
+			inBeam.direction = startDir;
 			inBeam.RotatePlane(newBasis);
 		}
 
@@ -481,7 +481,7 @@ void Tracing::SplitBeamDirection(const Point3f &incidentDir, double cosIncident,
 	const double &re = m_particle->refrI_coef_re;
 	const double &im = m_particle->refrI_coef_im;
 
-	Point3f tmp0 = normal - incidentDir/cosIncident;
+	Point3f tmp0 = normal + incidentDir/cosIncident;
 
 	refraDir = normal + tmp0;
 	Normalize(refraDir);
@@ -493,10 +493,9 @@ void Tracing::SplitBeamDirection(const Point3f &incidentDir, double cosIncident,
 								  : sqrt(tmp1*tmp1 + im);
 
 	tmp1 = (re + 1.0 - cosI_sqr + tmp1)/2.0;
-
-	LOG_ASSERT(Norm(tmp0) < (tmp1/cosI_sqr));
-
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
+
+	LOG_ASSERT(tmp1 > 0);
 	tmp1 = sqrt(tmp1);
 
 	refleDir = (tmp0/tmp1) - normal;
