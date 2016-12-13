@@ -58,16 +58,15 @@ protected:
 //	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
 //										  std::vector<Beam> &/*outBeams*/) {}
 
-	void SetBeamsParamsExternal(int facetIndex, double cosIncident, Beam &inBeam, Beam &outBeam);
-
+	void SetBeamsParamsExternal(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;
 
 	bool Intersect(int facetIndex, const Beam& beam, Beam &intersection) const;
 
-	void SplitBeamDirection(const Point3f &incidentDir, double cosIncident, const Point3f &normal,
-								Point3f &refleDir, Point3f &refraDir) const;
+	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
+								Point3f &reflDir, Point3f &refrDir) const;
 
 	void SetBeamByFacet(int facetId, Beam &beam) const;
 
@@ -90,4 +89,8 @@ protected:
 
 	void SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 								  Beam &inBeam, std::vector<Beam> &outBeams);
+
+	void RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
+								 Beam &beam);
+	void SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN, int facetId, Beam &inBeam, Beam &outBeam);
 };
