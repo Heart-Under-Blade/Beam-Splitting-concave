@@ -27,7 +27,7 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 
 void Tracing::RotateParticle(double beta, double gamma)
 {
-	m_particle->Rotate(beta, gamma, 0); // OPT: заменить на ф-цию с двумя арг
+	m_particle->Rotate(beta, gamma, 0);
 }
 
 void Tracing::SetBeamsParamsExternal(int facetIndex, double cosIncident,
@@ -530,12 +530,6 @@ double Tracing::Square(const Beam &beam)
 		CrossProduct(p1, p2, res);
 		square += sqrt(Norm(res));
 		p1 = p2;
-	}
-
-	if (square < 0)
-	{	/// OPT: узнать в какую сторону ориентированы точки в пучке
-		square *= (-1);
-		LOG_ASSERT(false);
 	}
 
 	return square / 2.0;

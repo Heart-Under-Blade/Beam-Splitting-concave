@@ -265,7 +265,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 	{
 		LOG_ASSERT(m_treeSize < MAX_BEAM_REFL_NUM);
 
-		Beam incidentBeam = m_tree[--m_treeSize]; // OPT: попробовать поменять на ссылку
+		Beam incidentBeam = m_tree[--m_treeSize];
 
 		if (isEnough(incidentBeam))
 		{
@@ -569,8 +569,9 @@ void TracingConcave::FindVisibleFacetsInternal(const Beam &beam, int *facetIndic
 	{
 		double cosIncident = DotProduct(beam.direction, normals[i]);
 
-		if (cosIncident >= EPS_COS_90) /// beam incidents to this facet
+		if (cosIncident >= EPS_COS_90) // beam incidents to this facet
 		{
+//			Point3f cof = m_particle->centers[i];
 			Point3f cof = CenterOfPolygon(m_particle->facets[i], m_particle->vertexNums[i]);
 			Point3f vectorToFacet = cof - cob;
 			double cosFacets = DotProduct(invNormal, vectorToFacet);
@@ -722,17 +723,17 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 
 	SwapCoords(axis, Axis::aZ, clip);
 
-	Paths result;
-	ClipDifference(resultPolygon, clip, result);
+//	Paths result;
+	ClipDifference(resultPolygon, clip, resultPolygon);
 
-	RemoveEmptyPolygons(result);
+	RemoveEmptyPolygons(resultPolygon);
 
-	if (!result.empty())
+	if (!resultPolygon.empty())
 	{
-		HandleResultPolygon(axis, result);
+		HandleResultPolygon(axis, resultPolygon);
 	}
 
-	resultPolygon = result;
+//	resultPolygon = result;
 }
 
 void TracingConcave::ProjectPointToFacet(const Point3d &point, const Point3d &direction, const Point3d &facetNormal, Point3d &projection)
@@ -791,7 +792,7 @@ void TracingConcave::ProjectFacetToFacet(const Point3f *a_facet, int a_size,
 	}
 }
 
-double TracingConcave::MeasureMinDistanceToFacet(int facetId, const Point3f &beamDir)
+double TracingConcave::CalcMinDistanceToFacet(int facetId, const Point3f &beamDir)
 {
 	double dist = FLT_MAX;
 	Point3f *facet = m_particle->facets[facetId];
@@ -818,7 +819,7 @@ void TracingConcave::SortFacets(int number, const Point3f &beamDir, int *facetId
 
 	for (int i = 0; i < number; ++i)
 	{
-		distances[i] = MeasureMinDistanceToFacet(facetIds[i], beamDir);
+		distances[i] = CalcMinDistanceToFacet(facetIds[i], beamDir);
 	}
 
 	int left = 0;
@@ -986,7 +987,7 @@ void TracingConcave::CutBeamByFacet(Paths &beamPolygon, int facetId,
 
 void TracingConcave::RemoveEmptyPolygons(Paths &result)
 {
-	Paths buff = result; // OPT: переделать
+	Paths buff = result;
 	result.clear();
 
 	for (int i = 0; i < buff.size(); ++i)
@@ -1123,11 +1124,6 @@ double TracingConcave::SquareOfPolygon(const std::vector<Point3f> &polygon) cons
 		CrossProduct(v1, v2, res);
 		square += sqrt(Norm(res));
 		v1 = v2;
-	}
-
-	if (square < 0)
-	{	/// OPT: узнать в какую сторону ориентированы точки в пучке
-		square *= (-1);
 	}
 
 	return square/2;

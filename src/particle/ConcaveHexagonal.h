@@ -32,6 +32,7 @@ protected:
 	void SetOriginNormals() override;
 
 private:
+	void SetCenters();
 	void SetCavities(Point3f *baseTop, Point3f *baseBottom, const CavityPoints &cavities);
 
 	void SetCavityFacets(int start, int end, Point3f *baseFacet,

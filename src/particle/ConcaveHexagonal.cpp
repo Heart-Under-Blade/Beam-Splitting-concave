@@ -21,6 +21,7 @@ ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const compl
 				  BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
 
 	SetOriginNormals();
+	SetCenters();
 }
 
 void ConcaveHexagonal::Rotate(double beta, double gamma, double alpha)
@@ -38,6 +39,20 @@ void ConcaveHexagonal::Rotate(double beta, double gamma, double alpha)
 	SetSideFacets(baseTop, baseBottom, BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
 
 	RotateNormals();
+
+	for (int i = 0; i < facetNum; ++i)
+	{
+		RotatePoint(m_originCenters[i], centers[i]);
+	}
+}
+
+void ConcaveHexagonal::SetCenters()
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		m_originCenters[i] = CenterOfPolygon(facets[i], vertexNums[i]);
+		centers[i] = m_originCenters[i];
+	}
 }
 
 void ConcaveHexagonal::SetFacetParams()

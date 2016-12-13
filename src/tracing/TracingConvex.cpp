@@ -112,11 +112,6 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 			p1 = p2;
 		}
 
-		if (square < 0)
-		{	/// OPT: узнать в какую сторону ориентированы точки в пучке
-			square *= (-1);
-		}
-
 		square /= 2.0;
 	}
 

@@ -25,6 +25,7 @@ public:
 
 	Beam & operator = (const Beam &other);
 
+	// OPT: сделать конструктор переноса
 public:
 	Point3f direction;				///< direction of beam
 	JonesMatrix JMatrix;			///< Jones matrix of beam

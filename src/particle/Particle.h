@@ -45,10 +45,13 @@ public:
 
 	double halfHeight; // REF: сделать протектед
 
+	Point3f centers[MAX_FACET_NUM];
+
 protected:
 	Point3f m_originNormals[MAX_FACET_NUM];
 	double m_rotMatrix[3][3];				///< rotation matrix for vertices
 
+	Point3f m_originCenters[MAX_FACET_NUM];
 	double m_radius;
 
 protected:
