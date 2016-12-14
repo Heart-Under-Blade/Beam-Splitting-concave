@@ -26,6 +26,8 @@ public:
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &outBeams) override;
 
+	void CutIncidentBeam(int facetId, Beam &beam, bool &isDivided);
+
 private:
 	ClipperLib::Clipper m_clipper;
 
@@ -47,9 +49,6 @@ private:
 							 ClipperLib::Path &projection);
 
 	void SetBeamByPath(Beam &beam, const ClipperLib::Path &result);
-
-	void CutBeamByFacet(int facetId, const Beam &beam, const Point3f &shapeNormal,
-							 ClipperLib::Paths &result);
 
 	void CutBeamByFacet(ClipperLib::Paths &beamPolygon, int facetId,
 							 const Point3f &direction, const Point3f &polygonNormal,
@@ -94,8 +93,6 @@ private:
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
         
 	void PrintTrack(const Beam &beam, int facetId);
-
-	void PushOutputBeamToTree(Beam &outBeam, ClipperLib::Paths &buff, int facetId, bool isDivided, const Beam &incidentBeam, bool isExternal);
 
 	Axis GetSwapAxis(const Point3f &normal);
         

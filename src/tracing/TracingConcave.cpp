@@ -230,34 +230,44 @@ void TracingConcave::PrintTrack(const Beam &beam, int facetId)
 #endif
 }
 
-void TracingConcave::PushOutputBeamToTree(Beam &outBeam, Paths &buff,
-										  int facetId, bool isDivided,
-										  const Beam &incidentBeam,
-										  bool isExternal)
+void TracingConcave::CutIncidentBeam(int facetId, Beam &beam, bool &isDivided)
 {
-#ifdef _TRACK_ALLOW
-	outBeam.track = incidentBeam.track;
-#endif
-	int level = incidentBeam.level+1;
+	isDivided = false;
 
-	if (isDivided)
+	const Point3f &previewNormal = (beam.isExternal)
+			? m_particle->externalNormals[beam.facetId]
+			: m_particle->normals[beam.facetId];
+
+	Paths clippedFacet;
+	Paths origin(1);
+	SetPolygonByFacet(beam.polygon, beam.size, origin);
+	CutBeamByFacet(origin, facetId, beam.direction, previewNormal, clippedFacet);
+
+	if (clippedFacet.empty()) // beam is totaly swallowed by facet
 	{
-		for (Path &p : buff)
-		{
-			SetBeamByPath(outBeam, p);
-			PushBeamToTree(outBeam, facetId, level, isExternal);
-		}
+		beam.size = 0;
 	}
-	else
+	else if (clippedFacet.size() == SIMPLE_CLIP_RESULT)
 	{
-		PushBeamToTree(outBeam, facetId, level, isExternal);
+		SetBeamByPath(beam, clippedFacet.at(0));
+	}
+	else // beam had divided by facet
+	{
+		Beam b = beam;
+
+		for (const Path &p : clippedFacet)
+		{
+			SetBeamByPath(b, p);
+			PushBeamToTree(b, b.facetId, b.level, b.isExternal);
+		}
+
+		isDivided = true;
+		beam.size = 0;
 	}
 }
 
 void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 {
-	Paths clippedBeam; // для хранения разделённых пучков
-
 	while (m_treeSize != 0)
 	{
 		Beam incidentBeam = m_beamTree[--m_treeSize];
@@ -295,69 +305,15 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 				continue;
 			}
 
-			bool isDivided = false;
-
-			if (i > 0) // probably shadowed facet
-			{
-				clippedBeam = Paths(1);
-				Beam bi = incidentBeam;
-				bi.isExternal = true;
-				bi.facetId = facetId;
-
-				// обрезаем пучок попадающий на грань facetId
-//				CutShadowsFromBeam();
-				CutShadowsFromFacet(outBeam.polygon, outBeam.size, facetIds,
-									i, bi, clippedBeam); /// TODO: ПЕРЕНЕСТИ ПЕРЕД ПЕРЕСЕЧЕНИЕМ
-
-				if (clippedBeam.empty()) // facet is totaly shadowed by others (beam do not incedent on it)
-				{
-					continue;
-				}
-				else if (clippedBeam.size() == SIMPLE_CLIP_RESULT)
-				{
-					SetBeamByPath(outBeam, clippedBeam.at(0));
-				}
-				else // beam had divided by facet in several parts
-				{
-					isDivided = true;
-				}
-			}
-
-			bool isIncidentDivided = false;
-
-			if (isExternal)
-			{
-				const Point3f &previewNormal = m_particle->externalNormals[incidentBeam.facetId];
-				Paths clippedFacet;
-				Paths origin(1);
-				SetPolygonByFacet(incidentBeam.polygon, incidentBeam.size, origin);
-				CutBeamByFacet(origin, facetId, incidentBeam.direction, previewNormal, clippedFacet);
-
-				if (clippedFacet.empty()) // beam is totaly swallowed by facet
-				{
-					incidentBeam.size = 0;
-				}
-				else if (clippedFacet.size() == SIMPLE_CLIP_RESULT)
-				{
-					SetBeamByPath(incidentBeam, clippedFacet.at(0));
-				}
-				else // beam had divided by facet
-				{
-					Beam b = incidentBeam;
-
-					for (const Path &p : clippedFacet)
-					{
-						SetBeamByPath(b, p);
-						PushBeamToTree(b, b.facetId, b.level, b.isExternal);
-					}
-
-					isIncidentDivided = true;
-					incidentBeam.size = 0;
-				}
-			}
+			bool isDivided;
+			CutIncidentBeam(facetId, incidentBeam, isDivided);
 
 			Beam inBeam = outBeam;
 
+#ifdef _TRACK_ALLOW
+			outBeam.track = incidentBeam.track;
+			inBeam.track = incidentBeam.track;
+#endif
 			const Point3f &normal = m_particle->externalNormals[facetId];
 			double cosIN = DotProduct(incidentDir, normal);
 			double cosI_sqr = cosIN * cosIN;
@@ -388,7 +344,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 				}
 
-				PushOutputBeamToTree(outBeam, clippedBeam, facetId, isDivided, incidentBeam, true);
+				PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
 			}
 			else /// slopping incidence
 			{
@@ -436,7 +392,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 							CalcOpticalPathInternal(Nr, incBeam, inBeam, outBeam);
 						}
 
-						PushOutputBeamToTree(outBeam, clippedBeam, facetId, isDivided, incidentBeam, true);
+						PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
 					}
 					else // case of the complete internal reflection
 					{
@@ -475,20 +431,19 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 						CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
 					}
 
-					PushOutputBeamToTree(outBeam, clippedBeam, facetId, isDivided, incidentBeam, true);
+					PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
 				}
 			}
 
 #ifdef _TRACK_ALLOW
 			inBeam.track = incidentBeam.track;
 #endif
-			PushOutputBeamToTree(inBeam, clippedBeam, facetId, isDivided, incidentBeam, false);
-			clippedBeam.clear();
+			PushBeamToTree(inBeam, facetId, incidentBeam.level+1, false);
 
 #ifdef _TRACK_OUTPUT
 			trackMapFile << "[in], ";
 #endif
-			if (isIncidentDivided)
+			if (isDivided)
 			{
 				break;
 			}

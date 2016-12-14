@@ -394,8 +394,8 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Beam &intersection) const
 
 	int facetSize = m_particle->facets[facetId].size;
 
-	__m128 _p1, _p2; /// vertices of facet
-	__m128 _s_point, _e_point; /// points of projection
+	__m128 _p1, _p2; // vertices of facet
+	__m128 _s_point, _e_point; // points of projection
 	bool isInsideE, isInsideS;
 
 	Point3f p2 = m_particle->facets[facetId].polygon[facetSize-1];
