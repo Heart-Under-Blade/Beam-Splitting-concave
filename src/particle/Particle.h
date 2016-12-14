@@ -2,15 +2,19 @@
 
 #include <math.h>
 
-//#include "global.h"
 #include "types.h"
 #include "compl.hpp"
 #include "vector_lib.h"
 
 #define MAX_FACET_NUM 64
 #define MIN_VERTEX_NUM 3
-//#define MAX_VERTEX_NUM 32
 #define MAX_VERTEX_NUM 64
+
+struct Facet
+{
+	Point3f polygon[MAX_VERTEX_NUM];
+	int size;
+};
 
 /**
  * @brief The Particle class
@@ -31,8 +35,8 @@ public:
 
 public:
 	int facetNum;
-	Point3f facets[MAX_FACET_NUM][MAX_VERTEX_NUM]; // REF: попробовать сделать структуру из facets и vertexNums
-	int vertexNums[MAX_FACET_NUM];
+	Facet facets[MAX_FACET_NUM]; // REF: попробовать сделать структуру из facets и vertexNums
+//	int vertexNums[MAX_FACET_NUM];
 
 	// REF: попробовать сделать структуру из 2 нормалей (снизит ли время трассировки?)
 	Point3f normals[MAX_FACET_NUM];					///< internal normals of facets
@@ -64,5 +68,6 @@ protected:
 	void RotatePoint(const Point3f &point, Point3f &result);
 	void SetDParams();
 	void SetExternalNormals();
+	void CopyFacet(Point3f *points, Facet &result);
 };
 

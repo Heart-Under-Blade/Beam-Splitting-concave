@@ -13,7 +13,7 @@ void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
 
 void Normalize(Point3f &v);
 
-Point3f NormalToFacet(const Point3f *facet);
+Point3f NormalToPolygon(const Point3f *facet);
 
 void CopyPoints(Point3f *points, Point3f *result, int size);
 

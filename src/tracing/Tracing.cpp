@@ -182,7 +182,7 @@ void Tracing::CalcOpticalPathInternal(double Nr, const Beam &incidentBeam,
 	inBeam.opticalPath = outBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + inBeam.D);
 }
 
-bool Tracing::isEnough(const Beam &beam)
+bool Tracing::isTerminalBeam(const Beam &beam)
 {
 	double j_norm = beam.JMatrix.Norm();
 	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
@@ -392,19 +392,19 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Beam &intersection) const
 	__m128 *_buffer_ptr = _buffer;
 	int bufferSize;
 
-	int facetSize = m_particle->vertexNums[facetId];
+	int facetSize = m_particle->facets[facetId].size;
 
 	__m128 _p1, _p2; /// vertices of facet
 	__m128 _s_point, _e_point; /// points of projection
 	bool isInsideE, isInsideS;
 
-	Point3f p2 = m_particle->facets[facetId][facetSize-1];
+	Point3f p2 = m_particle->facets[facetId].polygon[facetSize-1];
 	_p2 = _mm_load_ps(p2.point);
 
 	for (int i = 0; i < facetSize; ++i)
 	{
 		_p1 = _p2;
-		p2 = m_particle->facets[facetId][i];
+		p2 = m_particle->facets[facetId].polygon[i];
 		_p2 = _mm_load_ps(p2.point);
 
 		bufferSize = outputSize;
@@ -517,13 +517,13 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 /** NOTE: Result beams are ordered in inverse direction */
 void Tracing::SetBeamByFacet(int facetId, Beam &beam) const
 {
-	int vertexNum = m_particle->vertexNums[facetId];
-	beam.size = vertexNum;
-	--vertexNum;
+	int size = m_particle->facets[facetId].size;
+	beam.size = size;
+	--size;
 
-	for (int i = 0; i <= vertexNum; ++i)
+	for (int i = 0; i <= size; ++i)
 	{
-		beam.polygon[i] = m_particle->facets[facetId][vertexNum-i];
+		beam.polygon[i] = m_particle->facets[facetId].polygon[size-i];
 	}
 }
 

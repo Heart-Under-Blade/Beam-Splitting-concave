@@ -47,7 +47,7 @@ protected:
 	int m_interReflectionNumber;
 	Beam m_startBeam;
 
-	Beam m_tree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
+	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
 
 	const double FAR_ZONE_DISTANCE = 10000.0;
@@ -82,7 +82,7 @@ protected:
 
 	void InvertBeamShapeOrder(Beam &outBeam, const Beam &inBeam);
 
-	bool isEnough(const Beam &beam);
+	bool isTerminalBeam(const Beam &beam);
 
 	void SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 								  Beam &inBeam, Beam &outBeam);

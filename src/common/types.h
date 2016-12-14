@@ -105,18 +105,18 @@ struct Point3d
  * @brief The Facet struct
  * Facet of polyhedron
  */
-struct Facet
-{
-	Point3f vertices[32];
-	Point3f normal;
-	int size;
+//struct Facet
+//{
+//	Point3f vertices[32];
+//	Point3f normal;
+//	int size;
 
-	Facet() {}
-	Facet(int p_size) {
-		size = p_size;
-	}
+//	Facet() {}
+//	Facet(int p_size) {
+//		size = p_size;
+//	}
 
-} __attribute__ ((aligned (16)));
+//} __attribute__ ((aligned (16)));
 
 struct Polygon
 {

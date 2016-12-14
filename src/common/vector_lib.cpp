@@ -44,7 +44,7 @@ void Normalize(Point3f &v)
 	v.cz /= lenght;
 }
 
-Point3f NormalToFacet(const Point3f *facet)
+Point3f NormalToPolygon(const Point3f *facet)
 {
 	Point3f normal;
 

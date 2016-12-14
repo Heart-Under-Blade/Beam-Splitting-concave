@@ -61,7 +61,7 @@ void Particle::SetDParams()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		double d = DotProduct(facets[i][0], normals[i]);
+		double d = DotProduct(facets[i].polygon[0], normals[i]);
 		normals[i].d_param = -d;
 	}
 }
@@ -74,6 +74,16 @@ void Particle::SetExternalNormals()
 		externalNormals[i].cy = -normals[i].cy;
 		externalNormals[i].cz = -normals[i].cz;
 		externalNormals[i].d_param = -normals[i].d_param;
+	}
+}
+
+void Particle::CopyFacet(Point3f *points, Facet &result)
+{
+	for (int i = 0; i <= result.size; ++i)
+	{
+		result.polygon[i].cx = points[i].cx;
+		result.polygon[i].cy = points[i].cy;
+		result.polygon[i].cz = points[i].cz;
 	}
 }
 

@@ -14,10 +14,10 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 	SetOriginBaseFacets();
 
 	// set original positions of the base facets
-	CopyPoints(m_originBases.top, facets[0], vertexNums[0]);
-	CopyPoints(m_originBases.bottom, facets[7], vertexNums[7]);
+	CopyFacet(m_originBases.top, facets[0]);
+	CopyFacet(m_originBases.bottom, facets[7]);
 
-	SetSideFacets(facets[0], facets[7], 1, facetNum-1);
+	SetSideFacets(facets[0].polygon, facets[7].polygon, 1, facetNum-1);
 
 	SetOriginNormals();
 }
@@ -50,13 +50,13 @@ void Hexagonal::SetFacetParams()
 	facetNum = BASE_VERTEX_NUM + BASE_FACET_NUM;
 
 	// base facet number
-	vertexNums[0] = BASE_VERTEX_NUM;
-	vertexNums[facetNum-1] = BASE_VERTEX_NUM;
+	facets[0].size = BASE_VERTEX_NUM;
+	facets[facetNum-1].size = BASE_VERTEX_NUM;
 
 	// side facet number
 	for (int i = 1; i < facetNum-1; ++i)
 	{
-		vertexNums[i] = SIDE_VERTEX_NUMBER;
+		facets[i].size = SIDE_VERTEX_NUMBER;
 	}
 }
 
@@ -107,7 +107,7 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 
 	for (int i = startIndex; i < endIndex; ++i)
 	{
-		facet = facets[i];
+		facet = facets[i].polygon;
 
 		facet[0] = baseTop[i2];
 		facet[1] = baseTop[i1];
@@ -132,7 +132,7 @@ void Hexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
 void Hexagonal::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);
-	RotateBaseFacets(facets[0], facets[7]);
-	SetSideFacets(facets[0], facets[7], 1, facetNum-1);
+	RotateBaseFacets(facets[0].polygon, facets[7].polygon);
+	SetSideFacets(facets[0].polygon, facets[7].polygon, 1, facetNum-1);
 	RotateNormals();
 }
