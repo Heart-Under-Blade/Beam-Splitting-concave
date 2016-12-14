@@ -66,9 +66,9 @@ protected:
 	bool Intersect(int facetIndex, const Beam& beam, Beam &intersection) const;
 
 	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
-								Point3f &reflDir, Point3f &refrDir) const;
+							 Point3f &reflDir, Point3f &refrDir) const;
 
-	void SetBeamByFacet(int facetId, Beam &beam) const;
+	void SetBeamPolygonByFacet(int facetId, Beam &beam) const;
 
 	void SetOutputBeam(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
 
@@ -92,5 +92,16 @@ protected:
 
 	void RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
 								 Beam &beam);
-	void SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN, int facetId, Beam &inBeam, Beam &outBeam);
+
+	void SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN, int facetId,
+									   Beam &inBeam, Beam &outBeam);
+
+	void SetCompleteReflectionBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
+										 Beam &inBeam);
+
+	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal, Point3f r0, double s,
+									   const Beam &incidentBeam, Beam &inBeam, Beam &outBeam);
+
+	void SetNormalIncidenceBeamParams(double Nr, const Beam &incidentBeam,
+									  Beam &inBeam, Beam &outBeam);
 };

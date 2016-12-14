@@ -35,9 +35,8 @@ private:
 
 	double CalcMinDistanceToFacet(int facetId, const Point3f &beamDir);
 	void SortFacets(int number, const Point3f &beamDir, int *facetIds); ///< use fast sort algorithm
-	void CutShadowsFromFacet(const Point3f *facet, int size, int *facetIds,
-								int previewFacetCount, const Beam &incidentBeam,
-								ClipperLib::Paths &resultFacet);
+	void CutShadowsFromFacet(int facetId, int *facetIds, int previewFacetCount,
+							 const Beam &incidentBeam, ClipperLib::Paths &resultFacet);
 
 	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
 							 const Point3d &facetNormal, Point3d &projection);

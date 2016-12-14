@@ -44,8 +44,8 @@ public:
 
 	// REF: сделать протектед
 	complex refractionIndex;	///< complex value of refraction index of the particle
-	double refrI_coef_re;		///< real part of the sqr of refraction index
-	double refrI_coef_im;		///< imaginary part of the sqr of refraction index
+	double ri_coef_re;		///< real part of the sqr of refraction index
+	double ri_coef_im;		///< imaginary part of the sqr of refraction index
 
 	double halfHeight; // REF: сделать протектед
 

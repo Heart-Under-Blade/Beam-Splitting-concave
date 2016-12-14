@@ -84,17 +84,14 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams,
 
 		if (i == 0) // this facet is not shadowed by others
 		{
-			SetBeamByFacet(facetId, inBeam);
-			SetBeamByFacet(facetId, outBeam);
+			SetBeamPolygonByFacet(facetId, inBeam);
+			SetBeamPolygonByFacet(facetId, outBeam);
 		}
 		else // facet is probably shadowed by others
 		{
 			Paths cuttedFacet(1);
 
-			const Point3f *facet = m_particle->facets[facetId].polygon;
-			int size = m_particle->facets[facetId].size;
-			m_startBeam.facetId = facetId;
-			CutShadowsFromFacet(facet, size, facetIds, i, m_startBeam,
+			CutShadowsFromFacet(facetId, facetIds, i, m_startBeam,
 								cuttedFacet);
 
 			if (!cuttedFacet.empty())
@@ -320,30 +317,14 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 			double Nr;
 			{
-				double &re = m_particle->refrI_coef_re;
-				double &im = m_particle->refrI_coef_im;
+				double &re = m_particle->ri_coef_re;
+				double &im = m_particle->ri_coef_im;
 				Nr = (re + sqrt(re*re + im/cosI_sqr))/2.0;
 			}
 
-			const complex &refrIndex = m_particle->refractionIndex;
-
 			if (cosIN >= EPS_COS_00) /// normal incidence
 			{
-				complex temp;
-
-				temp = (2.0*refrIndex)/(1.0 + refrIndex);
-				SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
-						temp, temp);
-
-				temp = (1.0 - refrIndex)/(1.0 + refrIndex);
-				SetBeam(inBeam, incidentBeam, -incidentDir, incidentBeam.e,
-						temp, -temp);
-
-				if (m_isOpticalPath)
-				{
-					CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
-				}
-
+				SetNormalIncidenceBeamParams(Nr, incidentBeam, inBeam, outBeam);
 				PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
 			}
 			else /// slopping incidence
@@ -363,60 +344,17 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 					Beam incBeam = incidentBeam;
 					incBeam.RotatePlane(scatteringNormal);
 
-					inBeam.e = scatteringNormal;
-
 					double s = 1.0/(Nr*cosI_sqr) - Norm(r0);
-					complex tmp0 = refrIndex*cosIN;
 
 					if (s > DBL_EPSILON)
 					{
-						Point3f refrDir = r0/sqrt(s) + normal;
-						Normalize(refrDir);
-
-						double cosRefr = DotProduct(normal, refrDir);
-
-						complex tmp1 = refrIndex*cosRefr;
-						complex tmp = 2.0*tmp0;
-						complex Tv0 = tmp1 + cosIN;
-						complex Th0 = tmp0 + cosRefr;
-
-						SetBeam(outBeam, incBeam, refrDir, scatteringNormal,
-								tmp/Tv0, tmp/Th0);
-
-						complex Tv = (cosIN - tmp1)/Tv0;
-						complex Th = (tmp0 - cosRefr)/Th0;
-						SetBeam(inBeam, incBeam, reflDir, scatteringNormal, Tv, Th);
-
-						if (m_isOpticalPath)
-						{
-							CalcOpticalPathInternal(Nr, incBeam, inBeam, outBeam);
-						}
-
+						SetTrivialIncidenceBeamParams(cosIN, Nr, normal, r0, s, incidentBeam,
+													  inBeam, outBeam);
 						PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
 					}
-					else // case of the complete internal reflection
+					else /// case of the complete internal reflection
 					{
-						const double bf = Nr*(1.0 - cosI_sqr) - 1.0;
-
-						double im = (bf > 0) ? sqrt(bf) : 0;
-
-						const complex sq(0, im);
-						complex tmp = refrIndex*sq;
-						complex Rv = (cosIN - tmp)/(tmp + cosIN);
-						complex Rh = (tmp0 - sq)/(tmp0 + sq);
-
-						SetBeam(inBeam, incBeam, reflDir, scatteringNormal, Rv, Rh);
-
-						if (m_isOpticalPath)
-						{
-							Point3f center = CenterOfPolygon(outBeam.polygon, outBeam.size);
-							inBeam.D = DotProduct(-center, inBeam.direction);
-
-							double temp = DotProduct(incidentDir, center);
-
-							inBeam.opticalPath = incidentBeam.opticalPath
-									+ sqrt(Nr)*fabs(temp + incidentBeam.D);
-						}
+						SetCompleteReflectionBeamParams(cosIN, Nr, incidentBeam, inBeam);
 					}
 				}
 				else // case of external beam incidents to facet
@@ -600,14 +538,17 @@ void TracingConcave::HandleResultPolygon(Axis axis, Paths &result)
 	}
 }
 
-void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
-										 int *facetIds, int previewFacetCount,
+void TracingConcave::CutShadowsFromFacet(int facetId, int *facetIds,
+										 int previewFacetCount,
 										 const Beam &incidentBeam,
 										 Paths &resultPolygon)
-{	// TODO: вызывать только если нужно (поставить проверку)
-	Point3f *normals = (incidentBeam.isExternal) ? m_particle->externalNormals
-										 : m_particle->normals;
-	Point3f &originNormal = normals[incidentBeam.facetId];
+{
+	const Point3f *facet = m_particle->facets[facetId].polygon;
+	const int size = m_particle->facets[facetId].size;
+
+	const Point3f &originNormal = (incidentBeam.isExternal)
+			? m_particle->externalNormals[facetId]
+			  : m_particle->normals[facetId];
 
 	Axis axis = GetSwapAxis(originNormal);
 
@@ -650,42 +591,6 @@ void TracingConcave::CutShadowsFromFacet(const Point3f *facet, int size,
 		HandleResultPolygon(axis, resultPolygon);
 	}
 }
-
-//void TracingConcave::CutShadowsFromBeam(const Point3f *facet, int size,
-//										 int *facetIds, int previewFacetCount,
-//										 const Beam &incidentBeam,
-//										 Paths &resultPolygon)
-//{	// TODO: вызывать только если нужно (поставить проверку)
-//	Point3f *normals = (incidentBeam.isExternal) ? m_particle->externalNormals
-//										 : m_particle->normals;
-//	Point3f &originNormal = normals[incidentBeam.facetId];
-
-//	Axis axis = GetSwapAxis(originNormal);
-
-//	SetPolygonByFacet(facet, size, resultPolygon); // set origin polygon
-//	SwapCoords(axis, Axis::aZ, resultPolygon);
-
-//	Paths clip(previewFacetCount);
-
-//	for (int i = 0; i < previewFacetCount; ++i)
-//	{
-//		// set clip polygon by projection
-//		int facetId = facetIds[i];
-//		const Point3f *fac = m_particle->facets[facetId];
-//		int size = m_particle->vertexNums[facetId];
-//		ProjectFacetToFacet(fac, size, incidentBeam.direction, originNormal, clip[i]);
-//	}
-
-//	SwapCoords(axis, Axis::aZ, clip);
-//	ClipDifference(resultPolygon, clip, resultPolygon);
-
-//	RemoveEmptyPolygons(resultPolygon);
-
-//	if (!resultPolygon.empty())
-//	{
-//		HandleResultPolygon(axis, resultPolygon);
-//	}
-//}
 
 void TracingConcave::ProjectPointToFacet(const Point3d &point, const Point3d &direction, const Point3d &facetNormal, Point3d &projection)
 {

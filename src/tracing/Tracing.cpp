@@ -1,12 +1,10 @@
 #include "Tracing.h"
 
-//#include "Mueller.hpp"
 #include <float.h>
 #include <assert.h>
 
 #include "macro.h"
 #include "vector_lib.h"
-//#include <iostream>
 
 #define NORM_CEIL	FLT_EPSILON + 1
 
@@ -100,8 +98,8 @@ void Tracing::SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 {
 	SetBeamsParamsExternal(facetIndex, inBeam, outBeam);
 
-	SetBeamByFacet(facetIndex, inBeam);
-	SetBeamByFacet(facetIndex, outBeam);
+	SetBeamPolygonByFacet(facetIndex, inBeam);
+	SetBeamPolygonByFacet(facetIndex, outBeam);
 
 	if (m_isOpticalPath)
 	{
@@ -212,12 +210,11 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 	Beam outBeam;
 
 	const Point3f &incidentDir = incidentBeam.direction;
-	const complex &refrIndex = m_particle->refractionIndex;
 
 	const Point3f &normal = m_particle->externalNormals[facetIndex]; /// ext. normal uses in this calculating
-	double cosIncident = DotProduct(normal, incidentDir);
+	double cosIN = DotProduct(normal, incidentDir);
 
-	if (cosIncident < EPS_COS_90) /// beam is not incident to this facet
+	if (cosIN < EPS_COS_90) /// beam is not incident to this facet
 	{
 		throw std::exception();
 	}
@@ -230,102 +227,129 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 	}
 
 	inBeam = outBeam;
-	double cosInc_sqr = cosIncident*cosIncident;
+	double cosIN_sqr = cosIN*cosIN;
 
 	double Nr;
 	{
-		double re = m_particle->refrI_coef_re;
-		double im = m_particle->refrI_coef_im;
-		Nr = (re + sqrt(re*re + im/cosInc_sqr))/2.0;
+		double re = m_particle->ri_coef_re;
+		double im = m_particle->ri_coef_im;
+		Nr = (re + sqrt(re*re + im/cosIN_sqr))/2.0;
 	}
 
-	if (cosIncident >= EPS_COS_00) /// case of the normal incidence
+	if (cosIN >= EPS_COS_00) /// case of the normal incidence
 	{
-		complex temp;
-
-		temp = (2.0*refrIndex)/(1.0 + refrIndex);
-		SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
-				temp, temp);
-
-		temp = (1.0 - refrIndex)/(1.0 + refrIndex);
-		SetBeam(inBeam, incidentBeam, -incidentDir, incidentBeam.e,
-				temp, -temp);
-
-		if (m_isOpticalPath)
-		{
-			CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
-		}
-
+		SetNormalIncidenceBeamParams(Nr, incidentBeam, inBeam, outBeam);
 		outBeams.push_back(outBeam);
 	}
 	else
 	{
-		Point3f r0 = incidentDir/cosIncident - normal;
-
-		Point3f reflDir = r0 - normal;
-		Normalize(reflDir);
-		inBeam.direction = reflDir;
-
 		Point3f scatteringNormal;
 		CrossProduct(normal, incidentDir, scatteringNormal);
 		Normalize(scatteringNormal);
-		inBeam.e = scatteringNormal;
-
 		incidentBeam.RotatePlane(scatteringNormal);
 
-		double s = 1.0/(Nr*cosInc_sqr) - Norm(r0);
-		complex tmp0 = refrIndex*cosIncident;
+		Point3f r0 = incidentDir/cosIN - normal;
+
+		Point3f reflDir = r0 - normal;
+		Normalize(reflDir);
+
+		inBeam.direction = reflDir;
+		inBeam.e = scatteringNormal;
+
+		double s = 1.0/(Nr*cosIN_sqr) - Norm(r0);
 
 		if (s > DBL_EPSILON)
 		{
-			Point3f refrDir = r0/sqrt(s) + normal;
-			Normalize(refrDir);
-
-			double cosRefr = DotProduct(normal, refrDir);
-
-			complex tmp1 = refrIndex*cosRefr;
-			complex tmp = 2.0*tmp0;
-			complex Tv0 = tmp1 + cosIncident;
-			complex Th0 = tmp0 + cosRefr;
-
-			SetBeam(outBeam, incidentBeam, refrDir, scatteringNormal,
-					tmp/Tv0, tmp/Th0);
-
-			complex Tv = (cosIncident - tmp1)/Tv0;
-			complex Th = (tmp0 - cosRefr)/Th0;
-			SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Tv, Th);
-
-			if (m_isOpticalPath)
-			{
-				CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
-			}
-
+			SetTrivialIncidenceBeamParams(cosIN, Nr, normal, r0, s, incidentBeam,
+										  inBeam, outBeam);
 			outBeams.push_back(outBeam);
 		}
 		else /// case of the complete internal reflection
 		{
-			const double bf = Nr*(1.0 - cosInc_sqr) - 1.0;
-
-			double im = (bf > 0) ? sqrt(bf) : 0;
-
-			const complex sq(0, im);
-			complex tmp = refrIndex*sq;
-			complex Rv = (cosIncident - tmp)/(tmp + cosIncident);
-			complex Rh = (tmp0 - sq)/(tmp0 + sq);
-
-			SetBeam(inBeam, incidentBeam, reflDir, scatteringNormal, Rv, Rh);
-
-			if (m_isOpticalPath)
-			{
-				Point3f center = CenterOfPolygon(outBeam.polygon, outBeam.size);
-				inBeam.D = DotProduct(-center, inBeam.direction);
-
-				double temp = DotProduct(incidentDir, center);
-
-				inBeam.opticalPath = incidentBeam.opticalPath
-						+ sqrt(Nr)*fabs(temp + incidentBeam.D);
-			}
+			SetCompleteReflectionBeamParams(cosIN, Nr, incidentBeam, inBeam);
 		}
+	}
+}
+
+void Tracing::SetNormalIncidenceBeamParams(double Nr, const Beam &incidentBeam,
+										   Beam &inBeam, Beam &outBeam)
+{
+	const Point3f &incidentDir = incidentBeam.direction;
+	const complex &refrIndex = m_particle->refractionIndex;
+
+	complex temp;
+
+	temp = (2.0*refrIndex)/(1.0 + refrIndex);
+	SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
+			temp, temp);
+
+	temp = (1.0 - refrIndex)/(1.0 + refrIndex);
+	SetBeam(inBeam, incidentBeam, -incidentDir, incidentBeam.e,
+			temp, -temp);
+
+	if (m_isOpticalPath)
+	{
+		CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+	}
+}
+
+void Tracing::SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal, Point3f r0, double s,
+											const Beam &incidentBeam, Beam &inBeam, Beam &outBeam)
+{
+	const complex &refrIndex = m_particle->refractionIndex;
+
+	Point3f refrDir = r0/sqrt(s) + normal;
+	Normalize(refrDir);
+
+	double cosRefr = DotProduct(normal, refrDir);
+
+	complex tmp0 = refrIndex*cosIN;
+	complex tmp1 = refrIndex*cosRefr;
+	complex tmp = 2.0*tmp0;
+	complex Tv0 = tmp1 + cosIN;
+	complex Th0 = tmp0 + cosRefr;
+
+	outBeam.MulJMatrix(incidentBeam, tmp/Tv0, tmp/Th0);
+	outBeam.direction = refrDir;
+	outBeam.e = inBeam.e;
+
+	complex Tv = (cosIN - tmp1)/Tv0;
+	complex Th = (tmp0 - cosRefr)/Th0;
+	inBeam.MulJMatrix(incidentBeam, Tv, Th);
+
+	if (m_isOpticalPath)
+	{
+		CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+	}
+}
+
+void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
+											  Beam &inBeam)
+{
+	const Point3f &incidentDir = incidentBeam.direction;
+	const complex &refrIndex = m_particle->refractionIndex;
+
+	double cosIN_sqr = cosIN*cosIN;
+	complex tmp0 = refrIndex*cosIN;
+	const double bf = Nr*(1.0 - cosIN_sqr) - 1.0;
+	double im = (bf > 0) ? sqrt(bf) : 0;
+
+	const complex sq(0, im);
+	complex tmp = refrIndex*sq;
+	complex Rv = (cosIN - tmp)/(tmp + cosIN);
+	complex Rh = (tmp0 - sq)/(tmp0 + sq);
+
+	inBeam.MulJMatrix(incidentBeam, Rv, Rh);
+
+	if (m_isOpticalPath)
+	{
+		Point3f center = CenterOfPolygon(inBeam.polygon, inBeam.size);
+		inBeam.D = DotProduct(-center, inBeam.direction);
+
+		double temp = DotProduct(incidentDir, center);
+
+		inBeam.opticalPath = incidentBeam.opticalPath
+				+ sqrt(Nr)*fabs(temp + incidentBeam.D);
 	}
 }
 
@@ -333,7 +357,6 @@ void Tracing::SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const P
 					  const complex &coef1, const complex &coef2) const
 {
 	beam.MulJMatrix(other, coef1, coef2);
-
 	beam.direction = dir;
 	beam.e = e;
 }
@@ -490,8 +513,8 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 								  const Point3f &normal,
 								  Point3f &reflDir, Point3f &refrDir) const
 {
-	const double &re = m_particle->refrI_coef_re;
-	const double &im = m_particle->refrI_coef_im;
+	const double &re = m_particle->ri_coef_re;
+	const double &im = m_particle->ri_coef_im;
 
 	Point3f tmp0 = normal + incidentDir/cosIN;
 
@@ -515,7 +538,7 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
-void Tracing::SetBeamByFacet(int facetId, Beam &beam) const
+void Tracing::SetBeamPolygonByFacet(int facetId, Beam &beam) const
 {
 	int size = m_particle->facets[facetId].size;
 	beam.size = size;
