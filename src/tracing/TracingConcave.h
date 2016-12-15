@@ -104,6 +104,9 @@ private:
 
 	void HandleResultPolygon(Axis axis, ClipperLib::Paths &result);
 
+	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
+
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);
 };

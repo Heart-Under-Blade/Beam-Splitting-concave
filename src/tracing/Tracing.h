@@ -70,12 +70,12 @@ protected:
 
 	void SetBeamPolygonByFacet(int facetId, Beam &beam) const;
 
-	void SetOutputBeam(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
+	void SetOutputPolygon(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
 
 	bool ProjectToFacetPlane(const Point3f *polygon, int size, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
 
-	void CalcOpticalPathInternal(double Nr, const Beam &incidentBeam, Beam &outBeam, Beam &inBeam) const;
+	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam, Beam &outBeam, Beam &inBeam) const;
 
 	void SplitBeam(const Beam &incidentBeam, Beam &inBeam, Beam &outBeam, double Nr,
 				   IncidenceCase incidenceCase);
@@ -102,6 +102,10 @@ protected:
 	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal, Point3f r0, double s,
 									   const Beam &incidentBeam, Beam &inBeam, Beam &outBeam);
 
-	void SetNormalIncidenceBeamParams(double Nr, const Beam &incidentBeam,
+	void SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam);
+	void SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal, Beam &incidentBeam, Beam &inBeam, Beam &outBeam, bool &isTrivialIncidence);
+
+private:
+	double CalcNr(const double &cosIN) const;
 };

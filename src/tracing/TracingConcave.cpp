@@ -284,7 +284,7 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 		trackMapFile << "\n" << incidentBeam.level << " lvl: ";
 		trackMapFile.flush();
 #endif
-		const Point3f &incidentDir = incidentBeam.direction;
+		const int &level = incidentBeam.level;
 
 		int facetIds[MAX_FACET_NUM];
 		int facetIdCount = 0;
@@ -307,90 +307,71 @@ void TracingConcave::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 			Beam inBeam = outBeam;
 
-#ifdef _TRACK_ALLOW
-			outBeam.track = incidentBeam.track;
-			inBeam.track = incidentBeam.track;
-#endif
-			const Point3f &normal = m_particle->externalNormals[facetId];
-			double cosIN = DotProduct(incidentDir, normal);
-			double cosI_sqr = cosIN * cosIN;
+			bool hasOutBeam;
+			SetOpticalBeamParams(facetId, incidentBeam, inBeam, outBeam, hasOutBeam);
 
-			double Nr;
+			if (hasOutBeam)
 			{
-				double &re = m_particle->ri_coef_re;
-				double &im = m_particle->ri_coef_im;
-				Nr = (re + sqrt(re*re + im/cosI_sqr))/2.0;
-			}
-
-			if (cosIN >= EPS_COS_00) /// normal incidence
-			{
-				SetNormalIncidenceBeamParams(Nr, incidentBeam, inBeam, outBeam);
-				PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
-			}
-			else /// slopping incidence
-			{
-				if (!isExternal)
-				{
-					Point3f r0 = incidentDir/cosIN - normal;
-
-					Point3f reflDir = r0 - normal;
-					Normalize(reflDir);
-					inBeam.direction = reflDir;
-
-					Point3f scatteringNormal;
-					CrossProduct(normal, incidentDir, scatteringNormal);
-					Normalize(scatteringNormal);
-
-					Beam incBeam = incidentBeam;
-					incBeam.RotatePlane(scatteringNormal);
-
-					double s = 1.0/(Nr*cosI_sqr) - Norm(r0);
-
-					if (s > DBL_EPSILON)
-					{
-						SetTrivialIncidenceBeamParams(cosIN, Nr, normal, r0, s, incidentBeam,
-													  inBeam, outBeam);
-						PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
-					}
-					else /// case of the complete internal reflection
-					{
-						SetCompleteReflectionBeamParams(cosIN, Nr, incidentBeam, inBeam);
-					}
-				}
-				else // case of external beam incidents to facet
-				{
-					inBeam.JMatrix = incidentBeam.JMatrix;
-					double cosI = DotProduct(-normal, incidentDir);
-
-					SetSloppingBeamParamsExternal(incidentDir, cosI, facetId,
-												  inBeam, outBeam);
-					if (m_isOpticalPath)
-					{
-						CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
-					}
-
-					PushBeamToTree(outBeam, facetId, incidentBeam.level+1, true);
-				}
+				PushBeamToTree(outBeam, facetId, level+1, true);
 			}
 
 #ifdef _TRACK_ALLOW
 			inBeam.track = incidentBeam.track;
 #endif
-			PushBeamToTree(inBeam, facetId, incidentBeam.level+1, false);
+			PushBeamToTree(inBeam, facetId, level+1, false);
 
 #ifdef _TRACK_OUTPUT
 			trackMapFile << "[in], ";
 #endif
-			if (isDivided)
-			{
-				break;
-			}
 		}
 
 		if (isExternal && incidentBeam.size != 0)
 		{
 			// посылаем обрезанный всеми гранями внешний пучок на сферу
 			outBeams.push_back(incidentBeam);
+		}
+	}
+}
+
+void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
+										  Beam &inBeam, Beam &outBeam,
+										  bool &hasOutBeam)
+{
+#ifdef _TRACK_ALLOW
+	outBeam.track = incidentBeam.track;
+	inBeam.track = incidentBeam.track;
+#endif
+	const bool isExternal = incidentBeam.isExternal;
+	const Point3f &incidentDir = incidentBeam.direction;
+	const Point3f &normal = m_particle->externalNormals[facetId];
+
+	hasOutBeam = true;
+
+	double cosIN = DotProduct(incidentDir, normal);
+
+	if (cosIN >= EPS_COS_00) /// normal incidence
+	{
+		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
+	}
+	else /// slopping incidence
+	{
+		if (!isExternal) /// internal beam incidents to facet
+		{
+			Beam incBeam = incidentBeam;
+			SetSloppingIncidenceBeamParams(cosIN, normal, incBeam,
+										   inBeam, outBeam, hasOutBeam);
+		}
+		else /// external beam incidents to facet
+		{
+			inBeam.JMatrix = incidentBeam.JMatrix;
+			double cosI = DotProduct(-normal, incidentDir);
+
+			SetSloppingBeamParamsExternal(incidentDir, cosI, facetId,
+										  inBeam, outBeam);
+			if (m_isOpticalPath)
+			{
+				CalcOpticalPathInternal(cosIN, incidentBeam, inBeam, outBeam);
+			}
 		}
 	}
 }
