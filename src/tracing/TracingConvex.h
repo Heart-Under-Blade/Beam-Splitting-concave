@@ -9,8 +9,7 @@ public:
 				  bool isOpticalPath, const Point3f &polarizationBasis,
 				  int interReflectionNumber);
 
-	void SplitBeamByParticle(std::vector<Beam> &outBeams,
-							 double &lightSurfaceSquare) override;
+	void SplitBeamByParticle(std::vector<Beam> &outBeams) override;
 
 	double BeamCrossSection(const Beam &beam) const override;
 

@@ -6,17 +6,16 @@ TracingConvex::TracingConvex(Particle *particle, const Point3f &incidentBeamDir,
 {
 }
 
-void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
-										double &lightSurfaceSquare)
+void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 {
 	/// TODO: отделить функцию высчитывания площади осв. поверхности
-	lightSurfaceSquare = 0;
+	m_lightSurfaceArea = 0;
 	m_treeSize = 0;
 
 	/// first extermal beam
-	for (int facetIndex = 0; facetIndex < m_particle->facetNum; ++facetIndex)
+	for (int facetId = 0; facetId < m_particle->facetNum; ++facetId)
 	{
-		const Point3f &extNormal = m_particle->externalNormals[facetIndex];
+		const Point3f &extNormal = m_particle->externalNormals[facetId];
 		double cosIncident = DotProduct(m_startBeam.direction, extNormal);
 
 		if (cosIncident < EPS_COS_90) /// beam is not incident to this facet
@@ -25,14 +24,18 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams,
 		}
 
 		Beam inBeam, outBeam;
-		SplitExternalBeamByFacet(facetIndex, cosIncident, inBeam, outBeam);
+		SplitExternalBeamByFacet(facetId, cosIncident, inBeam, outBeam);
 
 		outBeams.push_back(outBeam);
 		m_beamTree[m_treeSize] = inBeam;
-		m_beamTree[m_treeSize].facetId = facetIndex;
+		m_beamTree[m_treeSize].facetId = facetId;
 		m_beamTree[m_treeSize].level = 0;
 		++m_treeSize;
-//		lightSurfaceSquare += outBeam.Square()*cosIncident;
+
+		if (m_isArea)
+		{
+			CalcLigthSurfaceArea(facetId, outBeam);
+		}
 	}
 
 	TraceInternalReflections(outBeams);

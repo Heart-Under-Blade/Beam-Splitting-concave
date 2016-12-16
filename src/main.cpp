@@ -337,7 +337,7 @@ void TraceSingle(Tracing &tracer, double beta, double gamma)
 	double square;
 
 	tracer.RotateParticle(beta, gamma);
-	tracer.SplitBeamByParticle(outcomingBeams, square);
+	tracer.SplitBeamByParticle(outcomingBeams);
 
 	incomingEnergy += betaDistrProbability * square;
 	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
@@ -386,7 +386,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 			try
 			{
 				tracer.RotateParticle(beta, gamma);
-				tracer.SplitBeamByParticle(outcomingBeams, square);
+				tracer.SplitBeamByParticle(outcomingBeams);
 
 				/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
 	//			std::vector<std::vector<int>> tracks;
@@ -440,7 +440,7 @@ void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &bet
 			beta = acos(((double)(rand()) / ((double)RAND_MAX))*2.0 - 1.0);
 
 			tracer.RotateParticle(beta, gamma);
-			tracer.SplitBeamByParticle(outcomingBeams, square);
+			tracer.SplitBeamByParticle(outcomingBeams);
 
 			incomingEnergy += square;
 			HandleBeams(outcomingBeams, 1, tracer);

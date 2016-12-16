@@ -7,7 +7,6 @@
 #include <float.h>
 #include <vector>
 
-//#define MAX_BEAM_REFL_NUM 128
 #define MAX_BEAM_REFL_NUM 256
 
 #define EPS_COS_90	1.7453292519943295769148298069306e-10	//cos(89.99999999)
@@ -23,32 +22,26 @@ public:
 
 	virtual double BeamCrossSection(const Beam &/*beam*/) const { return 0.0; }
 
-	virtual void SplitBeamByParticle(std::vector<Beam> &/*outBeams*/,
-									 double &/*lightSurfaceSquare*/) {}
+	virtual void SplitBeamByParticle(std::vector<Beam> &/*outBeams*/) {}
 
 	virtual void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &outBeams);
 
-	double Square(const Beam &beam);
-private:
-	/**
-	 * @brief The IncidenceCase enum
-	 * Case of beam incidence to facet of particle
-	 */
-	enum class IncidenceCase : bool
-	{
-		Normal, Slopping
-	};
+	double AreaOfBeam(const Beam &beam) const;
+
+	double GetLightSurfaceArea() const;
 
 protected:
 	Particle *m_particle;			///< scattering particle (crystal)
 	Point3f m_polarizationBasis;	///<
 	bool m_isOpticalPath;
+	bool m_isArea;
 	int m_interReflectionNumber;
-	Beam m_startBeam;
+	Beam m_startBeam;				///< origin infinity beam
 
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
+	double m_lightSurfaceArea;
 
 	const double FAR_ZONE_DISTANCE = 10000.0;
 	const double LOW_ENERGY_LEVEL = 2e-12;
@@ -58,29 +51,16 @@ protected:
 //	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
 //										  std::vector<Beam> &/*outBeams*/) {}
 
-	void SetBeamsParamsExternal(int facetId, Beam &inBeam, Beam &outBeam);
+	void SetOpticalBeamParamsExternal(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;
 
 	bool Intersect(int facetIndex, const Beam& beam, Beam &intersection) const;
 
-	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
-							 Point3f &reflDir, Point3f &refrDir) const;
-
 	void SetBeamPolygonByFacet(int facetId, Beam &beam) const;
 
-	void SetOutputPolygon(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
-
-	bool ProjectToFacetPlane(const Point3f *polygon, int size, const Point3f &dir,
-							 const Point3f &normal, __m128 *_projection) const;
-
 	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam, Beam &outBeam, Beam &inBeam) const;
-
-	void SplitBeam(const Beam &incidentBeam, Beam &inBeam, Beam &outBeam, double Nr,
-				   IncidenceCase incidenceCase);
-
-	void InvertBeamShapeOrder(Beam &outBeam, const Beam &inBeam);
 
 	bool isTerminalBeam(const Beam &beam);
 
@@ -96,16 +76,32 @@ protected:
 	void SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN, int facetId,
 									   Beam &inBeam, Beam &outBeam);
 
-	void SetCompleteReflectionBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
-										 Beam &inBeam);
+	void SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
+									  Beam &inBeam, Beam &outBeam);
+
+	void SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal,
+										Beam &incidentBeam, Beam &inBeam, Beam &outBeam,
+										bool &isTrivialIncidence);
+
+	void CalcLigthSurfaceArea(int facetId, const Beam &beam);
+
+	void CalcOpticalPathExternal(Beam &inBeam, Beam &outBeam);
+
+private:
+	double CalcNr(const double &cosIN) const;
 
 	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal, Point3f r0, double s,
 									   const Beam &incidentBeam, Beam &inBeam, Beam &outBeam);
 
-	void SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
-									  Beam &inBeam, Beam &outBeam);
-	void SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal, Beam &incidentBeam, Beam &inBeam, Beam &outBeam, bool &isTrivialIncidence);
+	void SetCompleteReflectionBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
+										 Beam &inBeam);
 
-private:
-	double CalcNr(const double &cosIN) const;
+	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
+							 Point3f &reflDir, Point3f &refrDir) const;
+
+	void SetOutputPolygon(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
+
+	bool ProjectToFacetPlane(const Point3f *polygon, int size, const Point3f &dir,
+							 const Point3f &normal, __m128 *_projection) const;
+
 };

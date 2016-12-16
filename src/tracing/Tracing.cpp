@@ -56,7 +56,7 @@ void Tracing::SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN
 			cosInc2/Tv0, cosInc2/Th0);
 }
 
-void Tracing::SetBeamsParamsExternal(int facetId, Beam &inBeam, Beam &outBeam)
+void Tracing::SetOpticalBeamParamsExternal(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &startDir = m_startBeam.direction;
 	const Point3f &normal = m_particle->normals[facetId];
@@ -80,6 +80,11 @@ void Tracing::SetBeamsParamsExternal(int facetId, Beam &inBeam, Beam &outBeam)
 		outBeam.e = m_polarizationBasis;
 		outBeam.direction = -startDir;
 	}
+
+	if (m_isOpticalPath)
+	{
+		CalcOpticalPathExternal(inBeam, outBeam);
+	}
 }
 
 void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
@@ -93,24 +98,31 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 	beam.RotatePlane(newBasis);
 }
 
+void Tracing::CalcOpticalPathExternal(Beam &inBeam, Beam &outBeam)
+{
+	Point3f center = CenterOfPolygon(inBeam.polygon, inBeam.size);
+
+	inBeam.D = DotProduct(-inBeam.direction, center);
+	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_startBeam.direction, center);
+
+	outBeam.D = DotProduct(-outBeam.direction, center);
+	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
+}
+
 void Tracing::SplitExternalBeamByFacet(int facetIndex, double cosIncident,
 									   Beam &inBeam, Beam &outBeam)
 {
-	SetBeamsParamsExternal(facetIndex, inBeam, outBeam);
-
+	SetOpticalBeamParamsExternal(facetIndex, inBeam, outBeam);
 	SetBeamPolygonByFacet(facetIndex, inBeam);
 	SetBeamPolygonByFacet(facetIndex, outBeam);
+}
 
-	if (m_isOpticalPath)
-	{
-		Point3f center = CenterOfPolygon(inBeam.polygon, inBeam.size);
-
-		inBeam.D = DotProduct(-inBeam.direction, center);
-		inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_startBeam.direction, center);
-
-		outBeam.D = DotProduct(-outBeam.direction, center);
-		outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
-	}
+void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
+{
+	const Point3f &startDir = m_startBeam.direction;
+	const Point3f &normal = m_particle->normals[facetId];
+	double cosIN = DotProduct(startDir, normal);
+	m_lightSurfaceArea += AreaOfBeam(beam) * cosIN;
 }
 
 // TODO: пофиксить
@@ -168,7 +180,6 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 									  Beam &outBeam, Beam &inBeam) const
 {
 	double Nr = CalcNr(cosIN);
-
 	double coef = (incidentBeam.isExternal) ? 1 : sqrt(Nr);
 	Point3f center = CenterOfPolygon(outBeam.polygon, outBeam.size);
 
@@ -186,24 +197,6 @@ bool Tracing::isTerminalBeam(const Beam &beam)
 {
 	double j_norm = beam.JMatrix.Norm();
 	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
-}
-
-void Tracing::InvertBeamShapeOrder(Beam &outBeam, const Beam &inBeam)
-{
-	Point3f center = CenterOfPolygon(outBeam.polygon, outBeam.size);
-	Point3f p0 = outBeam.polygon[0] - center;
-	Point3f p1 = outBeam.polygon[1] - center;
-	Point3f normal;
-	CrossProduct(p0, p1, normal);
-	double cosAngle = DotProduct(normal, outBeam.direction);
-
-	if (cosAngle < 0.0)
-	{
-		for (int i = 0; i < inBeam.size; ++i)
-		{
-			outBeam.polygon[i] = inBeam.polygon[(inBeam.size-1)-i];
-		}
-	}
 }
 
 double Tracing::CalcNr(const double &cosIN) const
@@ -581,7 +574,7 @@ void Tracing::SetBeamPolygonByFacet(int facetId, Beam &beam) const
 	}
 }
 
-double Tracing::Square(const Beam &beam)
+double Tracing::AreaOfBeam(const Beam &beam) const
 {
 	double square = 0;
 	const Point3f &basePoint = beam.polygon[0];
@@ -597,4 +590,9 @@ double Tracing::Square(const Beam &beam)
 	}
 
 	return square / 2.0;
+}
+
+double Tracing::GetLightSurfaceArea() const
+{
+	return m_lightSurfaceArea;
 }

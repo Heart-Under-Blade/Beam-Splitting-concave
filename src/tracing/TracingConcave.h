@@ -20,8 +20,7 @@ public:
 
 	double BeamCrossSection(const Beam &beam) const override;
 
-	void SplitBeamByParticle(std::vector<Beam> &outBeams,
-							 double &lightSurfaceSquare) override;
+	void SplitBeamByParticle(std::vector<Beam> &outBeams) override;
 
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &outBeams) override;
@@ -47,7 +46,7 @@ private:
 	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &a_dir, const Point3f &b_normal,
 							 ClipperLib::Path &projection);
 
-	void SetBeamByPath(Beam &beam, const ClipperLib::Path &result);
+	void SetBeamPolygonByPath(const ClipperLib::Path &result, Beam &beam);
 
 	void CutBeamByFacet(ClipperLib::Paths &beamPolygon, int facetId,
 							 const Point3f &direction, const Point3f &polygonNormal,
@@ -69,8 +68,6 @@ private:
 	void DividePolygon(const std::vector<Point3f> &polygon,
 					   const Point3f &normal, Polygons &polygons) const;
 
-	double SquareOfPolygon(const std::vector<Point3f> &polygon) const;
-
 	void SwapCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
 	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
@@ -79,14 +76,14 @@ private:
 
 //	bool isOrderReversed(const Point3f oldNormal, const ClipperLib::Path polygon);
 
-	void InversePolygonOrder(ClipperLib::Path &polygon);
+//	void InversePolygonOrder(ClipperLib::Path &polygon);
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &outBeams);
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, bool isExternal);
 
-	void SelectVisibleFacetsExternal(const Beam &beam, int *facetIndices,
-									 int &indicesNumber);
+	void SelectVisibleFacetsExternal(const Beam &beam, int *facetIds,
+									 int &facetIdCount);
 	void FindVisibleFacetsInternal(const Beam &beam, int *facetIndices,
 								   int &facetIdCount);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
@@ -107,8 +104,14 @@ private:
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
+	void SetBeamPolygonExternal(int *facetIds, int i, int facetId,
+								Beam &inBeam, Beam &outBeam,
+								bool &isTotallyShadowed);
+
+	void TraceOriginBeam();
+
 protected:
-	void TraceInternalReflections(std::vector<Beam> &outBeams);
+	void TraceSecondaryBeams(std::vector<Beam> &outBeams);
 };
 
 void FindZCoord(ClipperLib::IntPoint & a1, ClipperLib::IntPoint & a2,
