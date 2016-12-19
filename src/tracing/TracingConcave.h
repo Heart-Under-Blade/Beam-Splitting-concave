@@ -31,10 +31,9 @@ private:
 	ClipperLib::Clipper m_clipper;
 
 private:
-
 	double CalcMinDistanceToFacet(int facetId, const Point3f &beamDir);
-	void SortFacets(int number, const Point3f &beamDir, int *facetIds); ///< use fast sort algorithm
-	void CutShadowsFromFacet(int facetId, int *facetIds, int previewFacetCount,
+	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use fast sort algorithm
+	void CutShadowsFromFacet(int facetId, IntArray facetIds, int previewFacetCount,
 							 const Beam &incidentBeam, ClipperLib::Paths &resultFacet);
 
 	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
@@ -49,8 +48,8 @@ private:
 	void SetBeamPolygonByPath(const ClipperLib::Path &result, Beam &beam);
 
 	void CutBeamByFacet(ClipperLib::Paths &beamPolygon, int facetId,
-							 const Point3f &direction, const Point3f &polygonNormal,
-							 ClipperLib::Paths &result);
+						const Point3f &direction, const Point3f &polygonNormal,
+						ClipperLib::Paths &result);
 
 	void DivideConcavePolygon(const Point3f *polygon, int size,
 							  const Point3f &normal,
@@ -70,7 +69,7 @@ private:
 
 	void SwapCoords(Axis oldAxis, Axis newAxis, ClipperLib::Paths &origin) const; ///< заменяем координаты, для устранения погрешности при клиппинге
 
-	void SetPolygonByFacet(const Point3f *facet, int size, ClipperLib::Paths &polygon) const;
+	void PolygonToPath(const Polygon &pol, ClipperLib::Paths &path) const;
         
 	double AreaByClipper(const Beam &beam, const Point3f &normal) const;
 
@@ -82,10 +81,8 @@ private:
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, bool isExternal);
 
-	void SelectVisibleFacetsExternal(const Beam &beam, int *facetIds,
-									 int &facetIdCount);
-	void FindVisibleFacetsInternal(const Beam &beam, int *facetIndices,
-								   int &facetIdCount);
+	void FindVisibleFacetsOrigin(const Beam &beam, IntArray &facetIds);
+	void FindVisibleFacetsInternal(const Beam &beam, IntArray &facetIds);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
         
 	void PrintTrack(const Beam &beam, int facetId);
@@ -95,7 +92,7 @@ private:
 	void ClipDifference(const ClipperLib::Paths &subject, const ClipperLib::Paths &clip,
 						ClipperLib::Paths &difference);
 
-	void SelectVisibleFacets(const Beam &beam, int *facetIds, int &facetIdCount);
+	void SelectVisibleFacets(const Beam &beam, IntArray &facetIds);
 
 	void RemoveHole(ClipperLib::Paths &result);
 
@@ -104,7 +101,7 @@ private:
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
-	void SetBeamPolygonExternal(int *facetIds, int i, int facetId,
+	void SetBeamPolygonExternal(const IntArray &facetIds, int handledFacetNum,
 								Beam &inBeam, Beam &outBeam,
 								bool &isTotallyShadowed);
 

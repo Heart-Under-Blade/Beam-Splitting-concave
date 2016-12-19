@@ -10,8 +10,7 @@
 Beam::Beam()
 {
 	opticalPath = 0;
-	size = 0;
-	e = Point3f(0,1,0);
+	e = Point3f(0, 1, 0);
 }
 
 void Beam::Copy(const Beam &other)
@@ -21,12 +20,7 @@ void Beam::Copy(const Beam &other)
 	e = other.e;
 	direction = other.direction;
 
-	size = other.size;
-
-	for (int i = 0; i < other.size; ++i)
-	{
-		polygon[i] = other.polygon[i];
-	}
+	SetPolygon(other.polygon);
 
 	facetId = other.facetId;
 	level = other.level;
@@ -171,10 +165,10 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 
 void Beam::AddVertex(const Point3f &vertex)
 {
-	polygon[size] = vertex;
-	++size;
+	polygon.arr[polygon.size++] = vertex;
 }
 
+// REF: вынести из этого класса
 void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2)
 {
 	JMatrix.m11 = coef1 * other.JMatrix.m11;
@@ -183,12 +177,12 @@ void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &co
 	JMatrix.m22 = coef2 * other.JMatrix.m22;
 }
 
-void Beam::SetPolygonByOther(const Beam &other)
+void Beam::SetPolygon(const Polygon &other)
 {
-	size = other.size;
+	polygon.size = other.size;
 
 	for (int i = 0; i < other.size; ++i)
 	{
-		polygon[i] = other.polygon[i];
+		polygon.arr[i] = other.arr[i];
 	}
 }

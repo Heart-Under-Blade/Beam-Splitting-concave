@@ -8,10 +8,15 @@ Particle::Particle(double p_radius, double p_halfHeight,
 	Init(p_radius, p_halfHeight, p_refractionIndex);
 }
 
+double Particle::GetHalfHeight() const
+{
+    return m_halfHeight;
+}
+
 void Particle::Init(double p_radius, double p_halfHeight, const complex &p_refractionIndex)
 {
 	m_radius = p_radius;
-	halfHeight = p_halfHeight;
+	m_halfHeight = p_halfHeight;
 	refractionIndex = p_refractionIndex;
 
 	double re = real(refractionIndex);
@@ -50,7 +55,7 @@ void Particle::RotateNormals()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		RotatePoint(m_originNormals[i], normals[i]);
+		RotatePoint(m_originNormals[i], facets[i].in_normal);
 	}
 
 	SetDParams();
@@ -61,8 +66,8 @@ void Particle::SetDParams()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		double d = DotProduct(facets[i].polygon[0], normals[i]);
-		normals[i].d_param = -d;
+		double d = DotProduct(facets[i].polygon.arr[0], facets[i].in_normal);
+		facets[i].in_normal.d_param = -d;
 	}
 }
 
@@ -70,20 +75,21 @@ void Particle::SetExternalNormals()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		externalNormals[i].cx = -normals[i].cx;
-		externalNormals[i].cy = -normals[i].cy;
-		externalNormals[i].cz = -normals[i].cz;
-		externalNormals[i].d_param = -normals[i].d_param;
+		Facet &facet = facets[i];
+		facet.ex_normal.cx = -facet.in_normal.cx;
+		facet.ex_normal.cy = -facet.in_normal.cy;
+		facet.ex_normal.cz = -facet.in_normal.cz;
+		facet.ex_normal.d_param = -facet.in_normal.d_param;
 	}
 }
 
 void Particle::CopyFacet(Point3f *points, Facet &result)
 {
-	for (int i = 0; i <= result.size; ++i)
+	for (int i = 0; i <= result.polygon.size; ++i)
 	{
-		result.polygon[i].cx = points[i].cx;
-		result.polygon[i].cy = points[i].cy;
-		result.polygon[i].cz = points[i].cz;
+		result.polygon.arr[i].cx = points[i].cx;
+		result.polygon.arr[i].cy = points[i].cy;
+		result.polygon.arr[i].cz = points[i].cz;
 	}
 }
 

@@ -6,6 +6,12 @@
 #define cz point[2]
 #define d_param point[3]
 
+struct IntArray
+{
+	int arr[64];
+	int size = 0;
+};
+
 /**
  * @brief The Point3 struct
  * 3D coordinate point
@@ -118,14 +124,14 @@ struct Point3d
 
 //} __attribute__ ((aligned (16)));
 
-struct Polygon
-{
-	Point3f points[32];
-	int size;
+//struct Polygon
+//{
+//	Point3f points[32];
+//	int size;
 
-	Polygon() {}
-	Polygon(int p_size) {
-		size = p_size;
-	}
+//	Polygon() {}
+//	Polygon(int p_size) {
+//		size = p_size;
+//	}
 
-} __attribute__ ((aligned (16)));
+//} __attribute__ ((aligned (16)));

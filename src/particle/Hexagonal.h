@@ -10,7 +10,7 @@ class Hexagonal : public Particle
 {
 public:
 	Hexagonal();
-	Hexagonal(double m_radius, double halfHeight, const complex &refractionIndex);
+	Hexagonal(double m_radius, double m_halfHeight, const complex &refractionIndex);
 
 	void Rotate(double beta, double gamma, double alpha) override;
 

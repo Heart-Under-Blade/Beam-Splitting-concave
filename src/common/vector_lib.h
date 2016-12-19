@@ -2,6 +2,7 @@
 
 class Point3f;
 class Point3d;
+class Polygon;
 
 float DotProduct(const Point3f &v1, const Point3f &v2);
 
@@ -15,8 +16,6 @@ void Normalize(Point3f &v);
 
 Point3f NormalToPolygon(const Point3f *facet);
 
-void CopyPoints(Point3f *points, Point3f *result, int size);
-
-Point3f CenterOfPolygon(const Point3f *facet, int size);
+Point3f CenterOfPolygon(const Polygon &polygon);
 
 double Length(const Point3f &v);

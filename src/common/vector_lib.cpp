@@ -1,4 +1,5 @@
 #include <math.h>
+#include "Particle.h"
 #include "types.h"
 #include "intrinsic/intrinsics.h"
 
@@ -56,25 +57,15 @@ Point3f NormalToPolygon(const Point3f *facet)
 	return normal;
 }
 
-void CopyPoints(Point3f *points, Point3f *result, int size)
-{
-	for (int i = 0; i <= size; ++i)
-	{
-		result[i].cx = points[i].cx;
-		result[i].cy = points[i].cy;
-		result[i].cz = points[i].cz;
-	}
-}
-
-Point3f CenterOfPolygon(const Point3f *facet, int size)
+Point3f CenterOfPolygon(const Polygon &polygon)
 {
 	Point3f p(0, 0, 0);
 
-	for (int i = 0; i < size; ++i)
+	for (int i = 0; i < polygon.size; ++i)
 	{
-		p = p + facet[i];
+		p = p + polygon.arr[i];
 	}
 
-	return p/size;
+	return p/polygon.size;
 }
 

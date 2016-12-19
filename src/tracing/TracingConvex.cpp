@@ -15,7 +15,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	/// first extermal beam
 	for (int facetId = 0; facetId < m_particle->facetNum; ++facetId)
 	{
-		const Point3f &extNormal = m_particle->externalNormals[facetId];
+		const Point3f &extNormal = m_particle->facets[facetId].ex_normal;
 		double cosIncident = DotProduct(m_startBeam.direction, extNormal);
 
 		if (cosIncident < EPS_COS_90) /// beam is not incident to this facet
@@ -90,8 +90,8 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 	const double Eps = 1e7*DBL_EPSILON;
 
 	Point3f normal;
-	Point3f p1 = beam.polygon[1] - beam.polygon[0];
-	Point3f p2 = beam.polygon[2] - beam.polygon[0];
+	Point3f p1 = beam.polygon.arr[1] - beam.polygon.arr[0];
+	Point3f p2 = beam.polygon.arr[2] - beam.polygon.arr[0];
 	CrossProduct(p1, p2, normal);
 
 	double e = fabs(DotProduct(normal, beam.direction));
@@ -103,12 +103,12 @@ double TracingConvex::BeamCrossSection(const Beam &beam) const
 
 	double square = 0;
 	{
-		const Point3f &basePoint = beam.polygon[0];
-		Point3f p1 = beam.polygon[1] - basePoint;
+		const Point3f &basePoint = beam.polygon.arr[0];
+		Point3f p1 = beam.polygon.arr[1] - basePoint;
 
-		for (int i = 2; i < beam.size; ++i)
+		for (int i = 2; i < beam.polygon.size; ++i)
 		{
-			Point3f p2 = beam.polygon[i] - basePoint;
+			Point3f p2 = beam.polygon.arr[i] - basePoint;
 			Point3f res;
 			CrossProduct(p1, p2, res);
 			square += sqrt(Norm(res));

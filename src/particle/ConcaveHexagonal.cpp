@@ -50,7 +50,7 @@ void ConcaveHexagonal::SetCenters()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		m_originCenters[i] = CenterOfPolygon(facets[i].polygon, facets[i].size);
+		m_originCenters[i] = CenterOfPolygon(facets[i].polygon);
 		centers[i] = m_originCenters[i];
 	}
 }
@@ -62,19 +62,19 @@ void ConcaveHexagonal::SetFacetParams()
 	// top facet (triangles)
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		facets[i].size = CAVITY_FACET_VERTEX_NUM;
+		facets[i].polygon.size = CAVITY_FACET_VERTEX_NUM;
 	}
 
 	// side facet
 	for (int i = BASE_VERTEX_NUM; i < 2*BASE_VERTEX_NUM; ++i)
 	{
-		facets[i].size = SIDE_VERTEX_NUMBER;
+		facets[i].polygon.size = SIDE_VERTEX_NUMBER;
 	}
 
 	// bottom facet (triangles)
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		facets[i].size = CAVITY_FACET_VERTEX_NUM;
+		facets[i].polygon.size = CAVITY_FACET_VERTEX_NUM;
 	}
 }
 
@@ -94,9 +94,9 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end, Point3f *baseFacet,
 
 	for (int i = start; i < end; ++i)
 	{
-		facets[i].polygon[0] = baseFacet[p0];
-		facets[i].polygon[1] = baseFacet[p1];
-		facets[i].polygon[2] = cavityPoint;
+		facets[i].polygon.arr[0] = baseFacet[p0];
+		facets[i].polygon.arr[1] = baseFacet[p1];
+		facets[i].polygon.arr[2] = cavityPoint;
 		p0 = p1;
 		++p1;
 	}
@@ -104,8 +104,8 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end, Point3f *baseFacet,
 
 void ConcaveHexagonal::SetOriginCavityPoints()
 {
-	m_originCavities.top = Point3f(0, 0, halfHeight - m_cavityDept);
-	m_originCavities.bottom = Point3f(0, 0, -halfHeight + m_cavityDept);
+	m_originCavities.top = Point3f(0, 0, m_halfHeight - m_cavityDept);
+	m_originCavities.bottom = Point3f(0, 0, -m_halfHeight + m_cavityDept);
 }
 
 void ConcaveHexagonal::SetBaseNormals()
@@ -113,13 +113,13 @@ void ConcaveHexagonal::SetBaseNormals()
 	// top cavity facets
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		m_originNormals[i] = -NormalToPolygon(facets[i].polygon);
+		m_originNormals[i] = -NormalToPolygon(facets[i].polygon.arr);
 	}
 
 	// bottom cavity facets
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		m_originNormals[i] = -NormalToPolygon(facets[i].polygon);
+		m_originNormals[i] = -NormalToPolygon(facets[i].polygon.arr);
 	}
 }
 
@@ -140,7 +140,13 @@ void ConcaveHexagonal::SetOriginNormals()
 	SetBaseNormals();
 	SetSideNormals();
 
-	CopyPoints(m_originNormals, normals, facetNum); // current normals
+	// current normals
+	for (int i = 0; i <= facetNum; ++i)
+	{
+		facets[i].in_normal.cx = m_originNormals[i].cx;
+		facets[i].in_normal.cy = m_originNormals[i].cy;
+		facets[i].in_normal.cz = m_originNormals[i].cz;
+	}
 
 	SetDParams();
 	SetExternalNormals();

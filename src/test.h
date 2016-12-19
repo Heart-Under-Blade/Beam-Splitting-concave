@@ -16,9 +16,9 @@ void outputParticle(const Particle &particle)
 	for (int i = 0; i < particle.facetNum; ++i)
 	{
 		std::cout << i << ": ";
-		for (int j = 0; j < particle.facets[i].size; ++j)
+		for (int j = 0; j < particle.facets[i].polygon.size; ++j)
 		{
-			Point3f p = particle.facets[i].polygon[j];
+			Point3f p = particle.facets[i].polygon.arr[j];
 			std::cout << "("
 					  << p.point[0] << ", "
 					  << p.point[1] << ", "
@@ -35,9 +35,9 @@ void outputParticle(const Particle &particle)
 	{
 		std::cout << i << ": ";
 		std::cout << "("
-				  << particle.normals[i].point[0] << ", "
-				  << particle.normals[i].point[1] << ", "
-				  << particle.normals[i].point[2]
+				  << particle.facets[i].in_normal.cx << ", "
+				  << particle.facets[i].in_normal.cy << ", "
+				  << particle.facets[i].in_normal.cz
 				  << "), ";
 		std::cout << std::endl;
 	}
@@ -49,9 +49,9 @@ void toFile(const Particle &particle)
 
 	for (int i = 0; i < particle.facetNum; ++i)
 	{
-		for (int j = 0; j < particle.facets[i].size; ++j)
+		for (int j = 0; j < particle.facets[i].polygon.size; ++j)
 		{
-			Point3f p = particle.facets[i].polygon[j];
+			Point3f p = particle.facets[i].polygon.arr[j];
 			M << p.point[0] << ' '
 							<< p.point[1] << ' '
 							<< p.point[2];

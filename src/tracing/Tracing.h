@@ -33,6 +33,7 @@ public:
 
 protected:
 	Particle *m_particle;			///< scattering particle (crystal)
+	Facet *m_facets;
 	Point3f m_polarizationBasis;	///<
 	bool m_isOpticalPath;
 	bool m_isArea;
@@ -56,7 +57,7 @@ protected:
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;
 
-	bool Intersect(int facetIndex, const Beam& beam, Beam &intersection) const;
+	bool Intersect(int facetIndex, const Beam& beam, Polygon &intersection) const;
 
 	void SetBeamPolygonByFacet(int facetId, Beam &beam) const;
 
@@ -99,9 +100,10 @@ private:
 	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
 							 Point3f &reflDir, Point3f &refrDir) const;
 
-	void SetOutputPolygon(__m128 *_output_points, int outputSize, Beam &outputBeam) const;
+	void SetOutputPolygon(__m128 *_output_points, int outputSize,
+						  Polygon &polygon) const;
 
-	bool ProjectToFacetPlane(const Point3f *polygon, int size, const Point3f &dir,
+	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
 
 };

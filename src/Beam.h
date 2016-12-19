@@ -21,7 +21,7 @@ public:
 
 	void AddVertex(const Point3f &vertex);
 	void MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2);
-	void SetPolygonByOther(const Beam &other);
+	void SetPolygon(const Polygon &other);
 
 	Beam & operator = (const Beam &other);
 
@@ -31,6 +31,8 @@ public:
 	JonesMatrix JMatrix;			///< Jones matrix of beam
 	Point3f e;						///< basis of polarization plane
 
+	Polygon polygon;				///< array of beam vertices (shape)
+
 	int facetId;					///< last reflected facet
 	int level;						///< number of preview reflections
 	bool isExternal;				///< beam state towards the particle (inside or outside)
@@ -39,9 +41,6 @@ public:
 	/// и убрать эти параметры
 	double opticalPath;				///< optical path of beam
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
-
-	Point3f polygon[MAX_VERTEX_NUM];	///< array of beam vertices (shape)
-	int size;							///< current vertex number
 
 #ifdef _TRACK_ALLOW
 	std::vector<int> track;
