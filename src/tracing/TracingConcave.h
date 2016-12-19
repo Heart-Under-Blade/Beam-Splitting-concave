@@ -31,7 +31,7 @@ private:
 	ClipperLib::Clipper m_clipper;
 
 private:
-	double CalcMinDistanceToFacet(int facetId, const Point3f &beamDir);
+	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use fast sort algorithm
 	void CutShadowsFromFacet(int facetId, IntArray facetIds, int previewFacetCount,
 							 const Beam &incidentBeam, ClipperLib::Paths &resultFacet);
@@ -45,7 +45,7 @@ private:
 	void ProjectFacetToFacet(const Point3f *a_facet, int a_size, const Point3f &a_dir, const Point3f &b_normal,
 							 ClipperLib::Path &projection);
 
-	void SetBeamPolygonByPath(const ClipperLib::Path &result, Beam &beam);
+	void PathToPolygon(const ClipperLib::Path &path, Polygon &polygon);
 
 	void CutBeamByFacet(ClipperLib::Paths &beamPolygon, int facetId,
 						const Point3f &direction, const Point3f &polygonNormal,
@@ -101,11 +101,12 @@ private:
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
-	void SetBeamPolygonExternal(const IntArray &facetIds, int handledFacetNum,
-								Beam &inBeam, Beam &outBeam,
-								bool &isTotallyShadowed);
+	void SetInitialBeamPolygon(const IntArray &facetIds, int handledFacetNum,
+							   Polygon &beamPolygon, bool &isTotallyShadowed);
 
-	void TraceOriginBeam();
+	void TraceInitialBeam();
+
+	void SelectVisibleFacetsInitial(IntArray &facetIds);
 
 protected:
 	void TraceSecondaryBeams(std::vector<Beam> &outBeams);

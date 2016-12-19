@@ -16,15 +16,15 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	for (int facetId = 0; facetId < m_particle->facetNum; ++facetId)
 	{
 		const Point3f &extNormal = m_particle->facets[facetId].ex_normal;
-		double cosIncident = DotProduct(m_startBeam.direction, extNormal);
+		double cosIN = DotProduct(m_initialBeam.direction, extNormal);
 
-		if (cosIncident < EPS_COS_90) /// beam is not incident to this facet
+		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
 		{
 			continue;
 		}
 
 		Beam inBeam, outBeam;
-		SplitExternalBeamByFacet(facetId, cosIncident, inBeam, outBeam);
+		SplitExternalBeamByFacet(facetId, inBeam, outBeam);
 
 		outBeams.push_back(outBeam);
 		m_beamTree[m_treeSize] = inBeam;

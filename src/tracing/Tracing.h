@@ -38,7 +38,7 @@ protected:
 	bool m_isOpticalPath;
 	bool m_isArea;
 	int m_interReflectionNumber;
-	Beam m_startBeam;				///< origin infinity beam
+	Beam m_initialBeam;				///< origin infinity beam
 
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
@@ -52,21 +52,20 @@ protected:
 //	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
 //										  std::vector<Beam> &/*outBeams*/) {}
 
-	void SetOpticalBeamParamsExternal(int facetId, Beam &inBeam, Beam &outBeam);
+	void SetOpticalBeamParamsInitial(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;
 
 	bool Intersect(int facetIndex, const Beam& beam, Polygon &intersection) const;
 
-	void SetBeamPolygonByFacet(int facetId, Beam &beam) const;
+	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
 
 	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam, Beam &outBeam, Beam &inBeam) const;
 
 	bool isTerminalBeam(const Beam &beam);
 
-	void SplitExternalBeamByFacet(int facetIndex, double cosIncident,
-								  Beam &inBeam, Beam &outBeam);
+	void SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 								  Beam &inBeam, std::vector<Beam> &outBeams);

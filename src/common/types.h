@@ -89,7 +89,16 @@ struct Point3d
 
 	Point3d() {}
 
-	Point3d(double p_x, double p_y, double p_z, double p_d = 0.0) {
+	Point3d(const Point3f &other)
+	{
+		x = other.cx;
+		y = other.cy;
+		z = other.cz;
+		d = other.d_param;
+	}
+
+	Point3d(double p_x, double p_y, double p_z, double p_d = 0.0)
+	{
 		x = p_x;
 		y = p_y;
 		z = p_z;

@@ -22,7 +22,7 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 	m_isOpticalPath = isOpticalPath;
 	m_polarizationBasis = polarizationBasis;
 	m_interReflectionNumber = interReflectionNumber;
-	m_startBeam.direction = startBeamDir;
+	m_initialBeam.direction = startBeamDir;
 }
 
 void Tracing::RotateParticle(double beta, double gamma)
@@ -58,9 +58,9 @@ void Tracing::SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN
 			cosInc2/Tv0, cosInc2/Th0);
 }
 
-void Tracing::SetOpticalBeamParamsExternal(int facetId, Beam &inBeam, Beam &outBeam)
+void Tracing::SetOpticalBeamParamsInitial(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	const Point3f &startDir = m_startBeam.direction;
+	const Point3f &startDir = m_initialBeam.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
 
@@ -105,23 +105,22 @@ void Tracing::CalcOpticalPathExternal(Beam &inBeam, Beam &outBeam)
 	Point3f center = CenterOfPolygon(inBeam.polygon);
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
-	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_startBeam.direction, center);
+	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_initialBeam.direction, center);
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 }
 
-void Tracing::SplitExternalBeamByFacet(int facetIndex, double cosIncident,
-									   Beam &inBeam, Beam &outBeam)
+void Tracing::SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	SetOpticalBeamParamsExternal(facetIndex, inBeam, outBeam);
-	SetBeamPolygonByFacet(facetIndex, inBeam);
-	SetBeamPolygonByFacet(facetIndex, outBeam);
+	SetOpticalBeamParamsInitial(facetId, inBeam, outBeam);
+	SetPolygonByFacet(facetId, inBeam.polygon);
+	SetPolygonByFacet(facetId, outBeam.polygon);
 }
 
 void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
 {
-	const Point3f &startDir = m_startBeam.direction;
+	const Point3f &startDir = m_initialBeam.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
 	m_lightSurfaceArea += AreaOfBeam(beam) * cosIN;
@@ -133,10 +132,10 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 {
 	for (unsigned int i = 0; i < tracks.size(); ++i)
 	{
-		int facetIndex = tracks.at(i).at(0);
-		const Point3f &extNormal = m_particle->facets[facetIndex].ex_normal;
+		int facetId = tracks.at(i).at(0);
+		const Point3f &extNormal = m_particle->facets[facetId].ex_normal;
 
-		double cosIN = DotProduct(m_startBeam.direction, extNormal);
+		double cosIN = DotProduct(m_initialBeam.direction, extNormal);
 
 		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
 		{
@@ -150,7 +149,7 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 		{
 			Beam outBeam;
 
-			SplitExternalBeamByFacet(facetIndex, cosIN, incidentBeam, outBeam);
+			SplitExternalBeamByFacet(facetId, incidentBeam, outBeam);
 
 			outBuff.push_back(outBeam);
 		}
@@ -161,10 +160,10 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 		{
 			for (unsigned int j = 1; j < size; ++j)
 			{
-				facetIndex = tracks.at(i).at(j);
+				facetId = tracks.at(i).at(j);
 
 				Beam inBeam;
-				SplitInternalBeamByFacet(incidentBeam, facetIndex, inBeam, outBuff);
+				SplitInternalBeamByFacet(incidentBeam, facetId, inBeam, outBuff);
 
 				incidentBeam = inBeam;
 			}
@@ -563,15 +562,16 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
-void Tracing::SetBeamPolygonByFacet(int facetId, Beam &beam) const
+void Tracing::SetPolygonByFacet(int facetId, Polygon &polygon) const
 {
-	int size = m_facets[facetId].polygon.size;
-	beam.polygon.size = size;
+	const Polygon &facet = m_facets[facetId].polygon;
+	int size = facet.size;
+	polygon.size = size;
 	--size;
 
 	for (int i = 0; i <= size; ++i)
 	{
-		beam.polygon.arr[i] = m_facets[facetId].polygon.arr[size-i];
+		polygon.arr[i] = facet.arr[size-i];
 	}
 }
 
