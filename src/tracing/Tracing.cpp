@@ -58,7 +58,7 @@ void Tracing::SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN
 			cosInc2/Tv0, cosInc2/Th0);
 }
 
-void Tracing::SetOpticalBeamParamsInitial(int facetId, Beam &inBeam, Beam &outBeam)
+void Tracing::SetOpticalBeamParams_initial(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &startDir = m_initialBeam.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
@@ -113,7 +113,7 @@ void Tracing::CalcOpticalPathExternal(Beam &inBeam, Beam &outBeam)
 
 void Tracing::SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	SetOpticalBeamParamsInitial(facetId, inBeam, outBeam);
+	SetOpticalBeamParams_initial(facetId, inBeam, outBeam);
 	SetPolygonByFacet(facetId, inBeam.polygon);
 	SetPolygonByFacet(facetId, outBeam.polygon);
 }
@@ -181,7 +181,7 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 									  Beam &outBeam, Beam &inBeam) const
 {
 	double Nr = CalcNr(cosIN);
-	double coef = (incidentBeam.isExternal) ? 1 : sqrt(Nr);
+	double coef = (incidentBeam.location == Location::External) ? 1 : sqrt(Nr);
 	Point3f center = CenterOfPolygon(outBeam.polygon);
 
 	outBeam.D = DotProduct(-outBeam.direction, center);

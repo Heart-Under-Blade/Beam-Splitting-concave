@@ -6,6 +6,8 @@
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
 
+//#define _TRACK_ALLOW // tracks of beams writes to beams
+
 #ifdef _TRACK_ALLOW
 #include <vector>
 #endif
@@ -35,7 +37,7 @@ public:
 
 	int facetId;					///< last reflected facet
 	int level;						///< number of preview reflections
-	bool isExternal;				///< beam state towards the particle (inside or outside)
+	Location location;				///< beam state towards the particle (inside or outside)
 
 	/// OPT: сделать др. вариант класса или трассировки
 	/// и убрать эти параметры

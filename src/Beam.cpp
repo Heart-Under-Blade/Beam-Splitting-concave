@@ -24,7 +24,7 @@ void Beam::Copy(const Beam &other)
 
 	facetId = other.facetId;
 	level = other.level;
-	isExternal = other.isExternal;
+	location = other.location;
 
 #ifdef _TRACK_ALLOW
 	track = other.track;

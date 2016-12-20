@@ -77,15 +77,13 @@ private:
 
 //	void InversePolygonOrder(ClipperLib::Path &polygon);
 
-	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &outBeams);
+	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
-	void PushBeamToTree(Beam &beam, int facetId, int level, bool isExternal);
+	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 
-	void FindVisibleFacetsOrigin(const Beam &beam, IntArray &facetIds);
-	void FindVisibleFacetsInternal(const Beam &beam, IntArray &facetIds);
+	void FindVisibleFacets_initial(const Beam &beam, IntArray &facetIds);
+	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
-        
-	void PrintTrack(const Beam &beam, int facetId);
 
 	Axis GetSwapAxis(const Point3f &normal);
         
@@ -101,15 +99,22 @@ private:
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
-	void SetInitialBeamPolygon(const IntArray &facetIds, int handledFacetNum,
+	void SetIntersectedPolygon(const IntArray &facetIds, int handledFacetNum,
 							   Polygon &beamPolygon, bool &isTotallyShadowed);
 
 	void TraceInitialBeam();
 
-	void SelectVisibleFacetsInitial(IntArray &facetIds);
+	void SelectVisibleFacets_initial(IntArray &facetIds);
+
+	bool IsRemainedExternalBeam(Beam &incidentBeam);
+
+#ifdef _TRACK_ALLOW
+	void PrintTrack(const Beam &beam, int facetId);
+	void AddToTrack(Beam &beam, int facetId);
+#endif
 
 protected:
-	void TraceSecondaryBeams(std::vector<Beam> &outBeams);
+	void TraceSecondaryBeams(std::vector<Beam> &scaterredBeams);
 };
 
 void FindZCoord(ClipperLib::IntPoint & a1, ClipperLib::IntPoint & a2,

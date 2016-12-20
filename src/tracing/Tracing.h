@@ -12,6 +12,7 @@
 #define EPS_COS_90	1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00	0.99999999998254670756866631966593		//1- cos(89.99999999)
 
+// REF: поменять название на ~Splitter
 class Tracing
 {
 public:
@@ -52,7 +53,7 @@ protected:
 //	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
 //										  std::vector<Beam> &/*outBeams*/) {}
 
-	void SetOpticalBeamParamsInitial(int facetId, Beam &inBeam, Beam &outBeam);
+	void SetOpticalBeamParams_initial(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;

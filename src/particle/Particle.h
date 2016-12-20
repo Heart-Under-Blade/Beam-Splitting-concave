@@ -14,7 +14,7 @@
 #define in_normal normal[0]
 #define ex_normal normal[1]
 
-enum class NormalType: bool
+enum class Location: bool
 {
 	Internal, External
 };
