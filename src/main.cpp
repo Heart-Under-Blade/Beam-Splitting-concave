@@ -334,12 +334,12 @@ void TraceSingle(Tracing &tracer, double beta, double gamma)
 	double betaDistrProbability = sin(beta);
 
 	std::vector<Beam> outcomingBeams;
-	double square;
+//	double square;
 
 	tracer.RotateParticle(beta, gamma);
 	tracer.SplitBeamByParticle(outcomingBeams);
 
-	incomingEnergy += betaDistrProbability * square;
+//	incomingEnergy += tracer.GetLightSurfaceArea();
 	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
 
 	outcomingBeams.clear();
@@ -428,7 +428,7 @@ void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &bet
 
 	std::vector<Beam> outcomingBeams;
 	double beta, gamma;
-	double square;
+//	double square;
 	int orNumBeta = betaRange.end - betaRange.begin;
 	int count = 0;
 
@@ -442,7 +442,7 @@ void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &bet
 			tracer.RotateParticle(beta, gamma);
 			tracer.SplitBeamByParticle(outcomingBeams);
 
-			incomingEnergy += square;
+//			incomingEnergy += tracer.GetLightSurfaceArea();
 			HandleBeams(outcomingBeams, 1, tracer);
 			outcomingBeams.clear();
 		}

@@ -30,7 +30,7 @@ void Tracing::RotateParticle(double beta, double gamma)
 	m_particle->Rotate(beta, gamma, 0);
 }
 
-void Tracing::SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN,
+void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN,
 											int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &facetNormal = m_particle->facets[facetId].in_normal;
@@ -66,7 +66,7 @@ void Tracing::SetOpticalBeamParams_initial(int facetId, Beam &inBeam, Beam &outB
 
 	if (cosIN < EPS_COS_00) // slopping incidence
 	{
-		SetSloppingBeamParamsExternal(startDir, cosIN, facetId, inBeam, outBeam);
+		SetSloppingBeamParams_initial(startDir, cosIN, facetId, inBeam, outBeam);
 	}
 	else // normal incidence
 	{
@@ -85,7 +85,7 @@ void Tracing::SetOpticalBeamParams_initial(int facetId, Beam &inBeam, Beam &outB
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathExternal(inBeam, outBeam);
+		CalcOpticalPath_initial(inBeam, outBeam);
 	}
 }
 
@@ -100,7 +100,7 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 	beam.RotatePlane(newBasis);
 }
 
-void Tracing::CalcOpticalPathExternal(Beam &inBeam, Beam &outBeam)
+void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 {
 	Point3f center = CenterOfPolygon(inBeam.polygon);
 

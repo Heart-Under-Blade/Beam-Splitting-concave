@@ -74,7 +74,7 @@ protected:
 	void RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
 								 Beam &beam);
 
-	void SetSloppingBeamParamsExternal(const Point3f &beamDir, double cosIN, int facetId,
+	void SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN, int facetId,
 									   Beam &inBeam, Beam &outBeam);
 
 	void SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
@@ -86,7 +86,7 @@ protected:
 
 	void CalcLigthSurfaceArea(int facetId, const Beam &beam);
 
-	void CalcOpticalPathExternal(Beam &inBeam, Beam &outBeam);
+	void CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam);
 
 private:
 	double CalcNr(const double &cosIN) const;

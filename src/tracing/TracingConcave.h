@@ -81,7 +81,7 @@ private:
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 
-	void FindVisibleFacets_initial(const Beam &beam, IntArray &facetIds);
+	void FindVisibleFacets_initial(IntArray &facetIds);
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
 	void RemoveEmptyPolygons(ClipperLib::Paths &result);
 
