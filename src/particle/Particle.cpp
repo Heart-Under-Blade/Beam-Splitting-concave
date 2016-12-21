@@ -18,11 +18,6 @@ void Particle::Init(double p_radius, double p_halfHeight, const complex &p_refra
 	m_radius = p_radius;
 	m_halfHeight = p_halfHeight;
 	refractionIndex = p_refractionIndex;
-
-	double re = real(refractionIndex);
-	double im = imag(refractionIndex);
-	ri_coef_re = re*re - im*im;
-	ri_coef_im = 4*re*re*im;
 }
 
 void Particle::SetRotateMatrix(double beta, double gamma, double alpha)

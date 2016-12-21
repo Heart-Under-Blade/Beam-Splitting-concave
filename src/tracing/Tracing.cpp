@@ -23,6 +23,11 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 	m_polarizationBasis = polarizationBasis;
 	m_interReflectionNumber = interReflectionNumber;
 	m_initialBeam.direction = startBeamDir;
+
+	double re = real(m_particle->refractionIndex);
+	double im = imag(m_particle->refractionIndex);
+	ri_coef_re = re*re - im*im;
+	ri_coef_im = 4*re*re*im;
 }
 
 void Tracing::RotateParticle(double beta, double gamma)
@@ -203,8 +208,8 @@ bool Tracing::isTerminalBeam(const Beam &beam)
 double Tracing::CalcNr(const double &cosIN) const
 {
 	double cosIN_sqr = cosIN*cosIN;
-	double re = m_particle->ri_coef_re;
-	double im = m_particle->ri_coef_im;
+	const double &re = ri_coef_re;
+	const double &im = ri_coef_im;
 	return (re + sqrt(re*re + im/cosIN_sqr))/2.0;
 }
 
@@ -537,21 +542,18 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 								  const Point3f &normal,
 								  Point3f &reflDir, Point3f &refrDir) const
 {
-	const double &re = m_particle->ri_coef_re;
-	const double &im = m_particle->ri_coef_im;
-
 	Point3f tmp0 = normal + incidentDir/cosIN;
 
 	refrDir = normal + tmp0;
 	Normalize(refrDir);
 
 	double cosI_sqr = cosIN * cosIN;
-	double tmp1 = re + cosI_sqr - 1.0;
+	double tmp1 = ri_coef_re + cosI_sqr - 1.0;
 
-	tmp1 = (im - FLT_EPSILON < 0) ? tmp1
-								  : sqrt(tmp1*tmp1 + im);
+	tmp1 = (ri_coef_im - FLT_EPSILON < 0) ? tmp1
+										  : sqrt(tmp1*tmp1 + ri_coef_im);
 
-	tmp1 = (re + 1.0 - cosI_sqr + tmp1)/2.0;
+	tmp1 = (ri_coef_re + 1.0 - cosI_sqr + tmp1)/2.0;
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
 
 	LOG_ASSERT(tmp1 > 0);

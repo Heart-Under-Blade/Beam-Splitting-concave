@@ -56,8 +56,6 @@ public:
 
 	// REF: сделать протектед
 	complex refractionIndex;	///< complex value of refraction index of the particle
-	double ri_coef_re;			///< real part of the sqr of refraction index
-	double ri_coef_im;			///< imaginary part of the sqr of refraction index
 
 	Point3f centers[MAX_FACET_NUM];
 

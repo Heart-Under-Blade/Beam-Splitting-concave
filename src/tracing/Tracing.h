@@ -89,6 +89,10 @@ protected:
 	void CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam);
 
 private:
+	double ri_coef_re;
+	double ri_coef_im;
+
+private:
 	double CalcNr(const double &cosIN) const;
 
 	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal, Point3f r0, double s,

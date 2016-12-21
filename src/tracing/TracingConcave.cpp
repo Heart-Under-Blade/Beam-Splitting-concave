@@ -110,7 +110,7 @@ void TracingConcave::TraceInitialBeam()
 void TracingConcave::SelectVisibleFacets_initial(IntArray &facetIds)
 {
 	FindVisibleFacets_initial(facetIds);
-	SortFacets(m_initialBeam, facetIds);
+	SortFacets(m_initialBeam.direction, facetIds);
 }
 
 void TracingConcave::SetIntersectedPolygon(const IntArray &facetIds, int handledFacetNum,
@@ -146,7 +146,7 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 
 	Point3f dir = beam.direction;
 	dir.d_param = m_facets[beam.facetId].in_normal.d_param;
-	SortFacets(beam, facetIds);
+	SortFacets(dir, facetIds);
 }
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
@@ -631,14 +631,17 @@ void TracingConcave::ProjectFacetToFacet(const Point3f *a_facet, int a_size,
 	}
 }
 
-void TracingConcave::SortFacets(const Beam &beam, IntArray &facetIds)
+/** TODO: придумать более надёжную сортировку по близости
+ * (как вариант определять, что одна грань затеняют другую по мин. и макс.
+ * удалённым вершинам, типа: "//" )*/
+void TracingConcave::SortFacets(const Point3f &beamDir, IntArray &facetIds)
 {
 	float distances[MAX_VERTEX_NUM];
 
 	for (int i = 0; i < facetIds.size; ++i)
 	{
 		const int &id = facetIds.arr[i];
-		distances[i] = CalcMinDistanceToFacet(beam, m_facets[id]);
+		distances[i] = CalcMinDistanceToFacet(m_facets[id].polygon, beamDir);
 	}
 
 	int left = 0;
@@ -706,20 +709,20 @@ void TracingConcave::SortFacets(const Beam &beam, IntArray &facetIds)
 	}
 }
 
-double TracingConcave::CalcMinDistanceToFacet(const Beam &beam, const Facet &facet)
+double TracingConcave::CalcMinDistanceToFacet(const Polygon &facet,
+											  const Point3f &beamDir)
 {
-	double dist = DBL_MAX;
-	const Point3f *pol = beam.polygon.arr;
-	const Point3f &normal = facet.normal[(int)beam.location];
+	double dist = FLT_MAX;
+	const Point3f *pol = facet.arr;
 
-	for (int i = 0; i < beam.polygon.size; ++i)
+	for (int i = 0; i < facet.size; ++i)
 	{
-		// measure distance
+		// measure dist
 		Point3f point;
-		ProjectPointToFacet(pol[i], beam.direction, normal, point); // REF: попробовать замeнить на проекцию пучка на грань
+		ProjectPointToFacet(pol[i], -beamDir, beamDir, point); // REF: попробовать заманить на проекцию пучка на грань
 		double newDist = sqrt(Norm(point - pol[i]));
 
-		if (newDist < dist)
+		if (newDist < dist) // choose minimum with previews
 		{
 			dist = newDist;
 		}
