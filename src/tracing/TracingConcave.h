@@ -31,8 +31,10 @@ private:
 	ClipperLib::Clipper m_clipper;
 
 private:
-	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
-	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use fast sort algorithm
+	double CalcMinDistanceToFacet(const Beam &beam, const Facet &facet);
+
+	void SortFacets(const Beam &beam, IntArray &facetIds); ///< use fast sort algorithm
+
 	void CutShadowsFromFacet(int facetId, IntArray facetIds, int previewFacetCount,
 							 const Beam &incidentBeam, ClipperLib::Paths &resultFacet);
 
