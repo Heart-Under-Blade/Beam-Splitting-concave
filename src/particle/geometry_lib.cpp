@@ -1,6 +1,5 @@
 #include <math.h>
 #include "Particle.h"
-#include "types.h"
 #include "intrinsic/intrinsics.h"
 
 float DotProduct(const Point3f &v1, const Point3f &v2)

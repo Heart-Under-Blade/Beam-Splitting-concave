@@ -465,8 +465,7 @@ void TracingConcave::CutShadowsFromFacet(int facetId, IntArray facetIds,
 	}
 
 	m_clipper.SwapCoords(axis, Axis::aZ, clip);
-	m_clipper.ClipDifference(resultPolygon, clip, resultPolygon);
-
+	m_clipper.Difference(resultPolygon, clip, resultPolygon);
 	m_clipper.RemoveEmptyPaths(resultPolygon);
 
 	if (!resultPolygon.empty())
@@ -636,7 +635,7 @@ void TracingConcave::CutBeamByFacet(Paths &beamPolygon, int facetId,
 		m_clipper.SwapCoords(axis, Axis::aZ, clip);
 	}
 
-	m_clipper.ClipDifference(beamPolygon, clip, result);
+	m_clipper.Difference(beamPolygon, clip, result);
 
 	if (!result.empty())
 	{
@@ -799,7 +798,7 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 		return 0;
 	}
 
-	double square = m_clipper.AreaByClipper(beam.polygon, normal);
+	double square = m_clipper.AreaOfConcavePolygon(beam.polygon, normal);
 	double n = Length(normal);
 	return (e*square) / n;
 }

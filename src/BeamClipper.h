@@ -1,7 +1,7 @@
 #pragma once
 
 #include "clipper.hpp"
-#include "types.h"
+#include "geometry_lib.h"
 
 #define CLIP_RESULT_SINGLE 1
 
@@ -31,9 +31,9 @@ public:
 	void PolygonToPath(const Polygon &pol, ClipperLib::Paths &path) const;
 	void PathToPolygon(const ClipperLib::Path &path, Polygon &polygon) const;
 
-	double AreaByClipper(const Polygon &beam, const Point3f &normal) const;
+	double AreaOfConcavePolygon(const Polygon &beam, const Point3f &normal) const;
 
-	void ClipDifference(const ClipperLib::Paths &subject, const ClipperLib::Paths &clip,
+	void Difference(const ClipperLib::Paths &subject, const ClipperLib::Paths &clip,
 						ClipperLib::Paths &difference);
 
 	void RemoveHole(ClipperLib::Paths &result) const;

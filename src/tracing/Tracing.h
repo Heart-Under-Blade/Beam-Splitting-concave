@@ -112,4 +112,7 @@ private:
 
 	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
+
+	void MulJMatrix(Beam &beam1, const Beam &beam2,
+					const complex &coef1, const complex &coef2) const;
 };

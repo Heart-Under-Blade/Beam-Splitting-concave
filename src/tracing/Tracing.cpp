@@ -327,13 +327,13 @@ void Tracing::SetTrivialIncidenceBeamParams(double cosIN, double Nr,
 	complex Tv0 = tmp1 + cosIN;
 	complex Th0 = tmp0 + cosRefr;
 
-	outBeam.MulJMatrix(incidentBeam, tmp/Tv0, tmp/Th0);
+	MulJMatrix(outBeam, incidentBeam, tmp/Tv0, tmp/Th0);
 	outBeam.direction = refrDir;
 	outBeam.e = inBeam.e;
 
 	complex Tv = (cosIN - tmp1)/Tv0;
 	complex Th = (tmp0 - cosRefr)/Th0;
-	inBeam.MulJMatrix(incidentBeam, Tv, Th);
+	MulJMatrix(inBeam, incidentBeam, Tv, Th);
 
 	if (m_isOpticalPath)
 	{
@@ -357,7 +357,7 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 	complex Rv = (cosIN - tmp)/(tmp + cosIN);
 	complex Rh = (tmp0 - sq)/(tmp0 + sq);
 
-	inBeam.MulJMatrix(incidentBeam, Rv, Rh);
+	MulJMatrix(inBeam, incidentBeam, Rv, Rh);
 
 	if (m_isOpticalPath)
 	{
@@ -375,7 +375,7 @@ void Tracing::SetBeam(Beam &beam, const Beam &other,
 					  const Point3f &dir, const Point3f &e,
 					  const complex &coef1, const complex &coef2) const
 {
-	beam.MulJMatrix(other, coef1, coef2);
+	MulJMatrix(beam, other, coef1, coef2);
 	beam.direction = dir;
 	beam.e = e;
 }
@@ -411,6 +411,15 @@ bool Tracing::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 	}
 
 	return true;
+}
+
+void Tracing::MulJMatrix(Beam &beam1, const Beam &beam2,
+						 const complex &coef1, const complex &coef2) const
+{
+	beam1.JMatrix.m11 = coef1 * beam2.JMatrix.m11;
+	beam1.JMatrix.m12 = coef1 * beam2.JMatrix.m12;
+	beam1.JMatrix.m21 = coef2 * beam2.JMatrix.m21;
+	beam1.JMatrix.m22 = coef2 * beam2.JMatrix.m22;
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении

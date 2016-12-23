@@ -2,7 +2,6 @@
 
 #include <math.h>
 
-#include "types.h"
 #include "compl.hpp"
 #include "geometry_lib.h"
 

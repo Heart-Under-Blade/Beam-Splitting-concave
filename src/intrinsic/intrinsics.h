@@ -4,8 +4,6 @@
 #include <smmintrin.h>
 #include <vector>
 
-#include "types.h"
-
 #define EPS_IN_LINE 0.001
 #define EPS_IN_POLYGON 0.001
 

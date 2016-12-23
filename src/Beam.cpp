@@ -117,7 +117,6 @@ void Beam::RotatePlane(const Point3f &newBasis)
 
 void Beam::RotateJMatrix(const Point3f &newBasis)
 {
-	// REF: потом заменить обратно на DBL_EPSILON
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
 	double cs = DotProduct(newBasis, e);
 
@@ -166,15 +165,6 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 void Beam::AddVertex(const Point3f &vertex)
 {
 	polygon.arr[polygon.size++] = vertex;
-}
-
-// REF: вынести из этого класса
-void Beam::MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2)
-{
-	JMatrix.m11 = coef1 * other.JMatrix.m11;
-	JMatrix.m12 = coef1 * other.JMatrix.m12;
-	JMatrix.m21 = coef2 * other.JMatrix.m21;
-	JMatrix.m22 = coef2 * other.JMatrix.m22;
 }
 
 void Beam::SetPolygon(const Polygon &other)

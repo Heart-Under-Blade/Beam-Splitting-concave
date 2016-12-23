@@ -2,7 +2,6 @@
 
 #include "Particle.h"
 #include "global.h"
-#include "types.h"
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
 
@@ -22,7 +21,6 @@ public:
 	void RotatePlane(const Point3f& newBasis); ///< rotate Jones matrix in case of beam splitting
 
 	void AddVertex(const Point3f &vertex);
-	void MulJMatrix(const Beam &other, const complex &coef1, const complex &coef2);
 	void SetPolygon(const Polygon &other);
 
 	Beam & operator = (const Beam &other);

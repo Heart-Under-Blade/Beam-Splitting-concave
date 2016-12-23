@@ -13,8 +13,7 @@ public:
 
 	double BeamCrossSection(const Beam &beam) const override;
 
-	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
-							 std::vector<Beam> &outBeams) override; ///> for predefined trajectories
+	void SplitBeamByParticle(const std::vector<std::vector<int>> &, std::vector<Beam> &) override; ///> for predefined trajectories
 
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);

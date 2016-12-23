@@ -40,8 +40,8 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	TraceInternalReflections(outBeams);
 }
 
-void TracingConvex::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
-										std::vector<Beam> &outBeams)
+void TracingConvex::SplitBeamByParticle(const std::vector<std::vector<int>> &/*tracks*/,
+										std::vector<Beam> &/*outBeams*/)
 {
 
 }

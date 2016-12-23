@@ -107,7 +107,7 @@ void BeamClipper::PolygonToPath(const Polygon &pol, Paths &path) const
 	}
 }
 
-double BeamClipper::AreaByClipper(const Polygon &beam, const Point3f &normal) const
+double BeamClipper::AreaOfConcavePolygon(const Polygon &beam, const Point3f &normal) const
 {
 	double area = 0;
 
@@ -163,7 +163,7 @@ double BeamClipper::AreaByClipper(const Polygon &beam, const Point3f &normal) co
 	return area;
 }
 
-void BeamClipper::ClipDifference(const Paths &subject, const Paths &clip, Paths &difference)
+void BeamClipper::Difference(const Paths &subject, const Paths &clip, Paths &difference)
 {
 	m_clipper.AddPaths(subject, ptSubject, true);
 	m_clipper.AddPaths(clip, ptClip, true);

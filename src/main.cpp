@@ -55,7 +55,7 @@ Arr2D mxd(0, 0, 0, 0);
 double sizeBin;
 double gammaNorm, betaNorm;
 double incomingEnergy;
-Point3f incidentDir(0, 0, -1); /// REF: исправить на нормальное направление
+Point3f incidentDir(0, 0, -1);
 Point3f polarizationBasis(0, 1, 0);
 int assertNum = 0;
 

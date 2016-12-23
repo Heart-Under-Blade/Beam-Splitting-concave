@@ -33,8 +33,7 @@ HEADERS += \
     ../src/math/Mueller.hpp \
     ../src/math/PhysMtr.hpp \
     ../src/tracing/Tracing.h \
-    ../src/common/global.h \
-	../src/common/types.h \
+	../src/common/global.h \
 	../src/common/macro.h \
     ../src/tracing/TracingConvex.h \
     ../src/tracing/TracingConcave.h \
