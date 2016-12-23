@@ -4,13 +4,6 @@
 #include <tgmath.h>
 #include <assert.h>
 
-#define MULTI_INDEX		10000000l			// index for poligon's clip operations
-#define EPS_MULTI		(1.415*MULTI_INDEX*2)/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
-
-#define SWAP_COORD_THRESHOLD 0.5
-
-#define CLIP_RESULT_SINGLE 1
-
 #define EPS_ORTO_FACET 0.0001 //TODO: подобрать норм значение
 
 using namespace ClipperLib;
@@ -28,7 +21,6 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 	m_initialBeam.direction.d_param = DotProduct(point, m_initialBeam.direction);
 	m_initialBeam.location = Location::External;
 
-	m_clipper.ZFillFunction(FindZCoord);
 	m_isArea = false;
 }
 
@@ -82,10 +74,10 @@ void TracingConcave::TraceInitialBeam()
 	for (int i = 0; i < facetIds.size; ++i)
 	{
 		Polygon beamPolygon;
-		bool isOverlaped;
-		SetIntersectedPolygon(facetIds, i, beamPolygon, isOverlaped);
+		bool hasIntersection;
+		SetIntersectedPolygon(facetIds, i, beamPolygon, hasIntersection);
 
-		if (!isOverlaped)
+		if (hasIntersection)
 		{
 			Beam inBeam, outBeam;
 			// set geometry of beam
@@ -114,12 +106,12 @@ void TracingConcave::SelectVisibleFacets_initial(IntArray &facetIds)
 }
 
 void TracingConcave::SetIntersectedPolygon(const IntArray &facetIds, int handledFacetNum,
-										   Polygon &beamPolygon, bool &isOverlaped)
+										   Polygon &beamPolygon, bool &hasIntersection)
 {
-	isOverlaped = false;
+	hasIntersection = true;
 	int facetId = facetIds.arr[handledFacetNum];
 
-	if (handledFacetNum == 0) // this facet is not shadowed
+	if (handledFacetNum == 0) // this facet is obviously not shadowed
 	{
 		SetPolygonByFacet(facetId, beamPolygon);
 	}
@@ -131,11 +123,11 @@ void TracingConcave::SetIntersectedPolygon(const IntArray &facetIds, int handled
 
 		if (!cuttedFacet.empty())
 		{
-			PathToPolygon(cuttedFacet.at(0), beamPolygon);
+			m_clipper.PathToPolygon(cuttedFacet.at(0), beamPolygon);
 		}
 		else // facet is totaly shadowed by others
 		{
-			isOverlaped = true;
+			hasIntersection = false;
 		}
 	}
 }
@@ -151,14 +143,13 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 {
-	const Point3f &dir = beam.direction;
-	Point3f &preNormal = m_facets[beam.facetId].ex_normal;
+	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
 
 	IntArray facetIds;
 	SelectVisibleFacets(beam, facetIds);
 
 	Paths originPath(1);
-	PolygonToPath(beam.polygon, originPath);
+	m_clipper.PolygonToPath(beam.polygon, originPath);
 
 	// cut facet projections out of beam one by one
 	for (int i = 0; i < facetIds.size; ++i)
@@ -166,7 +157,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 		int id = facetIds.arr[i];
 
 		Paths clippedPath(1);
-		CutBeamByFacet(originPath, id, dir, preNormal, clippedPath);
+		CutBeamByFacet(originPath, id, beam.direction, facetNormal, clippedPath);
 
 		if (clippedPath.empty()) // beam incedents on facet totaly
 		{
@@ -179,12 +170,12 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 		}
 	}
 
-	Beam b = beam;
+	Beam tmp = beam;
 
 	for (const Path &p : originPath)
 	{
-		PathToPolygon(p, b.polygon);
-		scatteredBeams.push_back(b);
+		m_clipper.PathToPolygon(p, tmp.polygon);
+		scatteredBeams.push_back(tmp);
 	}
 }
 
@@ -242,12 +233,13 @@ void TracingConcave::CutIncidentBeam(int facetId, Beam &beam, bool &isDivided)
 	isDivided = false;
 
 	const Facet &facet = m_facets[beam.facetId];
-	const Point3f &previewNormal = facet.normal[(int)beam.location];
+	const Point3f &facetNormal = facet.normal[(int)beam.location];
+
 	Paths origin(1);
-	PolygonToPath(beam.polygon, origin);
+	m_clipper.PolygonToPath(beam.polygon, origin);
 
 	Paths clippedBeam;
-	CutBeamByFacet(origin, facetId, beam.direction, previewNormal, clippedBeam);
+	CutBeamByFacet(origin, facetId, beam.direction, facetNormal, clippedBeam);
 
 	if (clippedBeam.empty()) // beam is totaly swallowed by facet
 	{
@@ -255,7 +247,7 @@ void TracingConcave::CutIncidentBeam(int facetId, Beam &beam, bool &isDivided)
 	}
 	else if (clippedBeam.size() == CLIP_RESULT_SINGLE)
 	{
-		PathToPolygon(clippedBeam.at(0), beam.polygon);
+		m_clipper.PathToPolygon(clippedBeam.at(0), beam.polygon);
 	}
 	else // beam had divided by facet
 	{
@@ -263,7 +255,7 @@ void TracingConcave::CutIncidentBeam(int facetId, Beam &beam, bool &isDivided)
 
 		for (const Path &p : clippedBeam)
 		{
-			PathToPolygon(p, tmp.polygon);
+			m_clipper.PathToPolygon(p, tmp.polygon);
 			PushBeamToTree(tmp, tmp.facetId, tmp.level, tmp.location);
 		}
 
@@ -272,10 +264,27 @@ void TracingConcave::CutIncidentBeam(int facetId, Beam &beam, bool &isDivided)
 	}
 }
 
-bool TracingConcave::IsRemainedExternalBeam(Beam &incidentBeam)
+bool TracingConcave::HasExternalBeam(Beam &incidentBeam)
 {
 	return (incidentBeam.location == Location::External
 			&& incidentBeam.polygon.size != 0);
+}
+
+void TracingConcave::PushBeamsToTree(int level, int facetId, bool hasOutBeam,
+									 Beam &inBeam, Beam &outBeam)
+{
+	if (hasOutBeam)
+	{
+		PushBeamToTree(outBeam, facetId, level, Location::External);
+	}
+
+#ifdef _TRACK_ALLOW
+	inBeam.track = incidentBeam.track;
+#ifdef _TRACK_OUTPUT
+	trackMapFile << "[in] ";
+#endif
+#endif
+	PushBeamToTree(inBeam, facetId, level, Location::Internal);
 }
 
 void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
@@ -311,9 +320,6 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 
 			if (hasIntersection)
 			{
-				bool isDivided;
-				CutIncidentBeam(facetId, incidentBeam, isDivided);
-
 				Beam inBeam, outBeam;
 				inBeam.SetPolygon(intersected);
 				outBeam.SetPolygon(intersected);
@@ -321,20 +327,13 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 				bool hasOutBeam;
 				SetOpticalBeamParams(facetId, incidentBeam,
 									 inBeam, outBeam, hasOutBeam);
-				if (hasOutBeam)
-				{
-					PushBeamToTree(outBeam, facetId, incidentBeam.level+1,
-								   Location::External);
-				}
 
-#ifdef _TRACK_ALLOW
-				inBeam.track = incidentBeam.track;
-#ifdef _TRACK_OUTPUT
-				trackMapFile << "[in] ";
-#endif
-#endif
-				PushBeamToTree(inBeam, facetId, incidentBeam.level+1,
-							   Location::Internal);
+				PushBeamsToTree(incidentBeam.level+1, facetId, hasOutBeam,
+								inBeam, outBeam);
+
+				bool isDivided;
+				CutIncidentBeam(facetId, incidentBeam, isDivided);
+
 				if (isDivided)
 				{
 					break;
@@ -342,7 +341,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 			}
 		}
 
-		if (IsRemainedExternalBeam(incidentBeam))
+		if (HasExternalBeam(incidentBeam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
 			scaterredBeams.push_back(incidentBeam);
 		}
@@ -357,7 +356,6 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 	outBeam.track = incidentBeam.track;
 	inBeam.track = incidentBeam.track;
 #endif
-	const Location loc = incidentBeam.location;
 	const Point3f &incidentDir = incidentBeam.direction;
 	const Point3f &normal = m_facets[facetId].ex_normal;
 
@@ -369,15 +367,15 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 	{
 		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
 	}
-	else /// slopping incidence
+	else // slopping incidence
 	{
-		if (loc == Location::Internal) /// internal beam incidents to facet
+		if (incidentBeam.location == Location::Internal)
 		{
 			Beam incBeam = incidentBeam;
 			SetSloppingIncidenceBeamParams(cosIN, normal, incBeam,
 										   inBeam, outBeam, hasOutBeam);
 		}
-		else /// external beam incidents to facet
+		else // beam is external
 		{
 			inBeam.JMatrix = incidentBeam.JMatrix;
 			double cosI = DotProduct(-normal, incidentDir);
@@ -407,10 +405,9 @@ void TracingConcave::FindVisibleFacets_initial(IntArray &facetIds)
 
 void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-	int type = !((bool)beam.location) /*? (int)Location::Internal
-								 : (int)Location::External*/;
-
+	int type = !((bool)beam.location);
 	const Point3f &invNormal = -m_facets[beam.facetId].normal[type];
+
 	Point3f cob = CenterOfPolygon(beam.polygon);
 
 	for (int i = 0; i < m_particle->facetNum; ++i)
@@ -431,123 +428,25 @@ void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 	}
 }
 
-void TracingConcave::PolygonToPath(const Polygon &pol, Paths &path) const
-{
-	for (int i = 0; i < pol.size; ++i)
-	{
-		const Point3f &p = pol.arr[i];
-
-		path[0] << IntPoint((cInt)(p.cx * MULTI_INDEX),
-							(cInt)(p.cy * MULTI_INDEX),
-							(cInt)(p.cz * MULTI_INDEX));
-	}
-}
-
-void TracingConcave::RemoveHole(Paths &result)
-{
-	Path &pol1 = result.front();
-	Path &pol2 = result.back();
-
-	bool or1 = ClipperLib::Orientation(pol1);
-	bool or2 = ClipperLib::Orientation(pol2);
-
-	if (or1 == or2)
-	{
-		return;
-	}
-
-	unsigned first = 0, second = 0;
-	cInt len;
-	cInt min_len = LONG_MAX;
-	IntPoint diff;
-
-	for (unsigned i = 0; i < pol1.size(); ++i)
-	{
-		for (unsigned j = 0; j < pol2.size(); ++j)
-		{
-			diff.X = pol1.at(i).X - pol2.at(j).X;
-			diff.Y = pol1.at(i).Y - pol2.at(j).Y;
-			diff.Z = pol1.at(i).Z - pol2.at(j).Z;
-
-			len = diff.X*diff.X + diff.Y*diff.Y + diff.Z*diff.Z;
-			len = (cInt)std::round(sqrt((double)len));
-
-			if (len < min_len)
-			{
-				first = i;
-				second = j;
-				min_len = len;
-			}
-		}
-	}
-
-	Paths newResult(1);
-
-	for (unsigned i = 0; i < pol1.size(); ++i)
-	{
-		newResult[0] << pol1.at(i);
-
-		if (i == first)
-		{
-			unsigned j = second;
-
-			do
-			{
-				if (j == pol2.size())
-				{
-					j = 0;
-				}
-				else
-				{
-					newResult[0] << pol2.at(j);
-					++j;
-				}
-			}
-			while (j != second);
-
-			newResult[0] << pol2.at(second);
-			newResult[0] << pol1.at(first);
-		}
-	}
-
-	result = newResult;
-}
-
-void TracingConcave::HandleResultPolygon(Axis axis, Paths &result)
-{
-	SwapCoords(Axis::aZ, axis, result); // меняем координаты обратно
-	ClipperLib::CleanPolygons(result, EPS_MULTI);
-	RemoveEmptyPolygons(result);
-
-	LOG_ASSERT(result.size() < 3);
-
-	if (result.size() == 2)
-	{
-		RemoveHole(result);
-	}
-}
-
 void TracingConcave::CutShadowsFromFacet(int facetId, IntArray facetIds,
-										 int previewFacetCount,
-										 const Beam &incidentBeam,
+										 int handledFacetNum, const Beam &beam,
 										 Paths &resultPolygon)
 {
 	const Facet &facet = m_facets[facetId];
-	const Point3f &originNormal = facet.normal[(int)incidentBeam.location];
-	Axis axis = GetSwapAxis(originNormal);
+	const Point3f &originNormal = facet.normal[(int)beam.location];
+	Axis axis = m_clipper.GetSwapAxis(originNormal);
 
-	PolygonToPath(facet.polygon, resultPolygon); // set origin polygon
-	SwapCoords(axis, Axis::aZ, resultPolygon);
+	m_clipper.PolygonToPath(facet.polygon, resultPolygon); // set origin polygon
+	m_clipper.SwapCoords(axis, Axis::aZ, resultPolygon);
 
-	Paths clip(previewFacetCount);
+	Paths clip(handledFacetNum);
 
-	for (int i = 0; i < previewFacetCount; ++i)
+	for (int i = 0; i < handledFacetNum; ++i)
 	{
 		// set clip polygon by projection
 		int id = facetIds.arr[i];
-		const Point3f *fac = m_facets[id].polygon.arr;
-		int size = m_facets[id].polygon.size;
-		ProjectFacetToFacet(fac, size, incidentBeam.direction, originNormal, clip[i]);
+		ProjectFacetToFacet(m_facets[id].polygon, beam.direction, originNormal,
+							clip[i]);
 
 		{	// equate similar points /// REF: возможная замена ClearPolygon
 //			for (IntPoint &p0 : resultPolygon[0])
@@ -565,42 +464,26 @@ void TracingConcave::CutShadowsFromFacet(int facetId, IntArray facetIds,
 		}
 	}
 
-	SwapCoords(axis, Axis::aZ, clip);
-	ClipDifference(resultPolygon, clip, resultPolygon);
+	m_clipper.SwapCoords(axis, Axis::aZ, clip);
+	m_clipper.ClipDifference(resultPolygon, clip, resultPolygon);
 
-	RemoveEmptyPolygons(resultPolygon);
+	m_clipper.RemoveEmptyPaths(resultPolygon);
 
 	if (!resultPolygon.empty())
 	{
-		HandleResultPolygon(axis, resultPolygon);
+		m_clipper.HandleResultPaths(axis, resultPolygon);
 		LOG_ASSERT(resultPolygon.size() < 2);
 	}
 }
 
-void TracingConcave::ProjectPointToFacet(const Point3d &point, const Point3d &direction, const Point3d &facetNormal, Point3d &projection)
+void TracingConcave::ProjectPointToFacet(const Point3d &point, const Point3d &direction,
+										 const Point3d &facetNormal, Point3d &projection)
 {
-	double t = DotProductD(point, facetNormal);
-	t = t + facetNormal.d;
+	double tmp = DotProductD(point, facetNormal);
+	tmp = tmp + facetNormal.d;
 	double dp = DotProductD(direction, facetNormal);
-	t = t/dp;
-	projection = point - (direction * t);
-}
-
-void TracingConcave::PathToPolygon(const Path &path, Polygon &polygon)
-{
-	int vertexNum = path.size();
-	polygon.size = vertexNum;
-
-	for (const IntPoint &p : path)
-	{
-		Point3f tmp((double)p.X / MULTI_INDEX,
-					(double)p.Y / MULTI_INDEX,
-					(double)p.Z / MULTI_INDEX);
-
-		polygon.arr[--vertexNum] = tmp;
-	}
-
-	LOG_ASSERT(polygon.size > 0 && polygon.size <= MAX_VERTEX_NUM);
+	tmp = tmp/dp;
+	projection = point - (direction * tmp);
 }
 
 void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
@@ -615,15 +498,14 @@ void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &di
 
 /// OPT: поменять все int и пр. параметры функций на ссылочные
 
-void TracingConcave::ProjectFacetToFacet(const Point3f *a_facet, int a_size,
-										 const Point3f &a_dir,
-										 const Point3f &b_normal,
-										 Path &projection)
+void TracingConcave::ProjectFacetToFacet(const Polygon &a_facet, const Point3f &a_dir,
+										 const Point3f &b_normal, Path &projection)
 {
-	for (int i = 0; i < a_size; ++i)
+	for (int i = 0; i < a_facet.size; ++i)
 	{
 		Point3d p;
-		ProjectPointToFacet(Point3d(a_facet[i]), Point3d(a_dir), Point3d(b_normal), p);
+		ProjectPointToFacet(Point3d(a_facet.arr[i]), Point3d(a_dir),
+							Point3d(b_normal), p);
 
 		projection << IntPoint((cInt)(p.x * MULTI_INDEX),
 							   (cInt)(p.y * MULTI_INDEX),
@@ -719,7 +601,7 @@ double TracingConcave::CalcMinDistanceToFacet(const Polygon &facet,
 	{
 		// measure dist
 		Point3f point;
-		ProjectPointToFacet(pol[i], -beamDir, beamDir, point); // REF: попробовать заманить на проекцию пучка на грань
+		ProjectPointToFacet(pol[i], -beamDir, beamDir, point);
 		double newDist = sqrt(Norm(point - pol[i]));
 
 		if (newDist < dist) // choose minimum with previews
@@ -740,105 +622,25 @@ void TracingConcave::SplitBeamByParticle(const std::vector<std::vector<int>> &tr
 	}
 }
 
-void TracingConcave::SwapCoords(Axis oldAxis, Axis newAxis, Paths &origin) const
-{
-	if (oldAxis == newAxis)
-	{
-		return;
-	}
-
-	cInt *oldP, *newP;
-
-	for (Path &path : origin)
-	{
-		for (IntPoint &p : path)
-		{
-			switch (oldAxis) {
-			case Axis::aX: oldP = &p.X;
-				break;
-			case Axis::aY: oldP = &p.Y;
-				break;
-			case Axis::aZ: oldP = &p.Z;
-				break;
-			}
-
-			switch (newAxis) {
-			case Axis::aX: newP = &p.X;
-				break;
-			case Axis::aY: newP = &p.Y;
-				break;
-			case Axis::aZ: newP = &p.Z;
-				break;
-			}
-
-			cInt oldP1 = *oldP;
-			cInt newP1 = *newP;
-			*oldP = newP1;
-			*newP = oldP1;
-		}
-	}
-}
-
-Axis TracingConcave::GetSwapAxis(const Point3f &normal)
-{
-	if (fabs(normal.cx) > SWAP_COORD_THRESHOLD)
-	{
-		return Axis::aX;
-	}
-	else if (fabs(normal.cy) > SWAP_COORD_THRESHOLD)
-	{
-		return Axis::aY;
-	}
-	else // no need to swap
-	{
-		return Axis::aZ;
-	}
-}
-
-void TracingConcave::ClipDifference(const Paths &subject, const Paths &clip,
-									Paths &difference)
-{
-	m_clipper.AddPaths(subject, ptSubject, true);
-	m_clipper.AddPaths(clip, ptClip, true);
-	m_clipper.Execute(ctDifference, difference);
-	m_clipper.Clear();
-}
-
 void TracingConcave::CutBeamByFacet(Paths &beamPolygon, int facetId,
 									const Point3f &direction,
-									const Point3f &shapeNormal,
-									Paths &result)
+									const Point3f &facetNormal, Paths &result)
 {
-	Axis axis = GetSwapAxis(shapeNormal);
-	SwapCoords(axis, Axis::aZ, beamPolygon);
+	Axis axis = m_clipper.GetSwapAxis(facetNormal);
+	m_clipper.SwapCoords(axis, Axis::aZ, beamPolygon);
 
 	Paths clip(1);
 	{
-		const Point3f *facet = m_facets[facetId].polygon.arr;
-		int size = m_facets[facetId].polygon.size;
-		ProjectFacetToFacet(facet, size, direction, shapeNormal, clip[0]); // проецируем грань на начальный пучок
-		SwapCoords(axis, Axis::aZ, clip);
+		ProjectFacetToFacet(m_facets[facetId].polygon, direction, facetNormal,
+							clip[0]); // проецируем грань на начальный пучок
+		m_clipper.SwapCoords(axis, Axis::aZ, clip);
 	}
 
-	ClipDifference(beamPolygon, clip, result);
+	m_clipper.ClipDifference(beamPolygon, clip, result);
 
 	if (!result.empty())
 	{
-		HandleResultPolygon(axis, result);
-	}
-}
-
-void TracingConcave::RemoveEmptyPolygons(Paths &result)
-{
-	Paths buff = result;
-	result.clear();
-
-	for (unsigned i = 0; i < buff.size(); ++i)
-	{
-		if (buff.at(i).size() >= CLIP_RESULT_SINGLE)
-		{
-			result.push_back(buff.at(i));
-		}
+		m_clipper.HandleResultPaths(axis, result);
 	}
 }
 
@@ -954,90 +756,6 @@ void TracingConcave::DivideConcavePolygon(const Point3f *polygon, int size,
 	DividePolygon(vec_polygon, normal, polygons); // recursive
 }
 
-void FindZCoord(IntPoint &a1, IntPoint &a2, IntPoint &, IntPoint &, IntPoint &point)
-{
-	IntPoint *top, *bot;
-
-	if (a2.Z > a1.Z)
-	{
-		top = &a2;
-		bot = &a1;
-	}
-	else
-	{
-		top = &a1;
-		bot = &a2;
-	}
-
-	double x, y;
-
-	x = top->X - bot->X;
-	y = top->Y - bot->Y;
-	double normVec = x*x + y*y;
-
-	x = point.X - bot->X;
-	y = point.Y - bot->Y;
-	double normBotVec = x*x + y*y;
-
-	point.Z = (top->Z - bot->Z) * sqrt(normBotVec) / sqrt(normVec) + bot->Z;
-}
-
-double TracingConcave::AreaByClipper(const Beam &beam, const Point3f &normal) const
-{
-	double area = 0;
-
-	Paths polygon(1);
-	PolygonToPath(beam.polygon, polygon);
-
-	Point3f normal1 = normal;
-
-	Point3f n_normal = normal1;
-	Normalize(n_normal); // REF: перегрузить функцию, чтобы возвращала значение
-
-	if (fabs(n_normal.cx) > SWAP_COORD_THRESHOLD)
-	{
-		SwapCoords(Axis::aX, Axis::aZ, polygon);
-		float tmp = normal1.cx;
-		normal1.cx = normal1.cz;
-		normal1.cz = tmp;
-	}
-	else if (fabs(n_normal.cy) > SWAP_COORD_THRESHOLD)
-	{
-		SwapCoords(Axis::aY, Axis::aZ, polygon);
-		float tmp = normal1.cy;
-		normal1.cy = normal1.cz;
-		normal1.cz = tmp;
-	}
-
-	area = ClipperLib::Area(polygon[0]);
-	area /= (cInt)MULTI_INDEX * MULTI_INDEX;
-
-	Point3f z(0, 0, 1);
-	double cosNormZ = DotProduct(normal1, z);
-
-	if (cosNormZ > 0)
-	{
-		cosNormZ = DotProduct(normal1, -z);
-	}
-
-	area = (area*sqrt(Norm(normal1)))/cosNormZ;
-//	Polygons polygons;
-//	DivideConcavePolygon(beam.shape, beam.shapeSize, normal,
-//						 polygons);
-
-//	for (unsigned int i = 0; i < polygons.size(); ++i)
-//	{
-//		square += SquareOfPolygon(polygons[i]);
-//	}
-
-	if (area < 0)
-	{
-		area = -area;
-	}
-
-	return area;
-}
-
 double TracingConcave::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
@@ -1081,7 +799,7 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 		return 0;
 	}
 
-	double square = AreaByClipper(beam, normal);
+	double square = m_clipper.AreaByClipper(beam.polygon, normal);
 	double n = Length(normal);
 	return (e*square) / n;
 }

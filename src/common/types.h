@@ -6,6 +6,11 @@
 #define cz point[2]
 #define d_param point[3]
 
+#define MAX_FACET_NUM 64
+
+#define MIN_VERTEX_NUM 3
+#define MAX_VERTEX_NUM 64
+
 struct IntArray
 {
 	int arr[64];
@@ -116,10 +121,18 @@ struct Point3d
 	}
 };
 
-/**
- * @brief The Facet struct
- * Facet of polyhedron
- */
+struct Polygon
+{
+	Point3f arr[MAX_VERTEX_NUM];
+	int size = 0;
+};
+
+struct Facet
+{
+	Polygon polygon;
+	Point3f normal[2]; ///< internal and external
+};
+
 //struct Facet
 //{
 //	Point3f vertices[32];

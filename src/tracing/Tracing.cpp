@@ -4,7 +4,7 @@
 #include <assert.h>
 
 #include "macro.h"
-#include "vector_lib.h"
+#include "geometry_lib.h"
 
 #define NORM_CEIL	FLT_EPSILON + 1
 
@@ -24,8 +24,9 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 	m_interReflectionNumber = interReflectionNumber;
 	m_initialBeam.direction = startBeamDir;
 
-	double re = real(m_particle->refractionIndex);
-	double im = imag(m_particle->refractionIndex);
+	m_refrIndex = m_particle->GetRefractionIndex();
+	double re = real(m_refrIndex);
+	double im = imag(m_refrIndex);
 	ri_coef_re = re*re - im*im;
 	ri_coef_im = 4*re*re*im;
 }
@@ -47,9 +48,8 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 
 	double cosReflN = DotProduct(facetNormal, reflDir);
 
-	const complex &refrIndex = m_particle->refractionIndex;
-	complex Tv00 = refrIndex*cosIN;
-	complex Th00 = refrIndex*cosReflN;
+	complex Tv00 = m_refrIndex*cosIN;
+	complex Th00 = m_refrIndex*cosReflN;
 
 	complex Tv0 = Tv00 + cosReflN;
 	complex Th0 = Th00 + cosIN;
@@ -75,14 +75,12 @@ void Tracing::SetOpticalBeamParams_initial(int facetId, Beam &inBeam, Beam &outB
 	}
 	else // normal incidence
 	{
-		const complex &refrIndex = m_particle->refractionIndex;
-
-		inBeam.JMatrix.m11 = 2.0/(refrIndex + 1.0);
+		inBeam.JMatrix.m11 = 2.0/(m_refrIndex + 1.0);
 		inBeam.JMatrix.m22 = inBeam.JMatrix.m11;
 		inBeam.e = m_polarizationBasis;
 		inBeam.direction = startDir;
 
-		outBeam.JMatrix.m11 = (refrIndex - 1.0)/(refrIndex + 1.0);
+		outBeam.JMatrix.m11 = (m_refrIndex - 1.0)/(m_refrIndex + 1.0);
 		outBeam.JMatrix.m22 = -outBeam.JMatrix.m11;
 		outBeam.e = m_polarizationBasis;
 		outBeam.direction = -startDir;
@@ -296,15 +294,13 @@ void Tracing::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBea
 										   Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &incidentDir = incidentBeam.direction;
-	const complex &refrIndex = m_particle->refractionIndex;
-
 	complex temp;
 
-	temp = (2.0*refrIndex)/(1.0 + refrIndex); // OPT: вынести целиком
+	temp = (2.0*m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
 	SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
 			temp, temp);
 
-	temp = (1.0 - refrIndex)/(1.0 + refrIndex); // OPT: вынести целиком
+	temp = (1.0 - m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
 	SetBeam(inBeam, incidentBeam, -incidentDir, incidentBeam.e,
 			temp, -temp);
 
@@ -320,15 +316,13 @@ void Tracing::SetTrivialIncidenceBeamParams(double cosIN, double Nr,
 											const Beam &incidentBeam,
 											Beam &inBeam, Beam &outBeam)
 {
-	const complex &refrIndex = m_particle->refractionIndex;
-
 	Point3f refrDir = r0/sqrt(s) + normal;
 	Normalize(refrDir);
 
 	double cosRefr = DotProduct(normal, refrDir);
 
-	complex tmp0 = refrIndex*cosIN;
-	complex tmp1 = refrIndex*cosRefr;
+	complex tmp0 = m_refrIndex*cosIN;
+	complex tmp1 = m_refrIndex*cosRefr;
 	complex tmp = 2.0*tmp0;
 	complex Tv0 = tmp1 + cosIN;
 	complex Th0 = tmp0 + cosRefr;
@@ -352,15 +346,14 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 											  Beam &inBeam)
 {
 	const Point3f &incidentDir = incidentBeam.direction;
-	const complex &refrIndex = m_particle->refractionIndex;
 
 	double cosIN_sqr = cosIN*cosIN;
-	complex tmp0 = refrIndex*cosIN;
+	complex tmp0 = m_refrIndex*cosIN;
 	const double bf = Nr*(1.0 - cosIN_sqr) - 1.0;
 	double im = (bf > 0) ? sqrt(bf) : 0;
 
 	const complex sq(0, im);
-	complex tmp = refrIndex*sq;
+	complex tmp = m_refrIndex*sq;
 	complex Rv = (cosIN - tmp)/(tmp + cosIN);
 	complex Rh = (tmp0 - sq)/(tmp0 + sq);
 

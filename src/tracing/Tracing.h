@@ -15,6 +15,27 @@
 // REF: поменять название на ~Splitter
 class Tracing
 {
+protected:
+	Particle *m_particle;			///< scattering particle (crystal)
+	Facet *m_facets;
+	Point3f m_polarizationBasis;	///<
+	bool m_isOpticalPath;
+	bool m_isArea;
+	int m_interReflectionNumber;
+	Beam m_initialBeam;				///< origin infinity beam
+
+	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
+	int m_treeSize;
+	double m_lightSurfaceArea;
+
+	const double FAR_ZONE_DISTANCE = 10000.0;
+	const double LOW_ENERGY_LEVEL = 2e-12;
+
+private:
+	double ri_coef_re;
+	double ri_coef_im;
+	complex m_refrIndex;
+
 public:
 	Tracing(Particle *particle, const Point3f &startBeamDir, bool isOpticalPath,
 			const Point3f &polarizationBasis, int interReflectionNumber);
@@ -33,22 +54,6 @@ public:
 	double GetLightSurfaceArea() const;
 
 protected:
-	Particle *m_particle;			///< scattering particle (crystal)
-	Facet *m_facets;
-	Point3f m_polarizationBasis;	///<
-	bool m_isOpticalPath;
-	bool m_isArea;
-	int m_interReflectionNumber;
-	Beam m_initialBeam;				///< origin infinity beam
-
-	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
-	int m_treeSize;
-	double m_lightSurfaceArea;
-
-	const double FAR_ZONE_DISTANCE = 10000.0;
-	const double LOW_ENERGY_LEVEL = 2e-12;
-
-protected:
 
 //	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
 //										  std::vector<Beam> &/*outBeams*/) {}
@@ -62,7 +67,8 @@ protected:
 
 	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
 
-	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam, Beam &outBeam, Beam &inBeam) const;
+	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
+								 Beam &outBeam, Beam &inBeam) const;
 
 	bool isTerminalBeam(const Beam &beam);
 
@@ -89,14 +95,11 @@ protected:
 	void CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam);
 
 private:
-	double ri_coef_re;
-	double ri_coef_im;
-
-private:
 	double CalcNr(const double &cosIN) const;
 
-	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal, Point3f r0, double s,
-									   const Beam &incidentBeam, Beam &inBeam, Beam &outBeam);
+	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal,
+									   Point3f r0, double s, const Beam &incidentBeam,
+									   Beam &inBeam, Beam &outBeam);
 
 	void SetCompleteReflectionBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
 										 Beam &inBeam);
@@ -109,5 +112,4 @@ private:
 
 	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
-
 };

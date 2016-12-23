@@ -10,7 +10,7 @@ class ConcaveHexagonal : public Hexagonal
 {
 public:
 	ConcaveHexagonal(double cavityDept);
-	ConcaveHexagonal(double m_radius, double m_halfHeight, const complex &refractionIndex,
+	ConcaveHexagonal(double m_radius, double m_halfHeight, const complex &m_refractionIndex,
 					 double cavityDept);
 
 	void Rotate(double beta, double gamma, double alpha) override;

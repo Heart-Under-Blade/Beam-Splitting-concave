@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "macro.h"
-#include "vector_lib.h"
+#include "geometry_lib.h"
 #include <assert.h>
 
 Beam::Beam()

@@ -8,7 +8,6 @@ TracingConvex::TracingConvex(Particle *particle, const Point3f &incidentBeamDir,
 
 void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 {
-	/// TODO: отделить функцию высчитывания площади осв. поверхности
 	m_lightSurfaceArea = 0;
 	m_treeSize = 0;
 

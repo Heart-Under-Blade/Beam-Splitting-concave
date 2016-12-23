@@ -2,10 +2,10 @@
 
 Particle::Particle() {}
 
-Particle::Particle(double p_radius, double p_halfHeight,
-				   const complex &p_refractionIndex)
+Particle::Particle(double radius, double halfHeight,
+				   const complex &refractionIndex)
 {
-	Init(p_radius, p_halfHeight, p_refractionIndex);
+	Init(radius, halfHeight, refractionIndex);
 }
 
 double Particle::GetHalfHeight() const
@@ -13,11 +13,16 @@ double Particle::GetHalfHeight() const
     return m_halfHeight;
 }
 
-void Particle::Init(double p_radius, double p_halfHeight, const complex &p_refractionIndex)
+const complex &Particle::GetRefractionIndex() const
 {
-	m_radius = p_radius;
-	m_halfHeight = p_halfHeight;
-	refractionIndex = p_refractionIndex;
+	return m_refractionIndex;
+}
+
+void Particle::Init(double radius, double halfHeight, const complex &refractionIndex)
+{
+	m_radius = radius;
+	m_halfHeight = halfHeight;
+	m_refractionIndex = refractionIndex;
 }
 
 void Particle::SetRotateMatrix(double beta, double gamma, double alpha)

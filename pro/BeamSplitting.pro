@@ -34,14 +34,15 @@ HEADERS += \
     ../src/math/PhysMtr.hpp \
     ../src/tracing/Tracing.h \
     ../src/common/global.h \
-    ../src/common/types.h \
-    ../src/common/vector_lib.h \
+	../src/common/types.h \
 	../src/common/macro.h \
     ../src/tracing/TracingConvex.h \
     ../src/tracing/TracingConcave.h \
 	../src/CalcTimer.h \
 	../src/Tracer.h \
-    ../src/clipper.hpp
+    ../src/clipper.hpp \
+	../src/BeamClipper.h \
+    ../src/particle/geometry_lib.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -56,12 +57,13 @@ SOURCES += \
     ../src/math/JonesMatrix.cpp \
     ../src/math/Mueller.cpp \
 	../src/math/PhysMtr.cpp \
-    ../src/common/vector_lib.cpp \
 	../src/common/common.cpp \
 	../src/tracing/Tracing.cpp \
     ../src/tracing/TracingConvex.cpp \
     ../src/tracing/TracingConcave.cpp \
 	../src/CalcTimer.cpp \
 	../src/Tracer.cpp \
-    ../src/clipper.cpp
+    ../src/clipper.cpp \
+	../src/BeamClipper.cpp \
+    ../src/particle/geometry_lib.cpp
 
