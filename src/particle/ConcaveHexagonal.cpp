@@ -79,14 +79,15 @@ void ConcaveHexagonal::SetFacetParams()
 	}
 }
 
-void ConcaveHexagonal::SetCavities(Point3f *baseTop, Point3f *baseBottom,
+void ConcaveHexagonal::SetCavities(const Point3f *baseTop, const Point3f *baseBottom,
 								   const CavityPoints &cavities)
 {
 	SetCavityFacets(0, BASE_VERTEX_NUM, baseTop, cavities.top); // top facets (triangles)
 	SetCavityFacets(2*BASE_VERTEX_NUM, 3*BASE_VERTEX_NUM, baseBottom, cavities.bottom); // bottom facets (triangles)
 }
 
-void ConcaveHexagonal::SetCavityFacets(int start, int end, Point3f *baseFacet,
+void ConcaveHexagonal::SetCavityFacets(int start, int end,
+									   const Point3f *baseFacet,
 									   const Point3f &cavityPoint)
 {
 	// base facet point indices

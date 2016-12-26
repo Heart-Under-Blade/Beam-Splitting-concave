@@ -8,7 +8,13 @@ Particle::Particle(double radius, double halfHeight,
 	Init(radius, halfHeight, refractionIndex);
 }
 
-double Particle::GetHalfHeight() const
+void Particle::Rotate(double beta, double gamma, double alpha)
+{
+	SetRotateMatrix(beta, gamma, alpha);
+	RotateNormals();
+}
+
+const double &Particle::GetHalfHeight() const
 {
     return m_halfHeight;
 }

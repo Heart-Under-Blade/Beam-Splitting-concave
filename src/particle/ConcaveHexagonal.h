@@ -33,9 +33,10 @@ protected:
 
 private:
 	void SetCenters();
-	void SetCavities(Point3f *baseTop, Point3f *baseBottom, const CavityPoints &cavities);
+	void SetCavities(const Point3f *baseTop, const Point3f *baseBottom,
+					 const CavityPoints &cavities);
 
-	void SetCavityFacets(int start, int end, Point3f *baseFacet,
+	void SetCavityFacets(int start, int end, const Point3f *baseFacet,
 						 const Point3f &cavityPoint);
 	void SetOriginCavityPoints();
 	void SetBaseNormals();

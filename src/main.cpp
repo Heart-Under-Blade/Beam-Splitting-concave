@@ -297,7 +297,6 @@ int main(int argc, char* argv[])
 //	testConcaveHexagonRot();
 //	testHexagonBuilding();
 //	testHexagonRotate();
-// TODO: добавить файл лога и записывать туда ассерты
 	CLArguments params;
 
 	if (argc > 1) // has command line arguments

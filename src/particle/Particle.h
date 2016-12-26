@@ -19,24 +19,20 @@ enum class Location: bool
  * Vertices are ordered by counterclock-wise direction if you see from outside.
  */
 class Particle
-{	// TODO: разработать нормальную классовую структуру
+{	// REF: разработать нормальную классовую структуру
 public:
 	Particle();
 	Particle(double radius, double halfHeight, const complex &refractionIndex);
-	virtual ~Particle() {}
 
-	/**
-	 * Rotate The angles of rotate are calculated by origin position
-	 */
-	virtual void Rotate(double /*beta*/, double /*gamma*/, double /*alpha*/) {}
+	virtual void Rotate(double beta, double gamma, double alpha);
 
-	double GetHalfHeight() const;
+	const double &GetHalfHeight() const;
 	const complex &GetRefractionIndex() const;
 
 public:
-	Facet facets[MAX_FACET_NUM];
-	int facetNum;
-	Point3f centers[MAX_FACET_NUM];
+	Facet facets[MAX_FACET_NUM];	///< all facets of particle
+	int facetNum;					///< number of facets
+	Point3f centers[MAX_FACET_NUM]; ///< centers of facets (for fast access without calc)
 
 protected:
 	Point3f m_originCenters[MAX_FACET_NUM];
@@ -53,13 +49,15 @@ protected:
 	virtual void SetOriginNormals() {}
 	virtual void SetFacetParams() {}
 
-	void Init(double radius, double halfHeight, const complex &refractionIndex);
 	void SetRotateMatrix(double beta, double gamma, double alpha);
 	void RotateNormals();
 	void RotatePoint(const Point3f &point, Point3f &result);
-	void SetDParams();
-	void SetExternalNormals();
 	void CopyFacet(Point3f *points, Facet &result);
 	void SetActualNormals();
+
+private:
+	void Init(double radius, double halfHeight, const complex &refractionIndex);
+	void SetDParams();
+	void SetExternalNormals();
 };
 

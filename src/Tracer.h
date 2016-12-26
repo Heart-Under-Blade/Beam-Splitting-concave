@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "geometry_lib.h"
 #include "PhysMtr.hpp"
 
 class Tracer
