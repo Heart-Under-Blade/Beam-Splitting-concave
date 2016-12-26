@@ -21,6 +21,7 @@ ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const compl
 				  BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
 
 	SetOriginNormals();
+	SetActualNormals();
 	SetCenters();
 }
 
@@ -123,31 +124,8 @@ void ConcaveHexagonal::SetBaseNormals()
 	}
 }
 
-void ConcaveHexagonal::SetSideNormals()
-{
-	// side facets
-	double cos30 = sqrt(3)/2;
-	m_originNormals[6]	= Point3f(-cos30, -0.5, 0); // REF: то же самое есть в базовом классе
-	m_originNormals[7]	= Point3f(0, -1, 0);
-	m_originNormals[8]	= Point3f(cos30, -0.5, 0);
-	m_originNormals[9]	= Point3f(cos30, 0.5, 0);
-	m_originNormals[10] = Point3f(0, 1, 0);
-	m_originNormals[11] = Point3f(-cos30, 0.5, 0);
-}
-
 void ConcaveHexagonal::SetOriginNormals()
 {
 	SetBaseNormals();
-	SetSideNormals();
-
-	// current normals
-	for (int i = 0; i <= facetNum; ++i)
-	{
-		facets[i].in_normal.cx = m_originNormals[i].cx;
-		facets[i].in_normal.cy = m_originNormals[i].cy;
-		facets[i].in_normal.cz = m_originNormals[i].cz;
-	}
-
-	SetDParams();
-	SetExternalNormals();
+	SetSideNormals(6);
 }

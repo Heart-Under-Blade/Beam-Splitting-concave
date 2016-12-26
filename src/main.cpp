@@ -105,6 +105,7 @@ void Calculate(const CLArguments &params)
 		betaNorm = M_PI/(2.0*orNumBeta);
 		break;
 	default:
+		assert(false && "ERROR! Incorrect type of particle.");
 		break;
 	}
 

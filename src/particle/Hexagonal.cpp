@@ -19,34 +19,27 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 
 	SetSideFacets(facets[0].polygon.arr, facets[7].polygon.arr, 1, facetNum-1);
 	SetOriginNormals();
+	SetActualNormals();
+}
+
+void Hexagonal::SetSideNormals(int beginId)
+{
+	double cos30 = sqrt(3)/2;
+	m_originNormals[beginId++] = Point3f(-cos30,-0.5, 0);
+	m_originNormals[beginId++] = Point3f(0,-1, 0);
+	m_originNormals[beginId++] = Point3f(cos30,-0.5, 0);
+	m_originNormals[beginId++] = Point3f(cos30, 0.5, 0);
+	m_originNormals[beginId++] = Point3f(0, 1, 0);
+	m_originNormals[beginId++] = Point3f(-cos30, 0.5, 0);
 }
 
 void Hexagonal::SetOriginNormals()
 {
-	double cos30 = sqrt(3)/2;
-
 	// base facets
-	m_originNormals[0] = Point3f(0, 0, -1);
+	m_originNormals[0] = Point3f(0, 0,-1);
 	m_originNormals[7] = Point3f(0, 0, 1);
 
-	// side facets
-	m_originNormals[1] = Point3f(-cos30, -0.5, 0);
-	m_originNormals[2] = Point3f(0, -1, 0);
-	m_originNormals[3] = Point3f(cos30, -0.5, 0);
-	m_originNormals[4] = Point3f(cos30, 0.5, 0);
-	m_originNormals[5] = Point3f(0, 1, 0);
-	m_originNormals[6] = Point3f(-cos30, 0.5, 0);
-
-	// current normals
-	for (int i = 0; i <= facetNum; ++i)
-	{
-		facets[i].in_normal.cx = m_originNormals[i].cx;
-		facets[i].in_normal.cy = m_originNormals[i].cy;
-		facets[i].in_normal.cz = m_originNormals[i].cz;
-	}
-
-	SetDParams();
-	SetExternalNormals();
+	SetSideNormals(1);
 }
 
 void Hexagonal::SetFacetParams()

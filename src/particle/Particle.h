@@ -60,5 +60,6 @@ protected:
 	void SetDParams();
 	void SetExternalNormals();
 	void CopyFacet(Point3f *points, Facet &result);
+	void SetActualNormals();
 };
 

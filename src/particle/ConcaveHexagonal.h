@@ -39,5 +39,4 @@ private:
 						 const Point3f &cavityPoint);
 	void SetOriginCavityPoints();
 	void SetBaseNormals();
-	void SetSideNormals();
 };

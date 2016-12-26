@@ -71,6 +71,19 @@ void Particle::SetDParams()
 	}
 }
 
+void Particle::SetActualNormals()
+{
+	for (int i = 0; i <= facetNum; ++i)
+	{
+		facets[i].in_normal.cx = m_originNormals[i].cx;
+		facets[i].in_normal.cy = m_originNormals[i].cy;
+		facets[i].in_normal.cz = m_originNormals[i].cz;
+	}
+
+	SetDParams();
+	SetExternalNormals();
+}
+
 void Particle::SetExternalNormals()
 {
 	for (int i = 0; i < facetNum; ++i)

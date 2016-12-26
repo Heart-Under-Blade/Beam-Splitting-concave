@@ -12,12 +12,16 @@ float DotProduct(const Point3f &v1, const Point3f &v2)
 
 double DotProductD(const Point3d &v1, const Point3d &v2)
 {
-	return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+	return	  v1.x * v2.x
+			+ v1.y * v2.y
+			+ v1.z * v2.z;
 }
 
-double Norm(const Point3f &point)
+double Norm(const Point3f &p)
 {
-	return point.cx*point.cx + point.cy*point.cy + point.cz*point.cz;
+	return	  p.cx * p.cx
+			+ p.cy * p.cy
+			+ p.cz * p.cz;
 }
 
 void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
