@@ -27,17 +27,17 @@ ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const compl
 
 void ConcaveHexagonal::Rotate(double beta, double gamma, double alpha)
 {
-	SetRotateMatrix(beta, gamma, alpha);
+	Particle::Rotate(beta, gamma, alpha);
 
 	Point3f baseTop[BASE_VERTEX_NUM], baseBottom[BASE_VERTEX_NUM];
 	RotateBaseFacets(baseTop, baseBottom);
 
+	SetSideFacets(baseTop, baseBottom, BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
+
 	CavityPoints cavities;
 	RotatePoint(m_originCavities.top, cavities.top);
 	RotatePoint(m_originCavities.bottom, cavities.bottom);
-
 	SetCavities(baseTop, baseBottom, cavities);
-	SetSideFacets(baseTop, baseBottom, BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
 
 	RotateNormals();
 

@@ -59,5 +59,6 @@ private:
 	void Init(double radius, double halfHeight, const complex &refractionIndex);
 	void SetDParams();
 	void SetExternalNormals();
+	void SetInternalNormals();
 };
 

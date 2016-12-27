@@ -11,7 +11,6 @@ Particle::Particle(double radius, double halfHeight,
 void Particle::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);
-	RotateNormals();
 }
 
 const double &Particle::GetHalfHeight() const
@@ -68,16 +67,13 @@ void Particle::RotateNormals()
 	SetExternalNormals();
 }
 
-void Particle::SetDParams()
+void Particle::SetActualNormals()
 {
-	for (int i = 0; i < facetNum; ++i)
-	{
-		double d = DotProduct(facets[i].polygon.arr[0], facets[i].in_normal);
-		facets[i].in_normal.d_param = -d;
-	}
+	SetInternalNormals();
+	SetExternalNormals();
 }
 
-void Particle::SetActualNormals()
+void Particle::SetInternalNormals()
 {
 	for (int i = 0; i <= facetNum; ++i)
 	{
@@ -87,7 +83,15 @@ void Particle::SetActualNormals()
 	}
 
 	SetDParams();
-	SetExternalNormals();
+}
+
+void Particle::SetDParams()
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		double d = DotProduct(facets[i].polygon.arr[0], facets[i].in_normal);
+		facets[i].in_normal.d_param = -d;
+	}
 }
 
 void Particle::SetExternalNormals()

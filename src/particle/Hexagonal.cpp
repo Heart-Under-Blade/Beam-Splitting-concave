@@ -83,20 +83,19 @@ void Hexagonal::SetOriginBaseFacets()
 	// top base facet
 	facet = m_originBases.top;
 	SetTwoDiagonalPoints(0, halfRadius, incircleRadius, m_halfHeight);
-	SetTwoDiagonalPoints(1, -halfRadius, incircleRadius, m_halfHeight);
+	SetTwoDiagonalPoints(1,-halfRadius, incircleRadius, m_halfHeight);
 	SetTwoDiagonalPoints(2, -m_radius, 0, m_halfHeight);
 
 	// bottom base facet
 	facet = m_originBases.bottom;
 	SetTwoDiagonalPoints(0, m_radius, 0, -m_halfHeight);
 	SetTwoDiagonalPoints(1, halfRadius, -incircleRadius, -m_halfHeight);
-	SetTwoDiagonalPoints(2, -halfRadius, -incircleRadius, -m_halfHeight);
+	SetTwoDiagonalPoints(2,-halfRadius, -incircleRadius, -m_halfHeight);
 }
 
 void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 							  int startIndex, int endIndex)
 {
-	Point3f *facet;
 	int endPointIndex = BASE_VERTEX_NUM-1;
 
 	int i1 = endPointIndex;
@@ -104,7 +103,7 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 
 	for (int i = startIndex; i < endIndex; ++i)
 	{
-		facet = facets[i].polygon.arr;
+		Point3f *facet = facets[i].polygon.arr;
 
 		facet[0] = baseTop[i2];
 		facet[1] = baseTop[i1];
@@ -128,8 +127,13 @@ void Hexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
 
 void Hexagonal::Rotate(double beta, double gamma, double alpha)
 {
-	SetRotateMatrix(beta, gamma, alpha);
-	RotateBaseFacets(facets[0].polygon.arr, facets[7].polygon.arr);
-	SetSideFacets(facets[0].polygon.arr, facets[7].polygon.arr, 1, facetNum-1);
+	Particle::Rotate(beta, gamma, alpha);
+
+	Point3f *baseTop	= facets[0].polygon.arr;
+	Point3f *baseBottom = facets[7].polygon.arr;
+
+	RotateBaseFacets(baseTop, baseBottom);
+	SetSideFacets(baseTop, baseBottom, 1, facetNum-1);
+
 	RotateNormals();
 }
