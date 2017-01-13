@@ -35,6 +35,8 @@
                     <name>Mdl</name>
                    </MObject>
                   </base-MObject>
+                  <last-modified>1482802041941</last-modified>
+                  <toolbarid>Classes</toolbarid>
                  </MDiagram>
                 </base-MDiagram>
                </MCanvasDiagram>

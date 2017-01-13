@@ -63,7 +63,7 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 			cosInc2/Tv0, cosInc2/Th0);
 }
 
-void Tracing::SetOpticalBeamParams_initial(int facetId, Beam &inBeam, Beam &outBeam)
+void Tracing::SetFirstBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &startDir = m_initialBeam.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
@@ -116,7 +116,7 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 
 void Tracing::SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	SetOpticalBeamParams_initial(facetId, inBeam, outBeam);
+	SetFirstBeamOpticalParams(facetId, inBeam, outBeam);
 	SetPolygonByFacet(facetId, inBeam.polygon);
 	SetPolygonByFacet(facetId, outBeam.polygon);
 }
@@ -184,7 +184,7 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 									  Beam &outBeam, Beam &inBeam) const
 {
 	double Nr = CalcNr(cosIN);
-	double coef = (incidentBeam.location == Location::External) ? 1 : sqrt(Nr);
+	double coef = (incidentBeam.location == Location::Outside) ? 1 : sqrt(Nr);
 	Point3f center = CenterOfPolygon(outBeam.polygon);
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
@@ -207,15 +207,13 @@ double Tracing::CalcNr(const double &cosIN) const
 {
 	double cosIN_sqr = cosIN*cosIN;
 	const double &re = ri_coef_re;
-	const double &im = ri_coef_im;
-	return (re + sqrt(re*re + im/cosIN_sqr))/2.0;
+	return (re + sqrt(re*re + ri_coef_im/cosIN_sqr))/2.0;
 }
 
 void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 									   Beam &inBeam, std::vector<Beam> &outBeams)
 {
 	Beam outBeam;
-
 	const Point3f &incidentDir = incidentBeam.direction;
 
 	// ext. normal uses in this calculating
@@ -380,6 +378,105 @@ void Tracing::SetBeam(Beam &beam, const Beam &other,
 	beam.e = e;
 }
 
+void Tracing::Difference(const Polygon &clip, const Point3f &normal,
+						 const Polygon &subject, const Point3f &subjectDir,
+						 Polygon *difference, int &resultSize) const
+{
+	__m128 _subject[MAX_VERTEX_NUM];
+	bool isProjected = ProjectToFacetPlane(subject, subjectDir, normal, _subject);
+
+	if (!isProjected)
+	{
+		difference[resultSize++] = subject;
+		return;
+	}
+
+	__m128 _clip_normal = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
+	int subjSize = subject.size;
+	__m128 _res_pol[MAX_VERTEX_NUM];
+
+	__m128 *_subj;
+	__m128 *_buff = _subject;
+	int bufSize = subjSize;
+
+	__m128 _first_p, _second_p; // points of projection
+	bool isInFirst, isInSecond;
+
+	Point3f p = clip.arr[clip.size-1];
+	__m128 _p2 = _mm_load_ps(p.point);
+
+	for (int i = 0; i < clip.size; ++i)
+	{
+		int resSize = 0;
+
+		__m128 _p1 = _p2;
+		p = clip.arr[i];
+		_p2 = _mm_load_ps(p.point);
+
+		_subj = _buff;
+		subjSize = bufSize;
+		bufSize = 0;
+
+		_first_p = _subj[subjSize-1];
+		isInSecond = is_inside_i(_first_p, _p1, _p2, _clip_normal);
+
+		bool isIntersected;
+
+		for (int j = 0; j < subjSize; ++j)
+		{
+			_second_p = _subj[j];
+			isInFirst = is_inside_i(_second_p, _p1, _p2, _clip_normal);
+
+			if (isInFirst)
+			{
+				if (!isInSecond)
+				{
+					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
+													 _clip_normal, isIntersected);
+
+					if (isIntersected && is_layOnLine_i(x, _p1, _second_p))
+					{
+						_res_pol[resSize++] = x;
+						_buff[bufSize++] = x;
+					}
+				}
+
+				_buff[bufSize++] = _second_p;
+			}
+			else
+			{
+				if (isInSecond)
+				{
+					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
+													 _clip_normal, isIntersected);
+
+					if (isIntersected && is_layOnLine_i(x, _first_p, _second_p))
+					{
+						_res_pol[resSize++] = x;
+						_buff[bufSize++] = x;
+					}
+				}
+
+				_res_pol[resSize++] = _second_p;
+			}
+
+			_first_p = _second_p;
+			isInSecond = isInFirst;
+		}
+
+		if (resSize >= MIN_VERTEX_NUM)
+		{
+			Polygon diffPart;
+			SetOutputPolygon(_res_pol, resSize, diffPart);
+
+			if (diffPart.size >= MIN_VERTEX_NUM)
+			{
+				difference[resultSize++] = diffPart;
+			}
+		}
+	}
+}
+
 /// Projection of beam to facet
 bool Tracing::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 								  const Point3f &normal, __m128 *_projection) const
@@ -426,8 +523,8 @@ void Tracing::MulJMatrix(Beam &beam1, const Beam &beam2,
 bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) const
 {
 	__m128 _output_points[MAX_VERTEX_NUM];
-
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
+
 	bool isProjected = ProjectToFacetPlane(beam.polygon, beam.direction,
 										   normal, _output_points);
 	if (!isProjected)
@@ -481,7 +578,6 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) co
 				{
 					__m128 x = computeIntersection_i(_s_point, _e_point, _p1, _p2,
 													 _normal_to_facet, isIntersected);
-
 					if (isIntersected)
 					{
 						_output_ptr[outputSize++] = x;
@@ -494,7 +590,6 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) co
 			{
 				__m128 x = computeIntersection_i(_s_point, _e_point, _p1, _p2,
 												 _normal_to_facet, isIntersected);
-
 				if (isIntersected)
 				{
 					_output_ptr[outputSize++] = x;

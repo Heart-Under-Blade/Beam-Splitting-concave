@@ -19,6 +19,19 @@ inline bool is_inside_i(__m128 x, __m128 p1, __m128 p2, __m128 normal)
 	return _mm_ucomigt_ss(dir, m_eps);
 }
 
+inline bool is_layOnLine_i(__m128 _x, __m128 _a, __m128 _b)
+{
+	__m128 ab = _mm_sub_ps(_a, _b);
+	__m128 ax = _mm_sub_ps(_a, _x);
+	__m128 bx = _mm_sub_ps(_b, _x);
+
+	__m128 sqr_len_ab = _mm_dp_ps(ab, ab, MASK_1LOW);
+	__m128 sqr_len_ax = _mm_dp_ps(ax, ax, MASK_1LOW);
+	__m128 sqr_len_bx = _mm_dp_ps(bx, bx, MASK_1LOW);
+
+	return (sqr_len_ax[0] + sqr_len_bx[0] < sqr_len_ab[0] + EPS_IN_LINE);
+}
+
 inline __m128 computeIntersection_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2, __m128 _normal_to_facet, bool &ok)
 {
 	__m128 _v_a = _mm_sub_ps(_a2, _a1);

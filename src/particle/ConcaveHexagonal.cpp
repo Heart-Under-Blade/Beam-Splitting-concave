@@ -77,6 +77,13 @@ void ConcaveHexagonal::SetFacetParams()
 	{
 		facets[i].polygon.size = CAVITY_FACET_VERTEX_NUM;
 	}
+
+	// shodowed and unshadowed
+	for (int i = BASE_VERTEX_NUM; i < 2*BASE_VERTEX_NUM; ++i)
+	{
+		m_unshadowedExternalFacets.Add(i);
+		m_shadowedInternalFacets.Add(i);
+	}
 }
 
 void ConcaveHexagonal::SetCavities(const Point3f *baseTop, const Point3f *baseBottom,

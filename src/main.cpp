@@ -19,6 +19,8 @@
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
+#include "test.h"
+
 using namespace std::chrono;
 
 struct OrientationRange
@@ -293,7 +295,7 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 int main(int argc, char* argv[])
 {
 //	logfile->open("log.txt", std::ios::out);
-
+//	testDiff();
 //	testConcaveHexagonRot();
 //	testHexagonBuilding();
 //	testHexagonRotate();
@@ -531,6 +533,7 @@ bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compare
 
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
+	double eee = 0;//DEB
 	beamCount += outBeams.size();
 
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
@@ -558,6 +561,7 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 
 		double cross = tracer.BeamCrossSection(beam);
 		double Area = betaDistrProb * cross;
+		eee += Area;
 
 		matrix bf = Mueller(beam.JMatrix);
 
@@ -602,6 +606,7 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 
 		LOG_ASSERT(Area >= 0);
 	}
+	int fff = 0;//DEB
 }
 
 std::string GetFileName(const std::string &filename)

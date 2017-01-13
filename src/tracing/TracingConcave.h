@@ -19,17 +19,18 @@ public:
 
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &outBeams) override;
-
-	void CutIncidentBeam(int facetId, Beam &beam, bool &isDivided);
-
 private:
 	BeamClipper m_clipper;
 
 private:
+	void CutIncidentBeam(int facetId, Beam &beam, bool &isDivided);
+	void CutIncidentBeam2(int facetId, Beam &beam, bool &isDivided);
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use fast sort algorithm
 	void CutShadowsFromFacet(int facetId, IntArray facetIds, int handledFacetNum,
 							 const Beam &beam, ClipperLib::Paths &resultFacet);
+	void CutShadowsFromFacet2(int facetId, IntArray facetIds, int handledFacetNum,
+							 const Beam &beam, Polygon *allFacets, int &allSize);
 
 	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
 							 const Point3d &facetNormal, Point3d &projection);
@@ -74,12 +75,12 @@ private:
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
-	void SetIntersectedPolygon(const IntArray &facetIds, int handledFacetNum,
-							   Polygon &beamPolygon, bool &hasIntersection);
+	void IntersectWithFacet(const IntArray &facetIds, int handledFacetNum,
+								Polygon *allFacets, int &allSize, bool &hasIntersection);
 
-	void TraceInitialBeam();
+	void TraceFirstBeam();
 
-	void SelectVisibleFacets_initial(IntArray &facetIds);
+	void SelectFirstBeamVisibleFacets(IntArray &facetIds);
 
 	bool HasExternalBeam(Beam &incidentBeam);
 

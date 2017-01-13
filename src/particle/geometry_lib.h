@@ -2,20 +2,35 @@
 
 #define MAX_FACET_NUM 64
 
-#define MIN_VERTEX_NUM 3
-#define MAX_VERTEX_NUM 64
+#define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
+#define MAX_VERTEX_NUM 64		///< maximum number of vertices in polygon
+#define MAX_SUBPOLYGON_NUM 128	///< maximum number of polygons in array of polygons
+
+enum class Location: bool
+{
+	Inside, Outside
+};
 
 struct IntArray
 {
 	int arr[64];
 	int size = 0;
+
+	void Add(int elem)
+	{
+		arr[size++] = elem;
+	}
 };
 
-// fast access for Point3f
+// short access for Point3f
 #define cx point[0]
 #define cy point[1]
 #define cz point[2]
 #define d_param point[3]
+
+// short access for normals of Facet
+#define in_normal normal[0]
+#define ex_normal normal[1]
 
 /**
  * @brief The Point3 struct
@@ -123,6 +138,17 @@ struct Point3d
 
 struct Polygon
 {
+	Polygon() {}
+	Polygon(const Polygon &other)
+	{
+		size = other.size;
+
+		for (int i = 0; i < other.size; ++i)
+		{
+			arr[i] = other.arr[i];
+		}
+	}
+
 	Point3f arr[MAX_VERTEX_NUM];
 	int size = 0;
 };
@@ -153,3 +179,5 @@ Point3f NormalToPolygon(const Point3f *facet);
 Point3f CenterOfPolygon(const Polygon &polygon);
 
 double Length(const Point3f &v);
+
+double AreaOfPolygon(const Polygon &p); ///< convex

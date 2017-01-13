@@ -23,6 +23,33 @@ const complex &Particle::GetRefractionIndex() const
 	return m_refractionIndex;
 }
 
+bool Particle::IsUnshadowedExternal(int facetId) const
+{
+	for (int i = 0; i < m_unshadowedExternalFacets.size; ++i)
+	{
+		if (facetId == m_unshadowedExternalFacets.arr[i])
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//REF неправильно названо (переименовать)
+bool Particle::IsShadowedInternal(int facetId) const
+{
+	for (int i = 0; i < m_shadowedInternalFacets.size; ++i)
+	{
+		if (facetId == m_shadowedInternalFacets.arr[i])
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Particle::Init(double radius, double halfHeight, const complex &refractionIndex)
 {
 	m_radius = radius;

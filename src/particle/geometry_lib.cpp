@@ -72,3 +72,21 @@ Point3f CenterOfPolygon(const Polygon &polygon)
 	return p/polygon.size;
 }
 
+
+double AreaOfPolygon(const Polygon &p)
+{
+	double square = 0;
+	const Point3f &basePoint = p.arr[0];
+	Point3f p1 = p.arr[1] - basePoint;
+
+	for (int i = 2; i < p.size; ++i)
+	{
+		Point3f p2 = p.arr[i] - basePoint;
+		Point3f res;
+		CrossProduct(p1, p2, res);
+		square += sqrt(Norm(res));
+		p1 = p2;
+	}
+
+	return square / 2.0;
+}
