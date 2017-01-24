@@ -44,7 +44,7 @@ protected:
 	IntArray m_shadowedInternalFacets;
 
 protected:
-	virtual void SetOriginNormals() {}
+	virtual void SetDefaultNormals() {}
 	virtual void SetFacetParams() {}
 
 	void SetRotateMatrix(double beta, double gamma, double alpha);

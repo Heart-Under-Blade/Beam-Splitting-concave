@@ -27,7 +27,7 @@ protected:
 	m_originBases;
 
 protected:
-	void SetOriginNormals() override;
+	void SetDefaultNormals() override;
 	void SetFacetParams() override;
 
 	void SetOriginBaseFacets();

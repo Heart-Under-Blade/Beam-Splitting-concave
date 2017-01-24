@@ -4,7 +4,7 @@
 
 #define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
 #define MAX_VERTEX_NUM 64		///< maximum number of vertices in polygon
-#define MAX_SUBPOLYGON_NUM 128	///< maximum number of polygons in array of polygons
+#define MAX_POLYGON_NUM 128	///< maximum number of polygons in array of polygons
 
 enum class Location: bool
 {

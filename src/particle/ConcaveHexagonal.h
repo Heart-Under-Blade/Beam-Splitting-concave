@@ -23,13 +23,13 @@ private:
 		Point3f top;
 		Point3f bottom;
 	}
-	m_originCavities;
+	m_defaultCavities;
 
 	const int CAVITY_FACET_VERTEX_NUM = 3;	///< number of vertex of the each facet into the cavity
 
 protected:
 	void SetFacetParams() override;
-	void SetOriginNormals() override;
+	void SetDefaultNormals() override;
 
 private:
 	void SetCenters();

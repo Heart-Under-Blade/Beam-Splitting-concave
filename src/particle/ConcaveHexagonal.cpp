@@ -16,11 +16,11 @@ ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const compl
 	SetOriginBaseFacets();
 	SetOriginCavityPoints();
 
-	SetCavities(m_originBases.top, m_originBases.bottom, m_originCavities);
+	SetCavities(m_originBases.top, m_originBases.bottom, m_defaultCavities);
 	SetSideFacets(m_originBases.top, m_originBases.bottom,
 				  BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
 
-	SetOriginNormals();
+	SetDefaultNormals();
 	SetActualNormals();
 	SetCenters();
 }
@@ -35,8 +35,8 @@ void ConcaveHexagonal::Rotate(double beta, double gamma, double alpha)
 	SetSideFacets(baseTop, baseBottom, BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
 
 	CavityPoints cavities;
-	RotatePoint(m_originCavities.top, cavities.top);
-	RotatePoint(m_originCavities.bottom, cavities.bottom);
+	RotatePoint(m_defaultCavities.top, cavities.top);
+	RotatePoint(m_defaultCavities.bottom, cavities.bottom);
 	SetCavities(baseTop, baseBottom, cavities);
 
 	RotateNormals();
@@ -113,8 +113,8 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end,
 
 void ConcaveHexagonal::SetOriginCavityPoints()
 {
-	m_originCavities.top = Point3f(0, 0, m_halfHeight - m_cavityDept);
-	m_originCavities.bottom = Point3f(0, 0, -m_halfHeight + m_cavityDept);
+	m_defaultCavities.top = Point3f(0, 0, m_halfHeight - m_cavityDept);
+	m_defaultCavities.bottom = Point3f(0, 0, -m_halfHeight + m_cavityDept);
 }
 
 void ConcaveHexagonal::SetBaseNormals()
@@ -132,7 +132,7 @@ void ConcaveHexagonal::SetBaseNormals()
 	}
 }
 
-void ConcaveHexagonal::SetOriginNormals()
+void ConcaveHexagonal::SetDefaultNormals()
 {
 	SetBaseNormals();
 	SetSideNormals(6);

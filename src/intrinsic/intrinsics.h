@@ -4,7 +4,8 @@
 #include <smmintrin.h>
 #include <vector>
 
-#define EPS_IN_LINE 0.001
+//#define EPS_IN_LINE 0.001
+#define EPS_IN_LINE 1
 #define EPS_IN_POLYGON 0.001
 
 #define MASK_FULL 0x7F /// mask for filling __m128 - all 4 float parts

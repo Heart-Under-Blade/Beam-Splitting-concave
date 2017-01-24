@@ -64,5 +64,6 @@ SOURCES += \
 	../src/Tracer.cpp \
     ../src/clipper.cpp \
 	../src/BeamClipper.cpp \
-    ../src/particle/geometry_lib.cpp
+	../src/particle/geometry_lib.cpp \
+	../src/trash.cpp
 

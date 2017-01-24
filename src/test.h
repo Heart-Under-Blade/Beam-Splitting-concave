@@ -41,7 +41,7 @@ void SetOutputPolygon(__m128 *_output_points, int outputSize,
 		p0 = _output_points[i];
 	}
 }
-bool Proj(const Polygon &polygon, const Point3f &dir,
+bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 								  const Point3f &normal, __m128 *_projection)
 {
 	__m128 _normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
@@ -77,39 +77,48 @@ void Differ(const Polygon &clip, const Point3f &normal,
 						 const Polygon &subject, const Point3f &subjectDir,
 						 Polygon *difference, int &resultSize)
 {
-	__m128 _subject[MAX_VERTEX_NUM];
-	bool isProjected = Proj(subject, subjectDir, normal, _subject);
+	__m128 _clip[MAX_VERTEX_NUM];
+	bool isProjected = ProjectToFacetPlane(clip, subjectDir, normal, _clip);
 
 	if (!isProjected)
 	{
-		difference[resultSize++] = clip;
+		difference[resultSize++] = subject;
 		return;
 	}
 
 	__m128 _clip_normal = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
-	int subjSize = subject.size;
-	__m128 _res_pol[MAX_VERTEX_NUM];
+	int clipSize = clip.size;
+	__m128 _res_pol[MAX_VERTEX_NUM]; // OPT: заменить на Polygon
 
-	__m128 *_subj;
+	__m128 _subject[MAX_VERTEX_NUM];
+	__m128 _buffer[MAX_VERTEX_NUM];
+
+	for (int i = 0; i < subject.size; ++i)
+	{
+		_subject[i] = _mm_load_ps(subject.arr[i].point);
+	}
+
+	__m128 *_subj = _buffer;
 	__m128 *_buff = _subject;
-	int bufSize = subjSize;
+	int bufSize = subject.size;
 
 	__m128 _first_p, _second_p; // points of projection
 	bool isInFirst, isInSecond;
 
-	Point3f p = clip.arr[clip.size-1];
-	__m128 _p2 = _mm_load_ps(p.point);
+	__m128 _p2 = _clip[clipSize-1];
 
 	for (int i = 0; i < clip.size; ++i)
 	{
 		int resSize = 0;
 
 		__m128 _p1 = _p2;
-		p = clip.arr[i];
-		_p2 = _mm_load_ps(p.point);
+		_p2 = _clip[i];
 
-		_subj = _buff;
-		subjSize = bufSize;
+		__m128 *_tmp = _buff;
+		_buff = _subj;
+		_subj = _tmp;
+
+		int subjSize = bufSize;
 		bufSize = 0;
 
 		_first_p = _subj[subjSize-1];
@@ -161,9 +170,13 @@ void Differ(const Polygon &clip, const Point3f &normal,
 
 		if (resSize >= MIN_VERTEX_NUM)
 		{
-			Polygon diffPart;
-			SetOutputPolygon(_res_pol, resSize, diffPart);
-			difference[resultSize++] = diffPart;
+			Polygon resPolygon;
+			SetOutputPolygon(_res_pol, resSize, resPolygon);
+
+			if (resPolygon.size >= MIN_VERTEX_NUM)
+			{
+				difference[resultSize++] = resPolygon;
+			}
 		}
 	}
 }
@@ -180,10 +193,10 @@ void testDiff()
 	Point3f n(0, 0, 1);
 
 	Polygon s;
-	s.arr[0] = Point3f(2, 2, 0);
-	s.arr[1] = Point3f(2, 6, 0);
-	s.arr[2] = Point3f(6, 6, 0);
-	s.arr[3] = Point3f(6, 2, 0);
+	s.arr[0] = Point3f(2, 2, 1);
+	s.arr[1] = Point3f(2, 6, 1);
+	s.arr[2] = Point3f(6, 6, 1);
+	s.arr[3] = Point3f(6, 2, 1);
 	s.size = 4;
 
 	Polygon r[32];
@@ -191,7 +204,7 @@ void testDiff()
 
 	Differ(s, n, a, -n, r, size);
 
-//	int fff = 0;
+	int fff = 0;
 }
 
 void outputParticle(const Particle &particle)

@@ -382,8 +382,8 @@ void Tracing::Difference(const Polygon &clip, const Point3f &normal,
 						 const Polygon &subject, const Point3f &subjectDir,
 						 Polygon *difference, int &resultSize) const
 {
-	__m128 _subject[MAX_VERTEX_NUM];
-	bool isProjected = ProjectToFacetPlane(subject, subjectDir, normal, _subject);
+	__m128 _clip[MAX_VERTEX_NUM];
+	bool isProjected = ProjectToFacetPlane(clip, subjectDir, normal, _clip);
 
 	if (!isProjected)
 	{
@@ -391,50 +391,60 @@ void Tracing::Difference(const Polygon &clip, const Point3f &normal,
 		return;
 	}
 
-	__m128 _clip_normal = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
-	int subjSize = subject.size;
-	__m128 _res_pol[MAX_VERTEX_NUM];
+	__m128 _clip_normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
+//	__m128 _clip_normal = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
+	int clipSize = clip.size;
+	__m128 _res_pol[MAX_VERTEX_NUM]; // OPT: заменить на Polygon
 
-	__m128 *_subj;
+	__m128 _subject[MAX_VERTEX_NUM];
+	__m128 _buffer[MAX_VERTEX_NUM];
+
+	for (int i = 0; i < subject.size; ++i)
+	{
+		_subject[i] = _mm_load_ps(subject.arr[i].point);
+	}
+
+	__m128 *_subj = _buffer;
 	__m128 *_buff = _subject;
-	int bufSize = subjSize;
+	int bufSize = subject.size;
 
 	__m128 _first_p, _second_p; // points of projection
 	bool isInFirst, isInSecond;
 
-	Point3f p = clip.arr[clip.size-1];
-	__m128 _p2 = _mm_load_ps(p.point);
+	__m128 _p2 = _clip[clipSize-1];
 
 	for (int i = 0; i < clip.size; ++i)
 	{
 		int resSize = 0;
 
 		__m128 _p1 = _p2;
-		p = clip.arr[i];
-		_p2 = _mm_load_ps(p.point);
+		_p2 = _clip[i];
 
-		_subj = _buff;
-		subjSize = bufSize;
+		__m128 *_tmp = _buff;
+		_buff = _subj;
+		_subj = _tmp;
+
+		int subjSize = bufSize;
 		bufSize = 0;
 
 		_first_p = _subj[subjSize-1];
-		isInSecond = is_inside_i(_first_p, _p1, _p2, _clip_normal);
+		isInFirst = is_inside_i(_first_p, _p1, _p2, _clip_normal);
 
 		bool isIntersected;
 
 		for (int j = 0; j < subjSize; ++j)
 		{
 			_second_p = _subj[j];
-			isInFirst = is_inside_i(_second_p, _p1, _p2, _clip_normal);
+			isInSecond = is_inside_i(_second_p, _p1, _p2, _clip_normal);
 
-			if (isInFirst)
+			if (isInSecond)
 			{
-				if (!isInSecond)
+				if (!isInFirst)
 				{
 					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
 													 _clip_normal, isIntersected);
 
-					if (isIntersected && is_layOnLine_i(x, _p1, _second_p))
+					if (isIntersected && is_layOnLine_i(x, _first_p, _second_p))
 					{
 						_res_pol[resSize++] = x;
 						_buff[bufSize++] = x;
@@ -445,7 +455,7 @@ void Tracing::Difference(const Polygon &clip, const Point3f &normal,
 			}
 			else
 			{
-				if (isInSecond)
+				if (isInFirst)
 				{
 					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
 													 _clip_normal, isIntersected);
@@ -461,20 +471,23 @@ void Tracing::Difference(const Polygon &clip, const Point3f &normal,
 			}
 
 			_first_p = _second_p;
-			isInSecond = isInFirst;
+			isInFirst = isInSecond;
 		}
 
 		if (resSize >= MIN_VERTEX_NUM)
 		{
-			Polygon diffPart;
-			SetOutputPolygon(_res_pol, resSize, diffPart);
+			Polygon resPolygon;
+			SetOutputPolygon(_res_pol, resSize, resPolygon);
 
-			if (diffPart.size >= MIN_VERTEX_NUM)
+			if (resPolygon.size >= MIN_VERTEX_NUM)
 			{
-				difference[resultSize++] = diffPart;
+				difference[resultSize++] = resPolygon;
 			}
 		}
 	}
+
+	if (resultSize == 1)//DEB
+		int fff= 0;
 }
 
 /// Projection of beam to facet
@@ -543,7 +556,7 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) co
 	int facetSize = m_particle->facets[facetId].polygon.size;
 
 	__m128 _p1, _p2; // vertices of facet
-	__m128 _s_point, _e_point; // points of projection
+	__m128 _s_point, _e_point;	// points of projection
 	bool isInsideE, isInsideS;
 
 	Point3f p2 = m_particle->facets[facetId].polygon.arr[facetSize-1];

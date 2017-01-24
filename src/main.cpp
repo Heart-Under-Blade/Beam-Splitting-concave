@@ -373,6 +373,12 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	time.Start();
 
+	//DEB
+//	beta = (79 + 0.5)*betaNorm;
+//	gamma = (78 + 0.5)*gammaNorm;
+//	tracer.RotateParticle(beta, gamma);
+//	tracer.SplitBeamByParticle(outcomingBeams);
+
 	for (int i = betaRange.begin; i < betaRange.end; ++i)
 	{
 		beta = (i + 0.5)*betaNorm;

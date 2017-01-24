@@ -3,9 +3,7 @@
 #include "Tracing.h"
 #include "BeamClipper.h"
 
-typedef std::vector<std::vector<Point3f>> Polygons;
-
-/** NOTE: пучки выходят со случайно ориентированными вершинами */
+/** NOTE: пучки выходят со случайно ориентированным порядком вершин */
 class TracingConcave : public Tracing
 {
 public:
@@ -23,14 +21,12 @@ private:
 	BeamClipper m_clipper;
 
 private:
-	void CutIncidentBeam(int facetId, Beam &beam, bool &isDivided);
 	void CutIncidentBeam2(int facetId, Beam &beam, bool &isDivided);
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
-	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use fast sort algorithm
-	void CutShadowsFromFacet(int facetId, IntArray facetIds, int handledFacetNum,
-							 const Beam &beam, ClipperLib::Paths &resultFacet);
-	void CutShadowsFromFacet2(int facetId, IntArray facetIds, int handledFacetNum,
-							 const Beam &beam, Polygon *allFacets, int &allSize);
+	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
+
+	void CutShadowsFromFacet2(int facetId, const IntArray &facetIds, int prevFacetNum,
+							 const Beam &beam, Polygon *resFacets, int &resSize);
 
 	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
 							 const Point3d &facetNormal, Point3d &projection);
@@ -47,22 +43,6 @@ private:
 						const Point3f &direction, const Point3f &facetNormal,
 						ClipperLib::Paths &result);
 
-	// recursive
-	void DividePolygon(const std::vector<Point3f> &polygon,
-					   const Point3f &normal, Polygons &polygons) const;
-	void DivideConcavePolygon(const Point3f *polygon, int size,
-							  const Point3f &normal,
-							  Polygons &polygons) const;
-	void FindDividePoint(const std::vector<Point3f> &polygon,
-						 int i0, int i1, const Point3f &normal,
-						 Point3f &x, int &nextPointIndex) const;
-	void FillSubpolygon(int begin, int end,
-						const std::vector<Point3f> &polygon,
-						std::vector<Point3f> &subpolygon) const;
-
-//	bool isOrderReversed(const Point3f oldNormal, const ClipperLib::Path polygon);
-//	void InversePolygonOrder(ClipperLib::Path &polygon);
-
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
@@ -75,8 +55,8 @@ private:
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
-	void IntersectWithFacet(const IntArray &facetIds, int handledFacetNum,
-								Polygon *allFacets, int &allSize, bool &hasIntersection);
+	void IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
+							Polygon *resFacets, int &resSize, bool &hasIntersection);
 
 	void TraceFirstBeam();
 

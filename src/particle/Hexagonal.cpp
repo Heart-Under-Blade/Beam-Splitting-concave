@@ -18,7 +18,7 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 	CopyFacet(m_originBases.bottom, facets[7]);
 
 	SetSideFacets(facets[0].polygon.arr, facets[7].polygon.arr, 1, facetNum-1);
-	SetOriginNormals();
+	SetDefaultNormals();
 	SetActualNormals();
 }
 
@@ -33,7 +33,7 @@ void Hexagonal::SetSideNormals(int beginId)
 	m_originNormals[beginId++] = Point3f(-cos30, 0.5, 0);
 }
 
-void Hexagonal::SetOriginNormals()
+void Hexagonal::SetDefaultNormals()
 {
 	// base facets
 	m_originNormals[0] = Point3f(0, 0,-1);
