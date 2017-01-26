@@ -65,9 +65,6 @@ Point3f incidentDir(0, 0, -1);
 Point3f polarizationBasis(0, 1, 0);
 int assertNum = 0;
 
-// DEB
-long long beamCount = 0;
-
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
 
@@ -384,17 +381,14 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	time.Start();
 
-	//DEB
-	beta = (69 + 0.5)*betaNorm;
-	gamma = (100 + 0.5)*gammaNorm;
-	betaDistrProbability = sin(beta);
-	tracer.RotateParticle(beta, gamma);
-	tracer.SplitBeamByParticle(outcomingBeams);
-	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
-
-	// DEB
-//	double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
-
+#ifdef _DEBUG // DEB
+//	beta = (69 + 0.5)*betaNorm;
+//	gamma = (100 + 0.5)*gammaNorm;
+//	betaDistrProbability = sin(beta);
+//	tracer.RotateParticle(beta, gamma);
+//	tracer.SplitBeamByParticle(outcomingBeams);
+//	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+#endif
 
 	for (int i = betaRange.begin; i < betaRange.end; ++i)
 	{
@@ -403,7 +397,6 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 		for (int j = gammaRange.begin; j < gammaRange.end; ++j)
 		{
-//			std::cout << j << std::endl;
 			gamma = (j + 0.5)*gammaNorm;
 
 #ifdef _OUTPUT_NRG_CONV
@@ -564,9 +557,9 @@ bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compare
 
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
-	double eee = 0;//DEB
-
-	beamCount += outBeams.size();
+#ifdef _DEBUG // DEB
+	double eee = 0;
+#endif
 
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
@@ -593,8 +586,10 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 
 		double cross = tracer.BeamCrossSection(beam);
 		double Area = betaDistrProb * cross;
-		eee += Area;
 
+#ifdef _DEBUG // DEB
+		eee += Area;
+#endif
 		matrix bf = Mueller(beam.JMatrix);
 
 		const float &x = beam.direction.cx;
@@ -608,7 +603,6 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 			SS+=cross;
 		}
 #endif
-
 		// Collect the beam in array
 		if (z >= 1-DBL_EPSILON)
 		{
@@ -647,7 +641,9 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 		LOG_ASSERT(Area >= 0);
 	}
 
-	int fff = 0;//DEB
+#ifdef _DEBUG // DEB
+	int fff = 0;
+#endif
 }
 
 std::string GetFileName(const std::string &filename)
@@ -715,7 +711,6 @@ void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM)
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM)
 {
 	using namespace std;
-	cout << endl << beamCount << endl;
 	cout << "\nTotal number of body orientation = " << orNumber;
 	cout << "\nTotal scattering energy = " << D_tot/**NRM*/;
 	cout << "\nTotal incoming energy = " << incomingEnergy;

@@ -486,9 +486,6 @@ void Tracing::Difference(const Polygon &clip, const Point3f &clipNormal,
 			}
 		}
 	}
-
-	if (resultSize == 1)//DEB
-		int fff= 0;
 }
 
 /// Projection of beam to facet

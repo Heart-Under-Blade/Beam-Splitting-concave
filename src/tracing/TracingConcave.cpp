@@ -3,7 +3,10 @@
 #include "macro.h"
 #include <tgmath.h>
 #include <assert.h>
-#include <iostream>//DEB
+
+#ifdef _DEBUG // DEB
+#include <iostream>
+#endif
 
 #define EPS_ORTO_FACET 0.0001 //TODO: подобрать норм значение
 
@@ -30,16 +33,9 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	m_treeSize = 0;
 
 	TraceFirstBeam();
-//	double rrr = 0;// DEB
-//	for (int i =0; i < m_treeSize; ++i)
-//	{
-//		if (m_beamTree[i].track.size() == 1 &&
-//				m_beamTree[i].track[0] == 4)
-//		rrr += AreaOfBeam(m_beamTree[i]);
-//	}
 	TraceSecondaryBeams(outBeams);
 
-	//DEB
+#ifdef _DEBUG // DEB
 //	double rrr = 0;
 //	for (const Beam &b : outBeams)
 //	{
@@ -48,6 +44,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams)
 //			rrr += AreaOfBeam(b);
 //	}
 //	int ggg = 0;
+#endif
 }
 
 void TracingConcave::TraceFirstBeam()
@@ -76,10 +73,14 @@ void TracingConcave::TraceFirstBeam()
 			int facetId = orderedFacets.arr[i];
 			SetFirstBeamOpticalParams(facetId, inBeam, outBeam);
 
-			double eee = 0; //DEB
+#ifdef _DEBUG // DEB
+			double eee = 0;
+#endif
 			for (int j = 0; j < resSize; ++j)
 			{
+#ifdef _DEBUG // DEB
 				eee += AreaOfPolygon(resFacets[j]);
+#endif
 				// set geometry of beam
 				 inBeam.SetPolygon(resFacets[j]);
 				outBeam.SetPolygon(resFacets[j]);
@@ -92,8 +93,6 @@ void TracingConcave::TraceFirstBeam()
 					CalcLigthSurfaceArea(facetId, outBeam);
 				}
 			}
-
-			int fff = 0; //DEB
 		}
 	}
 }
@@ -218,7 +217,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level,
 									Location location)
 {
-//	if (m_treeSize >= MAX_BEAM_REFL_NUM)//DEB
 	assert(m_treeSize < MAX_BEAM_REFL_NUM);
 
 #ifdef _TRACK_ALLOW
@@ -284,12 +282,8 @@ void TracingConcave::CutIncidentBeam2(int facetId, Beam &beam, bool &isDivided)
 
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
-if (m_treeSize == 410 /*&& i == 6*/)
-	int fgg = 0;//DEB
 	Difference(m_facets[facetId].polygon, facetNormal, beam.polygon, beamNormal,
 			   -beam.direction, resultBeams, resultSize);
-
-//	std::cout << resultSize << std::endl; //DEB
 
 	if (resultSize == 0) // beam is totaly swallowed by facet
 	{
@@ -344,8 +338,6 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		Beam incidentBeam = m_beamTree[--m_treeSize];
 		const Location loc = incidentBeam.location;
 
-		if (incidentBeam.facetId == 1)//DEB
-			int fff = 0;
 		if (isTerminalBeam(incidentBeam))
 		{
 			if (loc == Location::Outside)
@@ -366,8 +358,6 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		for (int i = 0; i < facetIds.size; ++i)
 		{
 			int facetId = facetIds.arr[i];
-if (m_treeSize == 406 /*&& i == 6*/)
-	int fgg = 0;//DEB
 			Polygon intersected;
 			bool hasIntersection = Intersect(facetId, incidentBeam, intersected);
 
@@ -503,8 +493,6 @@ void TracingConcave::CutShadowsFromFacet2(int facetId, const IntArray &facetIds,
 //			const Point3f &clipNormal = m_facets[id].normal[(int)beam.location];
 			const Point3f &clipNormal = facetNormal;
 
-if (prevFacetNum == 3 && i == 2)
-	int fff = 0;//DEB
 			Difference(clip, clipNormal, subj, facetNormal, -beam.direction,
 					   diffFacets, diffSize);
 		}
