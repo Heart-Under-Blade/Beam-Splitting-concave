@@ -148,6 +148,49 @@ struct Polygon
 			arr[i] = other.arr[i];
 		}
 	}
+	Polygon(Polygon &&other)
+	{
+		size = other.size;
+
+		for (int i = 0; i < size; ++i)
+		{
+			arr[i] = other.arr[i];
+		}
+
+		other.size = 0;
+	}
+
+	Polygon & operator = (const Polygon &other)
+	{
+		if (this != &other)
+		{
+			size = other.size;
+
+			for (int i = 0; i < size; ++i)
+			{
+				arr[i] = other.arr[i];
+			}
+		}
+
+		return *this;
+	}
+
+	Polygon & operator = (Polygon &&other)
+	{
+		if (this != &other)
+		{
+			size = other.size;
+
+			for (int i = 0; i < size; ++i)
+			{
+				arr[i] = other.arr[i];
+			}
+
+			other.size = 0;
+		}
+
+		return *this;
+	}
 
 	Point3f arr[MAX_VERTEX_NUM];
 	int size = 0;

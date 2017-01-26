@@ -393,7 +393,7 @@ void Tracing::Difference(const Polygon &clip, const Point3f &clipNormal,
 	}
 
 	__m128 _clip_normal = _mm_setr_ps(clipNormal.cx, clipNormal.cy, clipNormal.cz, 0.0);
-//	__m128 _clip_normal = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
+
 	int clipSize = clip.size;
 	__m128 _res_pol[MAX_VERTEX_NUM]; // OPT: заменить на Polygon
 

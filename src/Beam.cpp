@@ -37,6 +37,31 @@ Beam::Beam(const Beam &other)
 	Copy(other);
 }
 
+Beam::Beam(Beam &&other)
+{
+	opticalPath = other.opticalPath;
+	D = other.D;
+	e = other.e;
+	direction = other.direction;
+
+	SetPolygon(other.polygon);
+
+	facetId = other.facetId;
+	level = other.level;
+	location = other.location;
+
+	other.opticalPath = 0;
+	other.D = 0;
+	other.e = Point3f(0, 0, 0);
+	other.direction = Point3f(0, 0, 0);
+
+	other.polygon.size = 0;
+
+	other.facetId = 0;
+	other.level = 0;
+	other.location = Location::Outside;
+}
+
 void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 {
 	Point3f newBasis;
@@ -105,8 +130,44 @@ void Beam::GetSpherical(double &fi, double &teta) const
 
 Beam & Beam::operator = (const Beam &other)
 {
-	Copy(other);
-	JMatrix = other.JMatrix;
+	if (this != &other)
+	{
+		Copy(other);
+		JMatrix = other.JMatrix;
+	}
+
+	return *this;
+}
+
+Beam &Beam::operator = (Beam &&other)
+{
+	if (this != &other)
+	{
+		opticalPath = other.opticalPath;
+		D = other.D;
+		e = other.e;
+		direction = other.direction;
+
+		SetPolygon(other.polygon);
+
+		facetId = other.facetId;
+		level = other.level;
+		location = other.location;
+
+		JMatrix = other.JMatrix;
+
+		other.opticalPath = 0;
+		other.D = 0;
+		other.e = Point3f(0, 0, 0);
+		other.direction = Point3f(0, 0, 0);
+
+		other.polygon.size = 0;
+
+		other.facetId = 0;
+		other.level = 0;
+		other.location = Location::Outside;
+	}
+
 	return *this;
 }
 

@@ -112,7 +112,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 	int facetId = facetIds.arr[prevFacetNum];
 
 	// OPT: раскомментить
-	if (prevFacetNum == 0 /*|| m_particle->IsUnshadowedExternal(facetId)*/) // this facet is obviously not shadowed
+	if (prevFacetNum == 0 || m_particle->IsUnshadowedExternal(facetId)) // this facet is obviously not shadowed
 	{
 		Polygon beamPolygon;
 		SetPolygonByFacet(facetId, beamPolygon);
@@ -267,14 +267,13 @@ void TracingConcave::CutIncidentBeam2(int facetId, Beam &beam, bool &isDivided)
 	isDivided = false;
 
 	// OPT: раскомментить
-//	if (beam.location == Location::Inside
-//			&& !m_particle->IsShadowedInternal(beam.facetId))
-//	{
-//		return;
-//	}
+	if (beam.location == Location::Inside
+			&& !m_particle->IsShadowedInternal(beam.facetId))
+	{
+		return;
+	}
 
 	const Facet &beamFacet = m_facets[beam.facetId];
-//	const Point3f &facetNormal = facet.in_normal;
 	const Point3f &beamNormal = beamFacet.normal[(int)beam.location];
 
 	const Point3f &facetNormal = (beam.location == Location::Outside) ? -beamNormal

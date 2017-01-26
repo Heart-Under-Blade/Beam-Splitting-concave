@@ -14,6 +14,7 @@ class Beam
 public:
 	Beam();
 	Beam(const Beam &other);
+	Beam(Beam &&other);
 
 	void RotateSpherical(const Point3f &dir, const Point3f &polarBasis);
 	void RotatePlane(const Point3f& newBasis); ///< rotate Jones matrix in case of beam splitting
@@ -22,8 +23,8 @@ public:
 	void SetPolygon(const Polygon &other);
 
 	Beam & operator = (const Beam &other);
+	Beam & operator = (Beam &&other);
 
-	// OPT: сделать конструктор переноса
 public:
 	Point3f direction;				///< direction of beam
 	JonesMatrix JMatrix;			///< Jones matrix of beam
