@@ -19,7 +19,11 @@
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
-#include "test.h"
+#ifdef _OUTPUT_NRG_CONV
+std::ofstream energyFile("energy.dat", std::ios::out);
+double SS=0;
+int bcount=0;
+#endif
 
 using namespace std::chrono;
 
@@ -295,7 +299,7 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 int main(int argc, char* argv[])
 {
 //	logfile->open("log.txt", std::ios::out);
-//	testDiff();
+
 //	testConcaveHexagonRot();
 //	testHexagonBuilding();
 //	testHexagonRotate();
@@ -322,6 +326,13 @@ int main(int argc, char* argv[])
 		params.thetaNumber = 180;
 		params.interReflNum = 4;
 		params.isRandom = false;
+
+#ifdef _OUTPUT_NRG_CONV
+		std::cout << "WARNING: Energy conversation is calculating now."
+				  << std::endl << std::endl;
+		params.refractionIndex = complex(1000000000000001.31, 0.0);
+		params.interReflNum = 10;
+#endif
 	}
 
 	Calculate(params);
@@ -374,10 +385,16 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	time.Start();
 
 	//DEB
-//	beta = (79 + 0.5)*betaNorm;
-//	gamma = (78 + 0.5)*gammaNorm;
-//	tracer.RotateParticle(beta, gamma);
-//	tracer.SplitBeamByParticle(outcomingBeams);
+	beta = (69 + 0.5)*betaNorm;
+	gamma = (100 + 0.5)*gammaNorm;
+	betaDistrProbability = sin(beta);
+	tracer.RotateParticle(beta, gamma);
+	tracer.SplitBeamByParticle(outcomingBeams);
+	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+
+	// DEB
+//	double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
+
 
 	for (int i = betaRange.begin; i < betaRange.end; ++i)
 	{
@@ -386,11 +403,13 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 		for (int j = gammaRange.begin; j < gammaRange.end; ++j)
 		{
-#ifdef _DEBUG
 //			std::cout << j << std::endl;
-#endif
 			gamma = (j + 0.5)*gammaNorm;
 
+#ifdef _OUTPUT_NRG_CONV
+			SS=0;
+			bcount=0;
+#endif
 			try
 			{
 				tracer.RotateParticle(beta, gamma);
@@ -404,6 +423,12 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 				incomingEnergy += betaDistrProbability * square;
 				HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+
+#ifdef _OUTPUT_NRG_CONV
+				double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
+				energyFile<<i<<" "<<j<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<std::endl;
+				double dfdfdf = sss-SS;
+#endif
 			}
 			catch (const bool &)
 			{
@@ -540,6 +565,7 @@ bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compare
 void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
 	double eee = 0;//DEB
+
 	beamCount += outBeams.size();
 
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
@@ -574,6 +600,14 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 		const float &x = beam.direction.cx;
 		const float &y = beam.direction.cy;
 		const float &z = beam.direction.cz;
+
+#ifdef _OUTPUT_NRG_CONV
+		if (bf[0][0]>0.000001)
+		{
+			bcount++;
+			SS+=cross;
+		}
+#endif
 
 		// Collect the beam in array
 		if (z >= 1-DBL_EPSILON)
@@ -612,6 +646,7 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 
 		LOG_ASSERT(Area >= 0);
 	}
+
 	int fff = 0;//DEB
 }
 

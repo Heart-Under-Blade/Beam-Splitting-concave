@@ -30,12 +30,24 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	m_treeSize = 0;
 
 	TraceFirstBeam();
-	double rrr = 0;// DEB
-	for (int i =0; i < m_treeSize; ++i)
-	{
-		rrr += AreaOfBeam(m_beamTree[i]);
-	}
+//	double rrr = 0;// DEB
+//	for (int i =0; i < m_treeSize; ++i)
+//	{
+//		if (m_beamTree[i].track.size() == 1 &&
+//				m_beamTree[i].track[0] == 4)
+//		rrr += AreaOfBeam(m_beamTree[i]);
+//	}
 	TraceSecondaryBeams(outBeams);
+
+	//DEB
+//	double rrr = 0;
+//	for (const Beam &b : outBeams)
+//	{
+//		if (b.track.size() == 1 &&
+//				b.track[0] == 1)
+//			rrr += AreaOfBeam(b);
+//	}
+//	int ggg = 0;
 }
 
 void TracingConcave::TraceFirstBeam()
@@ -72,7 +84,7 @@ void TracingConcave::TraceFirstBeam()
 				 inBeam.SetPolygon(resFacets[j]);
 				outBeam.SetPolygon(resFacets[j]);
 
-				PushBeamToTree( inBeam, facetId, 0, Location::Inside);
+				PushBeamToTree( inBeam, facetId, 0, Location::Inside );
 				PushBeamToTree(outBeam, facetId, 0, Location::Outside);
 
 				if (m_isArea)
@@ -80,7 +92,6 @@ void TracingConcave::TraceFirstBeam()
 					CalcLigthSurfaceArea(facetId, outBeam);
 				}
 			}
-
 
 			int fff = 0; //DEB
 		}
@@ -207,12 +218,11 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level,
 									Location location)
 {
-	if (m_treeSize >= MAX_BEAM_REFL_NUM)//DEB
+//	if (m_treeSize >= MAX_BEAM_REFL_NUM)//DEB
 	assert(m_treeSize < MAX_BEAM_REFL_NUM);
 
 #ifdef _TRACK_ALLOW
 	AddToTrack(beam, facetId);
-
 #ifdef _TRACK_OUTPUT
 	PrintTrack(beam, facetId);
 #endif
@@ -265,16 +275,19 @@ void TracingConcave::CutIncidentBeam2(int facetId, Beam &beam, bool &isDivided)
 //		return;
 //	}
 
-	const Facet &facet = m_facets[beam.facetId];
+	const Facet &beamFacet = m_facets[beam.facetId];
 //	const Point3f &facetNormal = facet.in_normal;
-	const Point3f &facetNormal = facet.normal[(int)beam.location];
+	const Point3f &beamNormal = beamFacet.normal[(int)beam.location];
+
+	const Point3f &facetNormal = (beam.location == Location::Outside) ? -beamNormal
+																	  : beamNormal;
 
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
 if (m_treeSize == 410 /*&& i == 6*/)
 	int fgg = 0;//DEB
-	Difference(m_facets[facetId].polygon, facetNormal, beam.polygon, -beam.direction,
-			   resultBeams, resultSize);
+	Difference(m_facets[facetId].polygon, facetNormal, beam.polygon, beamNormal,
+			   -beam.direction, resultBeams, resultSize);
 
 //	std::cout << resultSize << std::endl; //DEB
 
@@ -316,7 +329,7 @@ void TracingConcave::PushBeamsToTree(int level, int facetId, bool hasOutBeam,
 	}
 
 #ifdef _TRACK_ALLOW
-	inBeam.track = incidentBeam.track;
+	inBeam.track = inBeam.track;
 #ifdef _TRACK_OUTPUT
 	trackMapFile << "[in] ";
 #endif
@@ -331,6 +344,8 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		Beam incidentBeam = m_beamTree[--m_treeSize];
 		const Location loc = incidentBeam.location;
 
+		if (incidentBeam.facetId == 1)//DEB
+			int fff = 0;
 		if (isTerminalBeam(incidentBeam))
 		{
 			if (loc == Location::Outside)
@@ -485,10 +500,12 @@ void TracingConcave::CutShadowsFromFacet2(int facetId, const IntArray &facetIds,
 		{
 			const Polygon &clip = m_facets[id].polygon;
 			const Polygon &subj = resFacets[--resSize];
+//			const Point3f &clipNormal = m_facets[id].normal[(int)beam.location];
+			const Point3f &clipNormal = facetNormal;
 
 if (prevFacetNum == 3 && i == 2)
 	int fff = 0;//DEB
-			Difference(clip, facetNormal, subj, -beam.direction,
+			Difference(clip, clipNormal, subj, facetNormal, -beam.direction,
 					   diffFacets, diffSize);
 		}
 

@@ -378,12 +378,13 @@ void Tracing::SetBeam(Beam &beam, const Beam &other,
 	beam.e = e;
 }
 
-void Tracing::Difference(const Polygon &clip, const Point3f &normal,
-						 const Polygon &subject, const Point3f &subjectDir,
+void Tracing::Difference(const Polygon &clip, const Point3f &clipNormal,
+						 const Polygon &subject, const Point3f &subjNormal,
+						 const Point3f &clipDir,
 						 Polygon *difference, int &resultSize) const
 {
 	__m128 _clip[MAX_VERTEX_NUM];
-	bool isProjected = ProjectToFacetPlane(clip, subjectDir, normal, _clip);
+	bool isProjected = ProjectToFacetPlane(clip, clipDir, subjNormal, _clip);
 
 	if (!isProjected)
 	{
@@ -391,7 +392,7 @@ void Tracing::Difference(const Polygon &clip, const Point3f &normal,
 		return;
 	}
 
-	__m128 _clip_normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
+	__m128 _clip_normal = _mm_setr_ps(clipNormal.cx, clipNormal.cy, clipNormal.cz, 0.0);
 //	__m128 _clip_normal = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
 	int clipSize = clip.size;
 	__m128 _res_pol[MAX_VERTEX_NUM]; // OPT: заменить на Polygon
@@ -441,8 +442,8 @@ void Tracing::Difference(const Polygon &clip, const Point3f &normal,
 			{
 				if (!isInFirst)
 				{
-					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
-													 _clip_normal, isIntersected);
+					__m128 x = intersect_i(_first_p, _second_p, _p1, _p2,
+										   _clip_normal, isIntersected);
 
 					if (isIntersected && is_layOnLine_i(x, _first_p, _second_p))
 					{
@@ -457,8 +458,8 @@ void Tracing::Difference(const Polygon &clip, const Point3f &normal,
 			{
 				if (isInFirst)
 				{
-					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
-													 _clip_normal, isIntersected);
+					__m128 x = intersect_i(_first_p, _second_p, _p1, _p2,
+										   _clip_normal, isIntersected);
 
 					if (isIntersected && is_layOnLine_i(x, _first_p, _second_p))
 					{
@@ -589,7 +590,7 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) co
 			{
 				if (!isInsideS)
 				{
-					__m128 x = computeIntersection_i(_s_point, _e_point, _p1, _p2,
+					__m128 x = intersect_i(_s_point, _e_point, _p1, _p2,
 													 _normal_to_facet, isIntersected);
 					if (isIntersected)
 					{
@@ -601,7 +602,7 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) co
 			}
 			else if (isInsideS)
 			{
-				__m128 x = computeIntersection_i(_s_point, _e_point, _p1, _p2,
+				__m128 x = intersect_i(_s_point, _e_point, _p1, _p2,
 												 _normal_to_facet, isIntersected);
 				if (isIntersected)
 				{

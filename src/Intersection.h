@@ -32,7 +32,8 @@ inline bool is_layOnLine_i(__m128 _x, __m128 _a, __m128 _b)
 	return (sqr_len_ax[0] + sqr_len_bx[0] < sqr_len_ab[0] + EPS_IN_LINE);
 }
 
-inline __m128 computeIntersection_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2, __m128 _normal_to_facet, bool &ok)
+inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
+						  __m128 _normal_to_facet, bool &ok)
 {
 	__m128 _v_a = _mm_sub_ps(_a2, _a1);
 	__m128 _v_b = _mm_sub_ps(_b2, _b1);

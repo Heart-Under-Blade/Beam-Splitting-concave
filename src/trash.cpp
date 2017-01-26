@@ -33,7 +33,7 @@ void FindDividePoint(const std::vector<Point3f> &polygon,
 		if (is_inside_i(_b1, _a0, _a1, _n)
 				&& !is_inside_i(_b0, _a0, _a1, _n))
 		{
-			res = computeIntersection_i(_a0, _a1, _b0, _b1, _n, isOk); // OPT: написать опт. вариант (с уже готовыми векторами v1, v2)
+			res = intersect_i(_a0, _a1, _b0, _b1, _n, isOk); // OPT: написать опт. вариант (с уже готовыми векторами v1, v2)
 
 			if (isOk)
 			{

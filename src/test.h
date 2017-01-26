@@ -135,7 +135,7 @@ void Differ(const Polygon &clip, const Point3f &normal,
 			{
 				if (!isInSecond)
 				{
-					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
+					__m128 x = intersect_i(_first_p, _second_p, _p1, _p2,
 													 _clip_normal, isIntersected);
 
 					if (isIntersected && is_layOnLine_i(x, _p1, _second_p))
@@ -151,7 +151,7 @@ void Differ(const Polygon &clip, const Point3f &normal,
 			{
 				if (isInSecond)
 				{
-					__m128 x = computeIntersection_i(_first_p, _second_p, _p1, _p2,
+					__m128 x = intersect_i(_first_p, _second_p, _p1, _p2,
 													 _clip_normal, isIntersected);
 
 					if (isIntersected && is_layOnLine_i(x, _first_p, _second_p))

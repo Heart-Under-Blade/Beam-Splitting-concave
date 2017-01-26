@@ -5,8 +5,6 @@
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
 
-//#define _TRACK_ALLOW // tracks of beams writes to beams
-
 #ifdef _TRACK_ALLOW
 #include <vector>
 #endif
