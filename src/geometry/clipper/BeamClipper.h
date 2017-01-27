@@ -3,8 +3,6 @@
 #include "clipper.hpp"
 #include "geometry_lib.h"
 
-#define CLIP_RESULT_SINGLE 1
-
 #define MULTI_INDEX		10000000l	// index for poligon's clip operations
 #define EPS_MULTI		(1.415*MULTI_INDEX*2)/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими
 
@@ -46,6 +44,14 @@ public:
 
 private:
 	ClipperLib::Clipper m_clipper;
+
+private:
+	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
+							 const Point3d &facetNormal, Point3d &projection);
+
+	void ProjectFacetToFacet(const Polygon &a_facet, const Point3f &a_dir,
+							 const Point3f &b_normal, ClipperLib::Path &projection);
+
 };
 
 void FindZCoord(ClipperLib::IntPoint & a1, ClipperLib::IntPoint & a2,

@@ -43,20 +43,16 @@ public:
 
 	virtual double BeamCrossSection(const Beam &/*beam*/) const { return 0.0; }
 
-	virtual void SplitBeamByParticle(std::vector<Beam> &/*outBeams*/) {}
+	virtual void SplitBeamByParticle(std::vector<Beam> &/*scaterredBeams*/) {}
 
 	virtual void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
-									 std::vector<Beam> &outBeams);
+									 std::vector<Beam> &scaterredBeams);
 
 	double AreaOfBeam(const Beam &beam) const;
 
 	double GetLightSurfaceArea() const;
 
 protected:
-
-//	virtual void TraceInternalReflections(BeamInfo */*tree*/, int /*treesize*/,
-//										  std::vector<Beam> &/*outBeams*/) {}
-
 	void SetFirstBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,

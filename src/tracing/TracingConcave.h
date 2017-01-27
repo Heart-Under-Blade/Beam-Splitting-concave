@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Tracing.h"
-#include "BeamClipper.h"
 
 /** NOTE: пучки выходят со случайно ориентированным порядком вершин */
 class TracingConcave : public Tracing
@@ -13,12 +12,10 @@ public:
 
 	double BeamCrossSection(const Beam &beam) const override;
 
-	void SplitBeamByParticle(std::vector<Beam> &outBeams) override;
+	void SplitBeamByParticle(std::vector<Beam> &scaterredBeams) override;
 
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
-							 std::vector<Beam> &outBeams) override;
-//private:
-//	BeamClipper m_clipper;
+							 std::vector<Beam> &scaterredBeams) override;
 
 private:
 	void CutBeamByFacet(int facetId, Beam &beam, bool &isDivided);
@@ -28,21 +25,14 @@ private:
 	void CutShadowsFromFacet(int facetId, const IntArray &facetIds, int prevFacetNum,
 							 const Beam &beam, Polygon *resFacets, int &resSize);
 
-	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
-							 const Point3d &facetNormal, Point3d &projection);
-
 	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
 							 const Point3f &facetNormal, Point3f &projection);
-
-	void ProjectFacetToFacet(const Polygon &a_facet, const Point3f &a_dir,
-							 const Point3f &b_normal,
-							 ClipperLib::Path &projection);
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 
-	void FindVisibleFacets_initial(IntArray &facetIds);
+	void FindFirstVisibleFacets(IntArray &facetIds);
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
 
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIds);
@@ -55,7 +45,7 @@ private:
 
 	void TraceFirstBeam();
 
-	void SelectFirstBeamVisibleFacets(IntArray &facetIds);
+	void OrderFirstBeamVisibleFacets(IntArray &facetIds);
 
 	bool HasExternalBeam(Beam &incidentBeam);
 

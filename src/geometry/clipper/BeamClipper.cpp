@@ -163,24 +163,88 @@ double BeamClipper::AreaOfConcavePolygon(const Polygon &beam, const Point3f &nor
 	return area;
 }
 
+//void BeamClipper::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
+//{
+//	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
+
+//	IntArray facetIds;
+//	SelectVisibleFacets(beam, facetIds);
+
+//	Paths originPath(1);
+//	m_clipper.PolygonToPath(beam.polygon, originPath);
+
+//	// cut facet projections out of beam one by one
+//	for (int i = 0; i < facetIds.size; ++i)
+//	{
+//		int id = facetIds.arr[i];
+
+//		Paths clippedPath(1);
+//		m_clipper.CutBeamByPolygon(originPath, m_facets[id].polygon, beam.direction,
+//								   facetNormal, clippedPath);
+
+//		if (clippedPath.empty()) // beam incedents on facet totaly
+//		{
+//			originPath.clear();
+//			break;
+//		}
+//		else
+//		{
+//			originPath = clippedPath;
+//		}
+//	}
+
+//	Beam tmp = beam;
+
+//	for (const Path &p : originPath)
+//	{
+//		m_clipper.PathToPolygon(p, tmp.polygon);
+//		scatteredBeams.push_back(tmp);
+//	}
+//}
+
+void BeamClipper::ProjectPointToFacet(const Point3d &point, const Point3d &direction,
+										 const Point3d &facetNormal, Point3d &projection)
+{
+	double tmp = DotProductD(point, facetNormal);
+	tmp = tmp + facetNormal.d;
+	double dp = DotProductD(direction, facetNormal);
+	tmp = tmp/dp;
+	projection = point - (direction * tmp);
+}
+
+void BeamClipper::ProjectFacetToFacet(const Polygon &a_facet, const Point3f &a_dir,
+									  const Point3f &b_normal, Path &projection)
+{
+	for (int i = 0; i < a_facet.size; ++i)
+	{
+		Point3d p;
+		ProjectPointToFacet(Point3d(a_facet.arr[i]), Point3d(a_dir),
+							Point3d(b_normal), p);
+
+		projection << IntPoint((cInt)(p.x * MULTI_INDEX),
+							   (cInt)(p.y * MULTI_INDEX),
+							   (cInt)(p.z * MULTI_INDEX));
+	}
+}
+
 void BeamClipper::CutBeamByPolygon(Paths &beamPol, const Polygon &polygon,
 								   const Point3f &direction,
 								   const Point3f &polNormal, Paths &result)
 {
-//	Axis axis = GetSwapAxis(polNormal);
-//	SwapCoords(axis, Axis::aZ, beamPol);
+	Axis axis = GetSwapAxis(polNormal);
+	SwapCoords(axis, Axis::aZ, beamPol);
 
-//	// проецируем грань на начальный пучок
-//	Paths clip(1);
-//	ProjectFacetToFacet(polygon, direction, polNormal, clip[0]);
-//	SwapCoords(axis, Axis::aZ, clip);
+	// проецируем грань на начальный пучок
+	Paths clip(1);
+	ProjectFacetToFacet(polygon, direction, polNormal, clip[0]);
+	SwapCoords(axis, Axis::aZ, clip);
 
-//	Difference(beamPol, clip, result);
+	Difference(beamPol, clip, result);
 
-//	if (!result.empty())
-//	{
-//		HandleResultPaths(axis, result);
-//	}
+	if (!result.empty())
+	{
+		HandleResultPaths(axis, result);
+	}
 }
 
 void BeamClipper::Difference(const Paths &subject, const Paths &clip, Paths &difference)

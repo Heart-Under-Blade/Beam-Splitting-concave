@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <float.h>
 #include <chrono>
+#include <cstring>
 
 #include "CalcTimer.h"
 #include "macro.h"

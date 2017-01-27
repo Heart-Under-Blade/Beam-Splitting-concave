@@ -9,20 +9,22 @@ QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
 CONFIG(release, debug|release): DEFINES += _NDEBUG
-CONFIG(debug, debug|release): DEFINES += _DEBUG
+CONFIG(debug,	debug|release): DEFINES += _DEBUG
 
 INCLUDEPATH += \
 	../src \
 	../src/math \
 	../src/particle \
+	../src/geometry \
+	../src/geometry/clipper \
 	../src/common \
 	../src/tracing
 
 HEADERS += \
 	../src/Beam.h \
-	../src/Intersection.h \
+	../src/geometry/Intersection.h \
 	../src/test.h \
-    ../src/intrinsic/intrinsics.h \
+	../src/geometry/intrinsic/intrinsics.h \
     ../src/math/compl.hpp \
     ../src/math/matrix.hpp \
 	../src/math/service.hpp \
@@ -39,15 +41,15 @@ HEADERS += \
     ../src/tracing/TracingConcave.h \
 	../src/CalcTimer.h \
 	../src/Tracer.h \
-    ../src/clipper.hpp \
-	../src/BeamClipper.h \
-    ../src/particle/geometry_lib.h
+	../src/geometry/clipper/clipper.hpp \
+	../src/geometry/clipper/BeamClipper.h \
+	../src/geometry/geometry_lib.h
 
 SOURCES += \
     ../src/Beam.cpp \
-	../src/Intersection.cpp \
+	../src/geometry/Intersection.cpp \
 	../src/main.cpp \
-    ../src/intrinsic/intrinsics.cpp \
+	../src/geometry/intrinsic/intrinsics.cpp \
     ../src/math/compl.cpp \
 	../src/math/matrix.cpp \
     ../src/particle/Hexagonal.cpp \
@@ -62,8 +64,8 @@ SOURCES += \
     ../src/tracing/TracingConcave.cpp \
 	../src/CalcTimer.cpp \
 	../src/Tracer.cpp \
-    ../src/clipper.cpp \
-	../src/BeamClipper.cpp \
-	../src/particle/geometry_lib.cpp \
+	../src/geometry/clipper/clipper.cpp \
+	../src/geometry/clipper/BeamClipper.cpp \
+	../src/geometry/geometry_lib.cpp \
 	../src/trash.cpp
 

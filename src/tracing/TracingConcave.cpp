@@ -10,8 +10,6 @@
 
 #define EPS_ORTO_FACET 0.0001 //TODO: подобрать норм значение
 
-using namespace ClipperLib;
-
 #ifdef _TRACK_ALLOW
 std::ofstream trackMapFile("tracks.dat", std::ios::out);
 #endif
@@ -28,12 +26,10 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 	m_isArea = false;
 }
 
-void TracingConcave::SplitBeamByParticle(std::vector<Beam> &outBeams)
+void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 {
-	m_treeSize = 0;
-
 	TraceFirstBeam();
-	TraceSecondaryBeams(outBeams);
+	TraceSecondaryBeams(scaterredBeams);
 
 #ifdef _DEBUG // DEB
 //	double rrr = 0;
@@ -52,10 +48,12 @@ void TracingConcave::TraceFirstBeam()
 #ifdef _TRACK_OUTPUT
 	trackMapFile << "0 lvl: ";
 #endif
+
+	m_treeSize = 0;
 	m_lightSurfaceArea = 0;
 
 	IntArray orderedFacets;
-	SelectFirstBeamVisibleFacets(orderedFacets);
+	OrderFirstBeamVisibleFacets(orderedFacets);
 
 	for (int i = 0; i < orderedFacets.size; ++i)
 	{
@@ -97,9 +95,9 @@ void TracingConcave::TraceFirstBeam()
 	}
 }
 
-void TracingConcave::SelectFirstBeamVisibleFacets(IntArray &facetIds)
+void TracingConcave::OrderFirstBeamVisibleFacets(IntArray &facetIds)
 {
-	FindVisibleFacets_initial(facetIds);
+	FindFirstVisibleFacets(facetIds);
 	SortFacets(m_initialBeam.direction, facetIds);
 }
 
@@ -111,7 +109,6 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 	hasIntersection = true;
 	int facetId = facetIds.arr[prevFacetNum];
 
-	// OPT: раскомментить
 	if (prevFacetNum == 0 || m_particle->IsUnshadowedExternal(facetId)) // this facet is obviously not shadowed
 	{
 		Polygon beamPolygon;
@@ -137,45 +134,6 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 	dir.d_param = m_facets[beam.facetId].in_normal.d_param;
 	SortFacets(dir, facetIds);
 }
-
-//void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
-//{
-//	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
-
-//	IntArray facetIds;
-//	SelectVisibleFacets(beam, facetIds);
-
-//	Paths originPath(1);
-//	m_clipper.PolygonToPath(beam.polygon, originPath);
-
-//	// cut facet projections out of beam one by one
-//	for (int i = 0; i < facetIds.size; ++i)
-//	{
-//		int id = facetIds.arr[i];
-
-//		Paths clippedPath(1);
-//		m_clipper.CutBeamByPolygon(originPath, m_facets[id].polygon, beam.direction,
-//								   facetNormal, clippedPath);
-
-//		if (clippedPath.empty()) // beam incedents on facet totaly
-//		{
-//			originPath.clear();
-//			break;
-//		}
-//		else
-//		{
-//			originPath = clippedPath;
-//		}
-//	}
-
-//	Beam tmp = beam;
-
-//	for (const Path &p : originPath)
-//	{
-//		m_clipper.PathToPolygon(p, tmp.polygon);
-//		scatteredBeams.push_back(tmp);
-//	}
-//}
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 {
@@ -445,13 +403,13 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 	}
 }
 
-void TracingConcave::FindVisibleFacets_initial(IntArray &facetIds)
+void TracingConcave::FindFirstVisibleFacets(IntArray &facetIds)
 {
 	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
 		double cosIN = DotProduct(m_initialBeam.direction, m_facets[i].in_normal);
 
-		if (cosIN > EPS_COS_90) // beam incidents to this facet
+		if (cosIN >= EPS_COS_90) // beam incidents to this facet
 		{
 			facetIds.arr[facetIds.size++] = i;
 		}
@@ -522,16 +480,6 @@ void TracingConcave::CutShadowsFromFacet(int facetId, const IntArray &facetIds,
 	}
 }
 
-void TracingConcave::ProjectPointToFacet(const Point3d &point, const Point3d &direction,
-										 const Point3d &facetNormal, Point3d &projection)
-{
-	double tmp = DotProductD(point, facetNormal);
-	tmp = tmp + facetNormal.d;
-	double dp = DotProductD(direction, facetNormal);
-	tmp = tmp/dp;
-	projection = point - (direction * tmp);
-}
-
 void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
 										 const Point3f &facetNormal, Point3f &projection)
 {
@@ -543,21 +491,6 @@ void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &di
 }
 
 /// OPT: поменять все int и пр. параметры функций на ссылочные
-
-void TracingConcave::ProjectFacetToFacet(const Polygon &a_facet, const Point3f &a_dir,
-										 const Point3f &b_normal, Path &projection)
-{
-	for (int i = 0; i < a_facet.size; ++i)
-	{
-		Point3d p;
-		ProjectPointToFacet(Point3d(a_facet.arr[i]), Point3d(a_dir),
-							Point3d(b_normal), p);
-
-		projection << IntPoint((cInt)(p.x * MULTI_INDEX),
-							   (cInt)(p.y * MULTI_INDEX),
-							   (cInt)(p.z * MULTI_INDEX));
-	}
-}
 
 /** TODO: придумать более надёжную сортировку по близости
  * (как вариант определять, что одна грань затеняют другую по мин. и макс.
@@ -660,7 +593,7 @@ double TracingConcave::CalcMinDistanceToFacet(const Polygon &facet,
 }
 
 void TracingConcave::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
-										 std::vector<Beam> &/*outBeams*/)
+										 std::vector<Beam> &/*scaterredBeams*/)
 {
 	for (unsigned int i = 0; i < tracks.size(); ++i)
 	{

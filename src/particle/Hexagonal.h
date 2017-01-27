@@ -17,7 +17,7 @@ public:
 protected:
 	static const int BASE_FACET_NUM = 2;		///< number of bases of hexagon
 	static const int SIDE_VERTEX_NUMBER = 4;	///< number of vertex of the each side facet
-	static const int BASE_VERTEX_NUM = 6;	///< number of side facets
+	static const int BASE_VERTEX_NUM = 6;		///< number of side facets
 
 	struct Bases
 	{
