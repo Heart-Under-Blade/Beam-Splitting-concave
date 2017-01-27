@@ -17,15 +17,15 @@ public:
 
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &outBeams) override;
-private:
-	BeamClipper m_clipper;
+//private:
+//	BeamClipper m_clipper;
 
 private:
-	void CutIncidentBeam2(int facetId, Beam &beam, bool &isDivided);
+	void CutBeamByFacet(int facetId, Beam &beam, bool &isDivided);
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
 
-	void CutShadowsFromFacet2(int facetId, const IntArray &facetIds, int prevFacetNum,
+	void CutShadowsFromFacet(int facetId, const IntArray &facetIds, int prevFacetNum,
 							 const Beam &beam, Polygon *resFacets, int &resSize);
 
 	void ProjectPointToFacet(const Point3d &point, const Point3d &direction,
@@ -37,11 +37,6 @@ private:
 	void ProjectFacetToFacet(const Polygon &a_facet, const Point3f &a_dir,
 							 const Point3f &b_normal,
 							 ClipperLib::Path &projection);
-
-
-	void CutBeamByFacet(ClipperLib::Paths &beamPolygon, int facetId,
-						const Point3f &direction, const Point3f &facetNormal,
-						ClipperLib::Paths &result);
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 

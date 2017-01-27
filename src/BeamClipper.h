@@ -40,6 +40,10 @@ public:
 	void RemoveEmptyPaths(ClipperLib::Paths &result) const;
 	void HandleResultPaths(Axis axis, ClipperLib::Paths &result) const;
 
+	void CutBeamByPolygon(ClipperLib::Paths &beamPol, const Polygon &polygon,
+						  const Point3f &direction, const Point3f &polNormal,
+						  ClipperLib::Paths &result);
+
 private:
 	ClipperLib::Clipper m_clipper;
 };

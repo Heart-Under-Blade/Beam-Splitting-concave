@@ -120,7 +120,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 	}
 	else // facet is probably shadowed by others
 	{
-		CutShadowsFromFacet2(facetId, facetIds, prevFacetNum, m_initialBeam,
+		CutShadowsFromFacet(facetId, facetIds, prevFacetNum, m_initialBeam,
 							 resFacets, resSize);
 		if (resSize == 0)
 		{
@@ -138,44 +138,6 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 	SortFacets(dir, facetIds);
 }
 
-void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
-{
-	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
-
-	IntArray facetIds;
-	SelectVisibleFacets(beam, facetIds);
-
-	Paths originPath(1);
-	m_clipper.PolygonToPath(beam.polygon, originPath);
-
-	// cut facet projections out of beam one by one
-	for (int i = 0; i < facetIds.size; ++i)
-	{
-		int id = facetIds.arr[i];
-
-		Paths clippedPath(1);
-		CutBeamByFacet(originPath, id, beam.direction, facetNormal, clippedPath);
-
-		if (clippedPath.empty()) // beam incedents on facet totaly
-		{
-			originPath.clear();
-			break;
-		}
-		else
-		{
-			originPath = clippedPath;
-		}
-	}
-
-	Beam tmp = beam;
-
-	for (const Path &p : originPath)
-	{
-		m_clipper.PathToPolygon(p, tmp.polygon);
-		scatteredBeams.push_back(tmp);
-	}
-}
-
 //void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 //{
 //	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
@@ -183,25 +145,26 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 //	IntArray facetIds;
 //	SelectVisibleFacets(beam, facetIds);
 
+//	Paths originPath(1);
+//	m_clipper.PolygonToPath(beam.polygon, originPath);
+
 //	// cut facet projections out of beam one by one
 //	for (int i = 0; i < facetIds.size; ++i)
 //	{
 //		int id = facetIds.arr[i];
 
-//		Polygon resultBeams[MAX_VERTEX_NUM];
-//		int resultSize;
+//		Paths clippedPath(1);
+//		m_clipper.CutBeamByPolygon(originPath, m_facets[id].polygon, beam.direction,
+//								   facetNormal, clippedPath);
 
-//		Difference(beam.polygon, facetNormal, m_facets[id].polygon, -beam.direction,
-//				   resultBeams, resultSize);
-
-//		if (resultSize == 0) // beam incedents on facet totaly
+//		if (clippedPath.empty()) // beam incedents on facet totaly
 //		{
-//			beam.polygon.size = 0;
+//			originPath.clear();
 //			break;
 //		}
 //		else
 //		{
-//			beams = clippedPath;
+//			originPath = clippedPath;
 //		}
 //	}
 
@@ -213,6 +176,56 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 //		scatteredBeams.push_back(tmp);
 //	}
 //}
+
+void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
+{
+	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
+
+	IntArray facetIds;
+	SelectVisibleFacets(beam, facetIds);
+
+	Polygon resultBeams[MAX_VERTEX_NUM];
+	int resSize = 0;
+
+	resultBeams[resSize++] = beam.polygon;
+
+	// cut facet projections out of beam one by one
+	for (int i = 0; i < facetIds.size; ++i)
+	{
+		int id = facetIds.arr[i];
+
+		Polygon diffFacets[MAX_POLYGON_NUM];
+		int diffSize = 0;
+
+		while (resSize != 0)
+		{
+			const Polygon &clip = m_facets[id].polygon;
+			const Polygon &subj = resultBeams[--resSize];
+			Difference(clip, facetNormal, subj, facetNormal, -beam.direction,
+					   diffFacets, diffSize);
+		}
+
+		if (diffSize != 0)
+		{
+			for (int i = 0; i < diffSize; ++i)
+			{
+				resultBeams[resSize++] = diffFacets[i];
+			}
+		}
+		else // beam is totaly swallowed by facet
+		{
+			break;
+		}
+	}
+
+	Beam tmp = beam;
+
+	for (int i = 0; i < resSize; ++i)
+	{
+		tmp.SetPolygon(resultBeams[i]);
+		scatteredBeams.push_back(tmp);
+	}
+}
 
 void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level,
 									Location location)
@@ -262,7 +275,7 @@ void TracingConcave::PrintTrack(const Beam &beam, int facetId)
 }
 #endif
 
-void TracingConcave::CutIncidentBeam2(int facetId, Beam &beam, bool &isDivided)
+void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 {
 	isDivided = false;
 
@@ -374,7 +387,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 								inBeam, outBeam);
 
 				bool isDivided;
-				CutIncidentBeam2(facetId, incidentBeam, isDivided);
+				CutBeamByFacet(facetId, incidentBeam, isDivided);
 
 				if (isDivided)
 				{
@@ -470,12 +483,11 @@ void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 	}
 }
 
-void TracingConcave::CutShadowsFromFacet2(int facetId, const IntArray &facetIds,
-										  int prevFacetNum, const Beam &beam,
-										  Polygon *resFacets, int &resSize)
+void TracingConcave::CutShadowsFromFacet(int facetId, const IntArray &facetIds,
+										 int prevFacetNum, const Beam &beam,
+										 Polygon *resFacets, int &resSize)
 {
 	const Point3f &facetNormal = m_facets[facetId].normal[(int)beam.location];
-//	const Point3f &facetNormal = m_facets[facetId].in_normal;
 	resFacets[resSize++] = m_facets[facetId].polygon;
 
 	for (int i = 0; i < prevFacetNum; ++i)
@@ -656,28 +668,6 @@ void TracingConcave::SplitBeamByParticle(const std::vector<std::vector<int>> &tr
 	}
 }
 
-void TracingConcave::CutBeamByFacet(Paths &beamPolygon, int facetId,
-									const Point3f &direction,
-									const Point3f &facetNormal, Paths &result)
-{
-	Axis axis = m_clipper.GetSwapAxis(facetNormal);
-	m_clipper.SwapCoords(axis, Axis::aZ, beamPolygon);
-
-	Paths clip(1);
-	{
-		ProjectFacetToFacet(m_facets[facetId].polygon, direction, facetNormal,
-							clip[0]); // проецируем грань на начальный пучок
-		m_clipper.SwapCoords(axis, Axis::aZ, clip);
-	}
-
-	m_clipper.Difference(beamPolygon, clip, result);
-
-	if (!result.empty())
-	{
-		m_clipper.HandleResultPaths(axis, result);
-	}
-}
-
 double TracingConcave::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
@@ -721,7 +711,8 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 		return 0;
 	}
 
-	double square = m_clipper.AreaOfConcavePolygon(beam.polygon, normal);
+	double square = AreaOfPolygon(beam.polygon);
+//	double square = m_clipper.AreaOfConcavePolygon(beam.polygon, normal);
 	double n = Length(normal);
 	return (e*square) / n;
 }

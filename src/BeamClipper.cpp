@@ -163,6 +163,26 @@ double BeamClipper::AreaOfConcavePolygon(const Polygon &beam, const Point3f &nor
 	return area;
 }
 
+void BeamClipper::CutBeamByPolygon(Paths &beamPol, const Polygon &polygon,
+								   const Point3f &direction,
+								   const Point3f &polNormal, Paths &result)
+{
+//	Axis axis = GetSwapAxis(polNormal);
+//	SwapCoords(axis, Axis::aZ, beamPol);
+
+//	// проецируем грань на начальный пучок
+//	Paths clip(1);
+//	ProjectFacetToFacet(polygon, direction, polNormal, clip[0]);
+//	SwapCoords(axis, Axis::aZ, clip);
+
+//	Difference(beamPol, clip, result);
+
+//	if (!result.empty())
+//	{
+//		HandleResultPaths(axis, result);
+//	}
+}
+
 void BeamClipper::Difference(const Paths &subject, const Paths &clip, Paths &difference)
 {
 	m_clipper.AddPaths(subject, ptSubject, true);
@@ -171,7 +191,7 @@ void BeamClipper::Difference(const Paths &subject, const Paths &clip, Paths &dif
 	m_clipper.Clear();
 }
 
-// TODO: расширить функцию на более 2 полигонов
+// NOTE: функция расчитана не более чем на 2 полигона
 void BeamClipper::RemoveHole(Paths &result) const
 {
 	Path &pol1 = result.front();
