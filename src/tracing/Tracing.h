@@ -21,7 +21,7 @@ protected:
 	bool m_isOpticalPath;
 	bool m_isArea;
 	int m_interReflectionNumber;
-	Beam m_initialBeam;				///< origin infinity beam
+	Beam m_waveFront;				///< origin infinity beam
 
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;

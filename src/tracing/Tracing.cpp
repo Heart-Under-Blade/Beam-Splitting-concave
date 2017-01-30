@@ -22,7 +22,7 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 	m_isOpticalPath = isOpticalPath;
 	m_polarizationBasis = polarizationBasis;
 	m_interReflectionNumber = interReflectionNumber;
-	m_initialBeam.direction = startBeamDir;
+	m_waveFront.direction = startBeamDir;
 
 	m_refrIndex = m_particle->GetRefractionIndex();
 	double re = real(m_refrIndex);
@@ -65,7 +65,7 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 
 void Tracing::SetFirstBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	const Point3f &startDir = m_initialBeam.direction;
+	const Point3f &startDir = m_waveFront.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
 
@@ -108,7 +108,7 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 	Point3f center = CenterOfPolygon(inBeam.polygon);
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
-	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_initialBeam.direction, center);
+	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_waveFront.direction, center);
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
@@ -123,7 +123,7 @@ void Tracing::SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam)
 
 void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
 {
-	const Point3f &startDir = m_initialBeam.direction;
+	const Point3f &startDir = m_waveFront.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
 	m_lightSurfaceArea += AreaOfBeam(beam) * cosIN;
@@ -138,7 +138,7 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 		int facetId = tracks.at(i).at(0);
 		const Point3f &extNormal = m_particle->facets[facetId].ex_normal;
 
-		double cosIN = DotProduct(m_initialBeam.direction, extNormal);
+		double cosIN = DotProduct(m_waveFront.direction, extNormal);
 
 		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
 		{

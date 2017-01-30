@@ -204,7 +204,9 @@ void testDiff()
 
 	Differ(s, n, a, -n, r, size);
 
+#ifdef _DEBUG // DEB
 	int fff = 0;
+#endif
 }
 
 void outputParticle(const Particle &particle)

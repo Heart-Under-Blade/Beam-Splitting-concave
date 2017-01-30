@@ -19,9 +19,9 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   int interReflectionNumber)
 	: Tracing(particle, startBeamDir, isOpticalPath, polarizationBasis, interReflectionNumber)
 {
-	Point3f point = m_initialBeam.direction * m_particle->GetHalfHeight()*2;
-	m_initialBeam.direction.d_param = DotProduct(point, m_initialBeam.direction);
-	m_initialBeam.location = Location::Outside;
+	Point3f point = m_waveFront.direction * m_particle->GetHalfHeight()*2;
+	m_waveFront.direction.d_param = DotProduct(point, m_waveFront.direction);
+	m_waveFront.location = Location::Outside;
 
 	m_isArea = false;
 }
@@ -52,23 +52,24 @@ void TracingConcave::TraceFirstBeam()
 	m_treeSize = 0;
 	m_lightSurfaceArea = 0;
 
-	IntArray orderedFacets;
-	OrderFirstBeamVisibleFacets(orderedFacets);
+	IntArray facetIDs;
+	SelectVisibleFacetsForWavefront(facetIDs);
 
-	for (int i = 0; i < orderedFacets.size; ++i)
+	for (int i = 0; i < facetIDs.size; ++i)
 	{
 		bool hasIntersection;
 
 		Polygon resFacets[MAX_POLYGON_NUM];
 		int resSize;
-		IntersectWithFacet(orderedFacets, i, resFacets, resSize, hasIntersection);
+
+		IntersectWithFacet(facetIDs, i, resFacets, resSize, hasIntersection);
 
 		if (hasIntersection)
 		{
 			Beam inBeam, outBeam;
 
 			// set optical params of beam
-			int facetId = orderedFacets.arr[i];
+			int facetId = facetIDs.arr[i];
 			SetFirstBeamOpticalParams(facetId, inBeam, outBeam);
 
 #ifdef _DEBUG // DEB
@@ -95,15 +96,16 @@ void TracingConcave::TraceFirstBeam()
 	}
 }
 
-void TracingConcave::OrderFirstBeamVisibleFacets(IntArray &facetIds)
+void TracingConcave::SelectVisibleFacetsForWavefront(IntArray &facetIds)
 {
-	FindFirstVisibleFacets(facetIds);
-	SortFacets(m_initialBeam.direction, facetIds);
+//	FindVisibleFacets2(m_waveFront, facetIds, true);
+	FindVisibleFacetsForWavefront(facetIds);
+	SortFacets(m_waveFront.direction, facetIds);
 }
 
 void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
-											Polygon *resFacets, int &resSize,
-											bool &hasIntersection)
+										Polygon *resFacets, int &resSize,
+										bool &hasIntersection)
 {
 	resSize = 0;
 	hasIntersection = true;
@@ -117,7 +119,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 	}
 	else // facet is probably shadowed by others
 	{
-		CutShadowsFromFacet(facetId, facetIds, prevFacetNum, m_initialBeam,
+		CutShadowsFromFacet(facetId, facetIds, prevFacetNum, m_waveFront,
 							 resFacets, resSize);
 		if (resSize == 0)
 		{
@@ -128,6 +130,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 
 void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
+//	FindVisibleFacets2(beam, facetIds);
 	FindVisibleFacets(beam, facetIds);
 
 	Point3f dir = beam.direction;
@@ -403,14 +406,49 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 	}
 }
 
-void TracingConcave::FindFirstVisibleFacets(IntArray &facetIds)
+void TracingConcave::FindVisibleFacetsForWavefront(IntArray &facetIds)
 {
 	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
-		double cosIN = DotProduct(m_initialBeam.direction, m_facets[i].in_normal);
+		double cosIN = DotProduct(m_waveFront.direction, m_facets[i].in_normal);
 
 		if (cosIN >= EPS_COS_90) // beam incidents to this facet
 		{
+			facetIds.arr[facetIds.size++] = i;
+		}
+	}
+}
+
+bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
+{
+//	int loc = !beam.location;
+	const Point3f &beamNormal = -m_facets[beam.facetId].normal[!beam.location];
+
+	const Point3f &facetCenter = m_particle->centers[facetID];
+	const Point3f &beamCenter = m_particle->centers[beam.facetId];
+	Point3f vectorFromBeamToFacet = facetCenter - beamCenter;
+
+	double cosBF = DotProduct(beamNormal, vectorFromBeamToFacet);
+
+	return (cosBF >= EPS_ORTO_FACET);
+}
+
+void TracingConcave::FindVisibleFacets2(const Beam &beam, IntArray &facetIds,
+										bool isWavefront)
+{
+//	int loc = !beam.location;
+
+	for (int i = 0; i < m_particle->facetNum; ++i)
+	{
+		double cosIN = DotProduct(beam.direction, m_facets[i].normal[!beam.location]);
+
+		if (cosIN >= EPS_COS_90) // beam incidents to this facet
+		{
+			if (!isWavefront && !IsVisibleFacet(i, beam))
+			{
+				continue;
+			}
+
 			facetIds.arr[facetIds.size++] = i;
 		}
 	}
@@ -420,8 +458,7 @@ void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
 	int type = !((bool)beam.location);
 	const Point3f &invNormal = -m_facets[beam.facetId].normal[type];
-
-	Point3f cob = CenterOfPolygon(beam.polygon);
+	const Point3f &beamFacetCenter = m_particle->centers[beam.facetId];
 
 	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
@@ -429,8 +466,8 @@ void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 
 		if (cosIN >= EPS_COS_90) // beam incidents to this facet
 		{
-			const Point3f &cof = m_particle->centers[i];
-			Point3f vectorToFacet = cof - cob;
+			const Point3f &facetCenter = m_particle->centers[i];
+			Point3f vectorToFacet = facetCenter - beamFacetCenter/*cob*/;
 			double cosFacets = DotProduct(invNormal, vectorToFacet);
 
 			if (cosFacets >= EPS_ORTO_FACET) // facet is in front of begin of beam

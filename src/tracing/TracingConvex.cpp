@@ -15,7 +15,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	for (int facetId = 0; facetId < m_particle->facetNum; ++facetId)
 	{
 		const Point3f &extNormal = m_particle->facets[facetId].ex_normal;
-		double cosIN = DotProduct(m_initialBeam.direction, extNormal);
+		double cosIN = DotProduct(m_waveFront.direction, extNormal);
 
 		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
 		{

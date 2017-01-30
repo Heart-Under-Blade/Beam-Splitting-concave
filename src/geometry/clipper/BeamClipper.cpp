@@ -63,7 +63,7 @@ void BeamClipper::SwapCoords(Axis ax1, Axis ax2, ClipperLib::Paths &origin) cons
 		return;
 	}
 
-	cInt *oldP, *newP;
+	cInt *oldP = nullptr, *newP = nullptr;
 
 	for (Path &path : origin)
 	{

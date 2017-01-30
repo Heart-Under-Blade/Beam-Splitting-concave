@@ -15,6 +15,7 @@ class Particle
 public:
 	Particle();
 	Particle(double radius, double halfHeight, const complex &refractionIndex);
+	virtual ~Particle();
 
 	virtual void Rotate(double beta, double gamma, double alpha);
 

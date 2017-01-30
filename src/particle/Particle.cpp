@@ -8,6 +8,8 @@ Particle::Particle(double radius, double halfHeight,
 	Init(radius, halfHeight, refractionIndex);
 }
 
+Particle::~Particle() {}
+
 void Particle::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);

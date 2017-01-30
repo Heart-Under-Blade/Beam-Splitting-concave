@@ -7,7 +7,7 @@
 #define MAX_POLYGON_NUM 128		///< maximum number of polygons in array of polygons
 #define MAX_FACET_NUM 64
 
-enum class Location: bool
+enum Location: bool
 {
 	Inside, Outside
 };
