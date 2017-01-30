@@ -23,7 +23,7 @@ private:
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
 
 	void CutShadowsFromFacet(int facetId, const IntArray &facetIds, int prevFacetNum,
-							 const Beam &beam, Polygon *resFacets, int &resSize);
+							 const Beam &beam, PolygonArray &resFacets);
 
 	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
 							 const Point3f &facetNormal, Point3f &projection);
@@ -43,7 +43,7 @@ private:
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
 	void IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
-							Polygon *resFacets, int &resSize, bool &hasIntersection);
+							PolygonArray &resFacets, bool &hasIntersection);
 
 	void TraceFirstBeam();
 

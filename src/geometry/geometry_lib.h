@@ -197,6 +197,12 @@ struct Polygon
 	int size = 0;
 };
 
+struct PolygonArray
+{
+	Polygon arr[MAX_POLYGON_NUM];
+	int size = 0;
+};
+
 struct Facet
 {
 	Polygon polygon;
