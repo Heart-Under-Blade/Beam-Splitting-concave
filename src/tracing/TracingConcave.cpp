@@ -140,7 +140,8 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 {
-	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
+//	Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
+	Point3f &facetNormal = m_facets[beam.facetId].in_normal;
 
 	IntArray facetIds;
 	SelectVisibleFacets(beam, facetIds);
@@ -240,7 +241,6 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 {
 	isDivided = false;
 
-	// OPT: раскомментить
 	if (beam.location == Location::Inside
 			&& !m_particle->IsShadowedInternal(beam.facetId))
 	{
@@ -251,7 +251,7 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 	const Point3f &beamNormal = beamFacet.normal[(int)beam.location];
 
 	const Point3f &facetNormal = (beam.location == Location::Outside) ? -beamNormal
-																	  : beamNormal;
+																	  :  beamNormal;
 
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
