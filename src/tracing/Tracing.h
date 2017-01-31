@@ -58,8 +58,9 @@ protected:
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;
 
-	void Difference(const Polygon &clip, const Point3f &clipNormal,
-					const Polygon &subject, const Point3f &subjNormal, const Point3f &clipDir,
+	void Difference(const Polygon &subject, const Point3f &subjNormal,
+					const Polygon &clip, const Point3f &clipNormal,
+					const Point3f &clipDir,
 					Polygon *difference, int &resultSize) const;
 
 	bool Intersect(int facetId, const Beam& beam, Polygon &intersection) const;

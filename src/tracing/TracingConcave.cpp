@@ -95,7 +95,6 @@ void TracingConcave::TraceFirstBeam()
 
 void TracingConcave::SelectVisibleFacetsForWavefront(IntArray &facetIds)
 {
-//	FindVisibleFacets2(m_waveFront, facetIds, true);
 	FindVisibleFacetsForWavefront(facetIds);
 	SortFacets(m_waveFront.direction, facetIds);
 }
@@ -107,7 +106,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 	hasIntersection = true;
 	int facetId = facetIds.arr[prevFacetNum];
 
-	if (prevFacetNum == 0 || m_particle->IsUnshadowedExternal(facetId)) // this facet is obviously not shadowed
+	if (prevFacetNum == 0 || m_particle->IsUnshadowedExternal(facetId))
 	{
 		Polygon beamPolygon;
 		SetPolygonByFacet(facetId, beamPolygon);
@@ -117,6 +116,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 	{
 		CutShadowsFromFacet(facetId, facetIds, prevFacetNum, m_waveFront,
 							resFacets);
+
 		if (resFacets.size == 0)
 		{
 			hasIntersection = false;
@@ -126,7 +126,6 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 
 void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-//	FindVisibleFacets2(beam, facetIds);
 	FindVisibleFacets(beam, facetIds);
 
 	Point3f dir = beam.direction;
@@ -136,8 +135,8 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 {
-	const Point3f &facetNormal = m_facets[beam.facetId].in_normal;
-	const Point3f &normal = m_facets[beam.facetId].ex_normal;
+	const Point3f &normal = m_facets[beam.facetId].in_normal;
+//	const Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
 //	const Point3f &facetNormal = (beam.location == Location::Outside) ?  normal
 //																	  : -normal;
 	IntArray facetIds;
@@ -145,7 +144,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resSize = 0;
-
 	resultBeams[resSize++] = beam.polygon;
 
 	// cut facet projections out of beam one by one
@@ -160,7 +158,9 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 		{
 			const Polygon &clip = m_facets[id].polygon;
 			const Polygon &subj = resultBeams[--resSize];
-			Difference(clip, facetNormal, subj, normal, -beam.direction,
+//			Difference(subj, normal, clip, facetNormal, -beam.direction,
+//					   diffFacets, diffSize);
+			Difference(subj, normal, clip, normal, -beam.direction,
 					   diffFacets, diffSize);
 		}
 
@@ -237,22 +237,20 @@ void TracingConcave::PrintTrack(const Beam &beam, int facetId)
 void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 {
 	isDivided = false;
+	const Location &loc = beam.location;
 
-	if (beam.location == Location::Inside
-			&& !m_particle->IsShadowedInternal(beam.facetId))
+	if (loc == Location::Inside && !m_particle->IsShadowedInternal(beam.facetId))
 	{
 		return;
 	}
 
 	const Facet &beamFacet = m_facets[beam.facetId];
-	const Point3f &beamNormal = beamFacet.normal[(int)beam.location];
-
-	const Point3f &facetNormal = (beam.location == Location::Outside) ? -beamNormal
-																	  :  beamNormal;
-
+	const Point3f &beamNormal = beamFacet.normal[loc];
+	const Point3f &facetNormal = (loc == Location::Outside) ? -beamNormal
+															:  beamNormal;
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
-	Difference(m_facets[facetId].polygon, facetNormal, beam.polygon, beamNormal,
+	Difference(beam.polygon, beamNormal, m_facets[facetId].polygon, facetNormal,
 			   -beam.direction, resultBeams, resultSize);
 
 	if (resultSize == 0) // beam is totaly swallowed by facet
@@ -376,7 +374,7 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 
 	double cosIN = DotProduct(incidentDir, normal);
 
-	if (cosIN >= EPS_COS_00) /// normal incidence
+	if (cosIN >= EPS_COS_00) // normal incidence
 	{
 		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
 	}
@@ -426,49 +424,20 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 	Point3f vectorFromBeamToFacet = facetCenter - beamCenter;
 
 	double cosBF = DotProduct(beamNormal, vectorFromBeamToFacet);
-
 	return (cosBF >= EPS_ORTO_FACET);
-}
-
-void TracingConcave::FindVisibleFacets2(const Beam &beam, IntArray &facetIds,
-										bool isWavefront)
-{
-//	int loc = !beam.location;
-
-	for (int i = 0; i < m_particle->facetNum; ++i)
-	{
-		double cosIN = DotProduct(beam.direction, m_facets[i].normal[!beam.location]);
-
-		if (cosIN >= EPS_COS_90) // beam incidents to this facet
-		{
-			if (!isWavefront && !IsVisibleFacet(i, beam))
-			{
-				continue;
-			}
-
-			facetIds.arr[facetIds.size++] = i;
-		}
-	}
 }
 
 void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-	int type = !((bool)beam.location);
-	const Point3f &invNormal = -m_facets[beam.facetId].normal[type];
-	const Point3f &beamFacetCenter = m_particle->centers[beam.facetId];
-
 	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
-		double cosIN = DotProduct(beam.direction, m_facets[i].normal[type]);
+		const Point3f &facetNormal = m_facets[i].normal[!beam.location];
+		double cosFB = DotProduct(beam.direction, facetNormal);
 
-		if (cosIN >= EPS_COS_90) // beam incidents to this facet
+		if (cosFB >= EPS_COS_90) // beam incidents to this facet
 		{
-			const Point3f &facetCenter = m_particle->centers[i];
-			Point3f vectorToFacet = facetCenter - beamFacetCenter/*cob*/;
-			double cosFacets = DotProduct(invNormal, vectorToFacet);
-
-			if (cosFacets >= EPS_ORTO_FACET) // facet is in front of begin of beam
-			{
+			if (IsVisibleFacet(i, beam))
+			{	// facet is in front of begin of beam
 				facetIds.arr[facetIds.size++] = i;
 			}
 		}
@@ -498,7 +467,7 @@ void TracingConcave::CutShadowsFromFacet(int facetId, const IntArray &facetIds,
 			const Polygon &subj = resFacets.arr[--resFacets.size];
 //			const Point3f &clipNormal = m_facets[id].normal[(int)beam.location];
 
-			Difference(clip, clipNormal, subj, facetNormal, -beam.direction,
+			Difference(subj, facetNormal, clip, clipNormal, -beam.direction,
 					   diffFacets, diffSize);
 		}
 

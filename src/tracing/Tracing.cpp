@@ -378,8 +378,8 @@ void Tracing::SetBeam(Beam &beam, const Beam &other,
 	beam.e = e;
 }
 
-void Tracing::Difference(const Polygon &clip, const Point3f &clipNormal,
-						 const Polygon &subject, const Point3f &subjNormal,
+void Tracing::Difference(const Polygon &subject, const Point3f &subjNormal,
+						 const Polygon &clip, const Point3f &clipNormal,
 						 const Point3f &clipDir,
 						 Polygon *difference, int &resultSize) const
 {
