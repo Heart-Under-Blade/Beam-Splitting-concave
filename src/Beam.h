@@ -25,6 +25,8 @@ public:
 	Beam & operator = (const Beam &other);
 	Beam & operator = (Beam &&other);
 
+	// REF: рассмотреть схему, где у пучка будет много полигонов
+
 public:
 	Point3f direction;				///< direction of beam
 	JonesMatrix JMatrix;			///< Jones matrix of beam

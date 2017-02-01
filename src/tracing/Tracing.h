@@ -53,7 +53,7 @@ public:
 	double GetLightSurfaceArea() const;
 
 protected:
-	void SetFirstBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam);
+	void SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir, const Point3f &e,
 				 const complex &coef1, const complex &coef2) const;

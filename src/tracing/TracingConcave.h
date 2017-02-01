@@ -22,8 +22,8 @@ private:
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
 
-	void CutShadowsFromFacet(int facetId, const IntArray &facetIds, int prevFacetNum,
-							 const Beam &beam, PolygonArray &resFacets);
+	void CutFacetByShadows(int facetID, const IntArray &shadowFacetIDs, int prevFacetNum,
+						   PolygonArray &resFacets);
 
 	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
 							 const Point3f &facetNormal, Point3f &projection);
@@ -43,8 +43,8 @@ private:
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
-	void IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
-							PolygonArray &resFacets, bool &hasIntersection);
+	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
+							PolygonArray &resFacets);
 
 	void TraceFirstBeam();
 
@@ -57,9 +57,13 @@ private:
 	void AddToTrack(Beam &beam, int facetId);
 #endif
 
-	void PushBeamsToTree(int level, int facetId, bool hasOutBeam, Beam &inBeam, Beam &outBeam);
+	void PushBeamsToTree(int level, int facetID, bool hasOutBeam,
+						 Beam &inBeam, Beam &outBeam);
 
 	bool IsVisibleFacet(int facetID, const Beam &beam);
+
+	void PushBeamsToTree(int facetID, const PolygonArray &polygons,
+						 Beam &inBeam, Beam &outBeam);
 
 protected:
 	void TraceSecondaryBeams(std::vector<Beam> &scaterredBeams);

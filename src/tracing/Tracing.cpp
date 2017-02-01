@@ -63,7 +63,7 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 			cosInc2/Tv0, cosInc2/Th0);
 }
 
-void Tracing::SetFirstBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
+void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &startDir = m_waveFront.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
@@ -116,7 +116,7 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 
 void Tracing::SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	SetFirstBeamOpticalParams(facetId, inBeam, outBeam);
+	SetBeamOpticalParams(facetId, inBeam, outBeam);
 	SetPolygonByFacet(facetId, inBeam.polygon);
 	SetPolygonByFacet(facetId, outBeam.polygon);
 }
