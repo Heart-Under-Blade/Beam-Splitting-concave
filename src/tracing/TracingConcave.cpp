@@ -29,6 +29,7 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 {
 	TraceFirstBeam();
+
 #ifdef _DEBUG // DEB
 	double rrr = 0;
 	for (int i = 0; i < m_treeSize; ++i)
@@ -39,6 +40,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 	}
 	int fgfg = 0;
 #endif
+
 	TraceSecondaryBeams(scaterredBeams);
 
 #ifdef _DEBUG // DEB
@@ -118,9 +120,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIds, int prevFacetN
 
 	if (prevFacetNum == 0 || m_particle->IsUnshadowedExternal(facetId))
 	{
-		Polygon beamPolygon;
-		SetPolygonByFacet(facetId, beamPolygon);
-		resFacets.arr[resFacets.size++] = beamPolygon;
+		resFacets.arr[resFacets.size++] = m_facets[facetId].polygon;
 	}
 	else // facet is probably shadowed by others
 	{
@@ -165,8 +165,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 
 		while (resSize != 0)
 		{
-//			Difference(resultBeams[--resSize], normal, m_facets[id].polygon,
-//					normal, -beam.direction, diffFacets, diffSize);
 			Difference(resultBeams[--resSize], normal, m_facets[id].polygon,
 					normal1, -beam.direction, diffFacets, diffSize);
 		}
@@ -288,7 +286,7 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 		for (int i = 0; i < resultSize; ++i)
 		{
 			tmp.polygon = resultBeams[i];
-			PushBeamToTree(tmp, tmp.facetId, tmp.level, tmp.location);
+			PushBeamToTree(tmp);
 		}
 
 		isDivided = true;
