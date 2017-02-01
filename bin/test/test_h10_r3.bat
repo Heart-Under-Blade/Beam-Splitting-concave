@@ -1,4 +1,5 @@
-BeamSplitting -p 10 100 40 20 -ri 1.31 -b 0 200 -g 0 201 -t 180 -rn 3 -o %~n0
+cd..
+BeamSplitting -p 10 100 40 10 -ri 1.31 -b 0 200 -g 0 201 -t 180 -rn 3 -o %~n0
 
 
 goto endcomment

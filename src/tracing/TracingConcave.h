@@ -31,6 +31,7 @@ private:
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
+	void PushBeamToTree(Beam &beam);
 
 	void FindVisibleFacetsForWavefront(IntArray &facetIds);
 	void FindVisibleFacets2(const Beam &beam, IntArray &facetIds,

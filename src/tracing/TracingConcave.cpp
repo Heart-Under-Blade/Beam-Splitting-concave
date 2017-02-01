@@ -8,7 +8,7 @@
 #include <iostream>
 #endif
 
-#define EPS_ORTO_FACET 0.0001 //TODO: подобрать норм значение
+#define EPS_ORTO_FACET 0.0001
 
 #ifdef _TRACK_ALLOW
 std::ofstream trackMapFile("tracks.dat", std::ios::out);
@@ -29,17 +29,27 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 {
 	TraceFirstBeam();
+#ifdef _DEBUG // DEB
+	double rrr = 0;
+	for (int i = 0; i < m_treeSize; ++i)
+	{
+//		if (b.track.size() == 1 &&
+//				b.track[0] == 1)
+			rrr += AreaOfBeam(m_beamTree[i]);
+	}
+	int fgfg = 0;
+#endif
 	TraceSecondaryBeams(scaterredBeams);
 
 #ifdef _DEBUG // DEB
-//	double rrr = 0;
-//	for (const Beam &b : outBeams)
-//	{
+	double fff = 0;
+	for (const Beam &b : scaterredBeams)
+	{
 //		if (b.track.size() == 1 &&
 //				b.track[0] == 1)
-//			rrr += AreaOfBeam(b);
-//	}
-//	int ggg = 0;
+			fff += AreaOfBeam(b);
+	}
+	int ggg = 0;
 #endif
 }
 
@@ -75,7 +85,7 @@ void TracingConcave::TraceFirstBeam()
 			for (int j = 0; j < resFacets.size; ++j)
 			{
 #ifdef _DEBUG // DEB
-				eee += AreaOfPolygon(resFacets[j]);
+				eee += AreaOfPolygon(resFacets.arr[j]);
 #endif
 				// set geometry of beam
 				 inBeam.SetPolygon(resFacets.arr[j]);
@@ -135,10 +145,9 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 {
-	const Point3f &normal = m_facets[beam.facetId].in_normal;
-//	const Point3f &facetNormal = m_facets[beam.facetId].ex_normal;
-//	const Point3f &facetNormal = (beam.location == Location::Outside) ?  normal
-//																	  : -normal;
+	const Point3f &normal = m_facets[beam.facetId].ex_normal;
+	const Point3f &normal1 = m_facets[beam.facetId].in_normal;
+
 	IntArray facetIds;
 	SelectVisibleFacets(beam, facetIds);
 
@@ -156,12 +165,10 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 
 		while (resSize != 0)
 		{
-			const Polygon &clip = m_facets[id].polygon;
-			const Polygon &subj = resultBeams[--resSize];
-//			Difference(subj, normal, clip, facetNormal, -beam.direction,
-//					   diffFacets, diffSize);
-			Difference(subj, normal, clip, normal, -beam.direction,
-					   diffFacets, diffSize);
+//			Difference(resultBeams[--resSize], normal, m_facets[id].polygon,
+//					normal, -beam.direction, diffFacets, diffSize);
+			Difference(resultBeams[--resSize], normal, m_facets[id].polygon,
+					normal1, -beam.direction, diffFacets, diffSize);
 		}
 
 		if (diffSize != 0)
@@ -186,8 +193,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 	}
 }
 
-void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level,
-									Location location)
+void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
 {
 	assert(m_treeSize < MAX_BEAM_REFL_NUM);
 
@@ -200,6 +206,20 @@ void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level,
 	beam.facetId = facetId;
 	beam.level = level;
 	beam.location = location;
+	m_beamTree[m_treeSize] = beam;
+	++m_treeSize;
+}
+
+void TracingConcave::PushBeamToTree(Beam &beam)
+{
+	assert(m_treeSize < MAX_BEAM_REFL_NUM);
+
+#ifdef _TRACK_ALLOW
+	AddToTrack(beam, facetId);
+#ifdef _TRACK_OUTPUT
+	PrintTrack(beam, facetId);
+#endif
+#endif
 	m_beamTree[m_treeSize] = beam;
 	++m_treeSize;
 }
@@ -245,13 +265,13 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 	}
 
 	const Facet &beamFacet = m_facets[beam.facetId];
-	const Point3f &beamNormal = beamFacet.normal[loc];
-	const Point3f &facetNormal = (loc == Location::Outside) ? -beamNormal
-															:  beamNormal;
+	const Point3f &facetNormal = (loc == Location::Outside) ? -beamFacet.normal[loc]
+															:  beamFacet.normal[loc];
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
-	Difference(beam.polygon, beamNormal, m_facets[facetId].polygon, facetNormal,
-			   -beam.direction, resultBeams, resultSize);
+	Difference(beam.polygon, beamFacet.normal[loc],
+			   m_facets[facetId].polygon, facetNormal, -beam.direction,
+			   resultBeams, resultSize);
 
 	if (resultSize == 0) // beam is totaly swallowed by facet
 	{
@@ -449,15 +469,12 @@ void TracingConcave::CutShadowsFromFacet(int facetId, const IntArray &facetIds,
 										 PolygonArray &resFacets)
 {
 	const Facet &facet = m_facets[facetId];
-	const Point3f &facetNormal = facet.normal[Location::Outside];
-	const Point3f &clipNormal = facetNormal;
-
+	const Point3f &normal = facet.normal[Location::Outside];
 	resFacets.arr[resFacets.size++] = facet.polygon;
 
 	for (int i = 0; i < prevFacetNum; ++i)
 	{
 		int id = facetIds.arr[i];
-
 		Polygon diffFacets[MAX_POLYGON_NUM];
 		int diffSize = 0;
 
@@ -465,9 +482,7 @@ void TracingConcave::CutShadowsFromFacet(int facetId, const IntArray &facetIds,
 		{
 			const Polygon &clip = m_facets[id].polygon;
 			const Polygon &subj = resFacets.arr[--resFacets.size];
-//			const Point3f &clipNormal = m_facets[id].normal[(int)beam.location];
-
-			Difference(subj, facetNormal, clip, clipNormal, -beam.direction,
+			Difference(subj, normal, clip, normal, -beam.direction,
 					   diffFacets, diffSize);
 		}
 

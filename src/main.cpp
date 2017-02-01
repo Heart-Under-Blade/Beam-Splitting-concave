@@ -315,14 +315,14 @@ int main(int argc, char* argv[])
 		params.particleType = ParticleType::ConcaveHexagonal;
 		params.halfHeight = 100;
 		params.radius = 40;
-		params.cavityDepth = 10;
+		params.cavityDepth = 20;
 		params.refractionIndex = complex(1.31, 0.0);
 		params.betaRange.begin = 0;
-		params.betaRange.end = 100;
+		params.betaRange.end = 200;
 		params.gammaRange.begin = 0;
-		params.gammaRange.end = 101;
+		params.gammaRange.end = 201;
 		params.thetaNumber = 180;
-		params.interReflNum = 4;
+		params.interReflNum = 3;
 		params.isRandom = false;
 
 #ifdef _OUTPUT_NRG_CONV
@@ -383,12 +383,18 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	time.Start();
 
 #ifdef _DEBUG // DEB
-//	beta = (69 + 0.5)*betaNorm;
-//	gamma = (100 + 0.5)*gammaNorm;
-//	betaDistrProbability = sin(beta);
-//	tracer.RotateParticle(beta, gamma);
-//	tracer.SplitBeamByParticle(outcomingBeams);
-//	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+	beta = (153 + 0.5)*betaNorm;
+	gamma = (100 + 0.5)*gammaNorm;
+	betaDistrProbability = sin(beta);
+	tracer.RotateParticle(beta, gamma);
+	tracer.SplitBeamByParticle(outcomingBeams);
+	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+#ifdef _OUTPUT_NRG_CONV
+	double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
+	energyFile<<153<<" "<<100<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<std::endl;
+	if (fabs(sss-SS) > 40)
+		int fff = 0;
+#endif
 #endif
 
 	for (int i = betaRange.begin; i < betaRange.end; ++i)
@@ -421,7 +427,10 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 #ifdef _OUTPUT_NRG_CONV
 				double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
 				energyFile<<i<<" "<<j<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<std::endl;
-				double dfdfdf = sss-SS;
+#ifdef _DEBUG // DEB
+				if (fabs(sss-SS) > 40)
+					int fff = 0;
+#endif
 #endif
 			}
 			catch (const bool &)
