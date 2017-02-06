@@ -2,10 +2,33 @@
 
 #include <float.h>
 #include <math.h>
+#include <assert.h>
+#include <list>
 
 #include "macro.h"
 #include "geometry_lib.h"
-#include <assert.h>
+
+Point3d Proj(const Point3d& Tx, const Point3d& Ty, const Point3d& r,  const Point3d& pnt)
+{
+	const  Point3d p_pr = pnt - r*DotProductD(r, pnt); // расчёт коор-т в СК наблюдателя
+	return Point3d(DotProductD(p_pr, Tx), DotProductD(p_pr, Ty), 0); //*/
+}
+
+Point3d Proj(const Point3d& _r, const Point3d &pnt)
+{
+	Point3d _Tx,  // условная горизонталь СК экрана в СК тела
+		_Ty;  // третья ось (условная вертикаль СК экрана)
+	const double tmp = sqrt(SQR(_r.x)+SQR(_r.y));
+	(fabs(_r.z)>1-DBL_EPSILON) ? (_Tx=Point3d(0,-_r.z,0), _Ty=Point3d(1,0,0))
+							   : (_Tx=Point3d(_r.y/tmp,-_r.x/tmp,0), _Ty=CrossProductD(_r,_Tx));
+	return Proj(_Tx, _Ty, _r, pnt);
+}
+
+//Point2D Proj(const Point3D& a, int i){
+//		return (i==0) ? Point2D(a.y, a.z) :
+//		( (i==1) ? Point2D(a.x, a.z) :
+//		Point2D(a.x, a.y) );
+//	}
 
 Beam::Beam()
 {
@@ -15,6 +38,9 @@ Beam::Beam()
 
 void Beam::Copy(const Beam &other)
 {
+//	T = other.T;
+//	F = other.F;
+//	N = other.N;
 	opticalPath = other.opticalPath;
 	D = other.D;
 	e = other.e;
@@ -22,7 +48,7 @@ void Beam::Copy(const Beam &other)
 
 	SetPolygon(other.polygon);
 
-	facetId = other.facetId;
+	facetID = other.facetID;
 	level = other.level;
 	location = other.location;
 
@@ -39,6 +65,9 @@ Beam::Beam(const Beam &other)
 
 Beam::Beam(Beam &&other)
 {
+//	T = other.T;
+//	F = other.F;
+//	N = other.N;
 	opticalPath = other.opticalPath;
 	D = other.D;
 	e = other.e;
@@ -46,7 +75,7 @@ Beam::Beam(Beam &&other)
 
 	SetPolygon(other.polygon);
 
-	facetId = other.facetId;
+	facetID = other.facetID;
 	level = other.level;
 	location = other.location;
 
@@ -57,7 +86,7 @@ Beam::Beam(Beam &&other)
 
 	other.polygon.size = 0;
 
-	other.facetId = 0;
+	other.facetID = 0;
 	other.level = 0;
 	other.location = Location::Outside;
 }
@@ -143,6 +172,9 @@ Beam &Beam::operator = (Beam &&other)
 {
 	if (this != &other)
 	{
+//		T = other.T;
+//		F = other.F;
+//		N = other.N;
 		opticalPath = other.opticalPath;
 		D = other.D;
 		e = other.e;
@@ -150,7 +182,7 @@ Beam &Beam::operator = (Beam &&other)
 
 		SetPolygon(other.polygon);
 
-		facetId = other.facetId;
+		facetID = other.facetID;
 		level = other.level;
 		location = other.location;
 
@@ -163,12 +195,94 @@ Beam &Beam::operator = (Beam &&other)
 
 		other.polygon.size = 0;
 
-		other.facetId = 0;
+		other.facetID = 0;
 		other.level = 0;
 		other.location = Location::Outside;
 	}
 
 	return *this;
+}
+
+complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
+{
+	const double eps1 = 1e9*DBL_EPSILON;
+	const double eps2 = 1e6*DBL_EPSILON;
+
+	Point3d k_k0 = -pt + direction;
+	Point3f center = CenterOfPolygon(polygon);
+
+	Point3f n = NormalToPolygon(polygon);
+	Point3d	pt_proj = Proj(Point3d(n.cx, n.cy, n.cz), k_k0);
+//	Point3d	center = Proj(this->N, r0);
+
+	const double
+			A = pt_proj.x,
+			B = pt_proj.y;
+
+	complex one(0, -1);
+	const double k = M_2PI/lam;
+
+	if (fabs(A) < eps2 && fabs(B) < eps2)
+	{
+		return -one/lam*AreaOfPolygon(polygon);
+	}
+
+	complex s(0, 0);
+
+//	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
+//	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
+
+	Point3d p1 = polygon.arr[polygon.size-1] - center;
+	Point3d p2;
+
+	if (fabs(B) > fabs(A))
+	{
+		for (unsigned int i = 0; i < polygon.size; ++i)
+		{
+			p2 = polygon.arr[i] - center;
+
+			if (fabs(p1.x - p2.x) < eps1)
+			{
+				p1 = p2;
+				continue;
+			}
+
+			const double
+					ai = (p1.y-p2.y)/(p1.x-p2.x),
+					bi = p1.y - ai*p1.x,
+					Ci = A+ai*B;
+
+			s += exp_im(k*B*bi)* (fabs(Ci) < eps1 ? complex(-k*k*Ci*(p2.x*p2.x-p1.x*p1.x)/2.0,k*(p2.x-p1.x))
+												  : (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci);
+			p1 = p2;
+		}
+
+		s /= B;
+	}
+	else
+	{
+		for (unsigned int i = 0; i < polygon.size; ++i)
+		{
+			p2 = polygon.arr[i] - center;
+
+			if (fabs(p1.y - p2.y)<eps1)
+			{
+				p1 = p2; continue;
+			}
+
+			const double ci = (p1.x-p2.x)/(p1.y-p2.y),
+					di = p1.x - ci*p1.y,
+					Ei = A*ci+B;
+
+			s += exp_im(k*A*di) * (fabs(Ei)<eps1 ? complex(-k*k*Ei*(p2.y*p2.y-p1.y*p1.y)/2.0,k*(p2.y-p1.y))
+												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);
+			p1 = p2;
+		}
+
+		s /= -A;
+	}
+
+	return one*lam*s/SQR(M_2PI);
 }
 
 void Beam::RotatePlane(const Point3f &newBasis)

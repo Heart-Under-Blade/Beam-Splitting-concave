@@ -131,9 +131,14 @@ struct Point3d
 		return Point3d(x*value, y*value, z*value);
 	}
 
-	Point3d operator - (const Point3d &value) const
+	Point3d operator - (const Point3d &other) const
 	{
-		return Point3d(x - value.x, y - value.y, z - value.z);
+		return Point3d(x - other.x, y - other.y, z - other.z);
+	}
+
+	Point3f operator - () const
+	{
+		return Point3f(-x, -y, -z);
 	}
 };
 
@@ -206,7 +211,7 @@ struct PolygonArray
 struct Facet
 {
 	Polygon polygon;
-	Point3f normal[2]; ///< internal and external
+	Point3f normal[2]; ///< internal and external normals
 };
 
 
@@ -215,16 +220,16 @@ struct Facet
  */
 
 float DotProduct(const Point3f &v1, const Point3f &v2);
-
 double DotProductD(const Point3d &v1, const Point3d &v2);
 
 double Norm(const Point3f &point);
 
 void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
+Point3d CrossProductD(const Point3d &v1, const Point3d &v2);
 
 void Normalize(Point3f &v);
 
-Point3f NormalToPolygon(const Point3f *facet);
+Point3f NormalToPolygon(const Polygon &polygon);
 
 Point3f CenterOfPolygon(const Polygon &polygon);
 

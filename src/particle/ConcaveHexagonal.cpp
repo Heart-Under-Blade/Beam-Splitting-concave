@@ -122,13 +122,13 @@ void ConcaveHexagonal::SetBaseNormals()
 	// top cavity facets
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		m_originNormals[i] = -NormalToPolygon(facets[i].polygon.arr);
+		m_originNormals[i] = -NormalToPolygon(facets[i].polygon);
 	}
 
 	// bottom cavity facets
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		m_originNormals[i] = -NormalToPolygon(facets[i].polygon.arr);
+		m_originNormals[i] = -NormalToPolygon(facets[i].polygon);
 	}
 }
 

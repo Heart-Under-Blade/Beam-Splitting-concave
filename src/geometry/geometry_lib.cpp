@@ -35,6 +35,16 @@ void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
 	res.cz = _cp[2];
 }
 
+// OPT:
+Point3d CrossProductD(const Point3d &v1, const Point3d &v2)
+{
+	Point3d res;
+	res.x = v1.y*v2.z - v1.z*v2.y;
+	res.y = v1.z*v2.x - v1.x*v2.z;
+	res.z = v1.x*v2.y - v1.y*v2.x;
+	return res;
+}
+
 double Length(const Point3f &v)
 {
 	return sqrt(Norm(v));
@@ -48,18 +58,20 @@ void Normalize(Point3f &v)
 	v.cz /= lenght;
 }
 
-Point3f NormalToPolygon(const Point3f *facet)
+// REF: move to Polygon
+Point3f NormalToPolygon(const Polygon &polygon)
 {
 	Point3f normal;
 
-	Point3f p1 = facet[1] - facet[0];
-	Point3f p2 = facet[2] - facet[0];
+	Point3f p1 = polygon.arr[1] - polygon.arr[0];
+	Point3f p2 = polygon.arr[2] - polygon.arr[0];
 	CrossProduct(p1, p2, normal);
 
 	Normalize(normal);
 	return normal;
 }
 
+// REF: move to Polygon
 Point3f CenterOfPolygon(const Polygon &polygon)
 {
 	Point3f p(0, 0, 0);
@@ -73,6 +85,7 @@ Point3f CenterOfPolygon(const Polygon &polygon)
 }
 
 
+// REF: move to Polygon
 double AreaOfPolygon(const Polygon &p)
 {
 	double square = 0;

@@ -6,7 +6,7 @@
 #include "JonesMatrix.h"
 
 #ifdef _TRACK_ALLOW
-#include <vector>
+//#include <vector>
 #endif
 
 class Beam
@@ -25,6 +25,10 @@ public:
 	Beam & operator = (const Beam &other);
 	Beam & operator = (Beam &&other);
 
+	// REF: перенести в PhisBeam
+	complex DiffractionIncline(const Point3d& pt, double lam) const; ///< calculate diffraction at the point /b pt
+	//--------------------------
+
 	// REF: рассмотреть схему, где у пучка будет много полигонов
 
 public:
@@ -34,17 +38,18 @@ public:
 
 	Polygon polygon;				///< array of beam vertices (shape)
 
-	int facetId;					///< last reflected facet
+	int facetID;					///< last reflected facet
 	int level;						///< number of preview reflections
 	Location location;				///< beam state towards the particle (inside or outside)
 
-	/// OPT: сделать др. вариант класса или трассировки
-	/// и убрать эти параметры
+	// REF: перенести в PhisBeam
+//	Point3d T, F, N;
 	double opticalPath;				///< optical path of beam
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
 
 #ifdef _TRACK_ALLOW
-	std::vector<int> track;
+	long long int track = 0;
+//	std::vector<int> track;
 #endif
 
 private:

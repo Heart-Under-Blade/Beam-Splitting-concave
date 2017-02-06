@@ -4,7 +4,7 @@
 
 /**
  * @brief The Hexagon class
- * The prism particle with 6 number of side facets.
+ * The prism particle with 6 side facets.
  */
 class Hexagonal : public Particle
 {
