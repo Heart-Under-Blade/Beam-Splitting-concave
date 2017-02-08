@@ -137,8 +137,24 @@ struct Point3d
 	}
 };
 
+
+/**
+ * Functions
+ */
+
+float DotProduct(const Point3f &v1, const Point3f &v2);
+double DotProductD(const Point3d &v1, const Point3d &v2);
+void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
+
+double Norm(const Point3f &point);
+void Normalize(Point3f &v);
+double Length(const Point3f &v);
+
 struct Polygon
 {
+	Point3f arr[MAX_VERTEX_NUM];
+	int size = 0;
+
 	Polygon() {}
 	Polygon(const Polygon &other)
 	{
@@ -175,7 +191,6 @@ struct Polygon
 
 		return *this;
 	}
-
 	Polygon & operator = (Polygon &&other)
 	{
 		if (this != &other)
@@ -193,8 +208,47 @@ struct Polygon
 		return *this;
 	}
 
-	Point3f arr[MAX_VERTEX_NUM];
-	int size = 0;
+	double Area() const
+	{
+		double square = 0;
+		const Point3f &basePoint = arr[0];
+		Point3f p1 = arr[1] - basePoint;
+
+		for (int i = 2; i < size; ++i)
+		{
+			Point3f p2 = arr[i] - basePoint;
+			Point3f res;
+			CrossProduct(p1, p2, res);
+			square += Length(res);
+			p1 = p2;
+		}
+
+		return square/2.0;
+	}
+
+	Point3f Center()
+	{
+		Point3f p(0, 0, 0);
+
+		for (int i = 0; i < size; ++i)
+		{
+			p = p + arr[i];
+		}
+
+		return p/size;
+	}
+
+	Point3f Normal()
+	{
+		Point3f normal;
+
+		Point3f p1 = arr[1] - arr[0];
+		Point3f p2 = arr[2] - arr[0];
+		CrossProduct(p1, p2, normal);
+
+		Normalize(normal);
+		return normal;
+	}
 };
 
 struct PolygonArray
@@ -209,25 +263,3 @@ struct Facet
 	Point3f normal[2]; ///< internal and external
 };
 
-
-/**
- * Functions
- */
-
-float DotProduct(const Point3f &v1, const Point3f &v2);
-
-double DotProductD(const Point3d &v1, const Point3d &v2);
-
-double Norm(const Point3f &point);
-
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
-
-void Normalize(Point3f &v);
-
-Point3f NormalToPolygon(const Point3f *facet);
-
-Point3f CenterOfPolygon(const Polygon &polygon);
-
-double Length(const Point3f &v);
-
-double AreaOfPolygon(const Polygon &p); ///< convex

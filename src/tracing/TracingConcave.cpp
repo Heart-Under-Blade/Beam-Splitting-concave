@@ -625,7 +625,7 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 		return 0;
 	}
 
-	double square = AreaOfPolygon(beam.polygon);
+	double square = beam.polygon.Area();
 	double n = Length(normal);
 	return (e*square) / n;
 }

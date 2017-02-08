@@ -51,7 +51,7 @@ void ConcaveHexagonal::SetCenters()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		m_originCenters[i] = CenterOfPolygon(facets[i].polygon);
+		m_originCenters[i] = facets[i].polygon.Center();
 		centers[i] = m_originCenters[i];
 	}
 }
@@ -122,13 +122,13 @@ void ConcaveHexagonal::SetBaseNormals()
 	// top cavity facets
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		m_originNormals[i] = -NormalToPolygon(facets[i].polygon.arr);
+		m_originNormals[i] = -facets[i].polygon.Normal();
 	}
 
 	// bottom cavity facets
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		m_originNormals[i] = -NormalToPolygon(facets[i].polygon.arr);
+		m_originNormals[i] = -facets[i].polygon.Normal();
 	}
 }
 

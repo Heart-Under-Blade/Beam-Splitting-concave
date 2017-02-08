@@ -105,7 +105,7 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 
 void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 {
-	Point3f center = CenterOfPolygon(inBeam.polygon);
+	Point3f center = inBeam.polygon.Center();
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
 	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_waveFront.direction, center);
@@ -126,7 +126,7 @@ void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
 	const Point3f &startDir = m_waveFront.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
-	m_lightSurfaceArea += AreaOfBeam(beam) * cosIN;
+	m_lightSurfaceArea += beam.polygon.Area() * cosIN;
 }
 
 // TODO: пофиксить
@@ -185,7 +185,7 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 {
 	double Nr = CalcNr(cosIN);
 	double coef = (incidentBeam.location == Location::Outside) ? 1 : sqrt(Nr);
-	Point3f center = CenterOfPolygon(outBeam.polygon);
+	Point3f center = outBeam.polygon.Center();
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 
@@ -359,7 +359,7 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 
 	if (m_isOpticalPath)
 	{
-		Point3f center = CenterOfPolygon(inBeam.polygon);
+		Point3f center = inBeam.polygon.Center();
 		inBeam.D = DotProduct(-center, inBeam.direction);
 
 		double temp = DotProduct(incidentDir, center);
@@ -683,24 +683,6 @@ void Tracing::SetPolygonByFacet(int facetId, Polygon &polygon) const
 	{
 		polygon.arr[i] = facet.arr[size-i];
 	}
-}
-
-double Tracing::AreaOfBeam(const Beam &beam) const
-{
-	double square = 0;
-	const Point3f &basePoint = beam.polygon.arr[0];
-	Point3f p1 = beam.polygon.arr[1] - basePoint;
-
-	for (int i = 2; i < beam.polygon.size; ++i)
-	{
-		Point3f p2 = beam.polygon.arr[i] - basePoint;
-		Point3f res;
-		CrossProduct(p1, p2, res);
-		square += sqrt(Norm(res));
-		p1 = p2;
-	}
-
-	return square / 2.0;
 }
 
 double Tracing::GetLightSurfaceArea() const
