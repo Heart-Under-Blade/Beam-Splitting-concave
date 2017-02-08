@@ -48,8 +48,6 @@ public:
 	virtual void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
-	double AreaOfBeam(const Beam &beam) const;
-
 	double GetLightSurfaceArea() const;
 
 protected:
