@@ -72,7 +72,7 @@ bool isPhisOptics = true;
 struct TrackGroup
 {
 	int groupID;
-	long long int arr[62];
+	long long int arr[64];
 	int size = 0;
 };
 
@@ -667,8 +667,6 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 //		{
 //			continue;
 //		}
-
-
 
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
