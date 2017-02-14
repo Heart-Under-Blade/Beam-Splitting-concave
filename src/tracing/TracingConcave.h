@@ -15,9 +15,9 @@ public:
 	void SplitBeamByParticle(std::vector<Beam> &scaterredBeams) override;
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
-
 private:
 	void CutBeamByFacet(int facetId, Beam &beam, bool &isDivided);
+
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
 
@@ -32,12 +32,11 @@ private:
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 	void PushBeamToTree(Beam &beam);
 
-	void FindVisibleFacetsForWavefront(IntArray &facetIds);
-	void FindVisibleFacets2(const Beam &beam, IntArray &facetIds,
-							bool isWavefront = false);
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
+	void FindVisibleFacetsForWavefront(IntArray &facetIds);
 
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIds);
+	void SelectVisibleFacetsForWavefront(IntArray &facetIds);
 
 	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
@@ -47,7 +46,6 @@ private:
 
 	void TraceFirstBeam();
 
-	void SelectVisibleFacetsForWavefront(IntArray &facetIds);
 
 	bool HasExternalBeam(Beam &incidentBeam);
 
