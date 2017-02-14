@@ -43,7 +43,8 @@ HEADERS += \
 	../src/Tracer.h \
 	../src/geometry/clipper/clipper.hpp \
 	../src/geometry/clipper/BeamClipper.h \
-	../src/geometry/geometry_lib.h
+	../src/geometry/geometry_lib.h \
+    ../src/particle/TiltedHexagonal.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -66,5 +67,6 @@ SOURCES += \
 	../src/Tracer.cpp \
 	../src/geometry/clipper/clipper.cpp \
 	../src/geometry/clipper/BeamClipper.cpp \
-	../src/geometry/geometry_lib.cpp
+	../src/geometry/geometry_lib.cpp \
+    ../src/particle/TiltedHexagonal.cpp
 

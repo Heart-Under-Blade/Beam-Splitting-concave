@@ -13,7 +13,6 @@ public:
 	double BeamCrossSection(const Beam &beam) const override;
 
 	void SplitBeamByParticle(std::vector<Beam> &scaterredBeams) override;
-
 	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 

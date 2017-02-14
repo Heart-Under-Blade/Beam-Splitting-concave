@@ -94,6 +94,13 @@ struct Point3f
 				point[2] + value.point[2]);
 	}
 
+	Point3f operator += (double value)
+	{
+		return *this = Point3f(point[0] + value,
+				point[1] + value,
+				point[2] + value);
+	}
+
 	Point3f operator - () const
 	{
 		return Point3f(-point[0], -point[1], -point[2]);

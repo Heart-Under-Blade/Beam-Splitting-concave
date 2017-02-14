@@ -22,7 +22,7 @@ void Beam::Copy(const Beam &other)
 
 	SetPolygon(other.polygon);
 
-	facetId = other.facetId;
+	facetID = other.facetID;
 	level = other.level;
 	location = other.location;
 
@@ -46,7 +46,7 @@ Beam::Beam(Beam &&other)
 
 	SetPolygon(other.polygon);
 
-	facetId = other.facetId;
+	facetID = other.facetID;
 	level = other.level;
 	location = other.location;
 
@@ -57,7 +57,7 @@ Beam::Beam(Beam &&other)
 
 	other.polygon.size = 0;
 
-	other.facetId = 0;
+	other.facetID = 0;
 	other.level = 0;
 	other.location = Location::Outside;
 }
@@ -150,7 +150,7 @@ Beam &Beam::operator = (Beam &&other)
 
 		SetPolygon(other.polygon);
 
-		facetId = other.facetId;
+		facetID = other.facetID;
 		level = other.level;
 		location = other.location;
 
@@ -163,7 +163,7 @@ Beam &Beam::operator = (Beam &&other)
 
 		other.polygon.size = 0;
 
-		other.facetId = 0;
+		other.facetID = 0;
 		other.level = 0;
 		other.location = Location::Outside;
 	}
@@ -205,7 +205,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 
 	Point3f r = k + direction;
 
-	if(Norm(r) <= 0.5)
+	if (Norm(r) <= 0.5)
 	{
 		angle = -angle;
 	}

@@ -59,12 +59,12 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 									 Beam &inBeam, Beam &outBeam)
 {
 #ifdef _DEBUG // DEB
-			double eee = 0;
+	double eee = 0;
 #endif
 	for (int j = 0; j < polygons.size; ++j)
 	{
 #ifdef _DEBUG // DEB
-		eee += AreaOfPolygon(resFacets.arr[j]);
+//		eee += AreaOfPolygon(resFacets.arr[j]);
 #endif
 		// set geometry of beam
 		 inBeam.SetPolygon(polygons.arr[j]);
@@ -133,14 +133,14 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
 	FindVisibleFacets(beam, facetIds);
 
 	Point3f dir = beam.direction;
-	dir.d_param = m_facets[beam.facetId].in_normal.d_param;
+	dir.d_param = m_facets[beam.facetID].in_normal.d_param;
 	SortFacets(dir, facetIds);
 }
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 {
-	const Point3f &normal = m_facets[beam.facetId].ex_normal;
-	const Point3f &normal1 = m_facets[beam.facetId].in_normal;
+	const Point3f &normal = m_facets[beam.facetID].ex_normal;
+	const Point3f &normal1 = m_facets[beam.facetID].in_normal;
 
 	IntArray facetIds;
 	SelectVisibleFacets(beam, facetIds);
@@ -195,7 +195,7 @@ void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level, Location
 	PrintTrack(beam, facetId);
 #endif
 #endif
-	beam.facetId = facetId;
+	beam.facetID = facetId;
 	beam.level = level;
 	beam.location = location;
 	m_beamTree[m_treeSize] = beam;
@@ -251,12 +251,12 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 	isDivided = false;
 	const Location &loc = beam.location;
 
-	if (loc == Location::Inside && !m_particle->IsShadowedInternal(beam.facetId))
+	if (loc == Location::Inside && !m_particle->IsShadowedInternal(beam.facetID))
 	{
 		return;
 	}
 
-	const Facet &beamFacet = m_facets[beam.facetId];
+	const Facet &beamFacet = m_facets[beam.facetID];
 	const Point3f &facetNormal = (loc == Location::Outside) ? -beamFacet.normal[loc]
 															:  beamFacet.normal[loc];
 	Polygon resultBeams[MAX_VERTEX_NUM];
@@ -429,10 +429,10 @@ void TracingConcave::FindVisibleFacetsForWavefront(IntArray &facetIds)
 bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 {
 //	int loc = !beam.location;
-	const Point3f &beamNormal = -m_facets[beam.facetId].normal[!beam.location];
+	const Point3f &beamNormal = -m_facets[beam.facetID].normal[!beam.location];
 
 	const Point3f &facetCenter = m_particle->centers[facetID];
-	const Point3f &beamCenter = m_particle->centers[beam.facetId];
+	const Point3f &beamCenter = m_particle->centers[beam.facetID];
 	Point3f vectorFromBeamToFacet = facetCenter - beamCenter;
 
 	double cosBF = DotProduct(beamNormal, vectorFromBeamToFacet);
@@ -616,7 +616,7 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
-	Point3f normal = m_facets[beam.facetId].ex_normal; // normal of last facet of beam
+	Point3f normal = m_facets[beam.facetID].ex_normal; // normal of last facet of beam
 	double cosFB = DotProduct(normal, beam.direction);
 	double e = fabs(cosFB);
 

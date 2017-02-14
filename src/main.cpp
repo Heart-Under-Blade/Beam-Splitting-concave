@@ -37,7 +37,8 @@ struct OrientationRange
 enum class ParticleType : int
 {
 	Hexagonal = 1,
-	ConcaveHexagonal = 10
+	ConcaveHexagonal = 10,
+	TiltedHexagonal = 11
 };
 
 struct CLArguments
@@ -46,6 +47,7 @@ struct CLArguments
 	double halfHeight;
 	double radius;
 	double cavityDepth;
+	double tiltAngle;
 	complex refractionIndex;
 	OrientationRange betaRange;
 	OrientationRange gammaRange;
@@ -97,16 +99,27 @@ void Calculate(const CLArguments &params)
 		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
 								   polarizationBasis, params.interReflNum);
 		betaNorm = M_PI/(2.0*orNumBeta);
+		gammaNorm = M_PI/(3.0*orNumGamma);
 		break;
-//	case 1:
-		/// TODO реализовать остальные частицы
-//		break;
+	case ParticleType::TiltedHexagonal:
+		particle = new TiltedHexagonal(params.radius, params.halfHeight, params.refractionIndex,
+									   params.tiltAngle);
+		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
+								   polarizationBasis, params.interReflNum);
+		betaNorm = M_PI/(2.0*orNumBeta);
+		gammaNorm = (2.0*M_PI)/orNumGamma;
+//		gammaNorm = M_PI/(3.0*orNumGamma);
+		break;
+
+		// TODO реализовать остальные частицы
+
 	case ParticleType::ConcaveHexagonal:
-		particle = new ConcaveHexagonal(params.radius, params.halfHeight,
-										params.refractionIndex, params.cavityDepth);
+		particle = new ConcaveHexagonal(params.radius, params.halfHeight, params.refractionIndex,
+										params.cavityDepth);
 		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
 									polarizationBasis, params.interReflNum);
 		betaNorm = M_PI/(2.0*orNumBeta);
+		gammaNorm = M_PI/(3.0*orNumGamma);
 		break;
 	default:
 		assert(false && "ERROR! Incorrect type of particle.");
@@ -114,7 +127,6 @@ void Calculate(const CLArguments &params)
 	}
 
 	int EDF = 0;
-	gammaNorm = M_PI/(3.0*orNumGamma);
 
 	incomingEnergy = 0;
 
@@ -235,6 +247,10 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 				{
 					params.cavityDepth = GetArgValueD(argv, argc, ++i);
 				}
+				else if (params.particleType == ParticleType::TiltedHexagonal)
+				{
+					params.tiltAngle = GetArgValueD(argv, argc, ++i);
+				}
 
 				++paramsNum;
 			}
@@ -301,6 +317,8 @@ int main(int argc, char* argv[])
 //	testConcaveHexagonRot();
 //	testHexagonBuilding();
 //	testHexagonRotate();
+//	testTiltHexagonBuild();
+//	testCompareParticles();
 	CLArguments params;
 
 	if (argc > 1) // has command line arguments
@@ -312,10 +330,12 @@ int main(int argc, char* argv[])
 		std::cout << "Argument list is not found. Using default params."
 				  << std::endl << std::endl;
 
-		params.particleType = ParticleType::ConcaveHexagonal;
+//		params.particleType = ParticleType::TiltedHexagonal;
+		params.particleType = ParticleType::Hexagonal;
 		params.halfHeight = 100;
 		params.radius = 40;
 		params.cavityDepth = 20;
+		params.tiltAngle = 45;
 		params.refractionIndex = complex(1.31, 0.0);
 		params.betaRange.begin = 0;
 		params.betaRange.end = 200;
@@ -383,12 +403,12 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	time.Start();
 
 #ifdef _DEBUG // DEB
-	beta = (153 + 0.5)*betaNorm;
-	gamma = (100 + 0.5)*gammaNorm;
-	betaDistrProbability = sin(beta);
-	tracer.RotateParticle(beta, gamma);
-	tracer.SplitBeamByParticle(outcomingBeams);
-	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+//	beta = (153 + 0.5)*betaNorm;
+//	gamma = (100 + 0.5)*gammaNorm;
+//	betaDistrProbability = sin(beta);
+//	tracer.RotateParticle(beta, gamma);
+//	tracer.SplitBeamByParticle(outcomingBeams);
+//	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
 #ifdef _OUTPUT_NRG_CONV
 	double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
 	energyFile<<153<<" "<<100<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<std::endl;

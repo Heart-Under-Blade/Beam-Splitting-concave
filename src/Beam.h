@@ -34,7 +34,7 @@ public:
 
 	Polygon polygon;				///< array of beam vertices (shape)
 
-	int facetId;					///< last reflected facet
+	int facetID;					///< last reflected facet
 	int level;						///< number of preview reflections
 	Location location;				///< beam state towards the particle (inside or outside)
 
