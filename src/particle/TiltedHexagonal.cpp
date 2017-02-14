@@ -1,16 +1,21 @@
-#include "Hexagonal.h"
+#include "TiltedHexagonal.h"
+#include "global.h"
 
-const int Hexagonal::BASE_FACET_NUM;
-const int Hexagonal::SIDE_VERTEX_NUMBER;
-const int Hexagonal::BASE_VERTEX_NUM;
+const int TiltedHexagonal::BASE_FACET_NUM;
+const int TiltedHexagonal::SIDE_VERTEX_NUMBER;
+const int TiltedHexagonal::BASE_VERTEX_NUM;
 
-Hexagonal::Hexagonal() {}
+TiltedHexagonal::TiltedHexagonal() {}
 
-Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refractionIndex)
+TiltedHexagonal::TiltedHexagonal(double radius, double halfHeight, const complex &refractionIndex, double tiltAngle)
 	: Particle(radius, halfHeight, refractionIndex)
 {
+	m_tiltAngle = tiltAngle;
+
 	SetFacetParams();
 	SetBaseFacets();
+	TiltBaseFacets();
+
 
 	// set original positions of the base facets
 	CopyFacet(m_originBases.top, facets[0]);
@@ -21,7 +26,29 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 	SetActualNormals();
 }
 
-void Hexagonal::SetSideNormals(int beginId)
+void TiltedHexagonal::TiltBaseFacets()
+{
+	double tilt = 15.0*M_PI/180.0,
+		   tan_ang = tan(m_tiltAngle*M_PI/180.0);
+
+	double h[6];
+	h[0] = m_radius * cos(5.0*M_PI/3.0-tilt) * tan_ang;
+	h[1] = m_radius * cos(tilt) * tan_ang,
+	h[2] = m_radius * cos(M_PI/3.0-tilt) * tan_ang,
+	h[3] = m_radius * cos(2.0*M_PI/3.0-tilt) * tan_ang,
+	h[4] = m_radius * cos(M_PI-tilt) * tan_ang,
+	h[5] = m_radius * cos(4.0*M_PI/3.0-tilt) * tan_ang;
+
+	int endPointIndex = BASE_VERTEX_NUM-1;
+
+	for (int i = 0; i < facetNum; ++i)
+	{
+		m_originBases.top[i] += h[i];
+		m_originBases.bottom[endPointIndex-i] += h[i];
+	}
+}
+
+void TiltedHexagonal::SetSideNormals(int beginId)
 {
 	double cos30 = sqrt(3)/2;
 	m_originNormals[beginId++] = Point3f(-cos30,-0.5, 0);
@@ -32,16 +59,16 @@ void Hexagonal::SetSideNormals(int beginId)
 	m_originNormals[beginId++] = Point3f(-cos30, 0.5, 0);
 }
 
-void Hexagonal::SetDefaultNormals()
+void TiltedHexagonal::SetDefaultNormals()
 {
 	// base facets
-	m_originNormals[0] = Point3f(0, 0,-1);
-	m_originNormals[7] = Point3f(0, 0, 1);
+	m_originNormals[0] = -NormalToPolygon(m_originBases.top);
+	m_originNormals[7] = -NormalToPolygon(m_originBases.bottom);
 
 	SetSideNormals(1);
 }
 
-void Hexagonal::SetFacetParams()
+void TiltedHexagonal::SetFacetParams()
 {
 	facetNum = BASE_VERTEX_NUM + BASE_FACET_NUM;
 
@@ -56,7 +83,7 @@ void Hexagonal::SetFacetParams()
 	}
 }
 
-void Hexagonal::SetBaseFacets()
+void TiltedHexagonal::SetBaseFacets()
 {
 	Point3f *facet;
 
@@ -92,7 +119,7 @@ void Hexagonal::SetBaseFacets()
 	SetTwoDiagonalPoints(2,-halfRadius, -incircleRadius, -m_halfHeight);
 }
 
-void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
+void TiltedHexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 							  int startIndex, int endIndex)
 {
 	int endPointIndex = BASE_VERTEX_NUM-1;
@@ -115,7 +142,7 @@ void Hexagonal::SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 	}
 }
 
-void Hexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
+void TiltedHexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
 {
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
@@ -124,7 +151,7 @@ void Hexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
 	}
 }
 
-void Hexagonal::Rotate(double beta, double gamma, double alpha)
+void TiltedHexagonal::Rotate(double beta, double gamma, double alpha)
 {
 	Particle::Rotate(beta, gamma, alpha);
 

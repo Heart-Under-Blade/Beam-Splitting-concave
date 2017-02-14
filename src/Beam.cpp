@@ -319,7 +319,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 
 	Point3f r = k + direction;
 
-	if(Norm(r) <= 0.5)
+	if (Norm(r) <= 0.5)
 	{
 		angle = -angle;
 	}

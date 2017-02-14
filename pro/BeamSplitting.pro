@@ -44,7 +44,11 @@ HEADERS += \
 	../src/geometry/clipper/clipper.hpp \
 	../src/geometry/clipper/BeamClipper.h \
 	../src/geometry/geometry_lib.h \
+<<<<<<< HEAD
     ../src/PhisBeam.h
+=======
+    ../src/particle/TiltedHexagonal.h
+>>>>>>> develop
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -68,5 +72,9 @@ SOURCES += \
 	../src/geometry/clipper/clipper.cpp \
 	../src/geometry/clipper/BeamClipper.cpp \
 	../src/geometry/geometry_lib.cpp \
+<<<<<<< HEAD
     ../src/PhisBeam.cpp
+=======
+    ../src/particle/TiltedHexagonal.cpp
+>>>>>>> develop
 

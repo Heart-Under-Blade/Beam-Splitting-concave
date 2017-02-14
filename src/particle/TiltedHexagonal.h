@@ -4,15 +4,21 @@
 
 /**
  * @brief The Hexagon class
- * The prism particle with 6 side facets.
+ * The prism particle with 6 number of side facets.
  */
-class Hexagonal : public Particle
+class TiltedHexagonal : public Particle
 {
 public:
-	Hexagonal();
-	Hexagonal(double m_radius, double m_halfHeight, const complex &m_refractionIndex);
+	TiltedHexagonal();
+	TiltedHexagonal(double m_radius, double m_halfHeight, const complex &m_refractionIndex,
+					double tiltAngle);
 
 	void Rotate(double beta, double gamma, double alpha) override;
+
+private:
+	double m_tiltAngle;
+
+	void TiltBaseFacets();
 
 protected:
 	static const int BASE_FACET_NUM = 2;		///< number of bases of hexagon
