@@ -36,7 +36,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 	{
 //		if (b.track.size() == 1 &&
 //				b.track[0] == 1)
-			rrr += AreaOfBeam(m_beamTree[i]);
+			rrr += m_beamTree[i].polygon.Area();
 	}
 	int fgfg = 0;
 #endif
@@ -49,7 +49,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 	{
 //		if (b.track.size() == 1 &&
 //				b.track[0] == 1)
-			fff += AreaOfBeam(b);
+			fff += b.polygon.Area();
 	}
 	int ggg = 0;
 #endif

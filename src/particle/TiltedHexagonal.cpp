@@ -1,11 +1,10 @@
 #include "TiltedHexagonal.h"
 #include "global.h"
+#include <iostream>
 
 const int TiltedHexagonal::BASE_FACET_NUM;
 const int TiltedHexagonal::SIDE_VERTEX_NUMBER;
 const int TiltedHexagonal::BASE_VERTEX_NUM;
-
-TiltedHexagonal::TiltedHexagonal() {}
 
 TiltedHexagonal::TiltedHexagonal(double radius, double halfHeight, const complex &refractionIndex, double tiltAngle)
 	: Particle(radius, halfHeight, refractionIndex)
@@ -16,10 +15,9 @@ TiltedHexagonal::TiltedHexagonal(double radius, double halfHeight, const complex
 	SetBaseFacets();
 	TiltBaseFacets();
 
-
 	// set original positions of the base facets
-	CopyFacet(m_originBases.top, facets[0]);
-	CopyFacet(m_originBases.bottom, facets[7]);
+	CopyFacet(m_originBases[0].arr, facets[0]);
+	CopyFacet(m_originBases[1].arr, facets[7]);
 
 	SetSideFacets(facets[0].polygon.arr, facets[7].polygon.arr, 1, facetNum-1);
 	SetDefaultNormals();
@@ -43,8 +41,8 @@ void TiltedHexagonal::TiltBaseFacets()
 
 	for (int i = 0; i < facetNum; ++i)
 	{
-		m_originBases.top[i] += h[i];
-		m_originBases.bottom[endPointIndex-i] += h[i];
+		m_originBases[0].arr[i] += h[i];
+		m_originBases[1].arr[endPointIndex-i] += h[i];
 	}
 }
 
@@ -62,8 +60,8 @@ void TiltedHexagonal::SetSideNormals(int beginId)
 void TiltedHexagonal::SetDefaultNormals()
 {
 	// base facets
-	m_originNormals[0] = -NormalToPolygon(m_originBases.top);
-	m_originNormals[7] = -NormalToPolygon(m_originBases.bottom);
+	m_originNormals[0] = -NormalToPolygon(m_originBases[0]);
+	m_originNormals[7] = -NormalToPolygon(m_originBases[1]);
 
 	SetSideNormals(1);
 }
@@ -107,15 +105,17 @@ void TiltedHexagonal::SetBaseFacets()
 	};
 
 	// top base facet
-	facet = m_originBases.top;
+	facet = m_originBases[0].arr;
 	SetTwoDiagonalPoints(0, halfRadius, incircleRadius, m_halfHeight);
 	SetTwoDiagonalPoints(1,-halfRadius, incircleRadius, m_halfHeight);
 	SetTwoDiagonalPoints(2,-m_radius, 0,  m_halfHeight);
 
 	// bottom base facet
-	facet = m_originBases.bottom;
+	facet = m_originBases[1].arr;
 	SetTwoDiagonalPoints(0, m_radius, 0, -m_halfHeight);
 	SetTwoDiagonalPoints(1, halfRadius, -incircleRadius, -m_halfHeight);
+//	std::cout << "!!111" << facet[2].cx << std::endl // DEB
+//			  << facet[5].cx << std::endl;
 	SetTwoDiagonalPoints(2,-halfRadius, -incircleRadius, -m_halfHeight);
 }
 
@@ -146,8 +146,8 @@ void TiltedHexagonal::RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom)
 {
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		RotatePoint(m_originBases.top[i], baseTop[i]);
-		RotatePoint(m_originBases.bottom[i], baseBottom[i]);
+		RotatePoint(m_originBases[0].arr[i], baseTop[i]);
+		RotatePoint(m_originBases[1].arr[i], baseBottom[i]);
 	}
 }
 

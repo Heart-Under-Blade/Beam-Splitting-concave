@@ -22,12 +22,13 @@
 #include "PhysMtr.hpp"
 
 #ifdef _OUTPUT_NRG_CONV
-std::ofstream energyFile("energy.dat", std::ios::out);
+ofstream energyFile("energy.dat", ios::out);
 double SS=0;
 int bcount=0;
 #endif
 
-using namespace std::chrono;
+using namespace std;
+using namespace chrono;
 
 struct OrientationRange
 {
@@ -55,7 +56,7 @@ struct CLArguments
 	int thetaNumber;
 	int interReflNum;
 	bool isRandom = false;
-	std::string outfile;
+	string outfile;
 };
 
 matrix back(4,4),	///< Mueller matrix in backward direction
@@ -69,7 +70,8 @@ Point3f incidentDir(0, 0, -1);
 Point3f polarizationBasis(0, 1, 0);
 int assertNum = 0;
 
-bool isPhisOptics = true;
+//bool isPhisOptics = true;
+bool isPhisOptics = false;
 
 struct TrackGroup
 {
@@ -81,10 +83,10 @@ struct TrackGroup
 TrackGroup tracks[32];
 int trackCount = 0;
 
-void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
+void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
 
-void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename);
+void WriteResultsToFile(int ThetaNumber, double NRM, const string &filename);
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM);
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM);
 
@@ -96,14 +98,14 @@ void TraceSingle(Tracing &tracer, double beta, double gamma);
 
 void ImportTracks(Particle *particle)
 {
-	std::ifstream trackFile("tracks.dat", std::ios::in);
+	ifstream trackFile("tracks.dat", ios::in);
 	char *buff = (char*)malloc(sizeof(char) * 128);
 
 	while (!trackFile.eof())
 	{
 		trackFile.getline(buff, 128);
 
-		std::vector<int> arr;
+		vector<int> arr;
 
 		do
 		{
@@ -195,7 +197,7 @@ void Calculate(const CLArguments &params)
 	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
 	mxd.ClearArr();
 
-	std::cout << std::endl;
+	cout << endl;
 
 	time_point<system_clock> startCalc = system_clock::now();
 
@@ -212,10 +214,10 @@ void Calculate(const CLArguments &params)
 
 	if (assertNum > 0)
 	{
-		std::cout << std::endl << "WARRNING! Asserts are occured (see log file) " << assertNum << std::endl;
+		cout << endl << "WARRNING! Asserts are occured (see log file) " << assertNum << endl;
 	}
 
-	std::cout << "\nTotal time of calculation = " << duration_cast<seconds>(total).count() << " seconds";
+	cout << "\nTotal time of calculation = " << duration_cast<seconds>(total).count() << " seconds";
 
 	// Integrating
 	double D_tot = back[0][0] + forw[0][0];
@@ -251,7 +253,7 @@ int GetArgValue(char* argv[], int argc, int i)
 {
 	if (argc <= i)
 	{
-		throw std::string("Not enouth arguments");
+		throw string("Not enouth arguments");
 	}
 
 	char *end;
@@ -259,7 +261,7 @@ int GetArgValue(char* argv[], int argc, int i)
 
 	if (strlen(end) != 0)
 	{
-		throw std::string("Some argument is incorrect.");
+		throw string("Some argument is incorrect.");
 	}
 
 	return val;
@@ -269,7 +271,7 @@ double GetArgValueD(char* argv[], int argc, int i)
 {
 	if (argc <= i)
 	{
-		throw std::string("Not enouth arguments");
+		throw string("Not enouth arguments");
 	}
 
 	char *end;
@@ -277,7 +279,7 @@ double GetArgValueD(char* argv[], int argc, int i)
 
 	if (strlen(end) != 0)
 	{
-		throw std::string("Some argument is incorrect.");
+		throw string("Some argument is incorrect.");
 	}
 
 	return val;
@@ -291,7 +293,7 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 
 		for (int i = 1; i < argc; ++i)
 		{
-			std::string arg(argv[i]);
+			string arg(argv[i]);
 
 			if (arg == "-p")
 			{
@@ -354,13 +356,13 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 
 		if (paramsNum < 6) // REF: выделить как константу
 		{
-			throw std::string("Too few arguments.");
+			throw string("Too few arguments.");
 		}
 	}
-	catch (const std::string &e)
+	catch (const string &e)
 	{
-		std::cout << "Error! " << e << " Please check it and restart the program."
-				  << std::endl << "Press any key to exit...";
+		cout << "Error! " << e << " Please check it and restart the program."
+				  << endl << "Press any key to exit...";
 		getchar();
 		exit(1);
 	}
@@ -368,7 +370,7 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 
 int main(int argc, char* argv[])
 {
-//	logfile->open("log.txt", std::ios::out);
+//	logfile->open("log.txt", ios::out);
 
 //	testConcaveHexagonRot();
 //	testHexagonBuilding();
@@ -383,8 +385,8 @@ int main(int argc, char* argv[])
 	}
 	else // DEB
 	{
-		std::cout << "Argument list is not found. Using default params."
-				  << std::endl << std::endl;
+		cout << "Argument list is not found. Using default params."
+				  << endl << endl;
 
 //		params.particleType = ParticleType::TiltedHexagonal;
 		params.particleType = ParticleType::Hexagonal;
@@ -402,8 +404,8 @@ int main(int argc, char* argv[])
 		params.isRandom = false;
 
 #ifdef _OUTPUT_NRG_CONV
-		std::cout << "WARNING: Energy conversation is calculating now."
-				  << std::endl << std::endl;
+		cout << "WARNING: Energy conversation is calculating now."
+				  << endl << endl;
 		params.refractionIndex = complex(1000000000000001.31, 0.0);
 		params.interReflNum = 10;
 #endif
@@ -420,7 +422,7 @@ void TraceSingle(Tracing &tracer, double beta, double gamma)
 	gamma = (M_PI*gamma)/180.0;
 	double betaDistrProbability = sin(beta);
 
-	std::vector<Beam> outcomingBeams;
+	vector<Beam> outcomingBeams;
 //	double square;
 
 	tracer.RotateParticle(beta, gamma);
@@ -435,8 +437,8 @@ void TraceSingle(Tracing &tracer, double beta, double gamma)
 void PrintTime(long long &msLeft, CalcTimer &time)
 {
 	time.Left(msLeft);
-	std::cout << "time left: " << time.ToString();
-	std::cout << "\t\tends at " << std::ctime(&time.End(msLeft));
+	cout << "time left: " << time.ToString();
+	cout << "\t\tends at " << ctime(&time.End(msLeft));
 }
 
 void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
@@ -447,7 +449,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	double beta, gamma;
 	double betaDistrProbability;
 
-	std::vector<Beam> outcomingBeams;
+	vector<Beam> outcomingBeams;
 	double square = 0;
 
 	int orNumBeta = betaRange.end - betaRange.begin;
@@ -467,7 +469,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 //	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
 #ifdef _OUTPUT_NRG_CONV
 	double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
-	energyFile<<153<<" "<<100<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<std::endl;
+	energyFile<<153<<" "<<100<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<endl;
 	if (fabs(sss-SS) > 40)
 		int fff = 0;
 #endif
@@ -492,8 +494,8 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 				tracer.SplitBeamByParticle(outcomingBeams);
 
 				/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
-	//			std::vector<std::vector<int>> tracks;
-	//			std::vector<int> track = {0, 7, 0};
+	//			vector<vector<int>> tracks;
+	//			vector<int> track = {0, 7, 0};
 	//			tracks.push_back(track);
 	//			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
 
@@ -502,7 +504,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 #ifdef _OUTPUT_NRG_CONV
 				double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
-				energyFile<<i<<" "<<j<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<std::endl;
+				energyFile<<i<<" "<<j<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<endl;
 #ifdef _DEBUG // DEB
 				if (fabs(sss-SS) > 40)
 					int fff = 0;
@@ -511,7 +513,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 			}
 			catch (const bool &)
 			{
-				logfile << ", i: " << i << ", j: " << j << std::endl;
+				logfile << ", i: " << i << ", j: " << j << endl;
 				logfile.flush();
 				++assertNum;
 			}
@@ -520,7 +522,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 		}
 
 		Dellines(2);
-		std::cout << ((100*count)/orNumBeta) << "% ";
+		cout << ((100*count)/orNumBeta) << "% ";
 
 		time.Stop();
 		long long durMs = time.Duration();
@@ -538,7 +540,7 @@ void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &bet
 {
 	srand(time(NULL));
 
-	std::vector<Beam> outcomingBeams;
+	vector<Beam> outcomingBeams;
 	double beta, gamma;
 //	double square;
 	int orNumBeta = betaRange.end - betaRange.begin;
@@ -559,7 +561,7 @@ void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &bet
 			outcomingBeams.clear();
 		}
 
-		std::cout << (100*(++count))/orNumBeta << "%" << std::endl;
+		cout << (100*(++count))/orNumBeta << "%" << endl;
 	}
 }
 
@@ -578,8 +580,8 @@ void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
 	// Extracting the forward and backward peak in a separate file if needed
 	if (EDF)
 	{
-		std::ofstream bck("back.dat", std::ios::out);
-		std::ofstream frw("forward.dat", std::ios::out);
+		ofstream bck("back.dat", ios::out);
+		ofstream frw("forward.dat", ios::out);
 		frw << "M11 M22/M11 M33/M11 M44/M11";
 		bck << "M11 M22/M11 M33/M11 M44/M11";
 
@@ -623,7 +625,7 @@ void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
 	}
 }
 
-bool IsMatchTrack(const std::vector<int> &track, const std::vector<int> &compared)
+bool IsMatchTrack(const vector<int> &track, const vector<int> &compared)
 {
 	if (track.size() != compared.size())
 	{
@@ -657,7 +659,7 @@ bool IsMatchTrack(long long int track)
 	return false;
 }
 
-void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
+void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
 #ifdef _DEBUG // DEB
 	double eee = 0;
@@ -667,28 +669,13 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 	{
 		Beam &beam = outBeams.at(i);
 
-		if (!IsMatchTrack(beam.track))
+		if (isPhisOptics)
 		{
-			continue;
+			if (!IsMatchTrack(beam.track))
+			{
+				continue;
+			}
 		}
-		// DEB
-//		if (!(IsMatchTrack(beam.track, {0})
-//			  || IsMatchTrack(beam.track, {1})
-//			|| IsMatchTrack(beam.track, {2})
-//			  || IsMatchTrack(beam.track, {3})
-//			  || IsMatchTrack(beam.track, {4})
-//			|| IsMatchTrack(beam.track, {5})
-//			  || IsMatchTrack(beam.track, {7})
-//			  || IsMatchTrack(beam.track, {8})
-//			|| IsMatchTrack(beam.track, {9})
-//			  || IsMatchTrack(beam.track, {10})
-//			|| IsMatchTrack(beam.track, {11})
-//				/*|| IsMatchTrack(beam.track, {9,11,17,6,7})*/))
-//		{
-//			continue;
-//		}
-
-
 
 		beam.RotateSpherical(incidentDir, polarizationBasis);
 
@@ -743,7 +730,8 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 			bf = matrix(4,4);
 			bf.Identity();
 #endif
-			mxd.insert(0, ZenAng, Area*bf);
+//			matrix cc = Area*bf;
+			mxd.insert(0, ZenAng, /*cc*/Area*bf);
 		}
 
 		LOG_ASSERT(Area >= 0);
@@ -754,24 +742,24 @@ void HandleBeams(std::vector<Beam> &outBeams, double betaDistrProb, const Tracin
 #endif
 }
 
-std::string GetFileName(const std::string &filename)
+string GetFileName(const string &filename)
 {
-	std::string fname = std::string("M_") + filename;
-	std::string name = fname;
+	string fname = string("M_") + filename;
+	string name = fname;
 
-	for (int i = 1; std::ifstream(name += ".dat") != NULL; ++i)
+	for (int i = 1; ifstream(name += ".dat") != NULL; ++i)
 	{
-		name = fname + "(" + std::to_string(i) + ")";
+		name = fname + "(" + to_string(i) + ")";
 	}
 
 	return name;
 }
 
-void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename)
+void WriteResultsToFile(int ThetaNumber, double NRM, const string &filename)
 {
-	std::string name = GetFileName(filename);
+	string name = GetFileName(filename);
 
-	std::ofstream M(name, std::ios::out);
+	ofstream M(name, ios::out);
 
 	M <<  "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
 
@@ -806,7 +794,7 @@ void WriteResultsToFile(int ThetaNumber, double NRM, const std::string &filename
 
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM)
 {
-	std::ofstream out("out.dat", std::ios::out);
+	ofstream out("out.dat", ios::out);
 	// Information for log-file
 	out << "\nTotal time of calculation = " << t/CLOCKS_PER_SEC << " seconds";
 	out << "\nTotal number of body orientation = " << orNumber;
