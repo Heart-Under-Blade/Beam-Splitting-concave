@@ -138,14 +138,24 @@ struct Point3d
 		return Point3d(x*value, y*value, z*value);
 	}
 
+	Point3d operator + (const Point3d &other) const
+	{
+		return Point3d(x + other.x, y + other.y, z + other.z);
+	}
+
 	Point3d operator - (const Point3d &other) const
 	{
 		return Point3d(x - other.x, y - other.y, z - other.z);
 	}
 
-	Point3f operator - () const
+	Point3d operator - () const
 	{
-		return Point3f(-x, -y, -z);
+		return Point3d(-x, -y, -z);
+	}
+
+	Point3d operator / (double value) const
+	{
+		return Point3d(x/value, y/value, z/value);
 	}
 };
 
@@ -157,6 +167,7 @@ struct Point3d
 float DotProduct(const Point3f &v1, const Point3f &v2);
 double DotProductD(const Point3d &v1, const Point3d &v2);
 void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
+Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
 
 double Norm(const Point3f &point);
 void Normalize(Point3f &v);
@@ -295,5 +306,6 @@ Point3f NormalToPolygon(const Polygon &polygon);
 Point3f CenterOfPolygon(const Polygon &polygon);
 
 double Length(const Point3f &v);
+double LengthD(const Point3d &v);
 
 double AreaOfPolygon(const Polygon &p); ///< convex

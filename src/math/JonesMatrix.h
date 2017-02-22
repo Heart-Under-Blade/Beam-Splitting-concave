@@ -1,5 +1,6 @@
 #pragma once
 
+#include "matrix.hpp"
 #include "compl.hpp"
 
 class JonesMatrix
@@ -13,4 +14,6 @@ public:
 	complex m12;
 	complex m21;
 	complex m22;
+
+	matrixC operator * (const complex& z) const;
 };

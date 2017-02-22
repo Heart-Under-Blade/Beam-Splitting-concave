@@ -29,9 +29,6 @@ private:
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
-	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
-	void PushBeamToTree(Beam &beam);
-
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
 	void FindVisibleFacetsForWavefront(IntArray &facetIds);
 
@@ -46,7 +43,6 @@ private:
 
 	void TraceFirstBeam();
 
-
 	bool HasExternalBeam(Beam &incidentBeam);
 
 #ifdef _TRACK_ALLOW
@@ -56,11 +52,10 @@ private:
 
 	void PushBeamsToTree(int level, int facetID, bool hasOutBeam,
 						 Beam &inBeam, Beam &outBeam);
-
-	bool IsVisibleFacet(int facetID, const Beam &beam);
-
 	void PushBeamsToTree(int facetID, const PolygonArray &polygons,
 						 Beam &inBeam, Beam &outBeam);
+
+	bool IsVisibleFacet(int facetID, const Beam &beam);
 
 protected:
 	void TraceSecondaryBeams(std::vector<Beam> &scaterredBeams);

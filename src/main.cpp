@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <ostream>
 #include <assert.h>
 #include <float.h>
 #include <chrono>
@@ -23,7 +24,7 @@
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
-double SS=0;
+double SSconfined=0;
 int bcount=0;
 #endif
 
@@ -34,6 +35,13 @@ struct OrientationRange
 {
 	int begin;
 	int end;
+};
+
+struct Cone
+{
+	double radius;
+	int phi;
+	int theta;
 };
 
 enum class ParticleType : int
@@ -57,7 +65,9 @@ struct CLArguments
 	int interReflNum;
 	bool isRandom = false;
 	string outfile;
-};
+	Cone bsCone; ///< конус в направлении назад
+	double wavelength;
+} params;
 
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
@@ -67,21 +77,26 @@ double sizeBin;
 double gammaNorm, betaNorm;
 double incomingEnergy;
 Point3f incidentDir(0, 0, -1);
-Point3f polarizationBasis(0, 1, 0);
+Point3f polarizationBasis(0, 1, 0); ///< Basis for polarization characteristic of light
 int assertNum = 0;
 
-//bool isPhisOptics = true;
-bool isPhisOptics = false;
+bool isPhisOptics = true;
+bool isOpticalPath = true;
+vector<Arr2DC> J; // Jones matrices
+double df = 0, dt = 0;
+unsigned int MuellerMatrixNumber = 0;
+unsigned int NumSum = 16;
+int betaMax = 3;
 
 struct TrackGroup
 {
 	int groupID;
 	long long int arr[62];
 	int size = 0;
-};
+}
+trackGroups[32];
 
-TrackGroup tracks[32];
-int trackCount = 0;
+int groupCount = 0;
 
 void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer);
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber);
@@ -116,8 +131,8 @@ void ImportTracks(Particle *particle)
 
 		if (arr.size() == 1)
 		{
-			++trackCount;
-			tracks[trackCount-1].groupID = arr.at(0);
+			++groupCount;
+			trackGroups[groupCount-1].groupID = arr.at(0);
 		}
 		else
 		{
@@ -129,15 +144,13 @@ void ImportTracks(Particle *particle)
 				trackID *= (particle->facetNum + 1);
 			}
 
-			tracks[trackCount-1].arr[tracks[trackCount-1].size++] = trackID;
+			trackGroups[groupCount-1].arr[trackGroups[groupCount-1].size++] = trackID;
 		}
 	}
 }
 
 void Calculate(const CLArguments &params)
 {
-	bool isOpticalPath = false;
-
 	Tracing *tracer = nullptr;
 
 	int orNumBeta = params.betaRange.end - params.betaRange.begin;
@@ -182,6 +195,18 @@ void Calculate(const CLArguments &params)
 	if (isPhisOptics)
 	{
 		ImportTracks(particle);
+
+		double radius = (params.bsCone.radius*M_PI)/180.0;
+
+		if (params.bsCone.theta)
+		{
+			dt = radius/(double)params.bsCone.theta;
+		}
+
+		if (params.bsCone.phi)
+		{
+			df = M_2PI/(double)(params.bsCone.phi+1);
+		}
 	}
 
 	int EDF = 0;
@@ -352,6 +377,16 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 
 				params.outfile = argv[++i];
 			}
+			else if (arg == "-bfc")
+			{
+				params.bsCone.radius = GetArgValueD(argv, argc, ++i);
+				params.bsCone.phi = GetArgValue(argv, argc, ++i);
+				params.bsCone.theta = GetArgValue(argv, argc, ++i);
+			}
+			else if (arg == "-w")
+			{
+				params.wavelength = GetArgValueD(argv, argc, ++i);
+			}
 		}
 
 		if (paramsNum < 6) // REF: выделить как константу
@@ -377,7 +412,6 @@ int main(int argc, char* argv[])
 //	testHexagonRotate();
 //	testTiltHexagonBuild();
 //	testCompareParticles();
-	CLArguments params;
 
 	if (argc > 1) // has command line arguments
 	{
@@ -458,6 +492,42 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	long long count = 0;
 
+	double dBettaRad = 0.0;
+	{
+		if (orNumBeta)
+		{
+			dBettaRad = ((betaMax*M_PI)/180.0)/(double)orNumBeta;
+		}
+	}
+
+	// PO params
+	ofstream M_all_file("M_all.dat", ios::out); // матрица Мюллера общая (физ. опт.)
+	{
+//		M_all_file.precision(16);
+//		M_all_file << orNumBeta << " " << 90 << " " << (dBettaRad*180.0)/M_PI;
+//		M_all_file << endl;
+//		M_all_file << "betta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44";
+//		M_all_file << endl;
+	}
+
+	int maxGroupID = 0;
+	{
+		for (int i = 0; i < groupCount; ++i)
+		{
+			if (trackGroups[i].groupID > maxGroupID)
+			{
+				maxGroupID = trackGroups[i].groupID;
+			}
+		}
+	}
+
+	++maxGroupID;
+
+	vector<Arr2D> M;
+	//
+
+	double norm = 1.0/(M_PI/3.0);
+
 	time.Start();
 
 #ifdef _DEBUG // DEB
@@ -475,19 +545,39 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 #endif
 #endif
 
-	for (int i = betaRange.begin; i < betaRange.end; ++i)
+	double dbeta = (M_PI/2 - 0)/(orNumBeta/2);
+
+	for (int i = betaRange.begin; i <= betaRange.end; ++i)
 	{
-		beta = (i + 0.5)*betaNorm;
+//		beta = (i + 0.5)*betaNorm;
+		beta = 0 + (double)i*dbeta;
 		betaDistrProbability = sin(beta);
 
-		for (int j = gammaRange.begin; j < gammaRange.end; ++j)
+		M.clear();
 		{
-			gamma = (j + 0.5)*gammaNorm;
+			Arr2D M_void(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
+
+			for (int j = 0; j < maxGroupID; ++j)
+			{
+				M.push_back(M_void);
+			}
+		}
+
+		for (int j = gammaRange.begin; j <= gammaRange.end; ++j)
+		{
+//			gamma = (j + 0.5)*gammaNorm;
+			gamma = (j - gammaRange.end/2)*gammaNorm + M_PI/6;
 
 #ifdef _OUTPUT_NRG_CONV
 			SS=0;
 			bcount=0;
 #endif
+			J.clear();
+			Arr2DC tmp_(params.bsCone.phi+1, params.bsCone.theta+1,2,2);
+			tmp_.ClearArr();
+			for(unsigned int q=0;q<maxGroupID; q++)
+				J.push_back(tmp_);
+
 			try
 			{
 				tracer.RotateParticle(beta, gamma);
@@ -510,6 +600,23 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 					int fff = 0;
 #endif
 #endif
+
+				M_all_file << (beta*180)/M_PI << ' ' << (gamma*180)/M_PI << ' ' << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
+
+				if (isPhisOptics)
+				{
+					for (int k = 0; k < maxGroupID; ++k)
+					{
+						for (int t = 0; t < params.bsCone.theta; ++t)
+						{
+							for (int p = 0; p < params.bsCone.phi; ++p)
+							{
+								matrix Mk = Mueller(J[k](p, t));
+								M[k].insert(p, t, gammaNorm*norm*Mk);
+							}
+						}
+					}
+				}
 			}
 			catch (const bool &)
 			{
@@ -519,6 +626,58 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 			}
 
 			outcomingBeams.clear();
+		}
+
+		if (isPhisOptics)
+		{
+			for(unsigned int q = 0; q < maxGroupID; ++q)
+			{
+				matrix sum(4, 4);
+
+				for (int t = 0; t < params.bsCone.theta; ++t)
+				{
+					sum.Fill(0);
+					double tt = (double)(t*dt*180.0)/M_PI;
+
+					for (int p = 0; p < params.bsCone.phi; ++p)
+					{
+						matrix m = M[q](p ,t);
+						matrix L(4,4);
+
+						L[0][0] = 1.0;
+						L[0][1] = 0.0;
+						L[0][2] = 0.0;
+						L[0][3] = 0.0;
+						L[1][0] = 0.0;
+						L[1][1] = cos(2.0*p);
+						L[1][2] = sin(2.0*p);
+						L[1][3] = 0.0;
+						L[2][0] = 0.0;
+						L[2][1] =-sin(2.0*p);
+						L[2][2] = cos(2.0*p);
+						L[2][3] = 0.0;
+						L[3][0] = 0.0;
+						L[3][1] = 0.0;
+						L[3][2] = 0.0;
+						L[3][3] = 1.0;
+
+						if (!t)
+						{
+							sum += L*m*L;
+						}
+						else
+						{
+							sum += m*L;
+						}
+					}
+
+					sum /= (params.bsCone.phi+1.0);
+//					M_all_file << endl << (beta*180.0)/M_PI << " " << tt << " ";
+//					M_all_file << sum;
+				}
+
+//				M_all_file << endl;
+			}
 		}
 
 		Dellines(2);
@@ -533,6 +692,8 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 		time.Start();
 		++count;
 	}
+
+	M_all_file.close();
 }
 
 void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &betaRange,
@@ -643,20 +804,20 @@ bool IsMatchTrack(const vector<int> &track, const vector<int> &compared)
 	return true;
 }
 
-bool IsMatchTrack(long long int track)
+int GetGroupID(long long int track)
 {
-	for (int i = 0; i < trackCount; ++i)
+	for (int i = 0; i < groupCount; ++i)
 	{
-		for (int j = 0; j < tracks[i].size; ++j)
+		for (int j = 0; j < trackGroups[i].size; ++j)
 		{
-			if (tracks[i].arr[j] == track)
+			if (trackGroups[i].arr[j] == track)
 			{
-				return true;
+				return trackGroups[i].groupID;
 			}
 		}
 	}
 
-	return false;
+	return -1;
 }
 
 void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
@@ -665,81 +826,148 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 	double eee = 0;
 #endif
 
-	for (unsigned int i = 0; i < outBeams.size(); ++i)
+	if (isPhisOptics)
 	{
-		Beam &beam = outBeams.at(i);
-
-		if (isPhisOptics)
+		for (unsigned int i = 0; i < outBeams.size(); ++i)
 		{
-			if (!IsMatchTrack(beam.track))
+			Beam &beam = outBeams.at(i);
+
+			double ctetta = DotProduct(beam.direction, -incidentDir);
+
+			if (ctetta < 0.17364817766693034885171662676931)
+			{	// отбрасываем пучки, которые далеко от конуса направления назад
+//				continue;// DEB
+			}
+
+			int groupID = GetGroupID(beam.id);
+
+//			cout << beam.id << "\n\n";
+			if (groupID < 0)
 			{
 				continue;
 			}
+
+//			cout << "dddferf rg r\n\n";
+			beam.RotateSpherical(incidentDir, polarizationBasis);
+
+			Point3f center = beam.polygon.Center();
+			double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
+
+			Point3f T = CrossProduct(beam.e, beam.direction);
+			T = T/Length(T); // базис выходящего пучка
+
+			for (int i = 0; i <= params.bsCone.phi; ++i)
+			{
+				for (int j = 0; j <= params.bsCone.theta; ++j)
+				{
+					double f = (double)i*df;
+					double t = (double)j*dt;
+
+					double sinT = sin(t),
+							sinF = sin(f),
+							cosF = cos(f);
+
+					Point3d vr(sinT*cosF, sinT*sinF, cos(t));
+
+					matrixC Jn_rot(2, 2);
+					{
+						Point3f normal = beam.polygon.Normal();
+
+						Point3d vf, vt;
+						vf = (!j) ? -polarizationBasis : Point3d(-sinF ,cosF ,0);
+						vt = CrossProductD(vf, vr);
+						vt = vt/LengthD(vt);
+
+						Point3f cpNT = CrossProduct(normal, T);
+						Point3f cpNE = CrossProduct(normal, beam.e);
+
+						Jn_rot[0][0] = -DotProductD(Point3f(cpNT.cx, cpNT.cy, cpNT.cz), vf); // OPT: похоже на SetJMatrix
+						Jn_rot[0][1] = -DotProductD(Point3f(cpNE.cx, cpNE.cy, cpNE.cz), vf);
+						Jn_rot[1][0] =  DotProductD(Point3f(cpNT.cx, cpNT.cy, cpNT.cz), vt);
+						Jn_rot[1][1] =  DotProductD(Point3f(cpNE.cx, cpNE.cy, cpNE.cz), vt);
+					}
+
+					complex fn(0, 0);
+					fn = beam.DiffractionIncline(vr, params.wavelength);
+
+					complex tmp = exp_im(M_2PI*(lng_proj0-DotProductD(vr, Point3d(center.cx, center.cy, center.cz)))/params.wavelength);
+					matrixC fn_jn = beam.J * tmp;
+
+					J[groupID].insert(i, j, fn*Jn_rot*fn_jn);
+				}
+			}
 		}
+	}
+	else
+	{
+		for (unsigned int i = 0; i < outBeams.size(); ++i)
+		{
+			Beam &beam = outBeams.at(i);
 
-		beam.RotateSpherical(incidentDir, polarizationBasis);
+			beam.RotateSpherical(incidentDir, polarizationBasis);
 
-		double cross = tracer.BeamCrossSection(beam);
-		double Area = betaDistrProb * cross;
+			double cross = tracer.BeamCrossSection(beam);
+			double Area = betaDistrProb * cross;
 
 #ifdef _DEBUG // DEB
-		eee += Area;
+			eee += Area;
 #endif
-		matrix bf = Mueller(beam.JMatrix);
+			matrix bf = Mueller(beam.J);
 
-		const float &x = beam.direction.cx;
-		const float &y = beam.direction.cy;
-		const float &z = beam.direction.cz;
+			const float &x = beam.direction.cx;
+			const float &y = beam.direction.cy;
+			const float &z = beam.direction.cz;
 
 #ifdef _OUTPUT_NRG_CONV
-		if (bf[0][0]>0.000001)
-		{
-			bcount++;
-			SS+=cross;
-		}
-#endif
-		// Collect the beam in array
-		if (z >= 1-DBL_EPSILON)
-		{
-			back += Area*bf;
-		}
-		else if (z <= DBL_EPSILON-1)
-		{
-			forw += Area*bf;
-		}
-		else
-		{
-			// Rotate the Mueller matrix of the beam to appropriate coordinate system
-			const unsigned int ZenAng = round(acos(z)/sizeBin);
-			double tmp = y*y;
-
-			if (tmp > DBL_EPSILON)
+			if (bf[0][0]>0.000001)
 			{
-				tmp = acos(x/sqrt(x*x+tmp));
+				bcount++;
+				SS+=cross;
+			}
+#endif
+			// Collect the beam in array
+			if (z >= 1-DBL_EPSILON)
+			{
+				back += Area*bf;
+			}
+			else if (z <= DBL_EPSILON-1)
+			{
+				forw += Area*bf;
+			}
+			else
+			{
+				// Rotate the Mueller matrix of the beam to appropriate coordinate system
+				const unsigned int ZenAng = round(acos(z)/sizeBin);
+				double tmp = y*y;
 
-				if (y < 0)
+				if (tmp > DBL_EPSILON)
 				{
-					tmp = M_2PI-tmp;
+					tmp = acos(x/sqrt(x*x+tmp));
+
+					if (y < 0)
+					{
+						tmp = M_2PI-tmp;
+					}
+
+					tmp *= -2.0;
+					RightRotateMueller(bf, cos(tmp), sin(tmp));
 				}
 
-				tmp *= -2.0;
-				RightRotateMueller(bf, cos(tmp), sin(tmp));
+#ifdef _CALC_AREA_CONTIBUTION_ONLY
+				bf = matrix(4,4);
+				bf.Identity();
+#endif
+				//			matrix cc = Area*bf;
+				mxd.insert(0, ZenAng, /*cc*/Area*bf);
 			}
 
-#ifdef _CALC_AREA_CONTIBUTION_ONLY
-			bf = matrix(4,4);
-			bf.Identity();
-#endif
-//			matrix cc = Area*bf;
-			mxd.insert(0, ZenAng, /*cc*/Area*bf);
+			LOG_ASSERT(Area >= 0);
 		}
 
-		LOG_ASSERT(Area >= 0);
-	}
-
 #ifdef _DEBUG // DEB
-	int fff = 0;
+		int fff = 0;
 #endif
+	}
 }
 
 string GetFileName(const string &filename)
