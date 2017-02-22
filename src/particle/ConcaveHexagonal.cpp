@@ -12,8 +12,7 @@ ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const compl
 	m_cavityDept = cavityDept;
 
 	SetFacetParams();
-
-	SetOriginBaseFacets();
+	SetBaseFacets();
 	SetOriginCavityPoints();
 
 	SetCavities(m_originBases.top, m_originBases.bottom, m_defaultCavities);
@@ -51,7 +50,7 @@ void ConcaveHexagonal::SetCenters()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		m_originCenters[i] = CenterOfPolygon(facets[i].polygon);
+		m_originCenters[i] = facets[i].polygon.Center();
 		centers[i] = m_originCenters[i];
 	}
 }

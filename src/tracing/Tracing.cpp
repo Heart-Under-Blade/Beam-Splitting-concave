@@ -63,6 +63,41 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 			cosInc2/Tv0, cosInc2/Th0);
 }
 
+void Tracing::SetBeamId(Beam &beam)
+{
+	assert(m_treeSize < MAX_BEAM_REFL_NUM);
+
+#ifdef _TRACK_ALLOW
+	beam.id += (beam.facetID + 1);
+	beam.id *= (m_particle->facetNum + 1);
+	//	AddToTrack(beam, facetId);
+#ifdef _TRACK_OUTPUT
+	PrintTrack(beam, facetId);
+#endif
+#endif
+}
+
+void Tracing::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
+{
+	beam.facetID = facetId;
+	beam.level = level;
+	beam.location = location;
+	PushBeamToTree(beam);
+}
+
+void Tracing::PushBeamToTree(Beam &beam, int facetId, int level)
+{
+	beam.facetID = facetId;
+	beam.level = level;
+	PushBeamToTree(beam);
+}
+
+void Tracing::PushBeamToTree(Beam &beam)
+{
+	SetBeamId(beam);
+	m_beamTree[m_treeSize++] = beam;
+}
+
 void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &startDir = m_waveFront.direction;
@@ -75,13 +110,13 @@ void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 	}
 	else // normal incidence
 	{
-		inBeam.JMatrix.m11 = 2.0/(m_refrIndex + 1.0);
-		inBeam.JMatrix.m22 = inBeam.JMatrix.m11;
+		inBeam.J.m11 = 2.0/(m_refrIndex + 1.0);
+		inBeam.J.m22 = inBeam.J.m11;
 		inBeam.e = m_polarizationBasis;
 		inBeam.direction = startDir;
 
-		outBeam.JMatrix.m11 = (m_refrIndex - 1.0)/(m_refrIndex + 1.0);
-		outBeam.JMatrix.m22 = -outBeam.JMatrix.m11;
+		outBeam.J.m11 = (m_refrIndex - 1.0)/(m_refrIndex + 1.0);
+		outBeam.J.m22 = -outBeam.J.m11;
 		outBeam.e = m_polarizationBasis;
 		outBeam.direction = -startDir;
 	}
@@ -105,7 +140,7 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 
 void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 {
-	Point3f center = CenterOfPolygon(inBeam.polygon);
+	Point3f center = inBeam.polygon.Center();
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
 	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_waveFront.direction, center);
@@ -114,11 +149,11 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 }
 
-void Tracing::SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam)
+void Tracing::TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	SetBeamOpticalParams(facetId, inBeam, outBeam);
 	SetPolygonByFacet(facetId, inBeam.polygon);
 	SetPolygonByFacet(facetId, outBeam.polygon);
+	SetBeamOpticalParams(facetId, inBeam, outBeam);
 }
 
 void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
@@ -126,7 +161,7 @@ void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
 	const Point3f &startDir = m_waveFront.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
-	m_lightSurfaceArea += AreaOfBeam(beam) * cosIN;
+	m_lightSurfaceArea += beam.polygon.Area() * cosIN;
 }
 
 // TODO: пофиксить
@@ -152,7 +187,7 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 		{
 			Beam outBeam;
 
-			SplitExternalBeamByFacet(facetId, incidentBeam, outBeam);
+			TraceFirstBeam(facetId, incidentBeam, outBeam);
 
 			outBuff.push_back(outBeam);
 		}
@@ -166,7 +201,7 @@ void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 				facetId = tracks.at(i).at(j);
 
 				Beam inBeam;
-				SplitInternalBeamByFacet(incidentBeam, facetId, inBeam, outBuff);
+				TraceSecondaryBeams(incidentBeam, facetId, inBeam, outBuff);
 
 				incidentBeam = inBeam;
 			}
@@ -185,7 +220,7 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 {
 	double Nr = CalcNr(cosIN);
 	double coef = (incidentBeam.location == Location::Outside) ? 1 : sqrt(Nr);
-	Point3f center = CenterOfPolygon(outBeam.polygon);
+	Point3f center = outBeam.polygon.Center();
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 
@@ -199,7 +234,7 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 
 bool Tracing::isTerminalBeam(const Beam &beam)
 {
-	double j_norm = beam.JMatrix.Norm();
+	double j_norm = beam.J.Norm();
 	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
 }
 
@@ -210,14 +245,14 @@ double Tracing::CalcNr(const double &cosIN) const
 	return (re + sqrt(re*re + ri_coef_im/cosIN_sqr))/2.0;
 }
 
-void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
+void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 									   Beam &inBeam, std::vector<Beam> &outBeams)
 {
 	Beam outBeam;
 	const Point3f &incidentDir = incidentBeam.direction;
 
 	// ext. normal uses in this calculating
-	const Point3f &normal = m_particle->facets[facetIndex].ex_normal;
+	const Point3f &normal = m_particle->facets[facetID].ex_normal;
 	double cosIN = DotProduct(normal, incidentDir);
 
 	if (cosIN < EPS_COS_90) /// beam is not incident to this facet
@@ -225,7 +260,7 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 		throw std::exception();
 	}
 
-	bool isOk = Intersect(facetIndex, incidentBeam, outBeam.polygon);
+	bool isOk = Intersect(facetID, incidentBeam, outBeam.polygon);
 
 	if (!isOk)
 	{
@@ -237,6 +272,11 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 	if (cosIN >= EPS_COS_00) /// normal incidence
 	{
 		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
+
+		outBeam.id = incidentBeam.id;
+		outBeam.facetID = facetID;
+		outBeam.level = incidentBeam.level + 1;
+		SetBeamId(outBeam);
 		outBeams.push_back(outBeam);
 	}
 	else /// slopping incidence
@@ -246,6 +286,10 @@ void Tracing::SplitInternalBeamByFacet(Beam &incidentBeam, int facetIndex,
 									   inBeam, outBeam, isTrivialIncidence);
 		if (isTrivialIncidence)
 		{
+			outBeam.id = incidentBeam.id;
+			outBeam.facetID = facetID;
+			outBeam.level = incidentBeam.level + 1;
+			SetBeamId(outBeam);
 			outBeams.push_back(outBeam);
 		}
 	}
@@ -359,7 +403,7 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 
 	if (m_isOpticalPath)
 	{
-		Point3f center = CenterOfPolygon(inBeam.polygon);
+		Point3f center = inBeam.polygon.Center();
 		inBeam.D = DotProduct(-center, inBeam.direction);
 
 		double temp = DotProduct(incidentDir, center);
@@ -524,10 +568,10 @@ bool Tracing::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 void Tracing::MulJMatrix(Beam &beam1, const Beam &beam2,
 						 const complex &coef1, const complex &coef2) const
 {
-	beam1.JMatrix.m11 = coef1 * beam2.JMatrix.m11;
-	beam1.JMatrix.m12 = coef1 * beam2.JMatrix.m12;
-	beam1.JMatrix.m21 = coef2 * beam2.JMatrix.m21;
-	beam1.JMatrix.m22 = coef2 * beam2.JMatrix.m22;
+	beam1.J.m11 = coef1 * beam2.J.m11;
+	beam1.J.m12 = coef1 * beam2.J.m12;
+	beam1.J.m21 = coef2 * beam2.J.m21;
+	beam1.J.m22 = coef2 * beam2.J.m22;
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
@@ -665,6 +709,8 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
 
 	LOG_ASSERT(tmp1 > 0);
+	if (tmp1 < 0)
+		int fff = 0;
 	tmp1 = sqrt(tmp1);
 
 	reflDir = (tmp0/tmp1) - normal;
@@ -685,25 +731,27 @@ void Tracing::SetPolygonByFacet(int facetId, Polygon &polygon) const
 	}
 }
 
-double Tracing::AreaOfBeam(const Beam &beam) const
-{
-	double square = 0;
-	const Point3f &basePoint = beam.polygon.arr[0];
-	Point3f p1 = beam.polygon.arr[1] - basePoint;
-
-	for (int i = 2; i < beam.polygon.size; ++i)
-	{
-		Point3f p2 = beam.polygon.arr[i] - basePoint;
-		Point3f res;
-		CrossProduct(p1, p2, res);
-		square += sqrt(Norm(res));
-		p1 = p2;
-	}
-
-	return square / 2.0;
-}
-
 double Tracing::GetLightSurfaceArea() const
 {
 	return m_lightSurfaceArea;
+}
+
+double Tracing::CrossSection(const Point3f &beamDir) const
+{
+	double cs = 0.0;
+
+	for (int i = 0; i < m_particle->facetNum; ++i)
+	{
+		const Point3f n = m_facets[i].polygon.Normal();
+		double csa = DotProduct(beamDir, n);
+
+		if (csa < EPS_COS_90)
+		{
+			continue;
+		}
+
+		cs += m_facets[i].polygon.Area()*csa;
+	}
+
+	return cs;
 }

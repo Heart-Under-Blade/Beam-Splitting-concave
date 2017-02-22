@@ -36,7 +36,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 	{
 //		if (b.track.size() == 1 &&
 //				b.track[0] == 1)
-			rrr += AreaOfBeam(m_beamTree[i]);
+			rrr += m_beamTree[i].polygon.Area();
 	}
 	int fgfg = 0;
 #endif
@@ -49,7 +49,7 @@ void TracingConcave::SplitBeamByParticle(std::vector<Beam> &scaterredBeams)
 	{
 //		if (b.track.size() == 1 &&
 //				b.track[0] == 1)
-			fff += AreaOfBeam(b);
+			fff += b.polygon.Area();
 	}
 	int ggg = 0;
 #endif
@@ -179,41 +179,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 	}
 }
 
-void TracingConcave::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
-{
-	assert(m_treeSize < MAX_BEAM_REFL_NUM);
-
-#ifdef _TRACK_ALLOW
-	beam.track += (facetId + 1);
-	beam.track *= (m_particle->facetNum + 1);
-//	AddToTrack(beam, facetId);
-#ifdef _TRACK_OUTPUT
-	PrintTrack(beam, facetId);
-#endif
-#endif
-	beam.facetID = facetId;
-	beam.level = level;
-	beam.location = location;
-	m_beamTree[m_treeSize] = beam;
-	++m_treeSize;
-}
-
-void TracingConcave::PushBeamToTree(Beam &beam)
-{
-	assert(m_treeSize < MAX_BEAM_REFL_NUM);
-
-#ifdef _TRACK_ALLOW
-	beam.track += (beam.facetID + 1);
-	beam.track *= (m_particle->facetNum + 1);
-//	AddToTrack(beam, facetId);
-#ifdef _TRACK_OUTPUT
-	PrintTrack(beam, facetId);
-#endif
-#endif
-	m_beamTree[m_treeSize] = beam;
-	++m_treeSize;
-}
-
 #ifdef _TRACK_ALLOW
 //void TracingConcave::AddToTrack(Beam &beam, int facetId)
 //{
@@ -301,7 +266,7 @@ void TracingConcave::PushBeamsToTree(int level, int facetID, bool hasOutBeam,
 	}
 
 #ifdef _TRACK_ALLOW
-	inBeam.track = outBeam.track;
+	inBeam.id = outBeam.id;
 #ifdef _TRACK_OUTPUT
 	trackMapFile << "[in] ";
 #endif
@@ -374,8 +339,8 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 										  bool &hasOutBeam)
 {
 #ifdef _TRACK_ALLOW
-	outBeam.track = incidentBeam.track;
-	inBeam.track = incidentBeam.track;
+	outBeam.id = incidentBeam.id;
+	inBeam.id = incidentBeam.id;
 #endif
 	const Point3f &incidentDir = incidentBeam.direction;
 	const Point3f &normal = m_facets[facetId].ex_normal;
@@ -398,7 +363,7 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 		}
 		else // beam is external
 		{
-			inBeam.JMatrix = incidentBeam.JMatrix;
+			inBeam.J = incidentBeam.J;
 			double cosI = DotProduct(-normal, incidentDir);
 
 			SetSloppingBeamParams_initial(incidentDir, cosI, facetId,
@@ -623,7 +588,7 @@ double TracingConcave::BeamCrossSection(const Beam &beam) const
 		return 0;
 	}
 
-	double square = AreaOfPolygon(beam.polygon);
+	double square = beam.polygon.Area();
 	double n = Length(normal);
 	return (e*square) / n;
 }

@@ -12,28 +12,28 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	m_treeSize = 0;
 
 	/// first extermal beam
-	for (int facetId = 0; facetId < m_particle->facetNum; ++facetId)
+	for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
 	{
-		const Point3f &extNormal = m_particle->facets[facetId].ex_normal;
+		const Point3f &extNormal = m_particle->facets[facetID].ex_normal;
 		double cosIN = DotProduct(m_waveFront.direction, extNormal);
 
-		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
+		if (cosIN >= EPS_M_COS_90) /// beam is not incident to this facet
 		{
 			continue;
 		}
 
 		Beam inBeam, outBeam;
-		SplitExternalBeamByFacet(facetId, inBeam, outBeam);
+		TraceFirstBeam(facetID, inBeam, outBeam);
 
+		outBeam.facetID = facetID;
+		outBeam.level = 0;
+		SetBeamId(outBeam);
 		outBeams.push_back(outBeam);
-		m_beamTree[m_treeSize] = inBeam;
-		m_beamTree[m_treeSize].facetID = facetId;
-		m_beamTree[m_treeSize].level = 0;
-		++m_treeSize;
+		PushBeamToTree(inBeam, facetID, 0);
 
 		if (m_isArea)
 		{
-			CalcLigthSurfaceArea(facetId, outBeam);
+			CalcLigthSurfaceArea(facetID, outBeam);
 		}
 	}
 
@@ -57,9 +57,9 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 			continue;
 		}
 
-		for (int facetIndex = 0; facetIndex < m_particle->facetNum; ++facetIndex)
+		for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
 		{
-			if (facetIndex == beam.facetID)
+			if (facetID == beam.facetID)
 			{
 				continue;
 			}
@@ -68,17 +68,15 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 			try
 			{
-				SplitInternalBeamByFacet(beam, facetIndex, inBeam, outBeams);
+				TraceSecondaryBeams(beam, facetID, inBeam, outBeams);
 			}
 			catch (const std::exception &)
 			{
 				continue;
 			}
 
-			m_beamTree[m_treeSize] = inBeam;
-			m_beamTree[m_treeSize].facetID = facetIndex;
-			m_beamTree[m_treeSize].level = beam.level+1;
-			++m_treeSize;
+			inBeam.id = beam.id;
+			PushBeamToTree(inBeam, facetID, beam.level+1);
 		}
 	}
 }
