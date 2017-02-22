@@ -30,7 +30,7 @@ protected:
 	void SetDefaultNormals() override;
 	void SetFacetParams() override;
 
-	void SetOriginBaseFacets();
+	void SetBaseFacets();
 	void SetSideFacets(Point3f *baseTop, Point3f *baseBottom,
 					   int startIndex, int endIndex);
 	void RotateBaseFacets(Point3f *baseTop, Point3f *baseBottom);

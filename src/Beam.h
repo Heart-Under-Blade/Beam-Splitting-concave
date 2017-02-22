@@ -35,7 +35,7 @@ public:
 
 public:
 	Point3f direction;				///< direction of beam
-	JonesMatrix JMatrix;			///< Jones matrix of beam
+	JonesMatrix J;					///< Jones matrix of beam
 	Point3f e;						///< basis of polarization plane
 
 	Polygon polygon;				///< array of beam vertices (shape)
@@ -50,7 +50,7 @@ public:
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
 
 #ifdef _TRACK_ALLOW
-	long long int track = 0;
+	long long int id = 0;
 //	std::vector<int> track;
 #endif
 

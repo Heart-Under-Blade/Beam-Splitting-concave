@@ -24,12 +24,6 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 	return Proj(_Tx, _Ty, _r, pnt);
 }
 
-//Point2D Proj(const Point3D& a, int i){
-//		return (i==0) ? Point2D(a.y, a.z) :
-//		( (i==1) ? Point2D(a.x, a.z) :
-//		Point2D(a.x, a.y) );
-//	}
-
 Beam::Beam()
 {
 	opticalPath = 0;
@@ -38,9 +32,6 @@ Beam::Beam()
 
 void Beam::Copy(const Beam &other)
 {
-//	T = other.T;
-//	F = other.F;
-//	N = other.N;
 	opticalPath = other.opticalPath;
 	D = other.D;
 	e = other.e;
@@ -53,21 +44,18 @@ void Beam::Copy(const Beam &other)
 	location = other.location;
 
 #ifdef _TRACK_ALLOW
-	track = other.track;
+	id = other.id;
 #endif
 }
 
 Beam::Beam(const Beam &other)
-	: JMatrix(other.JMatrix)
+	: J(other.J)
 {
 	Copy(other);
 }
 
 Beam::Beam(Beam &&other)
 {
-//	T = other.T;
-//	F = other.F;
-//	N = other.N;
 	opticalPath = other.opticalPath;
 	D = other.D;
 	e = other.e;
@@ -79,6 +67,10 @@ Beam::Beam(Beam &&other)
 	level = other.level;
 	location = other.location;
 
+#ifdef _TRACK_ALLOW
+	id = other.id;
+#endif
+
 	other.opticalPath = 0;
 	other.D = 0;
 	other.e = Point3f(0, 0, 0);
@@ -89,6 +81,10 @@ Beam::Beam(Beam &&other)
 	other.facetID = 0;
 	other.level = 0;
 	other.location = Location::Outside;
+
+#ifdef _TRACK_ALLOW
+	other.id = 0;
+#endif
 }
 
 void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
@@ -162,7 +158,7 @@ Beam & Beam::operator = (const Beam &other)
 	if (this != &other)
 	{
 		Copy(other);
-		JMatrix = other.JMatrix;
+		J = other.J;
 	}
 
 	return *this;
@@ -172,9 +168,6 @@ Beam &Beam::operator = (Beam &&other)
 {
 	if (this != &other)
 	{
-//		T = other.T;
-//		F = other.F;
-//		N = other.N;
 		opticalPath = other.opticalPath;
 		D = other.D;
 		e = other.e;
@@ -186,8 +179,11 @@ Beam &Beam::operator = (Beam &&other)
 		level = other.level;
 		location = other.location;
 
-		JMatrix = other.JMatrix;
+		J = other.J;
 
+#ifdef _TRACK_ALLOW
+		id = other.id;
+#endif
 		other.opticalPath = 0;
 		other.D = 0;
 		other.e = Point3f(0, 0, 0);
@@ -198,6 +194,10 @@ Beam &Beam::operator = (Beam &&other)
 		other.facetID = 0;
 		other.level = 0;
 		other.location = Location::Outside;
+
+#ifdef _TRACK_ALLOW
+		other.id = id;
+#endif
 	}
 
 	return *this;
@@ -216,7 +216,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 	const double eps1 = 1e9*DBL_EPSILON;
 	const double eps2 = 1e6*DBL_EPSILON;
 
-	Point3d k_k0 = -pt + direction;
+	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
 	Point3f center = CenterOfPolygon(polygon);
 
 	Point3f n = NormalToPolygon(polygon);
@@ -310,10 +310,10 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 
 	if (fabs(1.0 + cs) < eps)
 	{
-		JMatrix.m11 = -JMatrix.m11;
-		JMatrix.m12 = -JMatrix.m12;
-		JMatrix.m21 = -JMatrix.m21;
-		JMatrix.m22 = -JMatrix.m22;
+		J.m11 = -J.m11;
+		J.m12 = -J.m12;
+		J.m21 = -J.m21;
+		J.m22 = -J.m22;
 		return;
 	}
 
@@ -327,20 +327,20 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 
 	Point3f r = k + direction;
 
-	if(Norm(r) <= 0.5)
+	if (Norm(r) <= 0.5)
 	{
 		angle = -angle;
 	}
 
 	double sn = sin(angle); // the rotation of matrix "m"
 
-	complex b00 = JMatrix.m11*cs + JMatrix.m21*sn; // first row of the result
-	complex b01 = JMatrix.m12*cs + JMatrix.m22*sn;
+	complex b00 = J.m11*cs + J.m21*sn; // first row of the result
+	complex b01 = J.m12*cs + J.m22*sn;
 
-	JMatrix.m21 = JMatrix.m21*cs - JMatrix.m11*sn;
-	JMatrix.m22 = JMatrix.m22*cs - JMatrix.m12*sn;
-	JMatrix.m11 = b00;
-	JMatrix.m12 = b01;
+	J.m21 = J.m21*cs - J.m11*sn;
+	J.m22 = J.m22*cs - J.m12*sn;
+	J.m11 = b00;
+	J.m12 = b01;
 
 	e = newBasis;
 }

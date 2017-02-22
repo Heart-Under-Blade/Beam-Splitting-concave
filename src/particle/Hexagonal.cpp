@@ -10,8 +10,7 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 	: Particle(radius, halfHeight, refractionIndex)
 {
 	SetFacetParams();
-
-	SetOriginBaseFacets();
+	SetBaseFacets();
 
 	// set original positions of the base facets
 	CopyFacet(m_originBases.top, facets[0]);
@@ -57,7 +56,7 @@ void Hexagonal::SetFacetParams()
 	}
 }
 
-void Hexagonal::SetOriginBaseFacets()
+void Hexagonal::SetBaseFacets()
 {
 	Point3f *facet;
 
@@ -84,7 +83,7 @@ void Hexagonal::SetOriginBaseFacets()
 	facet = m_originBases.top;
 	SetTwoDiagonalPoints(0, halfRadius, incircleRadius, m_halfHeight);
 	SetTwoDiagonalPoints(1,-halfRadius, incircleRadius, m_halfHeight);
-	SetTwoDiagonalPoints(2, -m_radius, 0, m_halfHeight);
+	SetTwoDiagonalPoints(2,-m_radius, 0,  m_halfHeight);
 
 	// bottom base facet
 	facet = m_originBases.bottom;

@@ -114,6 +114,7 @@ void Particle::SetInternalNormals()
 	SetDParams();
 }
 
+
 void Particle::SetDParams()
 {
 	for (int i = 0; i < facetNum; ++i)
