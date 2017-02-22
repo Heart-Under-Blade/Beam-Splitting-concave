@@ -316,7 +316,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		Beam incidentBeam = m_beamTree[--m_treeSize];
 		const Location loc = incidentBeam.location;
 
-		if (isTerminalBeam(incidentBeam))
+		if (IsTerminalBeam(incidentBeam))
 		{
 			if (loc == Location::Outside)
 			{

@@ -44,7 +44,6 @@ public:
 	virtual double BeamCrossSection(const Beam &/*beam*/) const { return 0.0; }
 
 	virtual void SplitBeamByParticle(std::vector<Beam> &/*scaterredBeams*/) {}
-
 	virtual void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
@@ -68,7 +67,7 @@ protected:
 	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 								 Beam &outBeam, Beam &inBeam) const;
 
-	bool isTerminalBeam(const Beam &beam);
+	bool IsTerminalBeam(const Beam &beam);
 
 	void SplitExternalBeamByFacet(int facetId, Beam &inBeam, Beam &outBeam);
 
@@ -110,7 +109,4 @@ private:
 
 	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
-
-	void MulJMatrix(Beam &beam1, const Beam &beam2,
-					const complex &coef1, const complex &coef2) const;
 };

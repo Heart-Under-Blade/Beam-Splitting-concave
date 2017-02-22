@@ -52,7 +52,7 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
-		if (isTerminalBeam(beam))
+		if (IsTerminalBeam(beam))
 		{
 			continue;
 		}

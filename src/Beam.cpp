@@ -203,6 +203,14 @@ Beam &Beam::operator = (Beam &&other)
 	return *this;
 }
 
+void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2)
+{
+	JMatrix.m11 = coef1 * other.JMatrix.m11;
+	JMatrix.m12 = coef1 * other.JMatrix.m12;
+	JMatrix.m21 = coef2 * other.JMatrix.m21;
+	JMatrix.m22 = coef2 * other.JMatrix.m22;
+}
+
 complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 {
 	const double eps1 = 1e9*DBL_EPSILON;
