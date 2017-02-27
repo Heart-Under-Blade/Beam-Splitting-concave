@@ -376,7 +376,7 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 
 				params.outfile = argv[++i];
 			}
-			else if (arg == "-bfc")
+			else if (arg == "-bsc")
 			{
 				params.bsCone.radius = GetArgValueD(argv, argc, ++i);
 				params.bsCone.phi = GetArgValue(argv, argc, ++i);
@@ -544,7 +544,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 #endif
 #endif
 
-	double dbeta = (M_PI/2 - 0)/(orNumBeta/2);
+	double dbeta = (M_PI/2 - 0)/orNumBeta;
 
 	for (int i = betaRange.begin; i <= betaRange.end; ++i)
 	{
@@ -588,6 +588,9 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	//			tracks.push_back(track);
 	//			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
 
+		if (i == 10 && (j - gammaRange.end/2) == 11)
+			int gfgg = 0;
+
 				incomingEnergy += betaDistrProbability * square;
 				HandleBeams(outcomingBeams, betaDistrProbability, tracer);
 
@@ -600,7 +603,9 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 #endif
 #endif
 
-				M_all_file << (beta*180)/M_PI << ' ' << (gamma*180)/M_PI << ' ' << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
+				M_all_file << (beta*180)/M_PI << ' '
+						   << (gamma*180)/M_PI << ' '
+						   << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
 
 				if (isPhisOptics)
 				{
@@ -831,6 +836,9 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 		{
 			Beam &beam = outBeams.at(i);
 
+#ifdef _DEBUG // DEB
+			eee += beam.polygon.Area();
+#endif
 			double ctetta = DotProduct(beam.direction, -incidentDir);
 
 			if (ctetta < 0.17364817766693034885171662676931)
@@ -896,29 +904,6 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 				}
 			}
 		}
-<<<<<<< HEAD
-		// DEB
-//		if (!(IsMatchTrack(beam.track, {0})
-//			  || IsMatchTrack(beam.track, {1})
-//			|| IsMatchTrack(beam.track, {2})
-//			  || IsMatchTrack(beam.track, {3})
-//			  || IsMatchTrack(beam.track, {4})
-//			|| IsMatchTrack(beam.track, {5})
-//			  || IsMatchTrack(beam.track, {7})
-//			  || IsMatchTrack(beam.track, {8})
-//			|| IsMatchTrack(beam.track, {9})
-//			  || IsMatchTrack(beam.track, {10})
-//			|| IsMatchTrack(beam.track, {11})
-//				/*|| IsMatchTrack(beam.track, {9,11,17,6,7})*/))
-//		{
-//			continue;
-//		}
-
-		beam.RotateSpherical(incidentDir, polarizationBasis);
-
-		double cross = tracer.BeamCrossSection(beam);
-		double Area = betaDistrProb * cross;
-=======
 	}
 	else
 	{
@@ -930,7 +915,6 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 
 			double cross = tracer.BeamCrossSection(beam);
 			double Area = betaDistrProb * cross;
->>>>>>> refactor
 
 #ifdef _DEBUG // DEB
 			eee += Area;
@@ -986,11 +970,11 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 
 			LOG_ASSERT(Area >= 0);
 		}
+	}
 
 #ifdef _DEBUG // DEB
 		int fff = 0;
 #endif
-	}
 }
 
 string GetFileName(const string &filename)

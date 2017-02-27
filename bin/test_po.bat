@@ -1,4 +1,4 @@
-BeamSplitting -p 1 25.6 12.8 -ri 1.31 -w 0.532 -bsc 0.25 2 2 -b 0 200 -g 0 200 -t 2 -rn 3 -o %~n0
+BeamSplitting -p 1 25.6 12.8 -ri 1.31 -w 0.532 -bsc 0.25 2 2 -b 0 100 -g 0 200 -t 2 -rn 3 -o %~n0
 
 
 goto endcomment

@@ -208,11 +208,15 @@ complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 	const double eps1 = 1e9*DBL_EPSILON;
 	const double eps2 = 1e6*DBL_EPSILON;
 
-	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
-	Point3f center = CenterOfPolygon(polygon);
+	Point3f _n = NormalToPolygon(polygon);
+	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
 
-	Point3f n = NormalToPolygon(polygon);
-	Point3d	pt_proj = Proj(Point3d(n.cx, n.cy, n.cz), k_k0);
+	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
+
+	Point3f cntr = CenterOfPolygon(polygon);
+	Point3d center = Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
+
+	Point3d	pt_proj = Proj(n, k_k0);
 //	Point3d	center = Proj(this->N, r0);
 
 	const double
@@ -232,14 +236,14 @@ complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 //	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
 //	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
 
-	Point3d p1 = polygon.arr[polygon.size-1] - center;
+	Point3d p1 = Proj(n, polygon.arr[polygon.size-1]) - center;
 	Point3d p2;
 
 	if (fabs(B) > fabs(A))
 	{
 		for (unsigned int i = 0; i < polygon.size; ++i)
 		{
-			p2 = polygon.arr[i] - center;
+			p2 = Proj(n, polygon.arr[i]) - center;
 
 			if (fabs(p1.x - p2.x) < eps1)
 			{
@@ -263,7 +267,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 	{
 		for (unsigned int i = 0; i < polygon.size; ++i)
 		{
-			p2 = polygon.arr[i] - center;
+			p2 = Proj(n, polygon.arr[i]) - center;
 
 			if (fabs(p1.y - p2.y)<eps1)
 			{
