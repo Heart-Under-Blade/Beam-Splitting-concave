@@ -546,7 +546,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	double dbeta = (M_PI/2 - 0)/orNumBeta;
 
-	for (int i = betaRange.begin; i <= betaRange.end; ++i)
+	for (int i = betaRange.begin; i <= /*betaRange.end*/betaRange.begin; ++i)
 	{
 //		beta = (i + 0.5)*betaNorm;
 		beta = 0 + (double)i*dbeta;
@@ -562,7 +562,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 			}
 		}
 
-		for (int j = gammaRange.begin; j <= gammaRange.end; ++j)
+		for (int j = gammaRange.begin; j <= /*gammaRange.end*/gammaRange.begin; ++j)
 		{
 //			gamma = (j + 0.5)*gammaNorm;
 			gamma = (j - gammaRange.end/2)*gammaNorm + M_PI/6;
@@ -579,6 +579,8 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 			try
 			{
+beta = (32*M_PI)/180;
+gamma = (30*M_PI)/180;
 				tracer.RotateParticle(beta, gamma);
 				tracer.SplitBeamByParticle(outcomingBeams);
 
@@ -587,9 +589,6 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	//			vector<int> track = {0, 7, 0};
 	//			tracks.push_back(track);
 	//			tracer.SplitBeamByParticle(incidentDir, tracks, outcomingBeams);
-
-		if (i == 10 && (j - gammaRange.end/2) == 11)
-			int gfgg = 0;
 
 				incomingEnergy += betaDistrProbability * square;
 				HandleBeams(outcomingBeams, betaDistrProbability, tracer);
@@ -611,9 +610,9 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 				{
 					for (int k = 0; k < maxGroupID; ++k)
 					{
-						for (int t = 0; t < params.bsCone.theta; ++t)
+						for (int t = 0; t <= params.bsCone.theta; ++t)
 						{
-							for (int p = 0; p < params.bsCone.phi; ++p)
+							for (int p = 0; p <= params.bsCone.phi; ++p)
 							{
 								matrix Mk = Mueller(J[k](p, t));
 								M[k].insert(p, t, gammaNorm*norm*Mk);
@@ -634,19 +633,30 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 		if (isPhisOptics)
 		{
-			for(unsigned int q = 0; q < maxGroupID; ++q)
+			for (unsigned int q = 0; q < maxGroupID; ++q)
 			{
+				string tr = "3673_3763";
+				string orFName = ("b_" + to_string((beta*180.0)/M_PI) + "_" + tr + ".dat").c_str();
+				ofstream or_file(orFName, ios::out);
+
+				or_file << to_string(params.bsCone.radius) << ' '
+						<< to_string(params.bsCone.theta ) << ' '
+						<< to_string(params.bsCone.phi+1);
+
 				matrix sum(4, 4);
 
-				for (int t = 0; t < params.bsCone.theta; ++t)
+				for (int t = 0; t <= params.bsCone.theta; ++t)
 				{
 					sum.Fill(0);
 					double tt = (double)(t*dt*180.0)/M_PI;
 
-					for (int p = 0; p < params.bsCone.phi; ++p)
+					for (int p = 0; p <= params.bsCone.phi; ++p)
 					{
+						double fi = -((double)p)*df;
 						matrix m = M[q](p ,t);
 						matrix L(4,4);
+
+						or_file << endl << tt << " " << (-fi*180)/M_PI << " "; or_file << m;
 
 						L[0][0] = 1.0;
 						L[0][1] = 0.0;
@@ -680,6 +690,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 //					M_all_file << sum;
 				}
 
+				or_file.close();
 //				M_all_file << endl;
 			}
 		}
@@ -857,11 +868,15 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 //			cout << "dddferf rg r\n\n";
 			beam.RotateSpherical(incidentDir, polarizationBasis);
 
+//			beam.e = -beam.e;
+
 			Point3f center = beam.polygon.Center();
 			double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
 			Point3f T = CrossProduct(beam.e, beam.direction);
 			T = T/Length(T); // базис выходящего пучка
+
+			ofstream file("dd.dat", ios::out); // DEB
 
 			for (int i = 0; i <= params.bsCone.phi; ++i)
 			{
@@ -888,19 +903,32 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 						Point3f cpNT = CrossProduct(normal, T);
 						Point3f cpNE = CrossProduct(normal, beam.e);
 
-						Jn_rot[0][0] = -DotProductD(Point3f(cpNT.cx, cpNT.cy, cpNT.cz), vf); // OPT: похоже на SetJMatrix
-						Jn_rot[0][1] = -DotProductD(Point3f(cpNE.cx, cpNE.cy, cpNE.cz), vf);
-						Jn_rot[1][0] =  DotProductD(Point3f(cpNT.cx, cpNT.cy, cpNT.cz), vt);
-						Jn_rot[1][1] =  DotProductD(Point3f(cpNE.cx, cpNE.cy, cpNE.cz), vt);
+						Jn_rot[0][0] = -DotProductD(Point3d(cpNT.cx, cpNT.cy, cpNT.cz), vf); // OPT: похоже на SetJMatrix
+						Jn_rot[0][1] = -DotProductD(Point3d(cpNE.cx, cpNE.cy, cpNE.cz), vf);
+						Jn_rot[1][0] =  DotProductD(Point3d(cpNT.cx, cpNT.cy, cpNT.cz), vt);
+						Jn_rot[1][1] =  DotProductD(Point3d(cpNE.cx, cpNE.cy, cpNE.cz), vt);
 					}
 
 					complex fn(0, 0);
+
+					// DEB
+					if (i == 90 && j == 15 /*&& beam.id == 32679*/)
+						int fff = 0;
+
 					fn = beam.DiffractionIncline(vr, params.wavelength);
 
-					complex tmp = exp_im(M_2PI*(lng_proj0-DotProductD(vr, Point3d(center.cx, center.cy, center.cz)))/params.wavelength);
+					double dp = DotProductD(vr, Point3d(center.cx, center.cy, center.cz));
+					complex tmp = exp_im(M_2PI*(lng_proj0-dp)/params.wavelength);
 					matrixC fn_jn = beam.J * tmp;
 
+					matrixC c = fn*Jn_rot*fn_jn;
+					complex d1 = fn_jn[0][0];
+					complex d2 = fn_jn[0][1];
+					complex d3 = fn_jn[1][0];
+					complex d4 = fn_jn[1][1];
 					J[groupID].insert(i, j, fn*Jn_rot*fn_jn);
+					complex ff = (J[0](0, 0))[0][0];
+					file << i << ' ' << j << ' ' << real(ff) << ' ' << imag(ff)<< endl;
 				}
 			}
 		}
@@ -974,6 +1002,8 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 
 #ifdef _DEBUG // DEB
 		int fff = 0;
+//		complex ff = (J[0](0, 0))[0][0];
+//		cout << endl << real(ff) << ' ' << imag(ff) << endl << endl << endl << endl;
 #endif
 }
 

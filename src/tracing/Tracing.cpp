@@ -143,7 +143,7 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 	Point3f center = inBeam.polygon.Center();
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
-	inBeam.opticalPath = FAR_ZONE_DISTANCE - DotProduct(m_waveFront.direction, center);
+	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_waveFront.direction, center);
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
@@ -335,16 +335,14 @@ void Tracing::SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal
 void Tracing::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
 										   Beam &inBeam, Beam &outBeam)
 {
-	const Point3f &incidentDir = incidentBeam.direction;
+	const Point3f &dir = incidentBeam.direction;
 	complex temp;
 
 	temp = (2.0*m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
-	SetBeam(outBeam, incidentBeam, incidentDir, incidentBeam.e,
-			temp, temp);
+	SetBeam(outBeam, incidentBeam, dir, incidentBeam.e, temp, temp);
 
 	temp = (1.0 - m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
-	SetBeam(inBeam, incidentBeam, -incidentDir, incidentBeam.e,
-			temp, -temp);
+	SetBeam(inBeam, incidentBeam, -dir, incidentBeam.e, temp, -temp);
 
 	if (m_isOpticalPath)
 	{

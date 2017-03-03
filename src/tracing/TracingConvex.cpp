@@ -23,6 +23,9 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 		}
 
 		Beam inBeam, outBeam;
+
+		if (facetID == 3)
+			int ggg = 0 ;
 		TraceFirstBeam(facetID, inBeam, outBeam);
 
 		outBeam.facetID = facetID;
@@ -51,6 +54,9 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
+
+if (beam.facetID == 3)
+int fff = 0;
 
 		if (isTerminalBeam(beam))
 		{
