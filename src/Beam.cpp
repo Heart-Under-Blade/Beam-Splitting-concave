@@ -211,8 +211,9 @@ complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 	Point3f _n = NormalToPolygon(polygon);
 
 	int begin, startIndex, endIndex;
-	bool order = (DotProduct(_n, direction) > 0);
+	bool order = (DotProduct(_n, direction) < 0);
 
+//	order = false; // DEB
 	if (order)
 	{
 		begin = 0;

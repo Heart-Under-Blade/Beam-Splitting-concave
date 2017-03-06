@@ -610,6 +610,7 @@ gamma = (30*M_PI)/180;
 						{
 							for (int p = 0; p <= params.bsCone.phi; ++p)
 							{
+								complex ee = J[k](p, t)[0][0];
 								matrix Mk = Mueller(J[k](p, t));
 								M[k].insert(p, t, gammaNorm*norm*Mk);
 							}
@@ -834,7 +835,7 @@ int GetGroupID(long long int track)
 void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)
 {
 #ifdef _DEBUG // DEB
-	double eee = 0;
+//	double eee = 0;
 #endif
 
 	if (isPhisOptics)
@@ -844,7 +845,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 			Beam &beam = outBeams.at(i);
 
 #ifdef _DEBUG // DEB
-			eee += beam.polygon.Area();
+//			eee += beam.polygon.Area();
 #endif
 			double ctetta = DotProduct(beam.direction, -incidentDir);
 
@@ -862,7 +863,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 			}
 
 //			cout << "dddferf rg r\n\n";
-			beam.RotateSpherical(incidentDir, polarizationBasis);
+			beam.RotateSpherical(-incidentDir, polarizationBasis);
 
 //			beam.e = -beam.e;
 
@@ -909,8 +910,8 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 					complex fn(0, 0);
 
 					// DEB
-					if (i == 90 && j == 15 /*&& beam.id == 32679*/)
-						int fff = 0;
+//					if (i == 90 && j == 15 /*&& beam.id == 32679*/)
+//						int fff = 0;
 
 					fn = beam.DiffractionIncline(vr, params.wavelength);
 
@@ -919,13 +920,17 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 					matrixC fn_jn = beam.J * tmp;
 
 					matrixC c = fn*Jn_rot*fn_jn;
-					complex d1 = fn_jn[0][0];
-					complex d2 = fn_jn[0][1];
-					complex d3 = fn_jn[1][0];
-					complex d4 = fn_jn[1][1];
+//					complex d1 = fn_jn[0][0];
+//					complex d2 = fn_jn[0][1];
+//					complex d3 = fn_jn[1][0];
+//					complex d4 = fn_jn[1][1];
 					J[groupID].insert(i, j, fn*Jn_rot*fn_jn);
-					complex ff = (J[0](0, 0))[0][0];
-//					file << i << ' ' << j << ' ' << real(ff) << ' ' << imag(ff)<< endl;
+
+					if (i == 0 && j == 0)
+					{
+						complex ff = c[0][0];
+						file << i << ' ' << j << ' ' << real(ff) << ' ' << imag(ff)<< endl;
+					}
 				}
 			}
 		}
@@ -942,7 +947,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 			double Area = betaDistrProb * cross;
 
 #ifdef _DEBUG // DEB
-			eee += Area;
+//			eee += Area;
 #endif
 			matrix bf = Mueller(beam.J);
 
@@ -998,7 +1003,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 	}
 
 #ifdef _DEBUG // DEB
-		int fff = 0;
+//		int fff = 0;
 //		complex ff = (J[0](0, 0))[0][0];
 //		cout << endl << real(ff) << ' ' << imag(ff) << endl << endl << endl << endl;
 #endif

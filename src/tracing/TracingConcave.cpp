@@ -303,8 +303,8 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		trackMapFile << "\n" << incidentBeam.level << " lvl: ";
 		trackMapFile.flush();
 #endif
-if (incidentBeam.id == 3477) // DEB
-	int ggg = 0;
+//if (incidentBeam.id == 3477) // DEB
+//	int ggg = 0;
 		IntArray facetIds;
 		SelectVisibleFacets(incidentBeam, facetIds);
 
