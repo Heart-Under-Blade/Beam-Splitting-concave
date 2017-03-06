@@ -50,7 +50,7 @@ private:
 	void AddToTrack(Beam &beam, int facetId);
 #endif
 
-	void PushBeamsToTree(int level, int facetID, bool hasOutBeam,
+	void PushBeamsToTree(const Beam &beam, int facetID, bool hasOutBeam,
 						 Beam &inBeam, Beam &outBeam);
 	void PushBeamsToTree(int facetID, const PolygonArray &polygons,
 						 Beam &inBeam, Beam &outBeam);

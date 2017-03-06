@@ -173,11 +173,7 @@ void Calculate(const CLArguments &params)
 								   polarizationBasis, params.interReflNum);
 		betaNorm = M_PI/(2.0*orNumBeta);
 		gammaNorm = (2.0*M_PI)/orNumGamma;
-//		gammaNorm = M_PI/(3.0*orNumGamma);
 		break;
-
-		// TODO реализовать остальные частицы
-
 	case ParticleType::ConcaveHexagonal:
 		particle = new ConcaveHexagonal(params.radius, params.halfHeight, params.refractionIndex,
 										params.cavityDepth);
@@ -877,6 +873,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 			T = T/Length(T); // базис выходящего пучка
 
 			ofstream file("dd.dat", ios::out); // DEB
+			file << beam.id << endl;
 
 			for (int i = 0; i <= params.bsCone.phi; ++i)
 			{
@@ -928,7 +925,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 					complex d4 = fn_jn[1][1];
 					J[groupID].insert(i, j, fn*Jn_rot*fn_jn);
 					complex ff = (J[0](0, 0))[0][0];
-					file << i << ' ' << j << ' ' << real(ff) << ' ' << imag(ff)<< endl;
+//					file << i << ' ' << j << ' ' << real(ff) << ' ' << imag(ff)<< endl;
 				}
 			}
 		}

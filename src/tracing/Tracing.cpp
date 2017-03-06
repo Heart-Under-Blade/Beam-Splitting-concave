@@ -67,6 +67,14 @@ void Tracing::SetBeamId(Beam &beam)
 {
 	assert(m_treeSize < MAX_BEAM_REFL_NUM);
 
+//if (beam.id == 3477 && (beam.facetID == 12
+//						|| beam.facetID == 13
+//						|| beam.facetID == 14
+//						|| beam.facetID == 15
+//						|| beam.facetID == 16
+//						|| beam.facetID == 17))// DEB
+//	int ggg = 0;
+
 #ifdef _TRACK_ALLOW
 	beam.id += (beam.facetID + 1);
 	beam.id *= (m_particle->facetNum + 1);
