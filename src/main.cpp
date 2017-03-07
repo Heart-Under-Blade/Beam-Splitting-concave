@@ -113,13 +113,13 @@ void TraceSingle(Tracing &tracer, double beta, double gamma);
 void ImportTracks(Particle *particle)
 {
 	ifstream trackFile("tracks.dat", ios::in);
-	char *buff = (char*)malloc(sizeof(char) * 128);
+	char *buff = (char*)malloc(sizeof(char) * 256);
+
+	vector<int> arr;
 
 	while (!trackFile.eof())
 	{
-		trackFile.getline(buff, 128);
-
-		vector<int> arr;
+		trackFile.getline(buff, 256);
 
 		do
 		{
@@ -145,6 +145,8 @@ void ImportTracks(Particle *particle)
 
 			trackGroups[groupCount-1].arr[trackGroups[groupCount-1].size++] = trackID;
 		}
+
+		arr.clear();
 	}
 }
 
