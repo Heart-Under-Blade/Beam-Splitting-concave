@@ -248,8 +248,6 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 		for (int i = 0; i < resultSize; ++i)
 		{
 			tmp.polygon = resultBeams[i];
-//			tmp.id = beam.id;
-//			PushBeamToTree(tmp);
 			m_beamTree[m_treeSize++] = tmp;
 		}
 
@@ -304,8 +302,6 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		trackMapFile << "\n" << incidentBeam.level << " lvl: ";
 		trackMapFile.flush();
 #endif
-//if (incidentBeam.id == 3477) // DEB
-//	int ggg = 0;
 		IntArray facetIds;
 		SelectVisibleFacets(beam, facetIds);
 
@@ -322,15 +318,9 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 				outBeam.SetPolygon(intersected);
 
 				bool hasOutBeam;
-				SetOpticalBeamParams(facetId, beam,
-									 inBeam, outBeam, hasOutBeam);
+				SetOpticalBeamParams(facetId, beam, inBeam, outBeam, hasOutBeam);
 
-<<<<<<< HEAD
-				PushBeamsToTree(beam.level+1, facetId, hasOutBeam,
-=======
-				PushBeamsToTree(incidentBeam, facetId, hasOutBeam,
->>>>>>> origin/feature/phisical-optics
-								inBeam, outBeam);
+				PushBeamsToTree(beam, facetId, hasOutBeam, inBeam, outBeam);
 
 				bool isDivided;
 				CutBeamByFacet(facetId, beam, isDivided);

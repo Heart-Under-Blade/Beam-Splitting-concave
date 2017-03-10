@@ -21,6 +21,8 @@
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
+#include "argparse.hpp"
+
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
 double SSconfined=0;
@@ -90,11 +92,7 @@ int betaMax = 3;
 struct TrackGroup
 {
 	int groupID;
-<<<<<<< HEAD
-	long long int arr[64];
-=======
 	long long int arr[1024];
->>>>>>> origin/feature/phisical-optics
 	int size = 0;
 }
 trackGroups[32];
@@ -638,8 +636,7 @@ void TraceSinglePO(Tracing &tracer, double beta, double gamma)
 	try
 	{
 		vector<Beam> outcomingBeams;
-		tracer.RotateParticle(beta, gamma);
-		tracer.SplitBeamByParticle(outcomingBeams);
+		tracer.SplitBeamByParticle(beta, gamma, outcomingBeams);
 		HandleBeams(outcomingBeams, 0, tracer);
 
 		if (isPhisOptics)
@@ -949,16 +946,12 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 
 			int groupID = GetGroupID(beam.id);
 
-//			cout << beam.id << "\n\n";
 			if (groupID < 0)
 			{
 				continue;
 			}
 
-//			cout << "dddferf rg r\n\n";
 			beam.RotateSpherical(-incidentDir, polarizationBasis);
-
-//			beam.e = -beam.e;
 
 			Point3f center = beam.polygon.Center();
 			double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);

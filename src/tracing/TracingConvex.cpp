@@ -57,14 +57,7 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
-<<<<<<< HEAD
 		if (IsTerminalBeam(beam))
-=======
-if (beam.facetID == 3)
-int fff = 0;
-
-		if (isTerminalBeam(beam))
->>>>>>> origin/feature/phisical-optics
 		{
 			continue;
 		}

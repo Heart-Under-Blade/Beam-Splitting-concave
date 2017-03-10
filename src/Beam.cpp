@@ -216,7 +216,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	const double eps1 = /*1e9**/100*FLT_EPSILON;
 	const double eps2 = /*1e6**/FLT_EPSILON;
 
-	Point3f _n = NormalToPolygon(polygon);
+	Point3f _n = polygon.Normal();
 
 	int begin, startIndex, endIndex;
 	bool order = (DotProduct(_n, direction) < 0);
@@ -238,19 +238,11 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
 
 	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
-<<<<<<< HEAD
-	Point3f center = polygon.Center();
 
-	Point3f n = polygon.Normal();
-	Point3d	pt_proj = Proj(Point3d(n.cx, n.cy, n.cz), k_k0);
-=======
-
-	Point3f cntr = CenterOfPolygon(polygon);
+	Point3f cntr = polygon.Center();
 	Point3d center = Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
 
 	Point3d	pt_proj = Proj(n, k_k0);
->>>>>>> origin/feature/phisical-optics
-//	Point3d	center = Proj(this->N, r0);
 
 	const double
 			A = pt_proj.x,
