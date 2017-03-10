@@ -213,14 +213,43 @@ void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex
 
 complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 {
-	const double eps1 = 1e9*DBL_EPSILON;
-	const double eps2 = 1e6*DBL_EPSILON;
+	const double eps1 = /*1e9**/100*FLT_EPSILON;
+	const double eps2 = /*1e6**/FLT_EPSILON;
+
+	Point3f _n = NormalToPolygon(polygon);
+
+	int begin, startIndex, endIndex;
+	bool order = (DotProduct(_n, direction) < 0);
+
+//	order = false; // DEB
+	if (order)
+	{
+		begin = 0;
+		startIndex = polygon.size-1;
+		endIndex = -1;
+	}
+	else
+	{
+		begin = polygon.size-1;
+		startIndex = 0;
+		endIndex = polygon.size;
+	}
+
+	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
 
 	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
+<<<<<<< HEAD
 	Point3f center = polygon.Center();
 
 	Point3f n = polygon.Normal();
 	Point3d	pt_proj = Proj(Point3d(n.cx, n.cy, n.cz), k_k0);
+=======
+
+	Point3f cntr = CenterOfPolygon(polygon);
+	Point3d center = Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
+
+	Point3d	pt_proj = Proj(n, k_k0);
+>>>>>>> origin/feature/phisical-optics
 //	Point3d	center = Proj(this->N, r0);
 
 	const double
@@ -240,18 +269,27 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 //	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
 //	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
 
-	Point3d p1 = polygon.arr[polygon.size-1] - center;
+	Point3d p1 = Proj(n, polygon.arr[begin]) - center;
 	Point3d p2;
 
 	if (fabs(B) > fabs(A))
 	{
-		for (unsigned int i = 0; i < polygon.size; ++i)
+		for (int i = startIndex; i != endIndex;)
 		{
-			p2 = polygon.arr[i] - center;
+			p2 = Proj(n, polygon.arr[i]) - center;
 
 			if (fabs(p1.x - p2.x) < eps1)
 			{
 				p1 = p2;
+
+				if (order)
+				{
+					--i;
+				}
+				else
+				{
+					++i;
+				}
 				continue;
 			}
 
@@ -260,22 +298,51 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 					bi = p1.y - ai*p1.x,
 					Ci = A+ai*B;
 
-			s += exp_im(k*B*bi)* (fabs(Ci) < eps1 ? complex(-k*k*Ci*(p2.x*p2.x-p1.x*p1.x)/2.0,k*(p2.x-p1.x))
-												  : (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci);
+			complex tmp;
+
+			if (fabs(Ci) < eps1)
+			{
+				tmp = complex(-k*k*Ci*(p2.x*p2.x-p1.x*p1.x)/2.0,k*(p2.x-p1.x));
+			}
+			else
+			{
+				tmp = (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci;
+			}
+
+			s += exp_im(k*B*bi) * tmp;
 			p1 = p2;
+
+			if (order)
+			{
+				--i;
+			}
+			else
+			{
+				++i;
+			}
 		}
 
 		s /= B;
 	}
 	else
 	{
-		for (unsigned int i = 0; i < polygon.size; ++i)
+		for (int i = startIndex; i != endIndex;)
 		{
-			p2 = polygon.arr[i] - center;
+			p2 = Proj(n, polygon.arr[i]) - center;
 
 			if (fabs(p1.y - p2.y)<eps1)
 			{
-				p1 = p2; continue;
+				p1 = p2;
+
+				if (order)
+				{
+					--i;
+				}
+				else
+				{
+					++i;
+				}
+				continue;
 			}
 
 			const double ci = (p1.x-p2.x)/(p1.y-p2.y),
@@ -285,6 +352,15 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 			s += exp_im(k*A*di) * (fabs(Ei)<eps1 ? complex(-k*k*Ei*(p2.y*p2.y-p1.y*p1.y)/2.0,k*(p2.y-p1.y))
 												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);
 			p1 = p2;
+
+			if (order)
+			{
+				--i;
+			}
+			else
+			{
+				++i;
+			}
 		}
 
 		s /= -A;
@@ -314,33 +390,34 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 		J.m12 = -J.m12;
 		J.m21 = -J.m21;
 		J.m22 = -J.m22;
-		return;
 	}
-
-	LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
-
-	Point3f k;
-	CrossProduct(e, newBasis, k);
-	Normalize(k);
-
-	double angle = acos(cs);
-
-	Point3f r = k + direction;
-
-	if (Norm(r) <= 0.5)
+	else
 	{
-		angle = -angle;
+		LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
+
+		Point3f k;
+		CrossProduct(e, newBasis, k);
+		Normalize(k);
+
+		double angle = acos(cs);
+
+		Point3f r = k + direction;
+
+		if (Norm(r) <= 0.5)
+		{
+			angle = -angle;
+		}
+
+		double sn = sin(angle); // the rotation of matrix "m"
+
+		complex b00 = J.m11*cs + J.m21*sn; // first row of the result
+		complex b01 = J.m12*cs + J.m22*sn;
+
+		J.m21 = J.m21*cs - J.m11*sn;
+		J.m22 = J.m22*cs - J.m12*sn;
+		J.m11 = b00;
+		J.m12 = b01;
 	}
-
-	double sn = sin(angle); // the rotation of matrix "m"
-
-	complex b00 = J.m11*cs + J.m21*sn; // first row of the result
-	complex b01 = J.m12*cs + J.m22*sn;
-
-	J.m21 = J.m21*cs - J.m11*sn;
-	J.m22 = J.m22*cs - J.m12*sn;
-	J.m11 = b00;
-	J.m12 = b01;
 
 	e = newBasis;
 }

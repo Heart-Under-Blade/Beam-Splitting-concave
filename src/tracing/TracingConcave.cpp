@@ -66,6 +66,9 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 		 inBeam.SetPolygon(polygons.arr[j]);
 		outBeam.SetPolygon(polygons.arr[j]);
 
+		// REF: дублирует одиночный вызов в пред. ф-ции
+		CalcOpticalPath_initial(inBeam, outBeam);
+
 		PushBeamToTree( inBeam, facetID, 0, Location::Inside );
 		PushBeamToTree(outBeam, facetID, 0, Location::Outside);
 
@@ -245,7 +248,9 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 		for (int i = 0; i < resultSize; ++i)
 		{
 			tmp.polygon = resultBeams[i];
-			PushBeamToTree(tmp);
+//			tmp.id = beam.id;
+//			PushBeamToTree(tmp);
+			m_beamTree[m_treeSize++] = tmp;
 		}
 
 		isDivided = true;
@@ -259,21 +264,24 @@ bool TracingConcave::HasExternalBeam(Beam &incidentBeam)
 			&& incidentBeam.polygon.size != 0);
 }
 
-void TracingConcave::PushBeamsToTree(int level, int facetID, bool hasOutBeam,
+void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutBeam,
 									 Beam &inBeam, Beam &outBeam)
 {
+#ifdef _TRACK_ALLOW
+	inBeam.id = beam.id;
+#endif
 	if (hasOutBeam)
 	{
-		PushBeamToTree(outBeam, facetID, level, Location::Outside);
+#ifdef _TRACK_ALLOW
+		outBeam.id = beam.id;
+#endif
+		PushBeamToTree(outBeam, facetID, beam.level+1, Location::Outside);
 	}
 
-#ifdef _TRACK_ALLOW
-	inBeam.id = outBeam.id;
 #ifdef _TRACK_OUTPUT
 	trackMapFile << "[in] ";
 #endif
-#endif
-	PushBeamToTree(inBeam, facetID, level, Location::Inside);
+	PushBeamToTree(inBeam, facetID,  beam.level+1, Location::Inside);
 }
 
 void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
@@ -296,6 +304,8 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		trackMapFile << "\n" << incidentBeam.level << " lvl: ";
 		trackMapFile.flush();
 #endif
+//if (incidentBeam.id == 3477) // DEB
+//	int ggg = 0;
 		IntArray facetIds;
 		SelectVisibleFacets(beam, facetIds);
 
@@ -315,7 +325,11 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 				SetOpticalBeamParams(facetId, beam,
 									 inBeam, outBeam, hasOutBeam);
 
+<<<<<<< HEAD
 				PushBeamsToTree(beam.level+1, facetId, hasOutBeam,
+=======
+				PushBeamsToTree(incidentBeam, facetId, hasOutBeam,
+>>>>>>> origin/feature/phisical-optics
 								inBeam, outBeam);
 
 				bool isDivided;
@@ -339,10 +353,6 @@ void TracingConcave::SetOpticalBeamParams(int facetId, Beam &incidentBeam,
 										  Beam &inBeam, Beam &outBeam,
 										  bool &hasOutBeam)
 {
-#ifdef _TRACK_ALLOW
-	outBeam.id = incidentBeam.id;
-	inBeam.id = incidentBeam.id;
-#endif
 	const Point3f &incidentDir = incidentBeam.direction;
 	const Point3f &normal = m_facets[facetId].ex_normal;
 

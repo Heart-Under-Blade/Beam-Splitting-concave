@@ -25,6 +25,9 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 		}
 
 		Beam inBeam, outBeam;
+
+		if (facetID == 3)
+			int ggg = 0 ;
 		TraceFirstBeam(facetID, inBeam, outBeam);
 
 		outBeam.facetID = facetID;
@@ -54,7 +57,14 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
+<<<<<<< HEAD
 		if (IsTerminalBeam(beam))
+=======
+if (beam.facetID == 3)
+int fff = 0;
+
+		if (isTerminalBeam(beam))
+>>>>>>> origin/feature/phisical-optics
 		{
 			continue;
 		}
