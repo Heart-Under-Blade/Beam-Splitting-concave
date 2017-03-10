@@ -90,7 +90,7 @@ int betaMax = 3;
 struct TrackGroup
 {
 	int groupID;
-	long long int arr[64];
+	long long int arr[1024];
 	int size = 0;
 }
 trackGroups[32];
@@ -112,29 +112,34 @@ void TraceSingle(Tracing &tracer, double beta, double gamma);
 
 void ImportTracks(Particle *particle)
 {
+	const int bufSize = 1024;
 	ifstream trackFile("tracks.dat", ios::in);
-	char *buff = (char*)malloc(sizeof(char) * 256);
-
-	vector<int> arr;
+	char *buff = (char*)malloc(sizeof(char) * bufSize);
 
 	while (!trackFile.eof())
 	{
-		trackFile.getline(buff, 256);
+		trackFile.getline(buff, bufSize);
 
-		do
+		if (buff[0] == '@')
 		{
-			int tmp = strtol(buff, &buff, 10);
-			arr.push_back(tmp);
-		}
-		while (*buff != '\0');
-
-		if (arr.size() == 1)
-		{
+			char *ptr = strtok(buff, "@ ");
 			++groupCount;
-			trackGroups[groupCount-1].groupID = arr.at(0);
+			trackGroups[groupCount-1].groupID = strtol(ptr, &ptr, 10);
 		}
 		else
 		{
+			vector<int> arr;
+
+			char *ptr, *trash;
+			ptr = strtok(buff, " ");
+
+			while (ptr != NULL)
+			{
+				int tmp = strtol(ptr, &trash, 10);
+				arr.push_back(tmp);
+				ptr = strtok(NULL, " ");
+			}
+
 			long long int trackID = 0;
 
 			for (int t : arr)
@@ -144,9 +149,8 @@ void ImportTracks(Particle *particle)
 			}
 
 			trackGroups[groupCount-1].arr[trackGroups[groupCount-1].size++] = trackID;
+			arr.clear();
 		}
-
-		arr.clear();
 	}
 }
 
@@ -472,6 +476,188 @@ void PrintTime(long long &msLeft, CalcTimer &time)
 	cout << "\t\tends at " << ctime(&time.End(msLeft));
 }
 
+int GetMaxGroupID()
+{
+	int maxGroupID = 0;
+
+	for (int i = 0; i < groupCount; ++i)
+	{
+		if (trackGroups[i].groupID > maxGroupID)
+		{
+			maxGroupID = trackGroups[i].groupID;
+		}
+	}
+
+	return maxGroupID;
+}
+
+void WriteSumMatrix(ofstream &M_all_file, const Arr2D &M_)
+{
+	M_all_file << to_string(params.bsCone.radius) << ' '
+			<< to_string(params.bsCone.theta) << ' '
+			<< to_string(params.bsCone.phi+1);
+
+	for (int t = 0; t <= params.bsCone.theta; ++t)
+	{
+		double tt = (double)(t*dt*180.0)/M_PI;
+
+		for (int p = 0; p <= params.bsCone.phi; ++p)
+		{
+			double fi = -((double)p)*df;
+			matrix m = M_(p ,t);
+			M_all_file << endl << tt << " " << (-fi*180)/M_PI << " ";
+			M_all_file << m;
+		}
+	}
+}
+
+void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, double norm)
+{
+	for (int q = 0; q < maxGroupID; ++q)
+	{
+		for (int t = 0; t <= params.bsCone.theta; ++t)
+		{
+			for (int p = 0; p <= params.bsCone.phi; ++p)
+			{
+//				complex ee = J[q](p, t)[0][0];
+				matrix Mk = Mueller(J[q](p, t));
+//				M[q].insert(p, t, gammaNorm*norm*Mk);
+				M_.insert(p, t, gammaNorm*norm*Mk);
+			}
+		}
+	}
+}
+
+void CleanJ(int maxGroupID)
+{
+	J.clear();
+	Arr2DC tmp(params.bsCone.phi+1, params.bsCone.theta+1, 2, 2);
+	tmp.ClearArr();
+
+	for(int q = 0; q < maxGroupID; q++)
+	{
+		J.push_back(tmp);
+	}
+}
+
+void CleanM(vector<Arr2D> &M, int maxGroupID)
+{
+	M.clear();
+	Arr2D M_void(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
+
+	for (int j = 0; j < maxGroupID; ++j)
+	{
+		M.push_back(M_void);
+	}
+}
+
+void WriteToSepatateFiles(vector<Arr2D> &M, double beta, int maxGroupID)
+{
+	for (unsigned int q = 0; q < maxGroupID; ++q)
+	{
+		string tr = "3673_3763";
+		string orFName = ("b_" + to_string((beta*180.0)/M_PI) + "_" + tr + ".dat").c_str();
+		ofstream or_file(orFName, ios::out);
+
+		or_file << to_string(params.bsCone.radius) << ' '
+				<< to_string(params.bsCone.theta ) << ' '
+				<< to_string(params.bsCone.phi+1);
+
+//				matrix sum(4, 4);
+
+		for (int t = 0; t <= params.bsCone.theta; ++t)
+		{
+//					sum.Fill(0);
+			double tt = (double)(t*dt*180.0)/M_PI;
+
+			for (int p = 0; p <= params.bsCone.phi; ++p)
+			{
+				double fi = -((double)p)*df;
+				matrix m = M[q](p ,t);
+
+				or_file << endl << tt << " " << (-fi*180)/M_PI << " "; or_file << m;
+
+//						matrix L(4,4);
+//						L[0][0] = 1.0;
+//						L[0][1] = 0.0;
+//						L[0][2] = 0.0;
+//						L[0][3] = 0.0;
+//						L[1][0] = 0.0;
+//						L[1][1] = cos(2.0*p);
+//						L[1][2] = sin(2.0*p);
+//						L[1][3] = 0.0;
+//						L[2][0] = 0.0;
+//						L[2][1] =-sin(2.0*p);
+//						L[2][2] = cos(2.0*p);
+//						L[2][3] = 0.0;
+//						L[3][0] = 0.0;
+//						L[3][1] = 0.0;
+//						L[3][2] = 0.0;
+//						L[3][3] = 1.0;
+
+//						if (!t)
+//						{
+//							sum += L*m*L;
+//						}
+//						else
+//						{
+//							sum += m*L;
+//						}
+			}
+
+//					sum /= (params.bsCone.phi+1.0);
+//					M_all_file << endl << (beta*180.0)/M_PI << " " << tt << " ";
+//					M_all_file << sum;
+		}
+
+		or_file.close();
+//				M_all_file << endl;
+	}
+}
+
+void TraceSinglePO(Tracing &tracer, double beta, double gamma)
+{
+	beta = (32*M_PI)/180;
+	gamma = (30*M_PI)/180;
+
+	vector<Arr2D> M;
+	Arr2D M_(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
+
+	int maxGroupID = GetMaxGroupID();
+	double norm = 1.0/(M_PI/3.0);
+
+	CleanM(M, maxGroupID);
+	CleanJ(maxGroupID);
+
+	ofstream M_all_file("M_all.dat", ios::out); // матрица Мюллера общая (физ. опт.)
+
+	try
+	{
+		vector<Beam> outcomingBeams;
+		tracer.RotateParticle(beta, gamma);
+		tracer.SplitBeamByParticle(outcomingBeams);
+		HandleBeams(outcomingBeams, 0, tracer);
+
+		if (isPhisOptics)
+		{
+			AddResultToSumMatrix(M_, maxGroupID, norm);
+		}
+	}
+	catch (const bool &)
+	{
+		logfile.flush();
+		++assertNum;
+	}
+
+	if (isPhisOptics)
+	{
+		WriteSumMatrix(M_all_file, M_);
+//		WriteToSepatateFiles(M, beta, maxGroupID);
+	}
+
+	M_all_file.close();
+}
+
 void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
 				Tracing &tracer)
 {
@@ -499,28 +685,11 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	// PO params
 	ofstream M_all_file("M_all.dat", ios::out); // матрица Мюллера общая (физ. опт.)
-	{
-//		M_all_file.precision(16);
-//		M_all_file << orNumBeta << " " << 90 << " " << (dBettaRad*180.0)/M_PI;
-//		M_all_file << endl;
-//		M_all_file << "betta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44";
-//		M_all_file << endl;
-	}
-
-	int maxGroupID = 0;
-	{
-		for (int i = 0; i < groupCount; ++i)
-		{
-			if (trackGroups[i].groupID > maxGroupID)
-			{
-				maxGroupID = trackGroups[i].groupID;
-			}
-		}
-	}
-
+	int maxGroupID = GetMaxGroupID();
 	++maxGroupID;
 
 	vector<Arr2D> M;
+	Arr2D M_(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
 	//
 
 	double norm = 1.0/(M_PI/3.0);
@@ -528,12 +697,14 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	time.Start();
 
 #ifdef _DEBUG // DEB
-//	beta = (153 + 0.5)*betaNorm;
-//	gamma = (100 + 0.5)*gammaNorm;
-//	betaDistrProbability = sin(beta);
-//	tracer.RotateParticle(beta, gamma);
-//	tracer.SplitBeamByParticle(outcomingBeams);
-//	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+{
+	//	beta = (153 + 0.5)*betaNorm;
+	//	gamma = (100 + 0.5)*gammaNorm;
+	//	betaDistrProbability = sin(beta);
+	//	tracer.RotateParticle(beta, gamma);
+	//	tracer.SplitBeamByParticle(outcomingBeams);
+	//	HandleBeams(outcomingBeams, betaDistrProbability, tracer);
+}
 #ifdef _OUTPUT_NRG_CONV
 	double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
 	energyFile<<153<<" "<<100<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<endl;
@@ -544,23 +715,15 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	double dbeta = (M_PI/2 - 0)/orNumBeta;
 
-	for (int i = betaRange.begin; i <= /*betaRange.end*/betaRange.begin; ++i)
+	for (int i = betaRange.begin; i <= betaRange.end; ++i)
 	{
 //		beta = (i + 0.5)*betaNorm;
 		beta = 0 + (double)i*dbeta;
 		betaDistrProbability = sin(beta);
 
-		M.clear();
-		{
-			Arr2D M_void(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
+		CleanM(M, maxGroupID);
 
-			for (int j = 0; j < maxGroupID; ++j)
-			{
-				M.push_back(M_void);
-			}
-		}
-
-		for (int j = gammaRange.begin; j <= /*gammaRange.end*/gammaRange.begin; ++j)
+		for (int j = gammaRange.begin; j <= gammaRange.end; ++j)
 		{
 //			gamma = (j + 0.5)*gammaNorm;
 			gamma = (j - gammaRange.end/2)*gammaNorm + M_PI/6;
@@ -569,16 +732,10 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 			SS=0;
 			bcount=0;
 #endif
-			J.clear();
-			Arr2DC tmp_(params.bsCone.phi+1, params.bsCone.theta+1,2,2);
-			tmp_.ClearArr();
-			for(unsigned int q=0;q<maxGroupID; q++)
-				J.push_back(tmp_);
+			CleanJ(maxGroupID);
 
 			try
 			{
-beta = (32*M_PI)/180;
-gamma = (30*M_PI)/180;
 				tracer.RotateParticle(beta, gamma);
 				tracer.SplitBeamByParticle(outcomingBeams);
 
@@ -599,25 +756,13 @@ gamma = (30*M_PI)/180;
 					int fff = 0;
 #endif
 #endif
-
 				M_all_file << (beta*180)/M_PI << ' '
 						   << (gamma*180)/M_PI << ' '
 						   << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
 
 				if (isPhisOptics)
 				{
-					for (int k = 0; k < maxGroupID; ++k)
-					{
-						for (int t = 0; t <= params.bsCone.theta; ++t)
-						{
-							for (int p = 0; p <= params.bsCone.phi; ++p)
-							{
-								complex ee = J[k](p, t)[0][0];
-								matrix Mk = Mueller(J[k](p, t));
-								M[k].insert(p, t, gammaNorm*norm*Mk);
-							}
-						}
-					}
+					AddResultToSumMatrix(M_, maxGroupID, norm);
 				}
 			}
 			catch (const bool &)
@@ -630,68 +775,10 @@ gamma = (30*M_PI)/180;
 			outcomingBeams.clear();
 		}
 
-		if (isPhisOptics)
+		if (/*isPhisOptics*/false)
 		{
-			for (unsigned int q = 0; q < maxGroupID; ++q)
-			{
-				string tr = "3673_3763";
-				string orFName = ("b_" + to_string((beta*180.0)/M_PI) + "_" + tr + ".dat").c_str();
-				ofstream or_file(orFName, ios::out);
-
-				or_file << to_string(params.bsCone.radius) << ' '
-						<< to_string(params.bsCone.theta ) << ' '
-						<< to_string(params.bsCone.phi+1);
-
-				matrix sum(4, 4);
-
-				for (int t = 0; t <= params.bsCone.theta; ++t)
-				{
-					sum.Fill(0);
-					double tt = (double)(t*dt*180.0)/M_PI;
-
-					for (int p = 0; p <= params.bsCone.phi; ++p)
-					{
-						double fi = -((double)p)*df;
-						matrix m = M[q](p ,t);
-						matrix L(4,4);
-
-						or_file << endl << tt << " " << (-fi*180)/M_PI << " "; or_file << m;
-
-						L[0][0] = 1.0;
-						L[0][1] = 0.0;
-						L[0][2] = 0.0;
-						L[0][3] = 0.0;
-						L[1][0] = 0.0;
-						L[1][1] = cos(2.0*p);
-						L[1][2] = sin(2.0*p);
-						L[1][3] = 0.0;
-						L[2][0] = 0.0;
-						L[2][1] =-sin(2.0*p);
-						L[2][2] = cos(2.0*p);
-						L[2][3] = 0.0;
-						L[3][0] = 0.0;
-						L[3][1] = 0.0;
-						L[3][2] = 0.0;
-						L[3][3] = 1.0;
-
-						if (!t)
-						{
-							sum += L*m*L;
-						}
-						else
-						{
-							sum += m*L;
-						}
-					}
-
-					sum /= (params.bsCone.phi+1.0);
-//					M_all_file << endl << (beta*180.0)/M_PI << " " << tt << " ";
-//					M_all_file << sum;
-				}
-
-				or_file.close();
-//				M_all_file << endl;
-			}
+			WriteSumMatrix(M_all_file, M_);
+//			WriteToSepatateFiles(M, beta, maxGroupID);
 		}
 
 		Dellines(2);
