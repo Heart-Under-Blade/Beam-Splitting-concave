@@ -9,11 +9,9 @@ public:
 				  bool isOpticalPath, const Point3f &polarizationBasis,
 				  int interReflectionNumber);
 
-	void SplitBeamByParticle(std::vector<Beam> &outBeams) override;
-	void SplitBeamByParticle(const std::vector<std::vector<int>> &,
+	void SplitBeamByParticle(double beta, double gamma, std::vector<Beam> &outBeams) override;
+	void SplitBeamByParticle(double, double, const std::vector<std::vector<int>> &,
 							 std::vector<Beam> &) override; ///> for predefined trajectories
-
-	double BeamCrossSection(const Beam &beam) const override;
 
 protected:
 	void TraceInternalReflections(std::vector<Beam> &outBeams);

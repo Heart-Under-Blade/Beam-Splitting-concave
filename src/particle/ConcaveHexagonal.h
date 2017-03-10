@@ -9,7 +9,6 @@
 class ConcaveHexagonal : public Hexagonal
 {
 public:
-	ConcaveHexagonal(double cavityDept);
 	ConcaveHexagonal(double radius, double halfHeight, const complex &refractionIndex,
 					 double cavityDept);
 
@@ -33,11 +32,11 @@ protected:
 
 private:
 	void SetCenters();
-	void SetCavities(const Point3f *baseTop, const Point3f *baseBottom,
-					 const CavityPoints &cavities);
+	void SetCavities(const CavityPoints &cavities);
 
 	void SetCavityFacets(int start, int end, const Point3f *baseFacet,
 						 const Point3f &cavityPoint);
 	void SetOriginCavityPoints();
 	void SetBaseNormals();
+	void RotateCavities();
 };

@@ -10,10 +10,8 @@ public:
 				   bool isOpticalPath, const Point3f &polarizationBasis,
 				   int interReflectionNumber);
 
-	double BeamCrossSection(const Beam &beam) const override;
-
-	void SplitBeamByParticle(std::vector<Beam> &scaterredBeams) override;
-	void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
+	void SplitBeamByParticle(double beta, double gamma, std::vector<Beam> &scaterredBeams) override;
+	void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 private:
 	void CutBeamByFacet(int facetId, Beam &beam, bool &isDivided);

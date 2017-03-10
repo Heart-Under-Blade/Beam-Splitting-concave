@@ -23,10 +23,17 @@ struct IntArray
 	}
 };
 
+template <class T>
+struct Couple
+{
+	T first;
+	T last;
+};
+
 // short access for Point3f
-#define cx point[0]
-#define cy point[1]
-#define cz point[2]
+#define cx		point[0]
+#define cy		point[1]
+#define cz		point[2]
 #define d_param point[3]
 
 // short access for normals of Facet
@@ -173,12 +180,19 @@ double Norm(const Point3f &point);
 void Normalize(Point3f &v);
 double Length(const Point3f &v);
 
+/**
+ * @brief The Polygon struct
+ * Convex polygon
+ */
 struct Polygon
 {
 	Point3f arr[MAX_VERTEX_NUM];
 	int size = 0;
 
 	Polygon() {}
+
+	Polygon(int size) : size(size) {}
+
 	Polygon(const Polygon &other)
 	{
 		size = other.size;
@@ -249,7 +263,7 @@ struct Polygon
 		return square/2.0;
 	}
 
-	Point3f Center()
+	Point3f Center() const
 	{
 		Point3f p(0, 0, 0);
 
@@ -261,7 +275,7 @@ struct Polygon
 		return p/size;
 	}
 
-	Point3f Normal()
+	Point3f Normal() const
 	{
 		Point3f normal;
 
@@ -301,11 +315,5 @@ Point3d CrossProductD(const Point3d &v1, const Point3d &v2);
 
 void Normalize(Point3f &v);
 
-Point3f NormalToPolygon(const Polygon &polygon);
-
-Point3f CenterOfPolygon(const Polygon &polygon);
-
 double Length(const Point3f &v);
 double LengthD(const Point3d &v);
-
-double AreaOfPolygon(const Polygon &p); ///< convex

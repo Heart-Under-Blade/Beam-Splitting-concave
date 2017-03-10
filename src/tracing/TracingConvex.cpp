@@ -6,8 +6,10 @@ TracingConvex::TracingConvex(Particle *particle, const Point3f &incidentBeamDir,
 {
 }
 
-void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
+void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<Beam> &outBeams)
 {
+	m_particle->Rotate(beta, gamma, 0);
+
 	m_lightSurfaceArea = 0;
 	m_treeSize = 0;
 
@@ -40,7 +42,7 @@ void TracingConvex::SplitBeamByParticle(std::vector<Beam> &outBeams)
 	TraceInternalReflections(outBeams);
 }
 
-void TracingConvex::SplitBeamByParticle(const std::vector<std::vector<int>> &/*tracks*/,
+void TracingConvex::SplitBeamByParticle(double /*beta*/, double /*gamma*/, const std::vector<std::vector<int>> &/*tracks*/,
 										std::vector<Beam> &/*outBeams*/)
 {
 
@@ -79,42 +81,4 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 			PushBeamToTree(inBeam, facetID, beam.level+1);
 		}
 	}
-}
-
-
-double TracingConvex::BeamCrossSection(const Beam &beam) const
-{
-	const double Eps = 1e7*DBL_EPSILON;
-
-	Point3f normal;
-	Point3f p1 = beam.polygon.arr[1] - beam.polygon.arr[0];
-	Point3f p2 = beam.polygon.arr[2] - beam.polygon.arr[0];
-	CrossProduct(p1, p2, normal);
-
-	double e = fabs(DotProduct(normal, beam.direction));
-
-	if (e < Eps)
-	{
-		return 0;
-	}
-
-	double square = 0;
-	{
-		const Point3f &basePoint = beam.polygon.arr[0];
-		Point3f p1 = beam.polygon.arr[1] - basePoint;
-
-		for (int i = 2; i < beam.polygon.size; ++i)
-		{
-			Point3f p2 = beam.polygon.arr[i] - basePoint;
-			Point3f res;
-			CrossProduct(p1, p2, res);
-			square += sqrt(Norm(res));
-			p1 = p2;
-		}
-
-		square /= 2.0;
-	}
-
-	double n = sqrt(Norm(normal));
-	return (e*square) / n;
 }

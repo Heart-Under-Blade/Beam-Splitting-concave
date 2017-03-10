@@ -205,21 +205,21 @@ Beam &Beam::operator = (Beam &&other)
 
 void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2)
 {
-	JMatrix.m11 = coef1 * other.JMatrix.m11;
-	JMatrix.m12 = coef1 * other.JMatrix.m12;
-	JMatrix.m21 = coef2 * other.JMatrix.m21;
-	JMatrix.m22 = coef2 * other.JMatrix.m22;
+	J.m11 = coef1 * other.J.m11;
+	J.m12 = coef1 * other.J.m12;
+	J.m21 = coef2 * other.J.m21;
+	J.m22 = coef2 * other.J.m22;
 }
 
-complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
+complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 {
 	const double eps1 = 1e9*DBL_EPSILON;
 	const double eps2 = 1e6*DBL_EPSILON;
 
 	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
-	Point3f center = CenterOfPolygon(polygon);
+	Point3f center = polygon.Center();
 
-	Point3f n = NormalToPolygon(polygon);
+	Point3f n = polygon.Normal();
 	Point3d	pt_proj = Proj(Point3d(n.cx, n.cy, n.cz), k_k0);
 //	Point3d	center = Proj(this->N, r0);
 
@@ -228,11 +228,11 @@ complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 			B = pt_proj.y;
 
 	complex one(0, -1);
-	const double k = M_2PI/lam;
+	const double k = M_2PI/wavelength;
 
 	if (fabs(A) < eps2 && fabs(B) < eps2)
 	{
-		return -one/lam*AreaOfPolygon(polygon);
+		return -one/wavelength*polygon.Area();
 	}
 
 	complex s(0, 0);
@@ -290,7 +290,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double lam) const
 		s /= -A;
 	}
 
-	return one*lam*s/SQR(M_2PI);
+	return one*wavelength*s/SQR(M_2PI);
 }
 
 void Beam::RotatePlane(const Point3f &newBasis)

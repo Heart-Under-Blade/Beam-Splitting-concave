@@ -40,12 +40,12 @@ public:
 	Tracing(Particle *particle, const Point3f &startBeamDir, bool isOpticalPath,
 			const Point3f &polarizationBasis, int interReflectionNumber);
 
-	void RotateParticle(double beta, double gamma);
+//	void RotateParticle(double beta, double gamma);
 
-	virtual double BeamCrossSection(const Beam &/*beam*/) const { return 0.0; }
+	double BeamCrossSection(const Beam &beam) const;
 
-	virtual void SplitBeamByParticle(std::vector<Beam> &/*scaterredBeams*/) {}
-	virtual void SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
+	virtual void SplitBeamByParticle(double /*beta*/, double /*gamma*/, std::vector<Beam> &/*scaterredBeams*/) {}
+	virtual void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
 	double GetLightSurfaceArea() const;

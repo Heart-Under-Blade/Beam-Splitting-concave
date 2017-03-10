@@ -48,14 +48,15 @@ protected:
 	virtual void SetDefaultNormals() {}
 	virtual void SetFacetParams() {}
 
+	void Init(double radius, double halfHeight, const complex &refractionIndex);
 	void SetRotateMatrix(double beta, double gamma, double alpha);
 	void RotateNormals();
 	void RotatePoint(const Point3f &point, Point3f &result);
 	void CopyFacet(Point3f *points, Facet &result);
+	void CopyFacet(Point3f *points, Polygon &result);
 	void SetActualNormals();
 
 private:
-	void Init(double radius, double halfHeight, const complex &refractionIndex);
 	void SetDParams();
 	void SetExternalNormals();
 	void SetInternalNormals();

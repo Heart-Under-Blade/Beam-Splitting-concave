@@ -28,7 +28,7 @@ public:
 	void SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2);
 
 	// REF: перенести в PhisBeam
-	complex DiffractionIncline(const Point3d& pt, double lam) const; ///< calculate diffraction at the point /b pt
+	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
 
 	// REF: рассмотреть схему, где у пучка будет много полигонов

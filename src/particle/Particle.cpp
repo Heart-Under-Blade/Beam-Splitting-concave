@@ -146,6 +146,17 @@ void Particle::CopyFacet(Point3f *points, Facet &result)
 	}
 }
 
+//REF: объединить с предыдущей
+void Particle::CopyFacet(Point3f *points, Polygon &result)
+{
+	for (int i = 0; i <= result.size; ++i)
+	{
+		result.arr[i].cx = points[i].cx;
+		result.arr[i].cy = points[i].cy;
+		result.arr[i].cz = points[i].cz;
+	}
+}
+
 void Particle::RotatePoint(const Point3f &point, Point3f &result)
 {
 	result.cx = point.cx*m_rotMatrix[0][0] + point.cy*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];

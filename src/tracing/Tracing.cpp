@@ -31,10 +31,28 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 	ri_coef_im = 4*re*re*im;
 }
 
-void Tracing::RotateParticle(double beta, double gamma)
+double Tracing::BeamCrossSection(const Beam &beam) const
 {
-	m_particle->Rotate(beta, gamma, 0);
+	const double eps = 1e7*DBL_EPSILON;
+
+	Point3f normal = m_facets[beam.facetID].ex_normal; // normal of last facet of beam
+	double cosFB = DotProduct(normal, beam.direction);
+	double e = fabs(cosFB);
+
+	if (e < eps)
+	{
+		return 0;
+	}
+
+	double square = beam.polygon.Area();
+	double n = Length(normal);
+	return (e*square) / n;
 }
+
+//void Tracing::RotateParticle(double beta, double gamma)
+//{
+//	m_particle->Rotate(beta, gamma, 0);
+//}
 
 void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN,
 											int facetId, Beam &inBeam, Beam &outBeam)
@@ -165,9 +183,11 @@ void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
 }
 
 // TODO: пофиксить
-void Tracing::SplitBeamByParticle(const std::vector<std::vector<int>> &tracks,
+void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 								  std::vector<Beam> &outBeams)
 {
+	m_particle->Rotate(beta, gamma, 0);
+
 	for (unsigned int i = 0; i < tracks.size(); ++i)
 	{
 		int facetId = tracks.at(i).at(0);
@@ -246,7 +266,7 @@ double Tracing::CalcNr(const double &cosIN) const
 }
 
 void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
-									   Beam &inBeam, std::vector<Beam> &outBeams)
+								  Beam &inBeam, std::vector<Beam> &outBeams)
 {
 	Beam outBeam;
 	const Point3f &incidentDir = incidentBeam.direction;
@@ -564,18 +584,6 @@ bool Tracing::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 	return true;
 }
 
-<<<<<<< HEAD
-=======
-void Tracing::MulJMatrix(Beam &beam1, const Beam &beam2,
-						 const complex &coef1, const complex &coef2) const
-{
-	beam1.J.m11 = coef1 * beam2.J.m11;
-	beam1.J.m12 = coef1 * beam2.J.m12;
-	beam1.J.m21 = coef2 * beam2.J.m21;
-	beam1.J.m22 = coef2 * beam2.J.m22;
-}
-
->>>>>>> 39f203e89ab7ea3f891bf1573043f64c23804a5a
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
 bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) const
 {
@@ -711,8 +719,6 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
 
 	LOG_ASSERT(tmp1 > 0);
-	if (tmp1 < 0)
-		int fff = 0;
 	tmp1 = sqrt(tmp1);
 
 	reflDir = (tmp0/tmp1) - normal;
