@@ -511,7 +511,7 @@ void WriteSumMatrix(ofstream &M_all_file, const Arr2D &M_)
 	}
 }
 
-void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, double norm)
+void AddResultToSumMatrix(Arr2D &M, int maxGroupID, double norm)
 {
 	for (int q = 0; q < maxGroupID; ++q)
 	{
@@ -519,10 +519,10 @@ void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, double norm)
 		{
 			for (int p = 0; p <= params.bsCone.phi; ++p)
 			{
-//				complex ee = J[q](p, t)[0][0];
+				complex ee = J[q](p, t)[0][0];
 				matrix Mk = Mueller(J[q](p, t));
 //				M[q].insert(p, t, gammaNorm*norm*Mk);
-				M_.insert(p, t, gammaNorm*norm*Mk);
+				M.insert(p, t, gammaNorm*norm*Mk);
 			}
 		}
 	}
@@ -715,7 +715,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	double dbeta = (M_PI/2 - 0)/orNumBeta;
 
-	for (int i = betaRange.begin; i <= betaRange.end; ++i)
+	for (int i = betaRange.begin; i <= betaRange.end/*betaRange.begin*/; ++i)
 	{
 //		beta = (i + 0.5)*betaNorm;
 		beta = 0 + (double)i*dbeta;
@@ -723,7 +723,9 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 		CleanM(M, maxGroupID);
 
-		for (int j = gammaRange.begin; j <= gammaRange.end; ++j)
+		double ddd = 0;
+
+		for (int j = gammaRange.begin; j <= gammaRange.end/*gammaRange.begin*/; ++j)
 		{
 //			gamma = (j + 0.5)*gammaNorm;
 			gamma = (j - gammaRange.end/2)*gammaNorm + M_PI/6;
@@ -736,6 +738,9 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 			try
 			{
+//gamma = beta = 0;
+//beta = (0.25*M_PI)/180;
+//gamma = (50*M_PI)/180;
 				tracer.RotateParticle(beta, gamma);
 				tracer.SplitBeamByParticle(outcomingBeams);
 
@@ -756,13 +761,30 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 					int fff = 0;
 #endif
 #endif
-				M_all_file << (beta*180)/M_PI << ' '
-						   << (gamma*180)/M_PI << ' '
-						   << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
+				for (int q = 0; q < maxGroupID; ++q)
+				{
+					ddd += ((gammaNorm*norm*Mueller(J[q](0, 0)))[0][0]);
+				}
+
+//				M_all_file << (beta*180)/M_PI << ' '
+//						   << (gamma*180)/M_PI << ' '
+//						   << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
 
 				if (isPhisOptics)
 				{
-					AddResultToSumMatrix(M_, maxGroupID, norm);
+//					for (int k = 0; k < maxGroupID; ++k)
+//					{
+//						for (int t = 0; t <= params.bsCone.theta; ++t)
+//						{
+//							for (int p = 0; p <= params.bsCone.phi; ++p)
+//							{
+////								complex ee = J[k](p, t)[0][0];
+//								matrix Mk = Mueller(J[k](p, t));
+//								M[k].insert(p, t, gammaNorm*norm*Mk);
+//							}
+//						}
+//					}
+//					AddResultToSumMatrix(M_, maxGroupID, norm);
 				}
 			}
 			catch (const bool &)
@@ -774,6 +796,10 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 			outcomingBeams.clear();
 		}
+
+		M_all_file << (beta*180)/M_PI << ' '
+				   << (gamma*180)/M_PI << ' '
+				   << ddd << endl;
 
 		if (/*isPhisOptics*/false)
 		{
@@ -951,6 +977,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 				continue;
 			}
 
+//			cout << endl << endl << beam.polygon.Area() << endl << endl ;
 //			cout << "dddferf rg r\n\n";
 			beam.RotateSpherical(-incidentDir, polarizationBasis);
 

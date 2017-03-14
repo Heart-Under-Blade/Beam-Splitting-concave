@@ -442,7 +442,7 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 		{
 			const Polygon &clip = m_facets[id].polygon;
 			const Polygon &subj = resFacets.arr[--resFacets.size];
-			Difference(subj, normal, clip, normal, -m_waveFront.direction,
+			Difference(subj, normal, clip, normal, m_facets[id].in_normal,
 					   diffFacets, diffSize);
 		}
 
