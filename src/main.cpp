@@ -555,9 +555,9 @@ void WriteToSepatateFiles(vector<Arr2D> &M, double beta, int maxGroupID)
 {
 	for (unsigned int q = 0; q < maxGroupID; ++q)
 	{
-		string tr = "3673_3763";
-		string orFName = ("b_" + to_string((beta*180.0)/M_PI) + "_" + tr + ".dat").c_str();
-		ofstream or_file(orFName, ios::out);
+		string tr = to_string(q);
+		string orFName = (tr + "_" + "b_" + to_string((beta*180.0)/M_PI) + ".dat").c_str();
+		ofstream or_file(orFName, ios::app);
 
 		or_file << to_string(params.bsCone.radius) << ' '
 				<< to_string(params.bsCone.theta ) << ' '
@@ -801,10 +801,10 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 				   << (gamma*180)/M_PI << ' '
 				   << ddd << endl;
 
-		if (/*isPhisOptics*/false)
+		if (/*isPhisOptics*/true)
 		{
-			WriteSumMatrix(M_all_file, M_);
-//			WriteToSepatateFiles(M, beta, maxGroupID);
+//			WriteSumMatrix(M_all_file, M_);
+			WriteToSepatateFiles(M, beta, maxGroupID);
 		}
 
 		Dellines(2);
