@@ -14,14 +14,14 @@
 #include "Hexagonal.h"
 #include "ConcaveHexagonal.h"
 
-#include "TracingConcave.h"
-#include "TracingConvex.h"
-
 #include "global.h"
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
-#include "argparse.hpp"
+#include "ArgParser.h"
+#include "Tracer.h"
+#include "TracingConvex.h"
+#include "TracingConcave.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -32,43 +32,12 @@ int bcount=0;
 using namespace std;
 using namespace chrono;
 
-struct OrientationRange
-{
-	int begin;
-	int end;
-};
-
-struct Cone
-{
-	double radius;
-	int phi;
-	int theta;
-};
-
 enum class ParticleType : int
 {
 	Hexagonal = 1,
 	ConcaveHexagonal = 10,
 	TiltedHexagonal = 11
 };
-
-struct CLArguments
-{
-	ParticleType particleType;
-	double halfHeight;
-	double radius;
-	double cavityDepth;
-	double tiltAngle;
-	complex refractionIndex;
-	OrientationRange betaRange;
-	OrientationRange gammaRange;
-	int thetaNumber;
-	int interReflNum;
-	bool isRandom = false;
-	string outfile;
-	Cone bsCone; ///< конус в направлении назад
-	double wavelength;
-} params;
 
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
@@ -89,13 +58,7 @@ unsigned int MuellerMatrixNumber = 0;
 unsigned int NumSum = 16;
 int betaMax = 3;
 
-struct TrackGroup
-{
-	int groupID;
-	long long int arr[1024];
-	int size = 0;
-}
-trackGroups[32];
+Tracks trackGroups;
 
 int groupCount = 0;
 
@@ -106,13 +69,13 @@ void WriteResultsToFile(int ThetaNumber, double NRM, const string &filename);
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM);
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM);
 
-void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+void TraceRandom(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 				 Tracing &tracer);
-void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 				Tracing &tracer);
 void TraceSingle(Tracing &tracer, double beta, double gamma);
 
-void ImportTracks(Particle *particle)
+void ImportTracks(int facetNum)
 {
 	const int bufSize = 1024;
 	ifstream trackFile("tracks.dat", ios::in);
@@ -125,8 +88,8 @@ void ImportTracks(Particle *particle)
 		if (buff[0] == '@')
 		{
 			char *ptr = strtok(buff, "@ ");
-			++groupCount;
-			trackGroups[groupCount-1].groupID = strtol(ptr, &ptr, 10);
+			++trackGroups.count;
+			trackGroups.groups[trackGroups.count-1].groupID = strtol(ptr, &ptr, 10);
 		}
 		else
 		{
@@ -147,10 +110,10 @@ void ImportTracks(Particle *particle)
 			for (int t : arr)
 			{
 				trackID += (t + 1);
-				trackID *= (particle->facetNum + 1);
+				trackID *= (facetNum + 1);
 			}
 
-			trackGroups[groupCount-1].arr[trackGroups[groupCount-1].size++] = trackID;
+			trackGroups.groups[trackGroups.count-1].arr[trackGroups.groups[trackGroups.count-1].size++] = trackID;
 			arr.clear();
 		}
 	}
@@ -162,38 +125,6 @@ void Calculate(const CLArguments &params)
 
 	int orNumBeta = params.betaRange.end - params.betaRange.begin;
 	int orNumGamma = params.gammaRange.end - params.gammaRange.begin;
-
-	Particle *particle = nullptr;
-
-	switch (params.particleType)
-	{
-	case ParticleType::Hexagonal:
-		particle = new Hexagonal(params.radius, params.halfHeight, params.refractionIndex);
-		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
-								   polarizationBasis, params.interReflNum);
-		betaNorm = M_PI/(2.0*orNumBeta);
-		gammaNorm = M_PI/(3.0*orNumGamma);
-		break;
-	case ParticleType::TiltedHexagonal:
-		particle = new TiltedHexagonal(params.radius, params.halfHeight, params.refractionIndex,
-									   params.tiltAngle);
-		tracer = new TracingConvex(particle, incidentDir, isOpticalPath,
-								   polarizationBasis, params.interReflNum);
-		betaNorm = M_PI/(2.0*orNumBeta);
-		gammaNorm = (2.0*M_PI)/orNumGamma;
-		break;
-	case ParticleType::ConcaveHexagonal:
-		particle = new ConcaveHexagonal(params.radius, params.halfHeight, params.refractionIndex,
-										params.cavityDepth);
-		tracer = new TracingConcave(particle, incidentDir, isOpticalPath,
-									polarizationBasis, params.interReflNum);
-		betaNorm = M_PI/(2.0*orNumBeta);
-		gammaNorm = M_PI/(3.0*orNumGamma);
-		break;
-	default:
-		assert(false && "ERROR! Incorrect type of particle.");
-		break;
-	}
 
 	if (isPhisOptics)
 	{
@@ -277,42 +208,6 @@ void Calculate(const CLArguments &params)
 	delete particle;
 }
 
-int GetArgValue(char* argv[], int argc, int i)
-{
-	if (argc <= i)
-	{
-		throw string("Not enouth arguments");
-	}
-
-	char *end;
-	int val = strtol(argv[i], &end, 10);
-
-	if (strlen(end) != 0)
-	{
-		throw string("Some argument is incorrect.");
-	}
-
-	return val;
-}
-
-double GetArgValueD(char* argv[], int argc, int i)
-{
-	if (argc <= i)
-	{
-		throw string("Not enouth arguments");
-	}
-
-	char *end;
-	double val = strtod(argv[i], &end);
-
-	if (strlen(end) != 0)
-	{
-		throw string("Some argument is incorrect.");
-	}
-
-	return val;
-}
-
 void SetParams(int argc, char* argv[], CLArguments &params)
 {
 	try
@@ -325,7 +220,7 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 
 			if (arg == "-p")
 			{
-				params.particleType = (ParticleType)GetArgValue(argv, argc, ++i);
+				params.particleType = (ParticleType)ArgToValue(argv, argc, ++i);
 				params.halfHeight = GetArgValueD(argv, argc, ++i);
 				params.radius = GetArgValueD(argv, argc, ++i);
 
@@ -347,24 +242,24 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 			}
 			else if (arg == "-rn")
 			{
-				params.interReflNum = GetArgValue(argv, argc, ++i);
+				params.interReflNum = ArgToValue(argv, argc, ++i);
 				++paramsNum;
 			}
 			else if (arg == "-b")
 			{
-				params.betaRange.begin = GetArgValue(argv, argc, ++i);
-				params.betaRange.end = GetArgValue(argv, argc, ++i);
+				params.betaRange.begin = ArgToValue(argv, argc, ++i);
+				params.betaRange.end = ArgToValue(argv, argc, ++i);
 				++paramsNum;
 			}
 			else if (arg == "-g")
 			{
-				params.gammaRange.begin = GetArgValue(argv, argc, ++i);
-				params.gammaRange.end = GetArgValue(argv, argc, ++i);
+				params.gammaRange.begin = ArgToValue(argv, argc, ++i);
+				params.gammaRange.end = ArgToValue(argv, argc, ++i);
 				++paramsNum;
 			}
 			else if (arg == "-t")
 			{
-				params.thetaNumber = GetArgValue(argv, argc, ++i);
+				params.thetaNumber = ArgToValue(argv, argc, ++i);
 				++paramsNum;
 			}
 			else if (arg == "-r")
@@ -383,8 +278,8 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 			else if (arg == "-bsc")
 			{
 				params.bsCone.radius = GetArgValueD(argv, argc, ++i);
-				params.bsCone.phi = GetArgValue(argv, argc, ++i);
-				params.bsCone.theta = GetArgValue(argv, argc, ++i);
+				params.bsCone.phi = ArgToValue(argv, argc, ++i);
+				params.bsCone.theta = ArgToValue(argv, argc, ++i);
 			}
 			else if (arg == "-w")
 			{
@@ -406,7 +301,41 @@ void SetParams(int argc, char* argv[], CLArguments &params)
 	}
 }
 
-int main(int argc, char* argv[])
+void setAvalableArgs(ArgParser &parser)
+{
+	parser.addArgument("-p", "--particle", '+', false);
+	parser.addArgument("--ri", 1, false);
+	parser.addArgument("-n", "--interReflNum", 1, false);
+	parser.addArgument("-b", "--beta", 3, false);
+	parser.addArgument("-g", "--gamma", 3, false);
+	parser.addArgument("-t", "--cellCount", 1);
+	parser.addArgument("--po");
+	parser.addArgument("-w", "--wavelength", 1);
+	parser.addArgument("--conus", 3);
+	parser.addArgument("--point", 3);
+	parser.addArgument("-o", "--output", 1);
+}
+
+AngleInterval GetInterval(const char *name, const ArgParser &parser)
+{
+	AngleInterval interval;
+	vector<string> argInterval = parser.getArgValue<vector<string>>(name);
+	interval.begin = parser.argToValue<double>(argInterval[0]);
+	interval.end = parser.argToValue<double>(argInterval[1]);
+	interval.count = parser.argToValue<int>(argInterval[2]);
+	return interval;
+}
+
+Cone SetCone(const ArgParser &parser, Cone &bsCone)
+{
+	Cone bsCone;
+	vector<string> cone_arg = parser.retrieve<vector<string>>("conus");
+	bsCone.radius = parser.argToValue<double>(cone_arg[0]);
+	bsCone.phiCount = parser.argToValue<double>(cone_arg[1]);
+	bsCone.thetaCount = parser.argToValue<double>(cone_arg[2]);
+}
+
+int main(int argc, const char** argv)
 {
 //	logfile->open("log.txt", ios::out);
 
@@ -416,29 +345,68 @@ int main(int argc, char* argv[])
 //	testTiltHexagonBuild();
 //	testCompareParticles();
 
+	Particle *particle = nullptr;
+	Tracing *tracing = nullptr;
+
 	if (argc > 1) // has command line arguments
 	{
-		SetParams(argc, argv, params);
-	}
-	else // DEB
-	{
-		cout << "Argument list is not found. Using default params."
-				  << endl << endl;
+		ArgParser parser;
+		setAvalableArgs(parser);
+		parser.parse(argc, argv);
 
-//		params.particleType = ParticleType::TiltedHexagonal;
-		params.particleType = ParticleType::Hexagonal;
-		params.halfHeight = 100;
-		params.radius = 40;
-		params.cavityDepth = 20;
-		params.tiltAngle = 45;
-		params.refractionIndex = complex(1.31, 0.0);
-		params.betaRange.begin = 0;
-		params.betaRange.end = 200;
-		params.gammaRange.begin = 0;
-		params.gammaRange.end = 201;
-		params.thetaNumber = 180;
-		params.interReflNum = 3;
-		params.isRandom = false;
+		vector<string> vec = parser.retrieve<vector<string>>("particle");
+		ParticleType pt = (ParticleType)parser.argToValue<int>(vec[0]);
+		double hh = parser.argToValue<double>(vec[1]);
+		double r = parser.argToValue<double>(vec[2]);
+
+		double ri = parser.getArgValue<double>("ri");
+
+		AngleInterval betaI = GetInterval("beta", parser);
+		AngleInterval gammaI = GetInterval("gamma", parser);
+
+		betaI.SetNorm(M_PI/2);
+
+		switch (pt)
+		{
+		case ParticleType::Hexagonal:
+			particle = new Hexagonal(r, hh, ri);
+			gammaI.SetNorm(M_PI/3);
+			break;
+		case ParticleType::ConcaveHexagonal:
+			double cav = parser.argToValue<double>(vec[3]);
+			particle = new ConcaveHexagonal(r, hh, ri, cav);
+			gammaI.SetNorm(M_PI/3);
+			break;
+		case ParticleType::TiltedHexagonal:
+			double angle = parser.argToValue<double>(vec[3]);
+			particle = new TiltedHexagonal(r, hh, ri, angle);
+			gammaI.SetNorm(2*M_PI);
+			break;
+		default:
+			assert(false && "ERROR! Incorrect type of particle.");
+			break;
+		}
+
+		int reflNum = parser.getArgValue<double>("n");
+
+		tracing = (pt == ParticleType::ConcaveHexagonal)
+				? new TracingConcave(particle, incidentDir, isOpticalPath,
+									 polarizationBasis, reflNum)
+				: new TracingConvex(particle, incidentDir, isOpticalPath,
+									polarizationBasis, reflNum);
+		Cone bsCone;
+		SetCone(parser, bsCone);
+
+		double wave = parser.getArgValue("wavelength");
+
+		ImportTracks(particle->facetNum);
+
+		Tracer tracer(tracing, "M_all.dat");
+		tracer.TraceIntervalPO(betaI, gammaI, bsCone, trackGroups, wave);
+
+		int ff = 0;
+//		SetParams(argc, argv, params);
+	}
 
 #ifdef _OUTPUT_NRG_CONV
 		cout << "WARNING: Energy conversation is calculating now."
@@ -446,7 +414,6 @@ int main(int argc, char* argv[])
 		params.refractionIndex = complex(1000000000000001.31, 0.0);
 		params.interReflNum = 10;
 #endif
-	}
 
 	Calculate(params);
 	getchar();
@@ -476,21 +443,6 @@ void PrintTime(long long &msLeft, CalcTimer &time)
 	time.Left(msLeft);
 	cout << "time left: " << time.ToString();
 	cout << "\t\tends at " << ctime(&time.End(msLeft));
-}
-
-int GetMaxGroupID()
-{
-	int maxGroupID = 0;
-
-	for (int i = 0; i < groupCount; ++i)
-	{
-		if (trackGroups[i].groupID > maxGroupID)
-		{
-			maxGroupID = trackGroups[i].groupID;
-		}
-	}
-
-	return maxGroupID;
 }
 
 void WriteSumMatrix(ofstream &M_all_file, const Arr2D &M_)
@@ -527,18 +479,6 @@ void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, double norm)
 				M_.insert(p, t, gammaNorm*norm*Mk);
 			}
 		}
-	}
-}
-
-void CleanJ(int maxGroupID)
-{
-	J.clear();
-	Arr2DC tmp(params.bsCone.phi+1, params.bsCone.theta+1, 2, 2);
-	tmp.ClearArr();
-
-	for(int q = 0; q < maxGroupID; q++)
-	{
-		J.push_back(tmp);
 	}
 }
 
@@ -659,7 +599,7 @@ void TraceSinglePO(Tracing &tracer, double beta, double gamma)
 	M_all_file.close();
 }
 
-void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 				Tracing &tracer)
 {
 	CalcTimer time;
@@ -675,14 +615,6 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	long long orNum = orNumGamma * orNumBeta;
 
 	long long count = 0;
-
-	double dBettaRad = 0.0;
-	{
-		if (orNumBeta)
-		{
-			dBettaRad = ((betaMax*M_PI)/180.0)/(double)orNumBeta;
-		}
-	}
 
 	// PO params
 	ofstream M_all_file("M_all.dat", ios::out); // матрица Мюллера общая (физ. опт.)
@@ -798,7 +730,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 	M_all_file.close();
 }
 
-void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &betaRange,
+void TraceRandom(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 				 Tracing &tracer)
 {
 	srand(time(NULL));
@@ -904,22 +836,6 @@ bool IsMatchTrack(const vector<int> &track, const vector<int> &compared)
 	}
 
 	return true;
-}
-
-int GetGroupID(long long int track)
-{
-	for (int i = 0; i < groupCount; ++i)
-	{
-		for (int j = 0; j < trackGroups[i].size; ++j)
-		{
-			if (trackGroups[i].arr[j] == track)
-			{
-				return trackGroups[i].groupID;
-			}
-		}
-	}
-
-	return -1;
 }
 
 void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tracer)

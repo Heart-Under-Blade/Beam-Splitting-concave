@@ -30,3 +30,13 @@ void Dellines(int count)
 	--count;
 #endif
 }
+
+double DegToRad(double deg)
+{
+	return (deg*M_PI)/180;
+}
+
+double RadToDeg(double rad)
+{
+	return (rad*180)/M_PI;
+}

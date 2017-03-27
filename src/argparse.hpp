@@ -424,7 +424,7 @@ public:
         Argument arg = arguments_[N];
         Any var = variables_[N];
         // check if the argument is a vector
-        if (arg.fixed) {
+		if (arg.fixed && (arg.fixed_nargs <= 1)) {
             return !var.castTo<String>().empty();
         } else {
             return var.castTo<StringVector>().size();

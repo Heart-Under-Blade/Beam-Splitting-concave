@@ -45,7 +45,9 @@ HEADERS += \
 	../src/geometry/clipper/BeamClipper.h \
 	../src/geometry/geometry_lib.h \
 	../src/PhisBeam.h \
-    ../src/particle/TiltedHexagonal.h
+	../src/particle/TiltedHexagonal.h \
+	../src/argparse.hpp \
+    ../src/ArgParser.h
 
 SOURCES += \
     ../src/Beam.cpp \
