@@ -1,8 +1,12 @@
 #include "Tracer.h"
 
+#include <iostream>
+#include "Mueller.hpp"
+#include "CalcTimer.h"
+
 using namespace std;
 
-Tracer::Tracer(const Tracing *tracing, const string resultFileName)
+Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
 	  m_mxd(0, 0, 0, 0),
 	  m_incidentDir(0, 0, -1),
@@ -15,8 +19,11 @@ Tracer::Tracer(const Tracing *tracing, const string resultFileName)
 void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &gammaI,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
+	CalcTimer timer;
+	long long count = 0;
+
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-	ofstream outFile(m_resultFileName, std::out);
+	ofstream outFile(m_resultFileName, ios::out);
 
 	vector<Beam> outBeams;
 	double beta, gamma;
@@ -25,42 +32,59 @@ void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &ga
 	int maxGroupID = tracks.GetMaxGroupID();
 	int halfGammaCount = gammaI.count/2;
 
-	for (int i = 0; i <= betaI.count; ++i)
+	timer.Start();
+
+	for (int i = 0; i <=betaI.count; ++i)
 	{
 		beta = step*i;
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaI.norm + M_PI/6;
+//// DEB
+//beta = DegToRad(32);
+//gamma = DegToRad(30);
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
-
 			CleanJ(maxGroupID, bsCone);
 			HandleBeamsPO(outBeams, bsCone, wave, tracks);
 			outBeams.clear();
 			AddResultToSumMatrix(M, maxGroupID, bsCone, gammaI);
 		}
 
-		WriteSumMatrix(outFile, M);
+		WriteSumMatrix(outFile, M, bsCone);
+
+		cout << '\r';
+
+		for (int i = 0; i < 80; ++i)
+		{
+			cout << " ";
+		}
+
+		cout << '\r';
+
+		cout << ((100*count)/betaI.count) << "% ";
 	}
 
 	outFile.close();
 }
 
-void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum)
+void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum,
+							const Cone &bsCone)
 {
-	outFile << to_string(params.bsCone.radius) << ' '
-			<< to_string(params.bsCone.theta) << ' '
-			<< to_string(params.bsCone.phi+1);
+	outFile << to_string(bsCone.radius)	<< ' '
+			<< to_string(bsCone.thetaCount) << ' '
+			<< to_string(bsCone.phiCount+1);
 
-	for (int t = 0; t <= params.bsCone.theta; ++t)
+	for (int t = 0; t <= bsCone.thetaCount; ++t)
 	{
-		double tt = (double)(t*dt*180.0)/M_PI;
+		double tt = (double)(t*bsCone.dTheta*180.0)/M_PI;
 
-		for (int p = 0; p <= params.bsCone.phi; ++p)
+		for (int p = 0; p <= bsCone.phiCount; ++p)
 		{
-			double fi = -((double)p)*df;
+			double fi = -((double)p)*bsCone.dPhi;
 			matrix m = sum(p ,t);
-			outFile << endl << tt << " " << (-fi*180)/M_PI << " ";
+			double degPhi = RadToDeg(-fi);
+			outFile << endl << tt << " " << degPhi << " ";
 			outFile << m;
 		}
 	}
@@ -69,14 +93,17 @@ void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum)
 void Tracer::AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
 								  const AngleInterval &gammaI)
 {
+	double coef = gammaI.norm*m_gammaNorm;
+
 	for (int q = 0; q < maxGroupID; ++q)
 	{
 		for (int t = 0; t <= bsCone.thetaCount; ++t)
 		{
 			for (int p = 0; p <= bsCone.phiCount; ++p)
 			{
+//				complex ee = J[q](p, t)[0][0]; // DEB
 				matrix Mk = Mueller(J[q](p, t));
-				M_.insert(p, t, gammaI.norm*m_gammaNorm*Mk);
+				M_.insert(p, t, coef*Mk);
 			}
 		}
 	}

@@ -39,6 +39,30 @@ enum class ParticleType : int
 	TiltedHexagonal = 11
 };
 
+struct OrientationRange
+{
+	int begin;
+	int end;
+};
+
+//struct CLArguments
+//{
+//	ParticleType particleType;
+//	double halfHeight;
+//	double radius;
+//	double cavityDepth;
+//	double tiltAngle;
+//	complex refractionIndex;
+//	OrientationRange betaRange;
+//	OrientationRange gammaRange;
+//	int thetaNumber;
+//	int interReflNum;
+//	bool isRandom = false;
+//	string outfile;
+//	Cone bsCone; ///< конус в направлении назад
+//	double wavelength;
+//} params;
+
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
 
@@ -69,9 +93,9 @@ void WriteResultsToFile(int ThetaNumber, double NRM, const string &filename);
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM);
 void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM);
 
-void TraceRandom(const AngleInterval &gammaRange, const AngleInterval &betaRange,
+void TraceRandom(const OrientationRange &gammaRange, const OrientationRange &betaRange,
 				 Tracing &tracer);
-void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
+void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
 				Tracing &tracer);
 void TraceSingle(Tracing &tracer, double beta, double gamma);
 
@@ -119,187 +143,189 @@ void ImportTracks(int facetNum)
 	}
 }
 
-void Calculate(const CLArguments &params)
-{
-	Tracing *tracer = nullptr;
+//void Calculate(const CLArguments &params)
+//{
+//	Particle *particle;
+//	Tracing *tracer = nullptr;
 
-	int orNumBeta = params.betaRange.end - params.betaRange.begin;
-	int orNumGamma = params.gammaRange.end - params.gammaRange.begin;
+//	int orNumBeta = params.betaRange.end - params.betaRange.begin;
+//	int orNumGamma = params.gammaRange.end - params.gammaRange.begin;
 
-	if (isPhisOptics)
-	{
-		ImportTracks(particle);
 
-		double radius = (params.bsCone.radius*M_PI)/180.0;
+//	if (isPhisOptics)
+//	{
+//		ImportTracks(particle->facetNum);
 
-		if (params.bsCone.theta)
-		{
-			dt = radius/(double)params.bsCone.theta;
-		}
+//		double radius = (params.bsCone.radius*M_PI)/180.0;
 
-		if (params.bsCone.phi)
-		{
-			df = M_2PI/(double)(params.bsCone.phi+1);
-		}
-	}
+//		if (params.bsCone.thetaCount)
+//		{
+//			dt = radius/(double)params.bsCone.thetaCount;
+//		}
 
-	int EDF = 0;
+//		if (params.bsCone.phiCount)
+//		{
+//			df = M_2PI/(double)(params.bsCone.phiCount+1);
+//		}
+//	}
 
-	incomingEnergy = 0;
+//	int EDF = 0;
 
-	// the arrays for exact backscattering and forwardscattering Mueller matrices
-	back.Fill(0);
-	forw.Fill(0);
+//	incomingEnergy = 0;
 
-	sizeBin = M_PI/params.thetaNumber; // the size of the bin (radians)
+//	// the arrays for exact backscattering and forwardscattering Mueller matrices
+//	back.Fill(0);
+//	forw.Fill(0);
 
-	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
-	mxd.ClearArr();
+//	sizeBin = M_PI/params.thetaNumber; // the size of the bin (radians)
 
-	cout << endl;
+//	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
+//	mxd.ClearArr();
 
-	time_point<system_clock> startCalc = system_clock::now();
+//	cout << endl;
 
-	if (params.isRandom)
-	{
-		TraceRandom(params.gammaRange, params.betaRange, *tracer);
-	}
-	else
-	{
-		TraceFixed(params.gammaRange, params.betaRange, *tracer);
-	}
+//	time_point<system_clock> startCalc = system_clock::now();
 
-	auto total = system_clock::now() - startCalc;
+//	if (params.isRandom)
+//	{
+//		TraceRandom(params.gammaRange, params.betaRange, *tracer);
+//	}
+//	else
+//	{
+//		TraceFixed(params.gammaRange, params.betaRange, *tracer);
+//	}
 
-	if (assertNum > 0)
-	{
-		cout << endl << "WARRNING! Asserts are occured (see log file) " << assertNum << endl;
-	}
+//	auto total = system_clock::now() - startCalc;
 
-	cout << "\nTotal time of calculation = " << duration_cast<seconds>(total).count() << " seconds";
+//	if (assertNum > 0)
+//	{
+//		cout << endl << "WARRNING! Asserts are occured (see log file) " << assertNum << endl;
+//	}
 
-	// Integrating
-	double D_tot = back[0][0] + forw[0][0];
+//	cout << "\nTotal time of calculation = " << duration_cast<seconds>(total).count() << " seconds";
 
-	for (int j = 0; j <= params.thetaNumber; ++j)
-	{
-		D_tot += mxd(0, j, 0, 0);
-	}
+//	// Integrating
+//	double D_tot = back[0][0] + forw[0][0];
 
-	// Normalizing coefficient
-	long long orNum = orNumGamma * orNumBeta;
-	double NRM;
+//	for (int j = 0; j <= params.thetaNumber; ++j)
+//	{
+//		D_tot += mxd(0, j, 0, 0);
+//	}
 
-	if (params.isRandom)
-	{
-		NRM = 1.0/(double)orNum;
-	}
-	else
-	{
-		NRM = M_PI/((double)orNum*2.0);
-	}
+//	// Normalizing coefficient
+//	long long orNum = orNumGamma * orNumBeta;
+//	double NRM;
 
-	ExtractPeaks(EDF, NRM, params.thetaNumber);
+//	if (params.isRandom)
+//	{
+//		NRM = 1.0/(double)orNum;
+//	}
+//	else
+//	{
+//		NRM = M_PI/((double)orNum*2.0);
+//	}
 
-	WriteResultsToFile(params.thetaNumber, NRM, params.outfile);
-//	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
-	WriteStatisticsToConsole(orNum, D_tot, NRM);
+//	ExtractPeaks(EDF, NRM, params.thetaNumber);
 
-	delete particle;
-}
+//	WriteResultsToFile(params.thetaNumber, NRM, params.outfile);
+////	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
+//	WriteStatisticsToConsole(orNum, D_tot, NRM);
 
-void SetParams(int argc, char* argv[], CLArguments &params)
-{
-	try
-	{
-		int paramsNum = 0;
+//	delete particle;
+//}
 
-		for (int i = 1; i < argc; ++i)
-		{
-			string arg(argv[i]);
+//void SetParams(int argc, char* argv[], CLArguments &params)
+//{
+//	try
+//	{
+//		int paramsNum = 0;
 
-			if (arg == "-p")
-			{
-				params.particleType = (ParticleType)ArgToValue(argv, argc, ++i);
-				params.halfHeight = GetArgValueD(argv, argc, ++i);
-				params.radius = GetArgValueD(argv, argc, ++i);
+//		for (int i = 1; i < argc; ++i)
+//		{
+//			string arg(argv[i]);
 
-				if (params.particleType == ParticleType::ConcaveHexagonal)
-				{
-					params.cavityDepth = GetArgValueD(argv, argc, ++i);
-				}
-				else if (params.particleType == ParticleType::TiltedHexagonal)
-				{
-					params.tiltAngle = GetArgValueD(argv, argc, ++i);
-				}
+//			if (arg == "-p")
+//			{
+//				params.particleType = (ParticleType)ArgToValue(argv, argc, ++i);
+//				params.halfHeight = GetArgValueD(argv, argc, ++i);
+//				params.radius = GetArgValueD(argv, argc, ++i);
 
-				++paramsNum;
-			}
-			else if (arg == "-ri")
-			{
-				params.refractionIndex = GetArgValueD(argv, argc, ++i);
-				++paramsNum;
-			}
-			else if (arg == "-rn")
-			{
-				params.interReflNum = ArgToValue(argv, argc, ++i);
-				++paramsNum;
-			}
-			else if (arg == "-b")
-			{
-				params.betaRange.begin = ArgToValue(argv, argc, ++i);
-				params.betaRange.end = ArgToValue(argv, argc, ++i);
-				++paramsNum;
-			}
-			else if (arg == "-g")
-			{
-				params.gammaRange.begin = ArgToValue(argv, argc, ++i);
-				params.gammaRange.end = ArgToValue(argv, argc, ++i);
-				++paramsNum;
-			}
-			else if (arg == "-t")
-			{
-				params.thetaNumber = ArgToValue(argv, argc, ++i);
-				++paramsNum;
-			}
-			else if (arg == "-r")
-			{
-				params.isRandom = true;
-			}
-			else if (arg == "-o")
-			{
-				if (argc <= i)
-				{
-					throw "Not enouth arguments.";
-				}
+//				if (params.particleType == ParticleType::ConcaveHexagonal)
+//				{
+//					params.cavityDepth = GetArgValueD(argv, argc, ++i);
+//				}
+//				else if (params.particleType == ParticleType::TiltedHexagonal)
+//				{
+//					params.tiltAngle = GetArgValueD(argv, argc, ++i);
+//				}
 
-				params.outfile = argv[++i];
-			}
-			else if (arg == "-bsc")
-			{
-				params.bsCone.radius = GetArgValueD(argv, argc, ++i);
-				params.bsCone.phi = ArgToValue(argv, argc, ++i);
-				params.bsCone.theta = ArgToValue(argv, argc, ++i);
-			}
-			else if (arg == "-w")
-			{
-				params.wavelength = GetArgValueD(argv, argc, ++i);
-			}
-		}
+//				++paramsNum;
+//			}
+//			else if (arg == "-ri")
+//			{
+//				params.refractionIndex = GetArgValueD(argv, argc, ++i);
+//				++paramsNum;
+//			}
+//			else if (arg == "-rn")
+//			{
+//				params.interReflNum = ArgToValue(argv, argc, ++i);
+//				++paramsNum;
+//			}
+//			else if (arg == "-b")
+//			{
+//				params.betaRange.begin = ArgToValue(argv, argc, ++i);
+//				params.betaRange.end = ArgToValue(argv, argc, ++i);
+//				++paramsNum;
+//			}
+//			else if (arg == "-g")
+//			{
+//				params.gammaRange.begin = ArgToValue(argv, argc, ++i);
+//				params.gammaRange.end = ArgToValue(argv, argc, ++i);
+//				++paramsNum;
+//			}
+//			else if (arg == "-t")
+//			{
+//				params.thetaNumber = ArgToValue(argv, argc, ++i);
+//				++paramsNum;
+//			}
+//			else if (arg == "-r")
+//			{
+//				params.isRandom = true;
+//			}
+//			else if (arg == "-o")
+//			{
+//				if (argc <= i)
+//				{
+//					throw "Not enouth arguments.";
+//				}
 
-		if (paramsNum < 6) // REF: выделить как константу
-		{
-			throw string("Too few arguments.");
-		}
-	}
-	catch (const string &e)
-	{
-		cout << "Error! " << e << " Please check it and restart the program."
-				  << endl << "Press any key to exit...";
-		getchar();
-		exit(1);
-	}
-}
+//				params.outfile = argv[++i];
+//			}
+//			else if (arg == "-bsc")
+//			{
+//				params.bsCone.radius = GetArgValueD(argv, argc, ++i);
+//				params.bsCone.phi = ArgToValue(argv, argc, ++i);
+//				params.bsCone.theta = ArgToValue(argv, argc, ++i);
+//			}
+//			else if (arg == "-w")
+//			{
+//				params.wavelength = GetArgValueD(argv, argc, ++i);
+//			}
+//		}
+
+//		if (paramsNum < 6) // REF: выделить как константу
+//		{
+//			throw string("Too few arguments.");
+//		}
+//	}
+//	catch (const string &e)
+//	{
+//		cout << "Error! " << e << " Please check it and restart the program."
+//				  << endl << "Press any key to exit...";
+//		getchar();
+//		exit(1);
+//	}
+//}
 
 void setAvalableArgs(ArgParser &parser)
 {
@@ -316,23 +342,23 @@ void setAvalableArgs(ArgParser &parser)
 	parser.addArgument("-o", "--output", 1);
 }
 
-AngleInterval GetInterval(const char *name, const ArgParser &parser)
+AngleInterval GetInterval(const char *name, ArgParser &parser)
 {
 	AngleInterval interval;
-	vector<string> argInterval = parser.getArgValue<vector<string>>(name);
+	vector<string> argInterval = parser.retrieve<vector<string>>(name);
 	interval.begin = parser.argToValue<double>(argInterval[0]);
 	interval.end = parser.argToValue<double>(argInterval[1]);
 	interval.count = parser.argToValue<int>(argInterval[2]);
 	return interval;
 }
 
-Cone SetCone(const ArgParser &parser, Cone &bsCone)
+Cone SetCone(ArgParser &parser)
 {
-	Cone bsCone;
 	vector<string> cone_arg = parser.retrieve<vector<string>>("conus");
-	bsCone.radius = parser.argToValue<double>(cone_arg[0]);
-	bsCone.phiCount = parser.argToValue<double>(cone_arg[1]);
-	bsCone.thetaCount = parser.argToValue<double>(cone_arg[2]);
+	double radius = parser.argToValue<double>(cone_arg[0]);
+	int phiCount = parser.argToValue<double>(cone_arg[1]);
+	int thetaCount = parser.argToValue<double>(cone_arg[2]);
+	return Cone(radius, phiCount, thetaCount);
 }
 
 int main(int argc, const char** argv)
@@ -365,6 +391,7 @@ int main(int argc, const char** argv)
 		AngleInterval gammaI = GetInterval("gamma", parser);
 
 		betaI.SetNorm(M_PI/2);
+		double sup = parser.argToValue<double>(vec[3]);
 
 		switch (pt)
 		{
@@ -372,15 +399,15 @@ int main(int argc, const char** argv)
 			particle = new Hexagonal(r, hh, ri);
 			gammaI.SetNorm(M_PI/3);
 			break;
-		case ParticleType::ConcaveHexagonal:
-			double cav = parser.argToValue<double>(vec[3]);
-			particle = new ConcaveHexagonal(r, hh, ri, cav);
-			gammaI.SetNorm(M_PI/3);
-			break;
 		case ParticleType::TiltedHexagonal:
-			double angle = parser.argToValue<double>(vec[3]);
-			particle = new TiltedHexagonal(r, hh, ri, angle);
+			sup = parser.argToValue<double>(vec[3]);
+			particle = new TiltedHexagonal(r, hh, ri, sup);
 			gammaI.SetNorm(2*M_PI);
+			break;
+		case ParticleType::ConcaveHexagonal:
+			sup = parser.argToValue<double>(vec[3]);
+			particle = new ConcaveHexagonal(r, hh, ri, sup);
+			gammaI.SetNorm(M_PI/3);
 			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
@@ -389,20 +416,25 @@ int main(int argc, const char** argv)
 
 		int reflNum = parser.getArgValue<double>("n");
 
-		tracing = (pt == ParticleType::ConcaveHexagonal)
-				? new TracingConcave(particle, incidentDir, isOpticalPath,
-									 polarizationBasis, reflNum)
-				: new TracingConvex(particle, incidentDir, isOpticalPath,
-									polarizationBasis, reflNum);
-		Cone bsCone;
-		SetCone(parser, bsCone);
+		if (pt == ParticleType::ConcaveHexagonal)
+		{
+			tracing = new TracingConcave(particle, incidentDir, isOpticalPath,
+										 polarizationBasis, reflNum);
+		}
+		else
+		{
+			tracing = new TracingConvex(particle, incidentDir, isOpticalPath,
+										polarizationBasis, reflNum);
+		}
 
-		double wave = parser.getArgValue("wavelength");
+		Cone bsCone = SetCone(parser);
+		double wave = parser.getArgValue<double>("wavelength");
 
 		ImportTracks(particle->facetNum);
 
 		Tracer tracer(tracing, "M_all.dat");
 		tracer.TraceIntervalPO(betaI, gammaI, bsCone, trackGroups, wave);
+		cout << endl << "done";
 
 		int ff = 0;
 //		SetParams(argc, argv, params);
@@ -415,7 +447,7 @@ int main(int argc, const char** argv)
 		params.interReflNum = 10;
 #endif
 
-	Calculate(params);
+//	Calculate(params);
 	getchar();
 	return 0;
 }
@@ -447,15 +479,15 @@ void PrintTime(long long &msLeft, CalcTimer &time)
 
 void WriteSumMatrix(ofstream &M_all_file, const Arr2D &M_)
 {
-	M_all_file << to_string(params.bsCone.radius) << ' '
-			<< to_string(params.bsCone.theta) << ' '
-			<< to_string(params.bsCone.phi+1);
+//	M_all_file << to_string(params.bsCone.radius) << ' '
+//			<< to_string(params.bsCone.theta) << ' '
+//			<< to_string(params.bsCone.phi+1);
 
-	for (int t = 0; t <= params.bsCone.theta; ++t)
+	for (int t = 0; t <=0 /*params.bsCone.theta*/; ++t)
 	{
 		double tt = (double)(t*dt*180.0)/M_PI;
 
-		for (int p = 0; p <= params.bsCone.phi; ++p)
+		for (int p = 0; p <= 0/*params.bsCone.phi*/; ++p)
 		{
 			double fi = -((double)p)*df;
 			matrix m = M_(p ,t);
@@ -465,18 +497,18 @@ void WriteSumMatrix(ofstream &M_all_file, const Arr2D &M_)
 	}
 }
 
-void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, double norm)
+void AddResultToSumMatrix(Arr2D &M, int maxGroupID, double norm)
 {
 	for (int q = 0; q < maxGroupID; ++q)
 	{
-		for (int t = 0; t <= params.bsCone.theta; ++t)
+		for (int t = 0; t <= 0/*params.bsCone.theta*/; ++t)
 		{
-			for (int p = 0; p <= params.bsCone.phi; ++p)
+			for (int p = 0; p <= 0/*params.bsCone.phi*/; ++p)
 			{
-//				complex ee = J[q](p, t)[0][0];
+				complex ee = J[q](p, t)[0][0];
 				matrix Mk = Mueller(J[q](p, t));
 //				M[q].insert(p, t, gammaNorm*norm*Mk);
-				M_.insert(p, t, gammaNorm*norm*Mk);
+				M.insert(p, t, gammaNorm*norm*Mk);
 			}
 		}
 	}
@@ -485,7 +517,7 @@ void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, double norm)
 void CleanM(vector<Arr2D> &M, int maxGroupID)
 {
 	M.clear();
-	Arr2D M_void(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
+	Arr2D M_void/*(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4)*/;
 
 	for (int j = 0; j < maxGroupID; ++j)
 	{
@@ -497,22 +529,22 @@ void WriteToSepatateFiles(vector<Arr2D> &M, double beta, int maxGroupID)
 {
 	for (unsigned int q = 0; q < maxGroupID; ++q)
 	{
-		string tr = "3673_3763";
-		string orFName = ("b_" + to_string((beta*180.0)/M_PI) + "_" + tr + ".dat").c_str();
-		ofstream or_file(orFName, ios::out);
+		string tr = to_string(q);
+		string orFName = (tr + "_" + "b_" + to_string((beta*180.0)/M_PI) + ".dat").c_str();
+		ofstream or_file(orFName, ios::app);
 
-		or_file << to_string(params.bsCone.radius) << ' '
-				<< to_string(params.bsCone.theta ) << ' '
-				<< to_string(params.bsCone.phi+1);
+//		or_file << to_string(params.bsCone.radius) << ' '
+//				<< to_string(params.bsCone.theta ) << ' '
+//				<< to_string(params.bsCone.phi+1);
 
 //				matrix sum(4, 4);
 
-		for (int t = 0; t <= params.bsCone.theta; ++t)
+		for (int t = 0; t <= 0/*params.bsCone.theta*/; ++t)
 		{
 //					sum.Fill(0);
 			double tt = (double)(t*dt*180.0)/M_PI;
 
-			for (int p = 0; p <= params.bsCone.phi; ++p)
+			for (int p = 0; p <= 0/*params.bsCone.phi*/; ++p)
 			{
 				double fi = -((double)p)*df;
 				matrix m = M[q](p ,t);
@@ -563,13 +595,13 @@ void TraceSinglePO(Tracing &tracer, double beta, double gamma)
 	gamma = (30*M_PI)/180;
 
 	vector<Arr2D> M;
-	Arr2D M_(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
+	Arr2D M_/*(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4)*/;
 
-	int maxGroupID = GetMaxGroupID();
+	int maxGroupID /*= GetMaxGroupID()*/;
 	double norm = 1.0/(M_PI/3.0);
 
 	CleanM(M, maxGroupID);
-	CleanJ(maxGroupID);
+//	CleanJ(maxGroupID);
 
 	ofstream M_all_file("M_all.dat", ios::out); // матрица Мюллера общая (физ. опт.)
 
@@ -599,7 +631,12 @@ void TraceSinglePO(Tracing &tracer, double beta, double gamma)
 	M_all_file.close();
 }
 
-void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
+int GetMaxGroupID()
+{
+	return 1;
+}
+
+void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
 				Tracing &tracer)
 {
 	CalcTimer time;
@@ -622,7 +659,7 @@ void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 	++maxGroupID;
 
 	vector<Arr2D> M;
-	Arr2D M_(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
+//	Arr2D M_(params.bsCone.phi+1, params.bsCone.theta+1, 4, 4);
 	//
 
 	double norm = 1.0/(M_PI/3.0);
@@ -648,7 +685,7 @@ void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 
 	double dbeta = (M_PI/2 - 0)/orNumBeta;
 
-	for (int i = betaRange.begin; i <= betaRange.end; ++i)
+	for (int i = betaRange.begin; i <= betaRange.end/*betaRange.begin*/; ++i)
 	{
 //		beta = (i + 0.5)*betaNorm;
 		beta = 0 + (double)i*dbeta;
@@ -656,7 +693,9 @@ void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 
 		CleanM(M, maxGroupID);
 
-		for (int j = gammaRange.begin; j <= gammaRange.end; ++j)
+		double ddd = 0;
+
+		for (int j = gammaRange.begin; j <= gammaRange.end/*gammaRange.begin*/; ++j)
 		{
 //			gamma = (j + 0.5)*gammaNorm;
 			gamma = (j - gammaRange.end/2)*gammaNorm + M_PI/6;
@@ -665,12 +704,14 @@ void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 			SS=0;
 			bcount=0;
 #endif
-			CleanJ(maxGroupID);
+//			CleanJ(maxGroupID);
 
 			try
 			{
-//				tracer.RotateParticle(beta, gamma);
 				tracer.SplitBeamByParticle(beta, gamma, outcomingBeams);
+//gamma = beta = 0;
+//beta = (0.25*M_PI)/180;
+//gamma = (50*M_PI)/180;
 
 				/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
 	//			vector<vector<int>> tracks;
@@ -689,13 +730,30 @@ void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 					int fff = 0;
 #endif
 #endif
-				M_all_file << (beta*180)/M_PI << ' '
-						   << (gamma*180)/M_PI << ' '
-						   << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
+				for (int q = 0; q < maxGroupID; ++q)
+				{
+					ddd += ((gammaNorm*norm*Mueller(J[q](0, 0)))[0][0]);
+				}
+
+//				M_all_file << (beta*180)/M_PI << ' '
+//						   << (gamma*180)/M_PI << ' '
+//						   << ((gammaNorm*norm*Mueller(J[0](0, 0)))[0][0]) << endl;
 
 				if (isPhisOptics)
 				{
-					AddResultToSumMatrix(M_, maxGroupID, norm);
+//					for (int k = 0; k < maxGroupID; ++k)
+//					{
+//						for (int t = 0; t <= params.bsCone.theta; ++t)
+//						{
+//							for (int p = 0; p <= params.bsCone.phi; ++p)
+//							{
+////								complex ee = J[k](p, t)[0][0];
+//								matrix Mk = Mueller(J[k](p, t));
+//								M[k].insert(p, t, gammaNorm*norm*Mk);
+//							}
+//						}
+//					}
+//					AddResultToSumMatrix(M_, maxGroupID, norm);
 				}
 			}
 			catch (const bool &)
@@ -708,10 +766,14 @@ void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 			outcomingBeams.clear();
 		}
 
-		if (/*isPhisOptics*/false)
+		M_all_file << (beta*180)/M_PI << ' '
+				   << (gamma*180)/M_PI << ' '
+				   << ddd << endl;
+
+		if (/*isPhisOptics*/true)
 		{
-			WriteSumMatrix(M_all_file, M_);
-//			WriteToSepatateFiles(M, beta, maxGroupID);
+//			WriteSumMatrix(M_all_file, M_);
+			WriteToSepatateFiles(M, beta, maxGroupID);
 		}
 
 		Dellines(2);
@@ -730,35 +792,35 @@ void TraceFixed(const AngleInterval &gammaRange, const AngleInterval &betaRange,
 	M_all_file.close();
 }
 
-void TraceRandom(const AngleInterval &gammaRange, const AngleInterval &betaRange,
-				 Tracing &tracer)
-{
-	srand(time(NULL));
+//void TraceRandom(const AngleInterval &gammaRange, const AngleInterval &betaRange,
+//				 Tracing &tracer)
+//{
+//	srand(time(NULL));
 
-	vector<Beam> outcomingBeams;
-	double beta, gamma;
-//	double square;
-	int orNumBeta = betaRange.end - betaRange.begin;
-	int count = 0;
+//	vector<Beam> outcomingBeams;
+//	double beta, gamma;
+////	double square;
+//	int orNumBeta = betaRange.end - betaRange.begin;
+//	int count = 0;
 
-	for (int i = betaRange.begin; i < betaRange.end; ++i)
-	{
-		for (int j = gammaRange.begin; j < gammaRange.end; ++j)
-		{
-			gamma = 2.0*M_PI * ((double)(rand()) / ((double)RAND_MAX + 1.0));
-			beta = acos(((double)(rand()) / ((double)RAND_MAX))*2.0 - 1.0);
+//	for (int i = betaRange.begin; i < betaRange.end; ++i)
+//	{
+//		for (int j = gammaRange.begin; j < gammaRange.end; ++j)
+//		{
+//			gamma = 2.0*M_PI * ((double)(rand()) / ((double)RAND_MAX + 1.0));
+//			beta = acos(((double)(rand()) / ((double)RAND_MAX))*2.0 - 1.0);
 
-//			tracer.RotateParticle(beta, gamma);
-			tracer.SplitBeamByParticle(beta, gamma, outcomingBeams);
+////			tracer.RotateParticle(beta, gamma);
+//			tracer.SplitBeamByParticle(beta, gamma, outcomingBeams);
 
-//			incomingEnergy += tracer.GetLightSurfaceArea();
-			HandleBeams(outcomingBeams, 1, tracer);
-			outcomingBeams.clear();
-		}
+////			incomingEnergy += tracer.GetLightSurfaceArea();
+//			HandleBeams(outcomingBeams, 1, tracer);
+//			outcomingBeams.clear();
+//		}
 
-		cout << (100*(++count))/orNumBeta << "%" << endl;
-	}
-}
+//		cout << (100*(++count))/orNumBeta << "%" << endl;
+//	}
+//}
 
 void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
 {
@@ -860,7 +922,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 //				continue;// DEB
 			}
 
-			int groupID = GetGroupID(beam.id);
+			int groupID/* = GetGroupID(beam.id)*/;
 
 			if (groupID < 0)
 			{
@@ -878,9 +940,9 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 			ofstream file("dd.dat", ios::out); // DEB
 			file << beam.id << endl;
 
-			for (int i = 0; i <= params.bsCone.phi; ++i)
+			for (int i = 0; i <= 0/*params.bsCone.phi*/; ++i)
 			{
-				for (int j = 0; j <= params.bsCone.theta; ++j)
+				for (int j = 0; j <= 0/*params.bsCone.theta*/; ++j)
 				{
 					double f = (double)i*df;
 					double t = (double)j*dt;
@@ -915,10 +977,10 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 //					if (i == 90 && j == 15 /*&& beam.id == 32679*/)
 //						int fff = 0;
 
-					fn = beam.DiffractionIncline(vr, params.wavelength);
+					fn = beam.DiffractionIncline(vr, 0/*params.wavelength*/);
 
 					double dp = DotProductD(vr, Point3d(center.cx, center.cy, center.cz));
-					complex tmp = exp_im(M_2PI*(lng_proj0-dp)/params.wavelength);
+					complex tmp = exp_im(M_2PI*(lng_proj0-dp)/*/params.wavelength*/);
 					matrixC fn_jn = beam.J * tmp;
 
 					matrixC c = fn*Jn_rot*fn_jn;

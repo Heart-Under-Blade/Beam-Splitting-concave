@@ -16,7 +16,7 @@ struct Tracks
 	TrackGroup groups[32];
 	int count = 0;
 
-	int GetMaxGroupID()
+	int GetMaxGroupID() const
 	{
 		int maxGroupID = 0;
 
@@ -28,10 +28,10 @@ struct Tracks
 			}
 		}
 
-		return maxGroupID;
+		return ++maxGroupID;
 	}
 
-	int GetGroupID(long long int trackID)
+	int GetGroupID(long long int trackID) const
 	{
 		for (int i = 0; i < count; ++i)
 		{
@@ -60,7 +60,7 @@ struct AngleInterval
 		norm = coef/count;
 	}
 
-	double GetStep()
+	double GetStep() const
 	{
 		return DegToRad(end - begin)/count;
 	}
@@ -71,8 +71,8 @@ struct Cone
 	Cone(double radius, int phiCount, int thetaCount)
 		: radius(radius), phiCount(phiCount), thetaCount(thetaCount)
 	{
-		dPhi = M_2PI/phiCount;
-		dTheta = radius/thetaCount;
+		dPhi = M_2PI/(phiCount+1);
+		dTheta = DegToRad(radius)/thetaCount;
 	}
 
 	double radius;
@@ -85,7 +85,7 @@ struct Cone
 class Tracer
 {
 public:
-	Tracer(const Tracing *tracing, const std::string resultFileName);
+	Tracer(Tracing *tracing, const std::string resultFileName);
 
 	void TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &gammaI,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
@@ -108,5 +108,6 @@ private:
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
 							  const AngleInterval &gammaI);
-	void WriteSumMatrix(std::ofstream &outFile, const Arr2D &sum);
+	void WriteSumMatrix(std::ofstream &outFile, const Arr2D &sum,
+						const Cone &bsCone);
 };

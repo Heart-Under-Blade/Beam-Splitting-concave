@@ -6,14 +6,14 @@ class ArgParser : public ArgumentParser
 {
 public:
 	template <class T>
-	T getArgValue(const char *arg)
+	T getArgValue(const std::string &arg)
 	{
 		std::string arg_str = retrieve<std::string>(arg);
 		return argToValue<T>(arg_str);
 	}
 
 	template <class T>
-	T argToValue(const std::string &arg)
+	T argToValue(const std::string &arg) const
 	{
 		bool ok = true;
 		char *end;
@@ -21,11 +21,11 @@ public:
 
 		if (typeid(T) == typeid(int))
 		{
-			val = strtol(arg.c_str(), &end, 10);
+			val = (T)strtol(arg.c_str(), &end, 10);
 		}
 		else if (typeid(T) == typeid(double))
 		{
-			val = strtod(arg.c_str(), &end);
+			val = (T)strtod(arg.c_str(), &end);
 		}
 		else
 		{

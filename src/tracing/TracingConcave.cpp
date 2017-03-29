@@ -26,35 +26,12 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 	m_isArea = false;
 }
 
-void TracingConcave::SplitBeamByParticle(double beta, double gamma, std::vector<Beam> &scaterredBeams)
+void TracingConcave::SplitBeamByParticle(double beta, double gamma,
+										 std::vector<Beam> &scaterredBeams)
 {
 	m_particle->Rotate(beta, gamma, 0);
-
 	TraceFirstBeam();
-
-#ifdef _DEBUG // DEB
-	double rrr = 0;
-	for (int i = 0; i < m_treeSize; ++i)
-	{
-//		if (b.track.size() == 1 &&
-//				b.track[0] == 1)
-			rrr += m_beamTree[i].polygon.Area();
-	}
-	int fgfg = 0;
-#endif
-
 	TraceSecondaryBeams(scaterredBeams);
-
-#ifdef _DEBUG // DEB
-	double fff = 0;
-	for (const Beam &b : scaterredBeams)
-	{
-//		if (b.track.size() == 1 &&
-//				b.track[0] == 1)
-			fff += b.polygon.Area();
-	}
-	int ggg = 0;
-#endif
 }
 
 void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
@@ -437,7 +414,7 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 		{
 			const Polygon &clip = m_facets[id].polygon;
 			const Polygon &subj = resFacets.arr[--resFacets.size];
-			Difference(subj, normal, clip, normal, -m_waveFront.direction,
+			Difference(subj, normal, clip, normal, m_facets[id].in_normal,
 					   diffFacets, diffSize);
 		}
 
