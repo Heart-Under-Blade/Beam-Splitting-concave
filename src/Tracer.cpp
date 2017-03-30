@@ -27,28 +27,31 @@ void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &ga
 
 	vector<Beam> outBeams;
 	double beta, gamma;
-	double step = betaI.GetStep();
+	double bStep = betaI.GetStep();
 
 	int maxGroupID = tracks.GetMaxGroupID();
 	int halfGammaCount = gammaI.count/2;
+	double gNorm = gammaI.norm*m_gammaNorm;
 
 	timer.Start();
 
-	for (int i = 0; i <=betaI.count; ++i)
+	for (int i = 0; i <= betaI.count; ++i)
 	{
-		beta = step*i;
+		beta = bStep*i;
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaI.norm + M_PI/6;
-//// DEB
+// DEB
 //beta = DegToRad(32);
 //gamma = DegToRad(30);
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+
 			CleanJ(maxGroupID, bsCone);
 			HandleBeamsPO(outBeams, bsCone, wave, tracks);
+
 			outBeams.clear();
-			AddResultToSumMatrix(M, maxGroupID, bsCone, gammaI);
+			AddResultToSumMatrix(M, maxGroupID, bsCone, gNorm);
 		}
 
 		WriteSumMatrix(outFile, M, bsCone);
@@ -82,28 +85,27 @@ void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum,
 		for (int p = 0; p <= bsCone.phiCount; ++p)
 		{
 			double fi = -((double)p)*bsCone.dPhi;
-			matrix m = sum(p ,t);
 			double degPhi = RadToDeg(-fi);
 			outFile << endl << tt << " " << degPhi << " ";
+
+			matrix m = sum(p ,t);
 			outFile << m;
 		}
 	}
 }
 
 void Tracer::AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
-								  const AngleInterval &gammaI)
+								  double norm)
 {
-	double coef = gammaI.norm*m_gammaNorm;
-
 	for (int q = 0; q < maxGroupID; ++q)
 	{
 		for (int t = 0; t <= bsCone.thetaCount; ++t)
 		{
 			for (int p = 0; p <= bsCone.phiCount; ++p)
 			{
-//				complex ee = J[q](p, t)[0][0]; // DEB
+				complex ee = J[q](p, t)[0][0]; // DEB
 				matrix Mk = Mueller(J[q](p, t));
-				M_.insert(p, t, coef*Mk);
+				M_.insert(p, t, norm*Mk);
 			}
 		}
 	}
@@ -126,10 +128,22 @@ void Tracer::TraceIntervalGO(const AngleInterval &betaI, const AngleInterval &ga
 
 }
 
-void Tracer::TraceSingleOr(const double &beta, const double &gamma)
+void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
+							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
+	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
+	ofstream outFile(m_resultFileName, ios::out);
 	vector<Beam> outBeams;
-	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+
+	m_tracing->SplitBeamByParticle(DegToRad(beta), DegToRad(gamma), outBeams);
+
+	int maxGroupID = tracks.GetMaxGroupID();
+	CleanJ(maxGroupID, bsCone);
+	HandleBeamsPO(outBeams, bsCone, wave, tracks);
+
+	outBeams.clear();
+	AddResultToSumMatrix(M, maxGroupID, bsCone, 0.049999999999999996);
+	WriteSumMatrix(outFile, M, bsCone);
 }
 
 void Tracer::SetJnRot(Beam &beam, const Point3f &T,

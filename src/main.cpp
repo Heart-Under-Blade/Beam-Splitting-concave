@@ -433,7 +433,8 @@ int main(int argc, const char** argv)
 		ImportTracks(particle->facetNum);
 
 		Tracer tracer(tracing, "M_all.dat");
-		tracer.TraceIntervalPO(betaI, gammaI, bsCone, trackGroups, wave);
+//		tracer.TraceIntervalPO(betaI, gammaI, bsCone, trackGroups, wave);
+		tracer.TraceSingleOrPO(32, 30, bsCone, trackGroups, wave);
 		cout << endl << "done";
 
 		int ff = 0;

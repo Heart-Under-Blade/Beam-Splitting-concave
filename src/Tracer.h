@@ -16,7 +16,7 @@ struct Tracks
 	TrackGroup groups[32];
 	int count = 0;
 
-	int GetMaxGroupID() const
+	int GetMaxGroupID() const // REF: вызывать в конструкторе
 	{
 		int maxGroupID = 0;
 
@@ -90,7 +90,8 @@ public:
 	void TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &gammaI,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
 	void TraceIntervalGO(const AngleInterval &betaI, const AngleInterval &gammaI);
-	void TraceSingleOr(const double &beta, const double &gamma);
+	void TraceSingleOrPO(const double &beta, const double &gamma,
+						 const Cone &bsCone, const Tracks &tracks, double wave);
 
 private:
 	std::string m_resultFileName;
@@ -107,7 +108,7 @@ private:
 	void SetJnRot(Beam &beam, const Point3f &T,
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
-							  const AngleInterval &gammaI);
+							  double norm);
 	void WriteSumMatrix(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 };
