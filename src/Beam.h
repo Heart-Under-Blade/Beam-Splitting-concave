@@ -10,6 +10,7 @@
 //#include <vector>
 #endif
 
+// REF: try to inherit 'Polygon' for this class
 class Beam
 {
 public:
@@ -26,6 +27,8 @@ public:
 	Beam & operator = (const Beam &other);
 	Beam & operator = (Beam &&other);
 
+	void SetTracingParams(int facetID, int level, Location location);
+
 	void SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2);
 
 	// REF: перенести в PhisBeam
@@ -41,7 +44,7 @@ public:
 
 	Polygon polygon;				///< array of beam vertices (shape)
 
-	int facetID;					///< last reflected facet
+	int lastFacetID;				///< last reflected facet
 	int level;						///< number of preview reflections
 	Location location;				///< beam state towards the particle (inside or outside)
 

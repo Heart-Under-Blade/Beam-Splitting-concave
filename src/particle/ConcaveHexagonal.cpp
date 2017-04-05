@@ -1,8 +1,10 @@
 #include "ConcaveHexagonal.h"
+#include "global.h"
 
 ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const complex &refractionIndex,
 								   double cavityDept)
 {
+	m_symmetryAngle = M_PI/3;
 	Particle::Init(radius, halfHeight, refractionIndex);
 	m_cavityDept = cavityDept;
 

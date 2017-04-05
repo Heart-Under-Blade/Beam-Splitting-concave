@@ -33,7 +33,7 @@ private:
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIds);
 	void SelectVisibleFacetsForWavefront(IntArray &facetIds);
 
-	void SetOpticalBeamParams(int facetId, Beam &incidentBeam,
+	void SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
 	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
@@ -43,9 +43,13 @@ private:
 
 	bool HasExternalBeam(Beam &incidentBeam);
 
+	int FindFacetID(int facetID, const IntArray &arr);
+
+	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
+
 #ifdef _TRACK_ALLOW
-	void PrintTrack(const Beam &beam, int facetId);
-	void AddToTrack(Beam &beam, int facetId);
+//	void PrintTrack(const Beam &beam, int facetId);
+//	void AddToTrack(Beam &beam, int facetId);
 #endif
 
 	void PushBeamsToTree(const Beam &beam, int facetID, bool hasOutBeam,
@@ -54,6 +58,12 @@ private:
 						 Beam &inBeam, Beam &outBeam);
 
 	bool IsVisibleFacet(int facetID, const Beam &beam);
+
+	void TraceByFacet(const IntArray &facetIDs, int facetIndex);
+
+	void TraceSecondaryBeamByFacet(Beam &beam, int facetID, bool &isDivided);
+
+	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam, Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 protected:
 	void TraceSecondaryBeams(std::vector<Beam> &scaterredBeams);

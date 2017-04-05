@@ -1,10 +1,12 @@
 #include "Hexagonal.h"
+#include "global.h"
 
 Hexagonal::Hexagonal() {}
 
 Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refractionIndex)
 	: Particle(radius, halfHeight, refractionIndex)
 {
+	m_symmetryAngle = M_PI/3;
 	m_actualBases.first = &(facets[0].polygon);
 	m_actualBases.last  = &(facets[7].polygon);
 

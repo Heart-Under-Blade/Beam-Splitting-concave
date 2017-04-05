@@ -30,9 +30,9 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 			int ggg = 0 ;
 		TraceFirstBeam(facetID, inBeam, outBeam);
 
-		outBeam.facetID = facetID;
+		outBeam.lastFacetID = facetID;
 		outBeam.level = 0;
-		SetBeamId(outBeam);
+		SetBeamID(outBeam);
 		outBeams.push_back(outBeam);
 		PushBeamToTree(inBeam, facetID, 0);
 
@@ -45,10 +45,8 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 	TraceInternalReflections(outBeams);
 }
 
-void TracingConvex::SplitBeamByParticle(double /*beta*/, double /*gamma*/, const std::vector<std::vector<int>> &/*tracks*/,
-										std::vector<Beam> &/*outBeams*/)
+void TracingConvex::SplitBeamByParticle(double, double, const std::vector<std::vector<int>> &/*tracks*/, std::vector<Beam> &)
 {
-
 }
 
 void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
@@ -64,7 +62,7 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 
 		for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
 		{
-			if (facetID == beam.facetID)
+			if (facetID == beam.lastFacetID)
 			{
 				continue;
 			}

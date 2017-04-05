@@ -35,7 +35,7 @@ double Tracing::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
-	Point3f normal = m_facets[beam.facetID].ex_normal; // normal of last facet of beam
+	Point3f normal = m_facets[beam.lastFacetID].ex_normal; // normal of last facet of beam
 	double cosFB = DotProduct(normal, beam.direction);
 	double e = fabs(cosFB);
 
@@ -81,20 +81,12 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 			cosInc2/Tv0, cosInc2/Th0);
 }
 
-void Tracing::SetBeamId(Beam &beam)
+void Tracing::SetBeamID(Beam &beam)
 {
 	assert(m_treeSize < MAX_BEAM_REFL_NUM);
 
-//if (beam.id == 3477 && (beam.facetID == 12
-//						|| beam.facetID == 13
-//						|| beam.facetID == 14
-//						|| beam.facetID == 15
-//						|| beam.facetID == 16
-//						|| beam.facetID == 17))// DEB
-//	int ggg = 0;
-
 #ifdef _TRACK_ALLOW
-	beam.id += (beam.facetID + 1);
+	beam.id += (beam.lastFacetID + 1);
 	beam.id *= (m_particle->facetNum + 1);
 	//	AddToTrack(beam, facetId);
 #ifdef _TRACK_OUTPUT
@@ -105,22 +97,20 @@ void Tracing::SetBeamId(Beam &beam)
 
 void Tracing::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
 {
-	beam.facetID = facetId;
-	beam.level = level;
-	beam.location = location;
+	beam.SetTracingParams(facetId, level, location);
 	PushBeamToTree(beam);
 }
 
 void Tracing::PushBeamToTree(Beam &beam, int facetId, int level)
 {
-	beam.facetID = facetId;
+	beam.lastFacetID = facetId;
 	beam.level = level;
 	PushBeamToTree(beam);
 }
 
 void Tracing::PushBeamToTree(Beam &beam)
 {
-	SetBeamId(beam);
+	SetBeamID(beam);
 	m_beamTree[m_treeSize++] = beam;
 }
 
@@ -302,9 +292,9 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
 
 		outBeam.id = incidentBeam.id;
-		outBeam.facetID = facetID;
+		outBeam.lastFacetID = facetID;
 		outBeam.level = incidentBeam.level + 1;
-		SetBeamId(outBeam);
+		SetBeamID(outBeam);
 		outBeams.push_back(outBeam);
 	}
 	else /// slopping incidence
@@ -315,9 +305,9 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 		if (isTrivialIncidence)
 		{
 			outBeam.id = incidentBeam.id;
-			outBeam.facetID = facetID;
+			outBeam.lastFacetID = facetID;
 			outBeam.level = incidentBeam.level + 1;
-			SetBeamId(outBeam);
+			SetBeamID(outBeam);
 			outBeams.push_back(outBeam);
 		}
 	}

@@ -12,8 +12,20 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	  m_incidentDir(0, 0, -1),
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultFileName(resultFileName),
-	  m_gammaNorm(3/M_PI)
+	  m_gammaNorm(3/M_PI) // TODO: link to 'symmetryAngle'
 {
+}
+
+void Tracer::EraseConsoleLine(int lenght)
+{
+	cout << '\r';
+
+	for (int i = 0; i < lenght; ++i)
+	{
+		cout << " ";
+	}
+
+	cout << '\r';
 }
 
 void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &gammaI,
@@ -42,9 +54,7 @@ void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &ga
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaI.norm + M_PI/6;
-// DEB
-//beta = DegToRad(32);
-//gamma = DegToRad(30);
+//beta = DegToRad(32); gamma = DegToRad(30); // DEB
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 			CleanJ(maxGroupID, bsCone);
@@ -56,16 +66,59 @@ void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &ga
 
 		WriteSumMatrix(outFile, M, bsCone);
 
-		cout << '\r';
+		EraseConsoleLine(50);
+		cout << ((100*count)/betaI.count) << "% ";
+		++count;
+	}
 
-		for (int i = 0; i < 80; ++i)
+	outFile.close();
+}
+
+//REF: объединить с предыдущим
+void Tracer::TraceIntervalPO2(const AngleInterval &betaI, const AngleInterval &gammaI,
+							 const Cone &bsCone, const Tracks &tracks, double wave)
+{
+	CalcTimer timer;
+	long long count = 0;
+
+	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
+	ofstream outFile(m_resultFileName, ios::out);
+
+	vector<Beam> outBeams;
+	double beta, gamma;
+	double bStep = betaI.GetStep();
+
+	int maxGroupID = tracks.GetMaxGroupID();
+	int halfGammaCount = gammaI.count/2;
+	double gNorm = gammaI.norm*m_gammaNorm;
+
+	timer.Start();
+
+	for (int i = 0; i <= betaI.count; ++i)
+	{
+		beta = bStep*i;
+
+		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
-			cout << " ";
+			gamma = j*gammaI.norm + M_PI/6;
+
+			CleanJ(maxGroupID, bsCone);
+
+			for (int groupID = 0; groupID < maxGroupID; ++groupID)
+			{
+				m_tracing->SplitBeamByParticle(beta, gamma, tracks.groups[i].tracks, outBeams);
+				HandleBeamsPO2(outBeams, bsCone, wave, groupID);
+				outBeams.clear();
+			}
+
+			AddResultToSumMatrix(M, maxGroupID, bsCone, gNorm);
 		}
 
-		cout << '\r';
+		WriteSumMatrix(outFile, M, bsCone);
 
-		cout << ((100*count)/betaI.count) << "% ";
+		EraseConsoleLine(50);
+		cout << ((100*count)/betaI.count) << '%';
+		++count;
 	}
 
 	outFile.close();
@@ -103,7 +156,7 @@ void Tracer::AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
 		{
 			for (int p = 0; p <= bsCone.phiCount; ++p)
 			{
-				complex ee = J[q](p, t)[0][0]; // DEB
+//				complex ee = J[q](p, t)[0][0]; // DEB
 				matrix Mk = Mueller(J[q](p, t));
 				M_.insert(p, t, norm*Mk);
 			}
@@ -131,18 +184,22 @@ void Tracer::TraceIntervalGO(const AngleInterval &betaI, const AngleInterval &ga
 void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
+	double norm = 0.0049999999999999996; // REF: заменить на что-нибудь
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
 	ofstream outFile(m_resultFileName, ios::out);
 	vector<Beam> outBeams;
 
-	m_tracing->SplitBeamByParticle(DegToRad(beta), DegToRad(gamma), outBeams);
+	double b = DegToRad(beta);
+	double g = DegToRad(gamma);
+
+	m_tracing->SplitBeamByParticle(b, g, outBeams);
 
 	int maxGroupID = tracks.GetMaxGroupID();
 	CleanJ(maxGroupID, bsCone);
 	HandleBeamsPO(outBeams, bsCone, wave, tracks);
 
 	outBeams.clear();
-	AddResultToSumMatrix(M, maxGroupID, bsCone, 0.049999999999999996);
+	AddResultToSumMatrix(M, maxGroupID, bsCone, norm);
 	WriteSumMatrix(outFile, M, bsCone);
 }
 
@@ -200,6 +257,58 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 			for (int j = 0; j <= bsCone.thetaCount; ++j)
 			{
 				double f = i*bsCone.dPhi;
+				double t = j*bsCone.dTheta;
+
+				double sinT = sin(t), sinF = sin(f), cosF = cos(f);
+
+				Point3d vr(sinT*cosF, sinT*sinF, cos(t));
+				Point3d vf = (j == 0) ? -m_polarizationBasis
+									  : Point3d(-sinF ,cosF ,0);
+				matrixC Jn_rot(2, 2);
+				SetJnRot(beam, T, vf, vr, Jn_rot);
+
+				complex fn(0, 0);
+				fn = beam.DiffractionIncline(vr, wavelength);
+
+				double dp = DotProductD(vr, Point3d(center));
+				complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
+				matrixC fn_jn = beam.J * tmp;
+
+				matrixC c = fn*Jn_rot*fn_jn;
+				J[groupID].insert(i, j, c);
+			}
+		}
+	}
+}
+
+void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
+							double wavelength, int groupID)
+{
+	for (unsigned int i = 0; i < outBeams.size(); ++i)
+	{
+		Beam &beam = outBeams.at(i);
+
+		double ctetta = DotProduct(beam.direction, -m_incidentDir);
+
+		if (ctetta < 0.17364817766693034885171662676931)
+		{	// отбрасываем пучки, которые далеко от конуса направления назад
+//			continue;// DEB
+		}
+
+		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
+
+		Point3f center = beam.polygon.Center();
+		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
+
+		Point3f T = CrossProduct(beam.e, beam.direction);
+		T = T/Length(T); // базис выходящего пучка
+
+		for (int i = 0; i <= bsCone.phiCount; ++i)
+		{
+			double f = i*bsCone.dPhi;
+
+			for (int j = 0; j <= bsCone.thetaCount; ++j)
+			{
 				double t = j*bsCone.dTheta;
 
 				double sinT = sin(t), sinF = sin(f), cosF = cos(f);

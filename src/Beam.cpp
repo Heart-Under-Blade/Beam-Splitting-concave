@@ -39,7 +39,7 @@ void Beam::Copy(const Beam &other)
 
 	SetPolygon(other.polygon);
 
-	facetID = other.facetID;
+	lastFacetID = other.lastFacetID;
 	level = other.level;
 	location = other.location;
 
@@ -63,7 +63,7 @@ Beam::Beam(Beam &&other)
 
 	SetPolygon(other.polygon);
 
-	facetID = other.facetID;
+	lastFacetID = other.lastFacetID;
 	level = other.level;
 	location = other.location;
 
@@ -78,7 +78,7 @@ Beam::Beam(Beam &&other)
 
 	other.polygon.size = 0;
 
-	other.facetID = 0;
+	other.lastFacetID = 0;
 	other.level = 0;
 	other.location = Location::Outside;
 
@@ -175,7 +175,7 @@ Beam &Beam::operator = (Beam &&other)
 
 		SetPolygon(other.polygon);
 
-		facetID = other.facetID;
+		lastFacetID = other.lastFacetID;
 		level = other.level;
 		location = other.location;
 
@@ -191,7 +191,7 @@ Beam &Beam::operator = (Beam &&other)
 
 		other.polygon.size = 0;
 
-		other.facetID = 0;
+		other.lastFacetID = 0;
 		other.level = 0;
 		other.location = Location::Outside;
 
@@ -201,6 +201,13 @@ Beam &Beam::operator = (Beam &&other)
 	}
 
 	return *this;
+}
+
+void Beam::SetTracingParams(int facetID, int lvl, Location loc)
+{
+	lastFacetID = facetID;
+	level = lvl;
+	location = loc;
 }
 
 void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2)

@@ -13,6 +13,21 @@
 #define EPS_COS_90	1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00	0.99999999998254670756866631966593		//1- cos(89.99999999)
 
+/**
+ * @brief The BeamTree struct
+ * Tree of beams (works like stack).
+ */
+struct BeamTree
+{
+	Beam tree[MAX_BEAM_REFL_NUM];
+	int size = 0;
+
+//	void Push(const Beam &beam)
+//	{
+//		tree[size++] = beam;
+//	}
+};
+
 class Tracing // REF: поменять название на ~Splitter
 {
 protected:
@@ -98,7 +113,7 @@ protected:
 	void PushBeamToTree(Beam &beam, int facetId, int level);
 	void PushBeamToTree(Beam &beam);
 
-	void SetBeamId(Beam &beam);
+	void SetBeamID(Beam &beam);
 
 private:
 	double CalcNr(const double &cosIN) const;

@@ -117,7 +117,7 @@ void ImportTracks(int facetNum)
 		}
 		else
 		{
-			vector<int> arr;
+			vector<int> track;
 
 			char *ptr, *trash;
 			ptr = strtok(buff, " ");
@@ -125,20 +125,22 @@ void ImportTracks(int facetNum)
 			while (ptr != NULL)
 			{
 				int tmp = strtol(ptr, &trash, 10);
-				arr.push_back(tmp);
+				track.push_back(tmp);
 				ptr = strtok(NULL, " ");
 			}
 
+			trackGroups.groups[trackGroups.count-1].tracks.push_back(track);
+
 			long long int trackID = 0;
 
-			for (int t : arr)
+			for (int t : track)
 			{
 				trackID += (t + 1);
 				trackID *= (facetNum + 1);
 			}
 
 			trackGroups.groups[trackGroups.count-1].arr[trackGroups.groups[trackGroups.count-1].size++] = trackID;
-			arr.clear();
+			track.clear();
 		}
 	}
 }
@@ -332,13 +334,15 @@ void setAvalableArgs(ArgParser &parser)
 	parser.addArgument("-p", "--particle", '+', false);
 	parser.addArgument("--ri", 1, false);
 	parser.addArgument("-n", "--interReflNum", 1, false);
-	parser.addArgument("-b", "--beta", 3, false);
-	parser.addArgument("-g", "--gamma", 3, false);
+	parser.addArgument("--point", 2);
+	parser.addArgument("--range");
+	parser.addArgument("-b", "--beta", 3);
+	parser.addArgument("-b", "--beta", 3);
+	parser.addArgument("-g", "--gamma", 3);
 	parser.addArgument("-t", "--cellCount", 1);
 	parser.addArgument("--po");
 	parser.addArgument("-w", "--wavelength", 1);
 	parser.addArgument("--conus", 3);
-	parser.addArgument("--point", 3);
 	parser.addArgument("-o", "--output", 1);
 }
 
@@ -386,28 +390,20 @@ int main(int argc, const char** argv)
 		double r = parser.argToValue<double>(vec[2]);
 
 		double ri = parser.getArgValue<double>("ri");
-
-		AngleInterval betaI = GetInterval("beta", parser);
-		AngleInterval gammaI = GetInterval("gamma", parser);
-
-		betaI.SetNorm(M_PI/2);
 		double sup = parser.argToValue<double>(vec[3]);
 
 		switch (pt)
 		{
 		case ParticleType::Hexagonal:
 			particle = new Hexagonal(r, hh, ri);
-			gammaI.SetNorm(M_PI/3);
 			break;
 		case ParticleType::TiltedHexagonal:
 			sup = parser.argToValue<double>(vec[3]);
 			particle = new TiltedHexagonal(r, hh, ri, sup);
-			gammaI.SetNorm(2*M_PI);
 			break;
 		case ParticleType::ConcaveHexagonal:
 			sup = parser.argToValue<double>(vec[3]);
 			particle = new ConcaveHexagonal(r, hh, ri, sup);
-			gammaI.SetNorm(M_PI/3);
 			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
@@ -427,17 +423,32 @@ int main(int argc, const char** argv)
 										polarizationBasis, reflNum);
 		}
 
-		Cone bsCone = SetCone(parser);
 		double wave = parser.getArgValue<double>("wavelength");
 
 		ImportTracks(particle->facetNum);
-
 		Tracer tracer(tracing, "M_all.dat");
-//		tracer.TraceIntervalPO(betaI, gammaI, bsCone, trackGroups, wave);
-		tracer.TraceSingleOrPO(32, 30, bsCone, trackGroups, wave);
+
+		Cone bsCone = SetCone(parser);
+
+		if (parser.count("point") != 0)
+		{
+			vector<string> vec = parser.retrieve<vector<string>>("point");
+			double beta  = parser.argToValue<double>(vec[0]);
+			double gamma = parser.argToValue<double>(vec[1]);
+//			beta = 32; gamma = 30;
+			tracer.TraceSingleOrPO(beta, gamma, bsCone, trackGroups, wave);
+		}
+		else // "range"
+		{
+			AngleInterval betaI = GetInterval("beta", parser);
+			AngleInterval gammaI = GetInterval("gamma", parser);
+			betaI.SetNorm(M_PI/2);
+			gammaI.SetNorm(particle->GetSymmetryAngle());
+			tracer.TraceIntervalPO(betaI, gammaI, bsCone, trackGroups, wave);
+		}
+
 		cout << endl << "done";
 
-		int ff = 0;
 //		SetParams(argc, argv, params);
 	}
 

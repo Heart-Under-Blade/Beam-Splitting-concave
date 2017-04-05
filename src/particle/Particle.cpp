@@ -52,6 +52,11 @@ bool Particle::IsShadowedInternal(int facetId) const
 	return false;
 }
 
+const double &Particle::GetSymmetryAngle() const
+{
+    return m_symmetryAngle;
+}
+
 void Particle::Init(double radius, double halfHeight, const complex &refractionIndex)
 {
 	m_radius = radius;

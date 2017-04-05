@@ -9,6 +9,7 @@ const int TiltedHexagonal::BASE_VERTEX_NUM;
 TiltedHexagonal::TiltedHexagonal(double radius, double halfHeight, const complex &refractionIndex, double tiltAngle)
 	: Particle(radius, halfHeight, refractionIndex)
 {
+	m_symmetryAngle = 2*M_PI;
 	m_tiltAngle = tiltAngle;
 
 	SetFacetParams();

@@ -21,6 +21,7 @@ public:
 
 	const double &GetHalfHeight() const;
 	const complex &GetRefractionIndex() const;
+	const double &GetSymmetryAngle() const;
 
 	bool IsUnshadowedExternal(int facetId) const;
 	bool IsShadowedInternal(int facetId) const;
@@ -38,6 +39,7 @@ protected:
 
 	double m_radius;
 	double m_halfHeight;
+	double m_symmetryAngle;
 
 	complex m_refractionIndex;	///< complex value of refraction index of the particle
 
