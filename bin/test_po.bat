@@ -1,4 +1,4 @@
-BeamSplitting -p 1 25.6 12.8 -ri 1.31 -w 0.532 -bsc 6 180 30 -b 0 100 -g 0 200 -t 30 -rn 3 -o %~n0
+BeamSplitting -p 10 36.82 15 0 --ri 1.3116 -n 3 --point 90 30 --po -w 0.532 --conus 5 179 90
 
 
 goto endcomment

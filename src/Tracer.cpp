@@ -144,6 +144,7 @@ void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum,
 			matrix m = sum(p ,t);
 			outFile << m;
 		}
+
 	}
 }
 
