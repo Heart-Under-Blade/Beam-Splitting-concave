@@ -22,10 +22,16 @@ void Tracer::EraseConsoleLine(int lenght)
 
 	for (int i = 0; i < lenght; ++i)
 	{
-		cout << " ";
+		cout << ' ';
 	}
 
 	cout << '\r';
+}
+
+void Tracer::PrintProgress(int betaNumber, long long count)
+{
+	EraseConsoleLine(50);
+	cout << ((count*100)/betaNumber) << '%';
 }
 
 void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &gammaI,
@@ -66,8 +72,7 @@ void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &ga
 
 		WriteSumMatrix(outFile, M, bsCone);
 
-		EraseConsoleLine(50);
-		cout << ((100*count)/betaI.count) << "% ";
+		PrintProgress(betaI.count, count);
 		++count;
 	}
 
@@ -144,7 +149,6 @@ void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum,
 			matrix m = sum(p ,t);
 			outFile << m;
 		}
-
 	}
 }
 
@@ -218,7 +222,7 @@ void Tracer::SetJnRot(Beam &beam, const Point3f &T,
 	Point3d cpNTd = Point3d(cpNT.cx, cpNT.cy, cpNT.cz);
 	Point3d cpNEd = Point3d(cpNE.cx, cpNE.cy, cpNE.cz);
 
-	Jn_rot[0][0] = -DotProductD(cpNTd, vf); // OPT: похоже на SetJMatrix
+	Jn_rot[0][0] = -DotProductD(cpNTd, vf); // REF: похоже на SetJMatrix
 	Jn_rot[0][1] = -DotProductD(cpNEd, vf);
 	Jn_rot[1][0] =  DotProductD(cpNTd, vt);
 	Jn_rot[1][1] =  DotProductD(cpNEd, vt);
@@ -230,7 +234,6 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams.at(i);
-
 		double ctetta = DotProduct(beam.direction, -m_incidentDir);
 
 		if (ctetta < 0.17364817766693034885171662676931)

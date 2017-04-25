@@ -121,4 +121,5 @@ private:
 						const Cone &bsCone);
 	void EraseConsoleLine(int lenght); // REF: вынести куда-нибудь
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
+	void PrintProgress(int betaNumber, long long count);
 };
