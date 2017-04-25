@@ -189,7 +189,8 @@ void Tracer::TraceIntervalGO(const AngleInterval &betaI, const AngleInterval &ga
 void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
-	double norm = 0.0049999999999999996; // REF: заменить на что-нибудь
+//	double norm = 0.0049999999999999996; // REF: заменить на что-нибудь
+	double norm = 1; // REF: заменить на что-нибудь
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
 	ofstream outFile(m_resultFileName, ios::out);
 	vector<Beam> outBeams;
@@ -248,6 +249,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 			continue;
 		}
 
+//		double area = beam.polygon.Area(); // DEB
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
 		Point3f center = beam.polygon.Center();
