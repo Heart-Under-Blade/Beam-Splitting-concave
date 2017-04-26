@@ -26,8 +26,8 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 
 		Beam inBeam, outBeam;
 
-		if (facetID == 3)
-			int ggg = 0 ;
+//		if (facetID == 3) // DEB
+//			int ggg = 0;
 		TraceFirstBeam(facetID, inBeam, outBeam);
 
 		outBeam.lastFacetID = facetID;

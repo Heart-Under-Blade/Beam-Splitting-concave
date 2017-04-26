@@ -390,7 +390,7 @@ int main(int argc, const char** argv)
 		double r = parser.argToValue<double>(vec[2]);
 
 		double ri = parser.getArgValue<double>("ri");
-		double sup = parser.argToValue<double>(vec[3]);
+		double sup;
 
 		switch (pt)
 		{
