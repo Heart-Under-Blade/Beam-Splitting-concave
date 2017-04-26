@@ -397,10 +397,10 @@ int main(int argc, const char** argv)
 		case ParticleType::Hexagonal:
 			particle = new Hexagonal(r, hh, ri);
 			break;
-		case ParticleType::TiltedHexagonal:
-			sup = parser.argToValue<double>(vec[3]);
-			particle = new TiltedHexagonal(r, hh, ri, sup);
-			break;
+//		case ParticleType::TiltedHexagonal:
+//			sup = parser.argToValue<double>(vec[3]);
+//			particle = new TiltedHexagonal(r, hh, ri, sup);
+//			break;
 		case ParticleType::ConcaveHexagonal:
 			sup = parser.argToValue<double>(vec[3]);
 			particle = new ConcaveHexagonal(r, hh, ri, sup);

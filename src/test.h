@@ -295,25 +295,25 @@ void testHexagonRotate()
 }
 
 
-void testTiltHexagonBuild()
-{
-	Particle *hex = new TiltedHexagonal(34.8, 50, 1.31, 0.25);
-	double beta = ((19 + 0.5)*M_PI)/(2.0*100);
-	double gamma = ((36 + 0.5)*M_PI)/(3.0*101);
-//	double beta = 90*M_PI/180;
-//	double gamma = 0*M_PI/180;
+//void testTiltHexagonBuild()
+//{
+//	Particle *hex = new TiltedHexagonal(34.8, 50, 1.31, 0.25);
 //	double beta = ((19 + 0.5)*M_PI)/(2.0*100);
 //	double gamma = ((36 + 0.5)*M_PI)/(3.0*101);
-//	hex->Rotate(beta, gamma, 0);
+////	double beta = 90*M_PI/180;
+////	double gamma = 0*M_PI/180;
+////	double beta = ((19 + 0.5)*M_PI)/(2.0*100);
+////	double gamma = ((36 + 0.5)*M_PI)/(3.0*101);
+////	hex->Rotate(beta, gamma, 0);
 
-	toFile(*hex);
-	outputParticle(*hex);
-}
+//	toFile(*hex);
+//	outputParticle(*hex);
+//}
 
 
-void testCompareParticles()
-{
-	Particle *hex1 = new TiltedHexagonal(40, 100, 1.31, 0);
-	Particle *hex2 = new Hexagonal(40, 100, 1.31);
-	int gg = 0;
-}
+//void testCompareParticles()
+//{
+//	Particle *hex1 = new TiltedHexagonal(40, 100, 1.31, 0);
+//	Particle *hex2 = new Hexagonal(40, 100, 1.31);
+//	int gg = 0;
+//}

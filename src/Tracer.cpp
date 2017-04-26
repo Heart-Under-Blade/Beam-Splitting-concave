@@ -31,7 +31,7 @@ void Tracer::EraseConsoleLine(int lenght)
 void Tracer::PrintProgress(int betaNumber, long long count)
 {
 	EraseConsoleLine(50);
-	cout << ((count*100)/betaNumber) << '%';
+	cout << (count*100)/betaNumber << '%';
 }
 
 void Tracer::TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &gammaI,

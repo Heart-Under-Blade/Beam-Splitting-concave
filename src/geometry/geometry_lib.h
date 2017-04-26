@@ -57,11 +57,20 @@ struct Point3f
 		point[2] = z;
 	}
 
+	Point3f(float x, float y, float z, float d)
+	{
+		point[0] = x;
+		point[1] = y;
+		point[2] = z;
+		point[3] = d;
+	}
+
 	Point3f(const Point3f &other)
 	{
 		point[0] = other.point[0];
 		point[1] = other.point[1];
 		point[2] = other.point[2];
+//		point[3] = other.point[3];
 	}
 
 	Point3f & operator = (const Point3f &other)
@@ -69,6 +78,7 @@ struct Point3f
 		point[0] = other.point[0];
 		point[1] = other.point[1];
 		point[2] = other.point[2];
+//		point[3] = other.point[3];
 
 		return *this;
 	}
@@ -110,7 +120,7 @@ struct Point3f
 
 	Point3f operator - () const
 	{
-		return Point3f(-point[0], -point[1], -point[2]);
+		return Point3f(-point[0], -point[1], -point[2], -point[3]);
 	}
 
 } __attribute__ ((aligned (16)));
@@ -298,6 +308,22 @@ struct Facet
 {
 	Polygon polygon;
 	Point3f normal[2]; ///< internal and external normals
+
+	void SetNormal()
+	{
+		ex_normal = polygon.Normal();
+		in_normal = -ex_normal;
+	}
+
+	Facet & operator = (const Facet &other)
+	{
+		if (this != &other)
+		{
+			polygon = other.polygon;
+			in_normal = other.in_normal;
+			ex_normal = other.ex_normal;
+		}
+	}
 };
 
 

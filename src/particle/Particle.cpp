@@ -13,6 +13,22 @@ Particle::~Particle() {}
 void Particle::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);
+
+	for (int i = 0; i < facetNum; ++i)
+	{
+		for (int j = 0; j < facets[i].polygon.size; ++j)
+		{
+			RotatePoint(defaultState.facets[i].polygon.arr[j],
+						facets[i].polygon.arr[j]);
+		}
+	}
+
+	RotateNormals();
+
+	for (int i = 0; i < facetNum; ++i)
+	{
+		RotatePoint(defaultState.centers[i], centers[i]);
+	}
 }
 
 const double &Particle::GetHalfHeight() const
@@ -52,6 +68,22 @@ bool Particle::IsShadowedInternal(int facetId) const
 	return false;
 }
 
+void Particle::SetDefaultNormals()
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		defaultState.facets[i].SetNormal();
+	}
+}
+
+void Particle::SetActualState()
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		facets[i] = defaultState.facets[i];
+	}
+}
+
 const double &Particle::GetSymmetryAngle() const
 {
     return m_symmetryAngle;
@@ -70,7 +102,7 @@ void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
 			sinA, sinB, sinG;
 
 	sincos(alpha, &sinA, &cosA);
-	sincos(beta, &sinB, &cosB);
+	sincos(beta,  &sinB, &cosB);
 	sincos(gamma, &sinG, &cosG);
 
 	double cosAcosB = cosA*cosB;
@@ -94,31 +126,37 @@ void Particle::RotateNormals()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{
-		RotatePoint(m_originNormals[i], facets[i].in_normal);
+		RotatePoint(defaultState.facets[i].in_normal, facets[i].in_normal);
 	}
 
 	SetDParams();
-	SetExternalNormals();
-}
 
-void Particle::SetActualNormals()
-{
-	SetInternalNormals();
-	SetExternalNormals();
-}
-
-void Particle::SetInternalNormals()
-{
-	for (int i = 0; i <= facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
-		facets[i].in_normal.cx = m_originNormals[i].cx;
-		facets[i].in_normal.cy = m_originNormals[i].cy;
-		facets[i].in_normal.cz = m_originNormals[i].cz;
+		facets[i].ex_normal = -facets[i].in_normal;
+		facets[i].ex_normal.d_param = -facets[i].in_normal.d_param;
 	}
 
-	SetDParams();
+//	SetExternalNormals();
 }
 
+//void Particle::SetActualNormals()
+//{
+//	SetInternalNormals();
+//	SetExternalNormals();
+//}
+
+//void Particle::SetInternalNormals()
+//{
+//	for (int i = 0; i <= facetNum; ++i)
+//	{
+//		facets[i].in_normal.cx = defaultState.facets[i].in_normal.cx;
+//		facets[i].in_normal.cy = defaultState.facets[i].in_normal.cy;
+//		facets[i].in_normal.cz = defaultState.facets[i].in_normal.cz;
+//	}
+
+//	SetDParams();
+//}
 
 void Particle::SetDParams()
 {
@@ -129,17 +167,17 @@ void Particle::SetDParams()
 	}
 }
 
-void Particle::SetExternalNormals()
-{
-	for (int i = 0; i < facetNum; ++i)
-	{
-		Facet &facet = facets[i];
-		facet.ex_normal.cx = -facet.in_normal.cx;
-		facet.ex_normal.cy = -facet.in_normal.cy;
-		facet.ex_normal.cz = -facet.in_normal.cz;
-		facet.ex_normal.d_param = -facet.in_normal.d_param;
-	}
-}
+//void Particle::SetExternalNormals()
+//{
+//	for (int i = 0; i < facetNum; ++i)
+//	{
+//		Facet &facet = facets[i];
+//		facet.ex_normal.cx = -facet.in_normal.cx;
+//		facet.ex_normal.cy = -facet.in_normal.cy;
+//		facet.ex_normal.cz = -facet.in_normal.cz;
+//		facet.ex_normal.d_param = -facet.in_normal.d_param;
+//	}
+//}
 
 void Particle::CopyFacet(Point3f *points, Facet &result)
 {

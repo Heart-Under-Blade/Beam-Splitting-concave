@@ -17,7 +17,7 @@ public:
 	Particle(double radius, double halfHeight, const complex &refractionIndex);
 	virtual ~Particle();
 
-	virtual void Rotate(double beta, double gamma, double alpha);
+	void Rotate(double beta, double gamma, double alpha);
 
 	const double &GetHalfHeight() const;
 	const complex &GetRefractionIndex() const;
@@ -32,8 +32,14 @@ public:
 	Point3f centers[MAX_FACET_NUM]; ///< centers of facets (for fast access without calc)
 
 protected:
-	Point3f m_originCenters[MAX_FACET_NUM];
-	Point3f m_originNormals[MAX_FACET_NUM];
+	struct ParticleState
+	{
+		Facet facets[MAX_FACET_NUM];
+		Point3f centers[MAX_FACET_NUM];
+//		Point3f m_originNormals[MAX_FACET_NUM];
+	};
+
+	ParticleState defaultState;
 
 	double m_rotMatrix[3][3];	///< rotation matrix for vertices
 
@@ -47,7 +53,8 @@ protected:
 	IntArray m_shadowedInternalFacets;
 
 protected:
-	virtual void SetDefaultNormals() {}
+	void SetDefaultNormals();
+	void SetActualState();
 	virtual void SetFacetParams() {}
 
 	void Init(double radius, double halfHeight, const complex &refractionIndex);
@@ -56,11 +63,10 @@ protected:
 	void RotatePoint(const Point3f &point, Point3f &result);
 	void CopyFacet(Point3f *points, Facet &result);
 	void CopyFacet(Point3f *points, Polygon &result);
-	void SetActualNormals();
 
 private:
 	void SetDParams();
-	void SetExternalNormals();
-	void SetInternalNormals();
+//	void SetExternalNormals();
+//	void SetInternalNormals();
 };
 

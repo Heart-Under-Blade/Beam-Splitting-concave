@@ -12,7 +12,7 @@ public:
 	Hexagonal();
 	Hexagonal(double m_radius, double m_halfHeight, const complex &m_refractionIndex);
 
-	void Rotate(double beta, double gamma, double alpha) override;
+//	void Rotate(double beta, double gamma, double alpha) override;
 
 protected:
 	static const int BASE_FACET_NUM  = 2;	///< number of bases of hexagon
@@ -21,20 +21,20 @@ protected:
 
 	Couple<int> m_sideFacetIDs;
 
-	Couple<Polygon> m_originBases;
-	Couple<Polygon*> m_actualBases; ///< actual coordinates of base facets
+//	Couple<Polygon> m_originBases;
+//	Couple<Polygon*> m_actualBases; ///< actual coordinates of base facets
 
 protected:
-	void SetDefaultNormals() override;
+//	void SetDefaultNormals() override;
 	void SetFacetParams() override;
 
-	void SetBaseFacets();
-	void SetSideFacets();
-	void RotateHexagonal(double gamma, double beta, double alpha);
-	void SetSideNormals(int beginId);
+	void SetBaseFacets(Facet &baseTop, Facet &baseBottom);
+	void SetSideFacets(Facet &baseTop, Facet &baseBottom);
+//	void RotateHexagonal(double gamma, double beta, double alpha);
+//	void SetSideNormals(int beginId);
 	void SetSideFacetParams(int first, int last);
 
 private:
-	void RotateBaseFacets();
+//	void RotateBaseFacets();
 };
 

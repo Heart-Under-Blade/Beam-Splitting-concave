@@ -7,39 +7,49 @@ Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refraction
 	: Particle(radius, halfHeight, refractionIndex)
 {
 	m_symmetryAngle = M_PI/3;
-	m_actualBases.first = &(facets[0].polygon);
-	m_actualBases.last  = &(facets[7].polygon);
+//	m_actualBases.first = &(facets[0].polygon);
+//	m_actualBases.last  = &(facets[7].polygon);
 
 	SetFacetParams();
-	SetBaseFacets();
+	SetBaseFacets(defaultState.facets[0], defaultState.facets[7]);
 
 	// set original positions of the base facets
-	CopyFacet(m_originBases.first.arr, facets[0]);
-	CopyFacet(m_originBases.last.arr, facets[7]);
+//	CopyFacet(m_originBases.first.arr, facets[0]);
+//	CopyFacet(m_originBases.last.arr, facets[7]);
 
-	SetSideFacets();
+	SetSideFacets(defaultState.facets[0], defaultState.facets[7]);
 	SetDefaultNormals();
-	SetActualNormals();
+	SetActualState();
 }
 
-void Hexagonal::SetSideNormals(int beginId)
-{
-	double cos30 = sqrt(3)/2;
-	m_originNormals[beginId++] = Point3f(-cos30,-0.5, 0);
-	m_originNormals[beginId++] = Point3f(0,-1, 0);
-	m_originNormals[beginId++] = Point3f(cos30,-0.5, 0);
-	m_originNormals[beginId++] = Point3f(cos30, 0.5, 0);
-	m_originNormals[beginId++] = Point3f(0, 1, 0);
-	m_originNormals[beginId++] = Point3f(-cos30, 0.5, 0);
-}
+//void Hexagonal::SetSideNormals(int beginId)
+//{
+//	double cos30 = sqrt(3)/2;
+//	m_originNormals[beginId++] = Point3f(-cos30,-0.5, 0);
+//	m_originNormals[beginId++] = Point3f(0,-1, 0);
+//	m_originNormals[beginId++] = Point3f(cos30,-0.5, 0);
+//	m_originNormals[beginId++] = Point3f(cos30, 0.5, 0);
+//	m_originNormals[beginId++] = Point3f(0, 1, 0);
+//	m_originNormals[beginId++] = Point3f(-cos30, 0.5, 0);
+//}
 
-void Hexagonal::SetDefaultNormals()
-{
-	// base facets
-	m_originNormals[0] = Point3f(0, 0,-1);
-	m_originNormals[7] = Point3f(0, 0, 1);
+//void Hexagonal::SetDefaultNormals()
+//{
+//	// base facets
+//	m_originNormals[0] = Point3f(0, 0,-1);
+//	m_originNormals[7] = Point3f(0, 0, 1);
 
-	SetSideNormals(1);
+//	SetSideNormals(1);
+//}
+
+void Hexagonal::SetFacetParams()
+{
+	SetSideFacetParams(1, facetNum-1);
+	facetNum = BASE_VERTEX_NUM + BASE_FACET_NUM;
+
+	// base facet number
+	defaultState.facets[0].polygon.size = BASE_VERTEX_NUM;
+	defaultState.facets[facetNum-1].polygon.size = BASE_VERTEX_NUM;
 }
 
 void Hexagonal::SetSideFacetParams(int first, int last)
@@ -48,21 +58,11 @@ void Hexagonal::SetSideFacetParams(int first, int last)
 
 	for (int i = first; i < last; ++i)
 	{
-		facets[i].polygon.size = SIDE_VERTEX_NUM;
+		defaultState.facets[i].polygon.size = SIDE_VERTEX_NUM;
 	}
 }
 
-void Hexagonal::SetFacetParams()
-{
-	SetSideFacetParams(1, facetNum-1);
-	facetNum = BASE_VERTEX_NUM + BASE_FACET_NUM;
-
-	// base facet number
-	facets[0].polygon.size = BASE_VERTEX_NUM;
-	facets[facetNum-1].polygon.size = BASE_VERTEX_NUM;
-}
-
-void Hexagonal::SetBaseFacets()
+void Hexagonal::SetBaseFacets(Facet &baseTop, Facet &baseBottom)
 {
 	Point3f *facet;
 
@@ -86,22 +86,22 @@ void Hexagonal::SetBaseFacets()
 	};
 
 	// top base facet
-	facet = m_originBases.first.arr;
+	facet = baseTop.polygon.arr;
 	SetTwoDiagonalPoints(0, halfRadius, incircleRadius, m_halfHeight);
 	SetTwoDiagonalPoints(1,-halfRadius, incircleRadius, m_halfHeight);
 	SetTwoDiagonalPoints(2,-m_radius, 0,  m_halfHeight);
 
 	// bottom base facet
-	facet = m_originBases.last.arr;
+	facet = baseBottom.polygon.arr;
 	SetTwoDiagonalPoints(0, m_radius, 0, -m_halfHeight);
 	SetTwoDiagonalPoints(1, halfRadius, -incircleRadius, -m_halfHeight);
 	SetTwoDiagonalPoints(2,-halfRadius, -incircleRadius, -m_halfHeight);
 }
 
-void Hexagonal::SetSideFacets()
+void Hexagonal::SetSideFacets(Facet &baseTop, Facet &baseBottom)
 {
-	const Point3f *top = m_actualBases.first->arr;
-	const Point3f *bot = m_actualBases.last->arr;
+	const Point3f *top = baseTop.polygon.arr;
+	const Point3f *bot = baseBottom.polygon.arr;
 
 	int endPointIndex = BASE_VERTEX_NUM-1;
 
@@ -110,7 +110,7 @@ void Hexagonal::SetSideFacets()
 
 	for (int i = m_sideFacetIDs.first; i <  m_sideFacetIDs.last; ++i)
 	{
-		Point3f *facet = facets[i].polygon.arr;
+		Point3f *facet = defaultState.facets[i].polygon.arr;
 
 		facet[0] = top[i2];
 		facet[1] = top[i1];
@@ -123,24 +123,24 @@ void Hexagonal::SetSideFacets()
 	}
 }
 
-void Hexagonal::RotateBaseFacets()
-{
-	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
-	{
-		RotatePoint(m_originBases.first.arr[i], m_actualBases.first->arr[i]);
-		RotatePoint(m_originBases.last.arr[i], m_actualBases.last->arr[i]);
-	}
-}
+//void Hexagonal::RotateBaseFacets()
+//{
+//	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
+//	{
+//		RotatePoint(m_originBases.first.arr[i], m_actualBases.first->arr[i]);
+//		RotatePoint(m_originBases.last.arr[i], m_actualBases.last->arr[i]);
+//	}
+//}
 
-void Hexagonal::RotateHexagonal(double beta, double gamma, double alpha)
-{
-	Particle::Rotate(beta, gamma, alpha);
-	RotateBaseFacets();
-	SetSideFacets();
-}
+//void Hexagonal::RotateHexagonal(double beta, double gamma, double alpha)
+//{
+//	Particle::Rotate(beta, gamma, alpha);
+//	RotateBaseFacets();
+//	SetSideFacets();
+//}
 
-void Hexagonal::Rotate(double beta, double gamma, double alpha)
-{
-	RotateHexagonal(beta, gamma, alpha);
-	RotateNormals();
-}
+//void Hexagonal::Rotate(double beta, double gamma, double alpha)
+//{
+//	RotateHexagonal(beta, gamma, alpha);
+//	RotateNormals();
+//}
