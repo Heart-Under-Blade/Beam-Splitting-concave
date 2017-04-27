@@ -17,10 +17,10 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 
 	for (int i = 0; i < m_facetNum; ++i)
 	{
-		for (int j = 0; j < facets[i].polygon.size; ++j)
+		for (int j = 0; j < facets[i].size; ++j)
 		{
-			RotatePoint(defaultState.facets[i].polygon.arr[j],
-						facets[i].polygon.arr[j]);
+			RotatePoint(defaultState.facets[i].arr[j],
+						facets[i].arr[j]);
 		}
 	}
 
@@ -136,7 +136,7 @@ void Particle::SetDParams()
 {
 	for (int i = 0; i < m_facetNum; ++i)
 	{
-		double d = DotProduct(facets[i].polygon.arr[0], facets[i].in_normal);
+		double d = DotProduct(facets[i].arr[0], facets[i].in_normal);
 		facets[i].in_normal.d_param = -d;
 	}
 }

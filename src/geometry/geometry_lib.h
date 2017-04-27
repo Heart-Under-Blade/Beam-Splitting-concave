@@ -192,8 +192,9 @@ double Length(const Point3f &v);
  * @brief The Polygon struct
  * Convex polygon
  */
-struct Polygon
+class Polygon
 {
+public:
 	Point3f arr[MAX_VERTEX_NUM];
 	int size = 0;
 
@@ -302,30 +303,28 @@ struct PolygonArray
 	int size = 0;
 };
 
-// REF: inherite Polygon
-class Facet
+class Facet : public Polygon
 {
 public:
-	Polygon polygon;
 	Point3f normal[2];	///< internal and external normals
 	Point3f center;		///< center of facet polygon (for fast access without calc)
 
 	void SetNormal()
 	{
-		ex_normal = polygon.Normal();
+		ex_normal = Normal();
 		in_normal = -ex_normal;
 	}
 
 	void SetCenter()
 	{
-		center = polygon.Center();
+		center = Center();
 	}
 
 	Facet & operator = (const Facet &other)
 	{
 		if (this != &other)
 		{
-			polygon = other.polygon;
+			Polygon::operator =(other);
 			in_normal = other.in_normal;
 			ex_normal = other.ex_normal;
 			center = other.center;

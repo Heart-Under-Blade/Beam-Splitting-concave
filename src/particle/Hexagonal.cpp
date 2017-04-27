@@ -29,8 +29,8 @@ void Hexagonal::SetFacetParams()
 	SetSideFacetParams(1, m_facetNum-1);
 
 	// base facet number
-	defaultState.facets[0].polygon.size = BASE_VERTEX_NUM;
-	defaultState.facets[m_facetNum-1].polygon.size = BASE_VERTEX_NUM;
+	defaultState.facets[0].size = BASE_VERTEX_NUM;
+	defaultState.facets[m_facetNum-1].size = BASE_VERTEX_NUM;
 }
 
 void Hexagonal::SetSideFacetParams(int first, int last)
@@ -39,7 +39,7 @@ void Hexagonal::SetSideFacetParams(int first, int last)
 
 	for (int i = first; i < last; ++i)
 	{
-		defaultState.facets[i].polygon.size = SIDE_VERTEX_NUM;
+		defaultState.facets[i].size = SIDE_VERTEX_NUM;
 	}
 }
 
@@ -70,13 +70,13 @@ void Hexagonal::SetBases(Facet &baseTop, Facet &baseBottom)
 	};
 
 	// top base facet
-	facet = baseTop.polygon.arr;
+	facet = baseTop.arr;
 	SetTwoDiagonalPoints(0, halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(1, -halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(2, -radius, 0, halfHeight);
 
 	// bottom base facet
-	facet = baseBottom.polygon.arr;
+	facet = baseBottom.arr;
 	SetTwoDiagonalPoints(0, radius, 0, -halfHeight);
 	SetTwoDiagonalPoints(1, halfRadius, -inRadius, -halfHeight);
 	SetTwoDiagonalPoints(2, -halfRadius, -inRadius, -halfHeight);
@@ -84,8 +84,8 @@ void Hexagonal::SetBases(Facet &baseTop, Facet &baseBottom)
 
 void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 {
-	const Point3f *top = baseTop.polygon.arr;
-	const Point3f *bot = baseBottom.polygon.arr;
+	const Point3f *top = baseTop.arr;
+	const Point3f *bot = baseBottom.arr;
 
 	int endPointIndex = BASE_VERTEX_NUM-1;
 
@@ -94,7 +94,7 @@ void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 
 	for (int i = m_sideFacetIDs.first; i <  m_sideFacetIDs.last; ++i)
 	{
-		Point3f *facet = defaultState.facets[i].polygon.arr;
+		Point3f *facet = defaultState.facets[i].arr;
 
 		facet[0] = top[i2];
 		facet[1] = top[i1];

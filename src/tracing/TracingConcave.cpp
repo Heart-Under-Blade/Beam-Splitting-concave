@@ -101,7 +101,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIDs, int prevFacetN
 
 	if (prevFacetNum == 0 || m_particle->IsUnshadowedExternal(id))
 	{
-		resFacets.arr[resFacets.size++] = m_facets[id].polygon;
+		resFacets.arr[resFacets.size++] = m_facets[id];
 	}
 	else // facet is probably shadowed by others
 	{
@@ -140,7 +140,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 
 		while (resSize != 0)
 		{
-			Difference(resultBeams[--resSize], normal, m_facets[id].polygon,
+			Difference(resultBeams[--resSize], normal, m_facets[id],
 					normal1, -beam.direction, diffFacets, diffSize);
 		}
 
@@ -212,7 +212,7 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
 	Difference(beam.polygon, beamFacet.normal[loc],
-			   m_facets[facetId].polygon, facetNormal, -beam.direction,
+			   m_facets[facetId], facetNormal, -beam.direction,
 			   resultBeams, resultSize);
 
 	if (resultSize == 0) // beam is totaly swallowed by facet
@@ -410,7 +410,7 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 {
 	const Facet &facet = m_facets[facetID];
 	const Point3f &normal = facet.normal[Location::Outside];
-	resFacets.arr[resFacets.size++] = facet.polygon;
+	resFacets.arr[resFacets.size++] = facet;
 
 	for (int i = 0; i < prevFacetNum; ++i)
 	{
@@ -420,7 +420,7 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 
 		while (resFacets.size != 0)
 		{
-			const Polygon &clip = m_facets[id].polygon;
+			const Polygon &clip = m_facets[id];
 			const Polygon &subj = resFacets.arr[--resFacets.size];
 			Difference(subj, normal, clip, normal, m_facets[id].in_normal,
 					   diffFacets, diffSize);
@@ -462,7 +462,7 @@ void TracingConcave::SortFacets(const Point3f &beamDir, IntArray &facetIds)
 	for (int i = 0; i < facetIds.size; ++i)
 	{
 		const int &id = facetIds.arr[i];
-		distances[i] = CalcMinDistanceToFacet(m_facets[id].polygon, beamDir);
+		distances[i] = CalcMinDistanceToFacet(m_facets[id], beamDir);
 	}
 
 	int left = 0;

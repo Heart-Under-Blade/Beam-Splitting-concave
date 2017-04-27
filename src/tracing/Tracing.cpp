@@ -581,10 +581,10 @@ bool Tracing::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
-bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) const
+bool Tracing::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
 {
 	__m128 _output_points[MAX_VERTEX_NUM];
-	const Point3f &normal = m_facets[facetId].in_normal;
+	const Point3f &normal = m_facets[facetID].in_normal;
 
 	bool isProjected = ProjectToFacetPlane(beam.polygon, beam.direction,
 										   normal, _output_points);
@@ -601,19 +601,19 @@ bool Tracing::Intersect(int facetId, const Beam &beam, Polygon &intersection) co
 	__m128 *_buffer_ptr = _buffer;
 	int bufferSize;
 
-	int facetSize = m_particle->facets[facetId].polygon.size;
+	int facetSize = m_particle->facets[facetID].size;
 
 	__m128 _p1, _p2; // vertices of facet
 	__m128 _s_point, _e_point;	// points of projection
 	bool isInsideE, isInsideS;
 
-	Point3f p2 = m_particle->facets[facetId].polygon.arr[facetSize-1];
+	Point3f p2 = m_particle->facets[facetID].arr[facetSize-1];
 	_p2 = _mm_load_ps(p2.point);
 
 	for (int i = 0; i < facetSize; ++i)
 	{
 		_p1 = _p2;
-		p2 = m_particle->facets[facetId].polygon.arr[i];
+		p2 = m_particle->facets[facetID].arr[i];
 		_p2 = _mm_load_ps(p2.point);
 
 		bufferSize = outputSize;
@@ -724,7 +724,7 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 /** NOTE: Result beams are ordered in inverse direction */
 void Tracing::SetPolygonByFacet(int facetId, Polygon &polygon) const
 {
-	const Polygon &facet = m_facets[facetId].polygon;
+	const Polygon &facet = m_facets[facetId];
 	int size = facet.size;
 	polygon.size = size;
 	--size;
@@ -746,7 +746,7 @@ double Tracing::CrossSection(const Point3f &beamDir) const
 
 	for (int i = 0; i < m_particle->m_facetNum; ++i)
 	{
-		const Point3f n = m_facets[i].polygon.Normal();
+		const Point3f n = m_facets[i].Normal();
 		double csa = DotProduct(beamDir, n);
 
 		if (csa < EPS_COS_90)
@@ -754,7 +754,7 @@ double Tracing::CrossSection(const Point3f &beamDir) const
 			continue;
 		}
 
-		cs += m_facets[i].polygon.Area()*csa;
+		cs += m_facets[i].Area()*csa;
 	}
 
 	return cs;

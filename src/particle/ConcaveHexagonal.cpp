@@ -42,13 +42,13 @@ void ConcaveHexagonal::SetFacetParams()
 	// top facet (triangles)
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		defaultState.facets[i].polygon.size = CAVITY_FACET_VERTEX_NUM;
+		defaultState.facets[i].size = CAVITY_FACET_VERTEX_NUM;
 	}
 
 	// bottom facet (triangles)
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		defaultState.facets[i].polygon.size = CAVITY_FACET_VERTEX_NUM;
+		defaultState.facets[i].size = CAVITY_FACET_VERTEX_NUM;
 	}
 
 	// shodowed and unshadowed
@@ -62,8 +62,8 @@ void ConcaveHexagonal::SetFacetParams()
 void ConcaveHexagonal::SetCavities(Facet &baseTop, Facet &baseBottom,
 								   const CavityPoints &cavities)
 {
-	Point3f *bTop = baseTop.polygon.arr;
-	Point3f *bBot = baseBottom.polygon.arr;
+	Point3f *bTop = baseTop.arr;
+	Point3f *bBot = baseBottom.arr;
 
 	SetCavityFacets(0, BASE_VERTEX_NUM, bTop, cavities.top); // top facets (triangles)
 	SetCavityFacets(2*BASE_VERTEX_NUM, 3*BASE_VERTEX_NUM, bBot, cavities.bottom); // bottom facets (triangles)
@@ -79,9 +79,9 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end,
 
 	for (int i = start; i < end; ++i)
 	{
-		defaultState.facets[i].polygon.arr[0] = baseFacet[p0];
-		defaultState.facets[i].polygon.arr[1] = baseFacet[p1];
-		defaultState.facets[i].polygon.arr[2] = cavityPoint;
+		defaultState.facets[i].arr[0] = baseFacet[p0];
+		defaultState.facets[i].arr[1] = baseFacet[p1];
+		defaultState.facets[i].arr[2] = cavityPoint;
 		p0 = p1;
 		++p1;
 	}
