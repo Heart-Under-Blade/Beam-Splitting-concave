@@ -5,6 +5,8 @@
 #include "compl.hpp"
 #include "geometry_lib.h"
 
+#define ROT_MTR_RANK 3
+
 /**
  * @brief The Particle class
  * The base class inherited by other concrete particle classes.
@@ -14,59 +16,51 @@ class Particle
 {	// REF: разработать нормальную классовую структуру
 public:
 	Particle();
-	Particle(double radius, double halfHeight, const complex &refractionIndex);
-	virtual ~Particle();
 
 	void Rotate(double beta, double gamma, double alpha);
 
-	const double &GetHalfHeight() const;
-	const complex &GetRefractionIndex() const;
+	const double &GetMainSize() const;
 	const double &GetSymmetryAngle() const;
+	const complex &GetRefractionIndex() const;
 
 	bool IsUnshadowedExternal(int facetId) const;
 	bool IsShadowedInternal(int facetId) const;
 
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
-	int facetNum;					///< number of facets
-	Point3f centers[MAX_FACET_NUM]; ///< centers of facets (for fast access without calc)
+	int m_facetNum;					///< number of facets
 
 protected:
 	struct ParticleState
 	{
 		Facet facets[MAX_FACET_NUM];
-		Point3f centers[MAX_FACET_NUM];
-//		Point3f m_originNormals[MAX_FACET_NUM];
 	};
 
 	ParticleState defaultState;
 
-	double m_rotMatrix[3][3];	///< rotation matrix for vertices
-
-	double m_radius;
-	double m_halfHeight;
-	double m_symmetryAngle;
-
+	double m_mainSize;			///< max size of particle (diameter or height or smth)
+	double m_symmetryAngle;		///< angle of particle symmetry
 	complex m_refractionIndex;	///< complex value of refraction index of the particle
 
 	IntArray m_unshadowedExternalFacets;
 	IntArray m_shadowedInternalFacets;
 
 protected:
+	void Init(int m_facetNum, const complex &refrIndex, double symAngle,
+			  double size);
+
 	void SetDefaultNormals();
 	void SetActualState();
 	virtual void SetFacetParams() {}
 
-	void Init(double radius, double halfHeight, const complex &refractionIndex);
 	void SetRotateMatrix(double beta, double gamma, double alpha);
 	void RotateNormals();
 	void RotatePoint(const Point3f &point, Point3f &result);
-	void CopyFacet(Point3f *points, Facet &result);
-	void CopyFacet(Point3f *points, Polygon &result);
 
 private:
 	void SetDParams();
-//	void SetExternalNormals();
-//	void SetInternalNormals();
+
+private:
+	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
 };
 

@@ -189,8 +189,6 @@ void Tracer::TraceIntervalGO(const AngleInterval &betaI, const AngleInterval &ga
 void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
-//	double norm = 0.0049999999999999996; // REF: заменить на что-нибудь
-	double norm = 1; // REF: заменить на что-нибудь
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
 	ofstream outFile(m_resultFileName, ios::out);
 	vector<Beam> outBeams;
@@ -205,7 +203,7 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 	HandleBeamsPO(outBeams, bsCone, wave, tracks);
 
 	outBeams.clear();
-	AddResultToSumMatrix(M, maxGroupID, bsCone, norm);
+	AddResultToSumMatrix(M, maxGroupID, bsCone);
 	WriteSumMatrix(outFile, M, bsCone);
 }
 
@@ -237,10 +235,10 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 		Beam &beam = outBeams.at(i);
 		double ctetta = DotProduct(beam.direction, -m_incidentDir);
 
-		if (ctetta < 0.17364817766693034885171662676931)
-		{	// отбрасываем пучки, которые далеко от конуса направления назад
+//		if (ctetta < 0.17364817766693034885171662676931)
+//		{	// отбрасываем пучки, которые далеко от конуса направления назад
 //			continue;// DEB
-		}
+//		}
 
 		int groupID = tracks.GetGroupID(beam.id);
 

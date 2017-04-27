@@ -1,29 +1,36 @@
 #include "Hexagonal.h"
 #include "global.h"
+#include <algorithm>
 
 Hexagonal::Hexagonal() {}
 
-Hexagonal::Hexagonal(double radius, double halfHeight, const complex &refractionIndex)
-	: Particle(radius, halfHeight, refractionIndex)
+Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 {
-	m_symmetryAngle = M_PI/3;
+	SetSize(diameter, height);
+
+	double size = std::max(m_height, m_diameter);
+	Init(8, refrIndex, M_PI/3, size);
 
 	SetFacetParams();
-	SetBaseFacets(defaultState.facets[0], defaultState.facets[7]);
-
-	SetSideFacets(defaultState.facets[0], defaultState.facets[7]);
+	SetBases(defaultState.facets[0], defaultState.facets[7]);
+	SetSides(defaultState.facets[0], defaultState.facets[7]);
 	SetDefaultNormals();
 	SetActualState();
 }
 
+void Hexagonal::SetSize(double diameter, double height)
+{
+	m_diameter = diameter;
+	m_height = height;
+}
+
 void Hexagonal::SetFacetParams()
 {
-	facetNum = BASE_VERTEX_NUM + BASE_FACET_NUM;
-	SetSideFacetParams(1, facetNum-1);
+	SetSideFacetParams(1, m_facetNum-1);
 
 	// base facet number
 	defaultState.facets[0].polygon.size = BASE_VERTEX_NUM;
-	defaultState.facets[facetNum-1].polygon.size = BASE_VERTEX_NUM;
+	defaultState.facets[m_facetNum-1].polygon.size = BASE_VERTEX_NUM;
 }
 
 void Hexagonal::SetSideFacetParams(int first, int last)
@@ -36,13 +43,16 @@ void Hexagonal::SetSideFacetParams(int first, int last)
 	}
 }
 
-void Hexagonal::SetBaseFacets(Facet &baseTop, Facet &baseBottom)
+void Hexagonal::SetBases(Facet &baseTop, Facet &baseBottom)
 {
 	Point3f *facet;
 
+	double radius = m_diameter/2;
+	double halfHeight = m_height/2;
+
 	int halfNumber = BASE_VERTEX_NUM/2;
-	double halfRadius = m_radius/2;
-	double incircleRadius = (sqrt(3) * m_radius) / 2;
+	double halfRadius = radius/2;
+	double inRadius = (sqrt(3) * radius) / 2;
 
 	auto SetTwoDiagonalPoints = [&] (int startPointIndex, double x, double y, double z)
 	{
@@ -61,18 +71,18 @@ void Hexagonal::SetBaseFacets(Facet &baseTop, Facet &baseBottom)
 
 	// top base facet
 	facet = baseTop.polygon.arr;
-	SetTwoDiagonalPoints(0, halfRadius, incircleRadius, m_halfHeight);
-	SetTwoDiagonalPoints(1,-halfRadius, incircleRadius, m_halfHeight);
-	SetTwoDiagonalPoints(2,-m_radius, 0,  m_halfHeight);
+	SetTwoDiagonalPoints(0, halfRadius, inRadius, halfHeight);
+	SetTwoDiagonalPoints(1, -halfRadius, inRadius, halfHeight);
+	SetTwoDiagonalPoints(2, -radius, 0, halfHeight);
 
 	// bottom base facet
 	facet = baseBottom.polygon.arr;
-	SetTwoDiagonalPoints(0, m_radius, 0, -m_halfHeight);
-	SetTwoDiagonalPoints(1, halfRadius, -incircleRadius, -m_halfHeight);
-	SetTwoDiagonalPoints(2,-halfRadius, -incircleRadius, -m_halfHeight);
+	SetTwoDiagonalPoints(0, radius, 0, -halfHeight);
+	SetTwoDiagonalPoints(1, halfRadius, -inRadius, -halfHeight);
+	SetTwoDiagonalPoints(2, -halfRadius, -inRadius, -halfHeight);
 }
 
-void Hexagonal::SetSideFacets(Facet &baseTop, Facet &baseBottom)
+void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 {
 	const Point3f *top = baseTop.polygon.arr;
 	const Point3f *bot = baseBottom.polygon.arr;

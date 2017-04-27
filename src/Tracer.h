@@ -116,7 +116,7 @@ private:
 	void SetJnRot(Beam &beam, const Point3f &T,
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
-							  double norm);
+							  double norm = 1);
 	void WriteSumMatrix(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void EraseConsoleLine(int lenght); // REF: вынести куда-нибудь

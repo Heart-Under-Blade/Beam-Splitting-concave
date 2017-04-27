@@ -19,7 +19,7 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   int interReflectionNumber)
 	: Tracing(particle, startBeamDir, isOpticalPath, polarizationBasis, interReflectionNumber)
 {
-	Point3f point = m_waveFront.direction * m_particle->GetHalfHeight()*2;
+	Point3f point = m_waveFront.direction * m_particle->GetMainSize();
 	m_waveFront.direction.d_param = DotProduct(point, m_waveFront.direction);
 	m_waveFront.location = Location::Outside;
 
@@ -364,7 +364,7 @@ void TracingConcave::SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
 
 void TracingConcave::FindVisibleFacetsForWavefront(IntArray &facetIds)
 {
-	for (int i = 0; i < m_particle->facetNum; ++i)
+	for (int i = 0; i < m_particle->m_facetNum; ++i)
 	{
 		double cosIN = DotProduct(m_waveFront.direction, m_facets[i].in_normal);
 
@@ -380,8 +380,8 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 //	int loc = !beam.location;
 	const Point3f &beamNormal = -m_facets[beam.lastFacetID].normal[!beam.location];
 
-	const Point3f &facetCenter = m_particle->centers[facetID];
-	const Point3f &beamCenter = m_particle->centers[beam.lastFacetID];
+	const Point3f &facetCenter = m_particle->facets[facetID].center;
+	const Point3f &beamCenter = m_particle->facets[beam.lastFacetID].center;
 	Point3f vectorFromBeamToFacet = facetCenter - beamCenter;
 
 	double cosBF = DotProduct(beamNormal, vectorFromBeamToFacet);
@@ -390,7 +390,7 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 
 void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-	for (int i = 0; i < m_particle->facetNum; ++i)
+	for (int i = 0; i < m_particle->m_facetNum; ++i)
 	{
 		const Point3f &facetNormal = m_facets[i].normal[!beam.location];
 		double cosFB = DotProduct(beam.direction, facetNormal);

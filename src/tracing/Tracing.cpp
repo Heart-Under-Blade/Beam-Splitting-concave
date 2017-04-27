@@ -87,7 +87,7 @@ void Tracing::SetBeamID(Beam &beam)
 
 #ifdef _TRACK_ALLOW
 	beam.id += (beam.lastFacetID + 1);
-	beam.id *= (m_particle->facetNum + 1);
+	beam.id *= (m_particle->m_facetNum + 1);
 	//	AddToTrack(beam, facetId);
 #ifdef _TRACK_OUTPUT
 	PrintTrack(beam, facetId);
@@ -744,7 +744,7 @@ double Tracing::CrossSection(const Point3f &beamDir) const
 {
 	double cs = 0.0;
 
-	for (int i = 0; i < m_particle->facetNum; ++i)
+	for (int i = 0; i < m_particle->m_facetNum; ++i)
 	{
 		const Point3f n = m_facets[i].polygon.Normal();
 		double csa = DotProduct(beamDir, n);

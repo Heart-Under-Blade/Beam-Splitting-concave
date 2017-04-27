@@ -395,7 +395,7 @@ int main(int argc, const char** argv)
 		switch (pt)
 		{
 		case ParticleType::Hexagonal:
-			particle = new Hexagonal(r, hh, ri);
+			particle = new Hexagonal(ri, r, hh);
 			break;
 //		case ParticleType::TiltedHexagonal:
 //			sup = parser.argToValue<double>(vec[3]);
@@ -403,7 +403,7 @@ int main(int argc, const char** argv)
 //			break;
 		case ParticleType::ConcaveHexagonal:
 			sup = parser.argToValue<double>(vec[3]);
-			particle = new ConcaveHexagonal(r, hh, ri, sup);
+			particle = new ConcaveHexagonal(ri, r, hh, sup);
 			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
@@ -425,7 +425,7 @@ int main(int argc, const char** argv)
 
 		double wave = parser.getArgValue<double>("wavelength");
 
-		ImportTracks(particle->facetNum);
+		ImportTracks(particle->m_facetNum);
 		Tracer tracer(tracing, "M_all.dat");
 
 		Cone bsCone = SetCone(parser);
@@ -517,7 +517,7 @@ void AddResultToSumMatrix(Arr2D &M, int maxGroupID, double norm)
 		{
 			for (int p = 0; p <= 0/*params.bsCone.phi*/; ++p)
 			{
-				complex ee = J[q](p, t)[0][0];
+//				complex ee = J[q](p, t)[0][0];
 				matrix Mk = Mueller(J[q](p, t));
 //				M[q].insert(p, t, gammaNorm*norm*Mk);
 				M.insert(p, t, gammaNorm*norm*Mk);
@@ -539,7 +539,7 @@ void CleanM(vector<Arr2D> &M, int maxGroupID)
 
 void WriteToSepatateFiles(vector<Arr2D> &M, double beta, int maxGroupID)
 {
-	for (unsigned int q = 0; q < maxGroupID; ++q)
+	for (int q = 0; q < maxGroupID; ++q)
 	{
 		string tr = to_string(q);
 		string orFName = (tr + "_" + "b_" + to_string((beta*180.0)/M_PI) + ".dat").c_str();

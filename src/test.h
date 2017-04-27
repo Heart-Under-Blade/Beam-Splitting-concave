@@ -213,7 +213,7 @@ void testDiff()
 
 void outputParticle(const Particle &particle)
 {
-	for (int i = 0; i < particle.facetNum; ++i)
+	for (int i = 0; i < particle.m_facetNum; ++i)
 	{
 		std::cout << i << ": ";
 		for (int j = 0; j < particle.facets[i].polygon.size; ++j)
@@ -231,7 +231,7 @@ void outputParticle(const Particle &particle)
 
 	std::cout << std::endl << "Normals" << std::endl << std::endl;
 
-	for (int i = 0; i < particle.facetNum; ++i)
+	for (int i = 0; i < particle.m_facetNum; ++i)
 	{
 		std::cout << i << ": ";
 		std::cout << "("
@@ -247,7 +247,7 @@ void toFile(const Particle &particle)
 {
 	std::ofstream M("particle.dat", std::ios::out);
 
-	for (int i = 0; i < particle.facetNum; ++i)
+	for (int i = 0; i < particle.m_facetNum; ++i)
 	{
 		for (int j = 0; j < particle.facets[i].polygon.size; ++j)
 		{
@@ -266,32 +266,32 @@ void toFile(const Particle &particle)
 
 void testHexagonBuilding()
 {
-	Particle hex = Hexagonal(40, 100, 1.31);
-	toFile(hex);
-	outputParticle(hex);
+//	Particle hex = Hexagonal(40, 100, 1.31);
+//	toFile(hex);
+//	outputParticle(hex);
 }
 
 void testConcaveHexagonRot()
 {
-	Particle *hex = new ConcaveHexagonal(20, 100, 1.31, 10);
-	double beta = ((19 + 0.5)*M_PI)/(2.0*100);
-	double gamma = ((36 + 0.5)*M_PI)/(3.0*101);
-	hex->Rotate(beta, gamma, 0);
-	toFile(*hex);
-	outputParticle(*hex);
+//	Particle *hex = new ConcaveHexagonal(20, 100, 1.31, 10);
+//	double beta = ((19 + 0.5)*M_PI)/(2.0*100);
+//	double gamma = ((36 + 0.5)*M_PI)/(3.0*101);
+//	hex->Rotate(beta, gamma, 0);
+//	toFile(*hex);
+//	outputParticle(*hex);
 }
 
 void testHexagonRotate()
 {
-	Particle *hex = new Hexagonal(40, 100, 1.31);
+//	Particle *hex = new Hexagonal(40, 100, 1.31);
 //	double beta = 19*M_PI/180;
 //	double gamma = 90*M_PI/180;
-	double beta = ((19 + 0.5)*M_PI)/(2.0*100);
-	double gamma = ((36 + 0.5)*M_PI)/(3.0*101);
-	hex->Rotate(beta, gamma, 0);
+//	double beta = ((19 + 0.5)*M_PI)/(2.0*100);
+//	double gamma = ((36 + 0.5)*M_PI)/(3.0*101);
+//	hex->Rotate(beta, gamma, 0);
 
-	toFile(*hex);
-	outputParticle(*hex);
+//	toFile(*hex);
+//	outputParticle(*hex);
 }
 
 

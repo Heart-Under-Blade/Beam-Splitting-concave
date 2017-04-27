@@ -1,63 +1,43 @@
 #include "ConcaveHexagonal.h"
 #include "global.h"
+#include <algorithm>
 
-ConcaveHexagonal::ConcaveHexagonal(double radius, double halfHeight, const complex &refractionIndex,
+ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
+								   double diameter, double height,
 								   double cavityDept)
 {
-	m_symmetryAngle = M_PI/3;
-	Particle::Init(radius, halfHeight, refractionIndex);
+	SetSize(diameter, height);
 	m_cavityDept = cavityDept;
 
-//	m_actualBases.first = new Polygon(BASE_VERTEX_NUM);
-//	m_actualBases.last  = new Polygon(BASE_VERTEX_NUM);
+	double size = std::max(m_height, m_diameter);
+	Init(18, refrIndex, M_PI/3, size);
 
 	SetFacetParams();
 
 	Facet baseTop, baseBottom;
-	SetBaseFacets(baseTop, baseBottom);
-//	CopyFacet(m_originBases.first.arr, *m_actualBases.first);
-//	CopyFacet(m_originBases.last.arr, *m_actualBases.last);
+	SetBases(baseTop, baseBottom);
 
 	SetOriginCavityPoints();
 
 	SetCavities(baseTop, baseBottom, m_defaultStateCavities);
-	SetSideFacets(baseTop, baseBottom);
+	SetSides(baseTop, baseBottom);
 
 	SetDefaultNormals();
 	SetActualState();
 	SetCenters();
 }
 
-//void ConcaveHexagonal::RotateCavities()
-//{
-//	CavityPoints cavPoints;
-//	RotatePoint(m_defaultStateCavities.top, cavPoints.top);
-//	RotatePoint(m_defaultStateCavities.bottom, cavPoints.bottom);
-//	SetCavities(cavPoints);
-//}
-
-//void ConcaveHexagonal::Rotate(double beta, double gamma, double alpha)
-//{
-//	RotateHexagonal(beta, gamma, alpha);
-//	RotateCavities();
-//	RotateNormals();
-
-//}
-
 void ConcaveHexagonal::SetCenters()
 {
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < m_facetNum; ++i)
 	{
-		defaultState.centers[i] = facets[i].polygon.Center();
-		centers[i] = defaultState.centers[i];
+		defaultState.facets[i].SetCenter();
 	}
 }
 
 void ConcaveHexagonal::SetFacetParams()
 {
 	SetSideFacetParams(BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
-
-	facetNum = BASE_VERTEX_NUM + BASE_FACET_NUM * BASE_VERTEX_NUM;
 
 	// top facet (triangles)
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
@@ -109,27 +89,6 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end,
 
 void ConcaveHexagonal::SetOriginCavityPoints()
 {
-	m_defaultStateCavities.top	  = Point3f(0, 0,  m_halfHeight - m_cavityDept);
-	m_defaultStateCavities.bottom = Point3f(0, 0, -m_halfHeight + m_cavityDept);
+	m_defaultStateCavities.top	  = Point3f(0, 0,  m_height/2 - m_cavityDept);
+	m_defaultStateCavities.bottom = Point3f(0, 0, -m_height/2 + m_cavityDept);
 }
-
-//void ConcaveHexagonal::SetBaseNormals()
-//{
-//	// top cavity facets
-//	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
-//	{
-//		m_originNormals[i] = -facets[i].polygon.Normal();
-//	}
-
-//	// bottom cavity facets
-//	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
-//	{
-//		m_originNormals[i] = -facets[i].polygon.Normal();
-//	}
-//}
-
-//void ConcaveHexagonal::SetDefaultNormals()
-//{
-//	SetBaseNormals();
-//	SetSideNormals(6);
-//}
