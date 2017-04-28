@@ -425,7 +425,7 @@ int main(int argc, const char** argv)
 
 		double wave = parser.getArgValue<double>("wavelength");
 
-		ImportTracks(particle->m_facetNum);
+		ImportTracks(particle->facetNum);
 		Tracer tracer(tracing, "M_all.dat");
 
 		Cone bsCone = SetCone(parser);

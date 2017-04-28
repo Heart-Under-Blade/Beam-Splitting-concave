@@ -14,7 +14,7 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 	m_treeSize = 0;
 
 	/// first extermal beam
-	for (int facetID = 0; facetID < m_particle->m_facetNum; ++facetID)
+	for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
 	{
 		const Point3f &extNormal = m_particle->facets[facetID].ex_normal;
 		double cosIN = DotProduct(m_waveFront.direction, extNormal);
@@ -60,7 +60,7 @@ void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
 			continue;
 		}
 
-		for (int facetID = 0; facetID < m_particle->m_facetNum; ++facetID)
+		for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
 		{
 			if (facetID == beam.lastFacetID)
 			{

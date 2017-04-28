@@ -213,7 +213,7 @@ void testDiff()
 
 void outputParticle(const Particle &particle)
 {
-	for (int i = 0; i < particle.m_facetNum; ++i)
+	for (int i = 0; i < particle.facetNum; ++i)
 	{
 		std::cout << i << ": ";
 		for (int j = 0; j < particle.facets[i].size; ++j)
@@ -231,7 +231,7 @@ void outputParticle(const Particle &particle)
 
 	std::cout << std::endl << "Normals" << std::endl << std::endl;
 
-	for (int i = 0; i < particle.m_facetNum; ++i)
+	for (int i = 0; i < particle.facetNum; ++i)
 	{
 		std::cout << i << ": ";
 		std::cout << "("
@@ -247,7 +247,7 @@ void toFile(const Particle &particle)
 {
 	std::ofstream M("particle.dat", std::ios::out);
 
-	for (int i = 0; i < particle.m_facetNum; ++i)
+	for (int i = 0; i < particle.facetNum; ++i)
 	{
 		for (int j = 0; j < particle.facets[i].size; ++j)
 		{

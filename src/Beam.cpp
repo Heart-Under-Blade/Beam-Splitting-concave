@@ -80,7 +80,7 @@ Beam::Beam(Beam &&other)
 
 	other.lastFacetID = 0;
 	other.level = 0;
-	other.location = Location::Outside;
+	other.location = Location::Out;
 
 #ifdef _TRACK_ALLOW
 	other.id = 0;
@@ -193,7 +193,7 @@ Beam &Beam::operator = (Beam &&other)
 
 		other.lastFacetID = 0;
 		other.level = 0;
-		other.location = Location::Outside;
+		other.location = Location::Out;
 
 #ifdef _TRACK_ALLOW
 		other.id = id;

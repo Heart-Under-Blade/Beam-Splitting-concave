@@ -12,8 +12,8 @@ Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 	Init(8, refrIndex, M_PI/3, size);
 
 	SetFacetParams();
-	SetBases(defaultState.facets[0], defaultState.facets[7]);
-	SetSides(defaultState.facets[0], defaultState.facets[7]);
+	SetBases(defaultFacets[0], defaultFacets[7]);
+	SetSides(defaultFacets[0], defaultFacets[7]);
 	SetDefaultNormals();
 	SetActualState();
 }
@@ -26,11 +26,11 @@ void Hexagonal::SetSize(double diameter, double height)
 
 void Hexagonal::SetFacetParams()
 {
-	SetSideFacetParams(1, m_facetNum-1);
+	SetSideFacetParams(1, facetNum-1);
 
 	// base facet number
-	defaultState.facets[0].size = BASE_VERTEX_NUM;
-	defaultState.facets[m_facetNum-1].size = BASE_VERTEX_NUM;
+	defaultFacets[0].size = BASE_VERTEX_NUM;
+	defaultFacets[facetNum-1].size = BASE_VERTEX_NUM;
 }
 
 void Hexagonal::SetSideFacetParams(int first, int last)
@@ -39,7 +39,7 @@ void Hexagonal::SetSideFacetParams(int first, int last)
 
 	for (int i = first; i < last; ++i)
 	{
-		defaultState.facets[i].size = SIDE_VERTEX_NUM;
+		defaultFacets[i].size = SIDE_VERTEX_NUM;
 	}
 }
 
@@ -94,7 +94,7 @@ void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 
 	for (int i = m_sideFacetIDs.first; i <  m_sideFacetIDs.last; ++i)
 	{
-		Point3f *facet = defaultState.facets[i].arr;
+		Point3f *facet = defaultFacets[i].arr;
 
 		facet[0] = top[i2];
 		facet[1] = top[i1];

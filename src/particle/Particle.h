@@ -13,7 +13,7 @@
  * Vertices are ordered by counterclock-wise direction if you see from outside.
  */
 class Particle
-{	// REF: разработать нормальную классовую структуру
+{
 public:
 	Particle();
 
@@ -23,30 +23,19 @@ public:
 	const double &GetSymmetryAngle() const;
 	const complex &GetRefractionIndex() const;
 
-	bool IsUnshadowedExternal(int facetId) const;
-	bool IsShadowedInternal(int facetId) const;
-
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
-	int m_facetNum;					///< number of facets
+	int facetNum;					///< number of facets
 
 protected:
-	struct ParticleState
-	{
-		Facet facets[MAX_FACET_NUM];
-	};
-
-	ParticleState defaultState;
+	Facet defaultFacets[MAX_FACET_NUM];
 
 	double m_mainSize;			///< max size of particle (diameter or height or smth)
 	double m_symmetryAngle;		///< angle of particle symmetry
 	complex m_refractionIndex;	///< complex value of refraction index of the particle
 
-	IntArray m_unshadowedExternalFacets;
-	IntArray m_shadowedInternalFacets;
-
 protected:
-	void Init(int m_facetNum, const complex &refrIndex, double symAngle,
+	void Init(int facetCount, const complex &refrIndex, double symAngle,
 			  double size);
 
 	void SetDefaultNormals();

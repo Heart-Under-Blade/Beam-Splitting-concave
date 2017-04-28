@@ -9,7 +9,7 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 	SetSize(diameter, height);
 	m_cavityDept = cavityDept;
 
-	double size = std::max(m_height, m_diameter);
+	double size = std::max(height, diameter);
 	Init(18, refrIndex, M_PI/3, size);
 
 	SetFacetParams();
@@ -29,9 +29,9 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 
 void ConcaveHexagonal::SetCenters()
 {
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
-		defaultState.facets[i].SetCenter();
+		defaultFacets[i].SetCenter();
 	}
 }
 
@@ -42,20 +42,20 @@ void ConcaveHexagonal::SetFacetParams()
 	// top facet (triangles)
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		defaultState.facets[i].size = CAVITY_FACET_VERTEX_NUM;
+		defaultFacets[i].size = CAVITY_FACET_VERTEX_NUM;
+		facets[i].isVisibleOut = false;
 	}
 
 	// bottom facet (triangles)
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		defaultState.facets[i].size = CAVITY_FACET_VERTEX_NUM;
+		defaultFacets[i].size = CAVITY_FACET_VERTEX_NUM;
+		facets[i].isVisibleOut = false;
 	}
 
-	// shodowed and unshadowed
 	for (int i = BASE_VERTEX_NUM; i < 2*BASE_VERTEX_NUM; ++i)
 	{
-		m_unshadowedExternalFacets.Add(i);
-		m_shadowedInternalFacets.Add(i);
+		facets[i].isVisibleIn = false;
 	}
 }
 
@@ -79,9 +79,9 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end,
 
 	for (int i = start; i < end; ++i)
 	{
-		defaultState.facets[i].arr[0] = baseFacet[p0];
-		defaultState.facets[i].arr[1] = baseFacet[p1];
-		defaultState.facets[i].arr[2] = cavityPoint;
+		defaultFacets[i].arr[0] = baseFacet[p0];
+		defaultFacets[i].arr[1] = baseFacet[p1];
+		defaultFacets[i].arr[2] = cavityPoint;
 		p0 = p1;
 		++p1;
 	}

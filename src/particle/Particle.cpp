@@ -2,10 +2,10 @@
 
 Particle::Particle() {}
 
-void Particle::Init(int facetNum, const complex &refrIndex, double symAngle,
+void Particle::Init(int facetCount, const complex &refrIndex, double symAngle,
 					double size)
 {
-	m_facetNum = facetNum;
+	facetNum = facetCount;
 	m_refractionIndex = refrIndex;
 	m_symmetryAngle = symAngle;
 	m_mainSize = size;
@@ -15,20 +15,19 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);
 
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
 		for (int j = 0; j < facets[i].size; ++j)
 		{
-			RotatePoint(defaultState.facets[i].arr[j],
-						facets[i].arr[j]);
+			RotatePoint(defaultFacets[i].arr[j], facets[i].arr[j]);
 		}
 	}
 
 	RotateNormals();
 
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
-		RotatePoint(defaultState.facets[i].center, facets[i].center);
+		RotatePoint(defaultFacets[i].center, facets[i].center);
 	}
 }
 
@@ -42,46 +41,19 @@ const complex &Particle::GetRefractionIndex() const
 	return m_refractionIndex;
 }
 
-bool Particle::IsUnshadowedExternal(int facetId) const
-{
-	for (int i = 0; i < m_unshadowedExternalFacets.size; ++i)
-	{
-		if (facetId == m_unshadowedExternalFacets.arr[i])
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//REF неправильно названо (переименовать)
-bool Particle::IsShadowedInternal(int facetId) const
-{
-	for (int i = 0; i < m_shadowedInternalFacets.size; ++i)
-	{
-		if (facetId == m_shadowedInternalFacets.arr[i])
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
 void Particle::SetDefaultNormals()
 {
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
-		defaultState.facets[i].SetNormal();
+		defaultFacets[i].SetNormal();
 	}
 }
 
 void Particle::SetActualState()
 {
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
-		facets[i] = defaultState.facets[i];
+		facets[i] = defaultFacets[i];
 	}
 }
 
@@ -118,14 +90,14 @@ void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
 
 void Particle::RotateNormals()
 {
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
-		RotatePoint(defaultState.facets[i].in_normal, facets[i].in_normal);
+		RotatePoint(defaultFacets[i].in_normal, facets[i].in_normal);
 	}
 
 	SetDParams();
 
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
 		facets[i].ex_normal = -facets[i].in_normal;
 		facets[i].ex_normal.d_param = -facets[i].in_normal.d_param;
@@ -134,7 +106,7 @@ void Particle::RotateNormals()
 
 void Particle::SetDParams()
 {
-	for (int i = 0; i < m_facetNum; ++i)
+	for (int i = 0; i < facetNum; ++i)
 	{
 		double d = DotProduct(facets[i].arr[0], facets[i].in_normal);
 		facets[i].in_normal.d_param = -d;

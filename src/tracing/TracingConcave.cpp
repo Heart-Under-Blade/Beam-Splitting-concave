@@ -21,8 +21,7 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 {
 	Point3f point = m_waveFront.direction * m_particle->GetMainSize();
 	m_waveFront.direction.d_param = DotProduct(point, m_waveFront.direction);
-	m_waveFront.location = Location::Outside;
-
+	m_waveFront.location = Location::Out;
 	m_isArea = false;
 }
 
@@ -46,8 +45,8 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 		// REF: дублирует одиночный вызов в пред. ф-ции
 		CalcOpticalPath_initial(inBeam, outBeam);
 
-		PushBeamToTree( inBeam, facetID, 0, Location::Inside );
-		PushBeamToTree(outBeam, facetID, 0, Location::Outside);
+		PushBeamToTree( inBeam, facetID, 0, Location::In );
+		PushBeamToTree(outBeam, facetID, 0, Location::Out);
 
 		if (m_isArea)
 		{
@@ -88,10 +87,10 @@ void TracingConcave::TraceFirstBeam()
 	}
 }
 
-void TracingConcave::SelectVisibleFacetsForWavefront(IntArray &facetIds)
+void TracingConcave::SelectVisibleFacetsForWavefront(IntArray &facetIDs)
 {
-	FindVisibleFacetsForWavefront(facetIds);
-	SortFacets(m_waveFront.direction, facetIds);
+	FindVisibleFacetsForWavefront(facetIDs);
+	SortFacets(m_waveFront.direction, facetIDs);
 }
 
 void TracingConcave::IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
@@ -99,7 +98,7 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIDs, int prevFacetN
 {
 	int id = facetIDs.arr[prevFacetNum];
 
-	if (prevFacetNum == 0 || m_particle->IsUnshadowedExternal(id))
+	if (prevFacetNum == 0 || m_facets[id].isVisibleOut)
 	{
 		resFacets.arr[resFacets.size++] = m_facets[id];
 	}
@@ -109,13 +108,13 @@ void TracingConcave::IntersectWithFacet(const IntArray &facetIDs, int prevFacetN
 	}
 }
 
-void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIds)
+void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIDs)
 {
-	FindVisibleFacets(beam, facetIds);
+	FindVisibleFacets(beam, facetIDs);
 
 	Point3f dir = beam.direction;
 	dir.d_param = m_facets[beam.lastFacetID].in_normal.d_param;
-	SortFacets(dir, facetIds);
+	SortFacets(dir, facetIDs);
 }
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
@@ -196,23 +195,23 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 //}
 #endif
 
-void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
+void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
 {
 	isDivided = false;
 	const Location &loc = beam.location;
+	const Facet &beamFacet = m_facets[beam.lastFacetID];
 
-	if (loc == Location::Inside && !m_particle->IsShadowedInternal(beam.lastFacetID))
+	if (loc == Location::In && beamFacet.isVisibleIn)
 	{
 		return;
 	}
 
-	const Facet &beamFacet = m_facets[beam.lastFacetID];
-	const Point3f &facetNormal = (loc == Location::Outside) ? -beamFacet.normal[loc]
-															:  beamFacet.normal[loc];
+	const Point3f &facetNormal = (loc == Location::Out) ? -beamFacet.normal[loc]
+														:  beamFacet.normal[loc];
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
 	Difference(beam.polygon, beamFacet.normal[loc],
-			   m_facets[facetId], facetNormal, -beam.direction,
+			   m_facets[facetID], facetNormal, -beam.direction,
 			   resultBeams, resultSize);
 
 	if (resultSize == 0) // beam is totaly swallowed by facet
@@ -240,7 +239,7 @@ void TracingConcave::CutBeamByFacet(int facetId, Beam &beam, bool &isDivided)
 
 bool TracingConcave::HasExternalBeam(Beam &incidentBeam)
 {
-	return (incidentBeam.location == Location::Outside
+	return (incidentBeam.location == Location::Out
 			&& incidentBeam.polygon.size != 0);
 }
 
@@ -273,13 +272,13 @@ void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutB
 #ifdef _TRACK_ALLOW
 		outBeam.id = beam.id;
 #endif
-		PushBeamToTree(outBeam, facetID, beam.level+1, Location::Outside);
+		PushBeamToTree(outBeam, facetID, beam.level+1, Location::Out);
 	}
 
 #ifdef _TRACK_OUTPUT
 	trackMapFile << "[in] ";
 #endif
-	PushBeamToTree(inBeam, facetID, beam.level+1, Location::Inside);
+	PushBeamToTree(inBeam, facetID, beam.level+1, Location::In);
 }
 
 void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
@@ -290,7 +289,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 
 		if (IsTerminalBeam(beam))
 		{
-			if (beam.location == Location::Outside)
+			if (beam.location == Location::Out)
 			{
 				CatchExternalBeam(beam, scaterredBeams);
 			}
@@ -325,12 +324,12 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 	}
 }
 
-void TracingConcave::SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
+void TracingConcave::SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
 										  Beam &inBeam, Beam &outBeam,
 										  bool &hasOutBeam)
 {
 	const Point3f &incidentDir = incidentBeam.direction;
-	const Point3f &normal = m_facets[facetId].ex_normal;
+	const Point3f &normal = m_facets[facetID].ex_normal;
 
 	hasOutBeam = true;
 	double cosIN = DotProduct(incidentDir, normal);
@@ -341,7 +340,7 @@ void TracingConcave::SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
 	}
 	else // slopping incidence
 	{
-		if (incidentBeam.location == Location::Inside)
+		if (incidentBeam.location == Location::In)
 		{
 			Beam incBeam = incidentBeam;
 			SetSloppingIncidenceBeamParams(cosIN, normal, incBeam,
@@ -352,7 +351,7 @@ void TracingConcave::SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
 			inBeam.J = incidentBeam.J;
 			double cosI = DotProduct(-normal, incidentDir);
 
-			SetSloppingBeamParams_initial(incidentDir, cosI, facetId,
+			SetSloppingBeamParams_initial(incidentDir, cosI, facetID,
 										  inBeam, outBeam);
 			if (m_isOpticalPath)
 			{
@@ -362,15 +361,15 @@ void TracingConcave::SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
 	}
 }
 
-void TracingConcave::FindVisibleFacetsForWavefront(IntArray &facetIds)
+void TracingConcave::FindVisibleFacetsForWavefront(IntArray &facetIDs)
 {
-	for (int i = 0; i < m_particle->m_facetNum; ++i)
+	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
 		double cosIN = DotProduct(m_waveFront.direction, m_facets[i].in_normal);
 
 		if (cosIN >= EPS_COS_90) // beam incidents to this facet
 		{
-			facetIds.arr[facetIds.size++] = i;
+			facetIDs.arr[facetIDs.size++] = i;
 		}
 	}
 }
@@ -390,7 +389,7 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 
 void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-	for (int i = 0; i < m_particle->m_facetNum; ++i)
+	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
 		const Point3f &facetNormal = m_facets[i].normal[!beam.location];
 		double cosFB = DotProduct(beam.direction, facetNormal);
@@ -409,7 +408,7 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 									   int prevFacetNum, PolygonArray &resFacets)
 {
 	const Facet &facet = m_facets[facetID];
-	const Point3f &normal = facet.normal[Location::Outside];
+	const Point3f &normal = facet.normal[Location::Out];
 	resFacets.arr[resFacets.size++] = facet;
 
 	for (int i = 0; i < prevFacetNum; ++i)
@@ -586,12 +585,12 @@ void TracingConcave::PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOu
 	if (hasOutBeam)
 	{
 		outBeam.id = beam.id;
-		outBeam.SetTracingParams(facetID, beam.level+1, Location::Outside);
+		outBeam.SetTracingParams(facetID, beam.level+1, Location::Out);
 		SetBeamID(outBeam);
 		passed.push_back(outBeam);
 	}
 
-	outBeam.SetTracingParams(facetID, beam.level+1, Location::Inside);
+	outBeam.SetTracingParams(facetID, beam.level+1, Location::In);
 	SetBeamID(inBeam);
 	passed.push_back(inBeam);
 }

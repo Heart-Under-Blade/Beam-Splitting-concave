@@ -14,7 +14,7 @@ public:
 	void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 private:
-	void CutBeamByFacet(int facetId, Beam &beam, bool &isDivided);
+	void CutBeamByFacet(int facetID, Beam &beam, bool &isDivided);
 
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
@@ -28,12 +28,12 @@ private:
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
-	void FindVisibleFacetsForWavefront(IntArray &facetIds);
+	void FindVisibleFacetsForWavefront(IntArray &facetIDs);
 
-	void SelectVisibleFacets(const Beam &beam, IntArray &facetIds);
-	void SelectVisibleFacetsForWavefront(IntArray &facetIds);
+	void SelectVisibleFacets(const Beam &beam, IntArray &facetIDs);
+	void SelectVisibleFacetsForWavefront(IntArray &facetIDs);
 
-	void SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
+	void SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
 	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
