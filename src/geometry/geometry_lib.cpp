@@ -42,6 +42,7 @@ void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
 	res.cz = _cp[2];
 }
 
+// REF: try to move to Point3f
 Point3f CrossProduct(const Point3f &v1, const Point3f &v2)
 {
 	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);

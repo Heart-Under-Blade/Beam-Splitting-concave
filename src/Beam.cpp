@@ -37,7 +37,7 @@ void Beam::Copy(const Beam &other)
 	e = other.e;
 	direction = other.direction;
 
-	SetPolygon(other.polygon);
+	Polygon::operator =(other);
 
 	lastFacetID = other.lastFacetID;
 	level = other.level;
@@ -54,14 +54,18 @@ Beam::Beam(const Beam &other)
 	Copy(other);
 }
 
+Beam::Beam(const Polygon &other)
+	: Polygon(other)
+{
+}
+
 Beam::Beam(Beam &&other)
+	: Polygon(other)
 {
 	opticalPath = other.opticalPath;
 	D = other.D;
 	e = other.e;
 	direction = other.direction;
-
-	SetPolygon(other.polygon);
 
 	lastFacetID = other.lastFacetID;
 	level = other.level;
@@ -75,8 +79,6 @@ Beam::Beam(Beam &&other)
 	other.D = 0;
 	other.e = Point3f(0, 0, 0);
 	other.direction = Point3f(0, 0, 0);
-
-	other.polygon.size = 0;
 
 	other.lastFacetID = 0;
 	other.level = 0;
@@ -164,16 +166,21 @@ Beam & Beam::operator = (const Beam &other)
 	return *this;
 }
 
+Beam &Beam::operator =(const Polygon &other)
+{
+	Polygon::operator =(other);
+}
+
 Beam &Beam::operator = (Beam &&other)
 {
 	if (this != &other)
 	{
+		Polygon::operator =(other);
+
 		opticalPath = other.opticalPath;
 		D = other.D;
 		e = other.e;
 		direction = other.direction;
-
-		SetPolygon(other.polygon);
 
 		lastFacetID = other.lastFacetID;
 		level = other.level;
@@ -188,8 +195,6 @@ Beam &Beam::operator = (Beam &&other)
 		other.D = 0;
 		other.e = Point3f(0, 0, 0);
 		other.direction = Point3f(0, 0, 0);
-
-		other.polygon.size = 0;
 
 		other.lastFacetID = 0;
 		other.level = 0;
@@ -223,7 +228,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	const double eps1 = /*1e9**/100*FLT_EPSILON;
 	const double eps2 = /*1e6**/FLT_EPSILON;
 
-	Point3f _n = polygon.Normal();
+	Point3f _n = Normal();
 
 	int begin, startIndex, endIndex;
 	bool order = (DotProduct(_n, direction) < 0);
@@ -232,21 +237,21 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	if (order)
 	{
 		begin = 0;
-		startIndex = polygon.size-1;
+		startIndex = size-1;
 		endIndex = -1;
 	}
 	else
 	{
-		begin = polygon.size-1;
+		begin = size-1;
 		startIndex = 0;
-		endIndex = polygon.size;
+		endIndex = size;
 	}
 
 	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
 
 	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
 
-	Point3f cntr = polygon.Center();
+	Point3f cntr = Center();
 	Point3d center = Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
 
 	Point3d	pt_proj = Proj(n, k_k0);
@@ -260,7 +265,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 
 	if (fabs(A) < eps2 && fabs(B) < eps2)
 	{
-		return -one/wavelength*polygon.Area();
+		return -one/wavelength*Area();
 	}
 
 	complex s(0, 0);
@@ -268,14 +273,14 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 //	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
 //	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
 
-	Point3d p1 = Proj(n, polygon.arr[begin]) - center;
+	Point3d p1 = Proj(n, arr[begin]) - center;
 	Point3d p2;
 
 	if (fabs(B) > fabs(A))
 	{
 		for (int i = startIndex; i != endIndex;)
 		{
-			p2 = Proj(n, polygon.arr[i]) - center;
+			p2 = Proj(n, arr[i]) - center;
 
 			if (fabs(p1.x - p2.x) < eps1)
 			{
@@ -327,7 +332,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	{
 		for (int i = startIndex; i != endIndex;)
 		{
-			p2 = Proj(n, polygon.arr[i]) - center;
+			p2 = Proj(n, arr[i]) - center;
 
 			if (fabs(p1.y - p2.y)<eps1)
 			{
@@ -423,15 +428,15 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 
 void Beam::AddVertex(const Point3f &vertex)
 {
-	polygon.arr[polygon.size++] = vertex;
+	arr[size++] = vertex;
 }
 
 void Beam::SetPolygon(const Polygon &other)
 {
-	polygon.size = other.size;
+	size = other.size;
 
 	for (int i = 0; i < other.size; ++i)
 	{
-		polygon.arr[i] = other.arr[i];
+		arr[i] = other.arr[i];
 	}
 }

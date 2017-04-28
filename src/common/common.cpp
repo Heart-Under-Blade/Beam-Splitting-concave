@@ -31,6 +31,18 @@ void Dellines(int count)
 #endif
 }
 
+void EraseConsoleLine(int lenght)
+{
+	std::cout << '\r';
+
+	for (int i = 0; i < lenght; ++i)
+	{
+		std::cout << ' ';
+	}
+
+	std::cout << '\r';
+}
+
 double DegToRad(double deg)
 {
 	return (deg*M_PI)/180;

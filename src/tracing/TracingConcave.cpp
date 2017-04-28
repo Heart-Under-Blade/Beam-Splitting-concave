@@ -127,7 +127,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resSize = 0;
-	resultBeams[resSize++] = beam.polygon;
+	resultBeams[resSize++] = beam;
 
 	// cut facet projections out of beam one by one
 	for (int i = 0; i < facetIds.size; ++i)
@@ -210,17 +210,17 @@ void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
 														:  beamFacet.normal[loc];
 	Polygon resultBeams[MAX_VERTEX_NUM];
 	int resultSize = 0;
-	Difference(beam.polygon, beamFacet.normal[loc],
+	Difference(beam, beamFacet.normal[loc],
 			   m_facets[facetID], facetNormal, -beam.direction,
 			   resultBeams, resultSize);
 
 	if (resultSize == 0) // beam is totaly swallowed by facet
 	{
-		beam.polygon.size = 0;
+		beam.size = 0;
 	}
 	else if (resultSize == CLIP_RESULT_SINGLE)
 	{
-		beam.polygon = resultBeams[0];
+		beam = resultBeams[0];
 	}
 	else // beam had divided by facet
 	{
@@ -228,19 +228,19 @@ void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
 
 		for (int i = 0; i < resultSize; ++i)
 		{
-			tmp.polygon = resultBeams[i];
+			tmp = resultBeams[i];
 			m_beamTree[m_treeSize++] = tmp;
 		}
 
 		isDivided = true;
-		beam.polygon.size = 0;
+		beam.size = 0;
 	}
 }
 
-bool TracingConcave::HasExternalBeam(Beam &incidentBeam)
+bool TracingConcave::isExternalNonEmptyBeam(Beam &incidentBeam)
 {
 	return (incidentBeam.location == Location::Out
-			&& incidentBeam.polygon.size != 0);
+			&& incidentBeam.size != 0);
 }
 
 int TracingConcave::FindFacetID(int facetID, const IntArray &arr)
@@ -317,7 +317,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 			}
 		}
 
-		if (HasExternalBeam(beam))
+		if (isExternalNonEmptyBeam(beam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
 			scaterredBeams.push_back(beam);
 		}
@@ -449,9 +449,9 @@ void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &di
 	projection = point - (direction * t);
 }
 
-/// OPT: поменять все int и пр. параметры функций на ссылочные
+// OPT: поменять все int и пр. параметры функций на ссылочные
 
-/** TODO: придумать более надёжную сортировку по близости
+/* TODO: придумать более надёжную сортировку по близости
  * (как вариант определять, что одна грань затеняют другую по мин. и макс.
  * удалённым вершинам, типа: "//" )*/
 void TracingConcave::SortFacets(const Point3f &beamDir, IntArray &facetIds)

@@ -11,11 +11,12 @@
 #endif
 
 // REF: try to inherit 'Polygon' for this class
-class Beam
+class Beam : public Polygon
 {
 public:
 	Beam();
 	Beam(const Beam &other);
+	Beam(const Polygon &other);
 	Beam(Beam &&other);
 
 	void RotateSpherical(const Point3f &dir, const Point3f &polarBasis);
@@ -25,6 +26,7 @@ public:
 	void SetPolygon(const Polygon &other);
 
 	Beam & operator = (const Beam &other);
+	Beam & operator =(const Polygon &other);
 	Beam & operator = (Beam &&other);
 
 	void SetTracingParams(int facetID, int level, Location location);
@@ -41,8 +43,6 @@ public:
 	Point3f direction;				///< direction of beam
 	JonesMatrix J;					///< Jones matrix of beam
 	Point3f e;						///< basis of polarization plane
-
-	Polygon polygon;				///< array of beam vertices (shape)
 
 	int lastFacetID;				///< last reflected facet
 	int level;						///< number of preview reflections

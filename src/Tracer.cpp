@@ -12,20 +12,8 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	  m_incidentDir(0, 0, -1),
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultFileName(resultFileName),
-	  m_gammaNorm(3/M_PI) // TODO: link to 'symmetryAngle'
+	  m_gammaNorm(tracing->m_particle->GetSymmetryAngle())
 {
-}
-
-void Tracer::EraseConsoleLine(int lenght)
-{
-	cout << '\r';
-
-	for (int i = 0; i < lenght; ++i)
-	{
-		cout << ' ';
-	}
-
-	cout << '\r';
 }
 
 void Tracer::PrintProgress(int betaNumber, long long count)
@@ -210,21 +198,21 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 void Tracer::SetJnRot(Beam &beam, const Point3f &T,
 					  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot)
 {
-	Point3f normal = beam.polygon.Normal();
+	Point3f normal = beam.Normal();
 
 	Point3d vt = CrossProductD(vf, vr);
 	vt = vt/LengthD(vt);
 
-	Point3f cpNT = CrossProduct(normal, T);
-	Point3f cpNE = CrossProduct(normal, beam.e);
+	Point3f NT = CrossProduct(normal, T);
+	Point3f NE = CrossProduct(normal, beam.e);
 
-	Point3d cpNTd = Point3d(cpNT.cx, cpNT.cy, cpNT.cz);
-	Point3d cpNEd = Point3d(cpNE.cx, cpNE.cy, cpNE.cz);
+	Point3d NTd = Point3d(NT.cx, NT.cy, NT.cz);
+	Point3d NEd = Point3d(NE.cx, NE.cy, NE.cz);
 
-	Jn_rot[0][0] = -DotProductD(cpNTd, vf); // REF: похоже на SetJMatrix
-	Jn_rot[0][1] = -DotProductD(cpNEd, vf);
-	Jn_rot[1][0] =  DotProductD(cpNTd, vt);
-	Jn_rot[1][1] =  DotProductD(cpNEd, vt);
+	Jn_rot[0][0] = -DotProductD(NTd, vf);
+	Jn_rot[0][1] = -DotProductD(NEd, vf);
+	Jn_rot[1][0] =  DotProductD(NTd, vt);
+	Jn_rot[1][1] =  DotProductD(NEd, vt);
 }
 
 void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
@@ -233,7 +221,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams.at(i);
-		double ctetta = DotProduct(beam.direction, -m_incidentDir);
+//		double ctetta = DotProduct(beam.direction, -m_incidentDir);
 
 //		if (ctetta < 0.17364817766693034885171662676931)
 //		{	// отбрасываем пучки, которые далеко от конуса направления назад
@@ -250,7 +238,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 //		double area = beam.polygon.Area(); // DEB
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
-		Point3f center = beam.polygon.Center();
+		Point3f center = beam.Center();
 		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
 		Point3f T = CrossProduct(beam.e, beam.direction);
@@ -292,16 +280,16 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
 	{
 		Beam &beam = outBeams.at(i);
 
-		double ctetta = DotProduct(beam.direction, -m_incidentDir);
+//		double ctetta = DotProduct(beam.direction, -m_incidentDir);
 
-		if (ctetta < 0.17364817766693034885171662676931)
-		{	// отбрасываем пучки, которые далеко от конуса направления назад
+//		if (ctetta < 0.17364817766693034885171662676931)
+//		{	// отбрасываем пучки, которые далеко от конуса направления назад
 //			continue;// DEB
-		}
+//		}
 
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
-		Point3f center = beam.polygon.Center();
+		Point3f center = beam.Center();
 		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
 		Point3f T = CrossProduct(beam.e, beam.direction);

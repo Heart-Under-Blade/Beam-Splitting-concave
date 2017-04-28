@@ -30,8 +30,10 @@ struct BeamTree
 
 class Tracing // REF: поменять название на ~Splitter
 {
-protected:
+public:
+	// REF: убрать в протектед потом
 	Particle *m_particle;			///< scattering particle (crystal)
+protected:
 	Facet *m_facets;
 	Point3f m_polarizationBasis;	///<
 	bool m_isOpticalPath;
@@ -54,8 +56,6 @@ private:
 public:
 	Tracing(Particle *particle, const Point3f &startBeamDir, bool isOpticalPath,
 			const Point3f &polarizationBasis, int interReflectionNumber);
-
-//	void RotateParticle(double beta, double gamma);
 
 	double BeamCrossSection(const Beam &beam) const;
 

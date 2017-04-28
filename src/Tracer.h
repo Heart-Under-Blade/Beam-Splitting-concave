@@ -119,7 +119,6 @@ private:
 							  double norm = 1);
 	void WriteSumMatrix(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
-	void EraseConsoleLine(int lenght); // REF: вынести куда-нибудь
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
 	void PrintProgress(int betaNumber, long long count);
 };

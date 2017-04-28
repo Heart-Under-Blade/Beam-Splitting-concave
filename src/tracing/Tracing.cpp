@@ -44,15 +44,10 @@ double Tracing::BeamCrossSection(const Beam &beam) const
 		return 0;
 	}
 
-	double square = beam.polygon.Area();
+	double area = beam.Area();
 	double n = Length(normal);
-	return (e*square) / n;
+	return (e*area)/n;
 }
-
-//void Tracing::RotateParticle(double beta, double gamma)
-//{
-//	m_particle->Rotate(beta, gamma, 0);
-//}
 
 void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN,
 											int facetId, Beam &inBeam, Beam &outBeam)
@@ -156,7 +151,7 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 
 void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 {
-	Point3f center = inBeam.polygon.Center();
+	Point3f center = inBeam.Center();
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
 	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_waveFront.direction, center);
@@ -167,8 +162,8 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 
 void Tracing::TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	SetPolygonByFacet(facetId, inBeam.polygon);
-	SetPolygonByFacet(facetId, outBeam.polygon);
+	SetPolygonByFacet(facetId, inBeam);
+	SetPolygonByFacet(facetId, outBeam);
 	SetBeamOpticalParams(facetId, inBeam, outBeam);
 }
 
@@ -177,7 +172,7 @@ void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
 	const Point3f &startDir = m_waveFront.direction;
 	const Point3f &normal = m_particle->facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
-	m_lightSurfaceArea += beam.polygon.Area() * cosIN;
+	m_lightSurfaceArea += beam.Area() * cosIN;
 }
 
 // TODO: пофиксить
@@ -238,7 +233,7 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 {
 	double Nr = CalcNr(cosIN);
 	double coef = (incidentBeam.location == Location::Out) ? 1 : sqrt(Nr);
-	Point3f center = outBeam.polygon.Center();
+	Point3f center = outBeam.Center();
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 
@@ -278,7 +273,7 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 		throw std::exception();
 	}
 
-	bool isOk = Intersect(facetID, incidentBeam, outBeam.polygon);
+	bool isOk = Intersect(facetID, incidentBeam, outBeam);
 
 	if (!isOk)
 	{
@@ -419,7 +414,7 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 
 	if (m_isOpticalPath)
 	{
-		Point3f center = inBeam.polygon.Center();
+		Point3f center = inBeam.Center();
 		inBeam.D = DotProduct(-center, inBeam.direction);
 
 		double temp = DotProduct(incidentDir, center);
@@ -586,8 +581,8 @@ bool Tracing::Intersect(int facetID, const Beam &beam, Polygon &intersection) co
 	__m128 _output_points[MAX_VERTEX_NUM];
 	const Point3f &normal = m_facets[facetID].in_normal;
 
-	bool isProjected = ProjectToFacetPlane(beam.polygon, beam.direction,
-										   normal, _output_points);
+	bool isProjected = ProjectToFacetPlane(beam, beam.direction, normal,
+										   _output_points);
 	if (!isProjected)
 	{
 		return false;
@@ -595,7 +590,7 @@ bool Tracing::Intersect(int facetID, const Beam &beam, Polygon &intersection) co
 
 	__m128 _normal_to_facet = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
 	__m128 *_output_ptr = _output_points;
-	int outputSize = beam.polygon.size;
+	int outputSize = beam.size;
 
 	__m128 _buffer[MAX_VERTEX_NUM];
 	__m128 *_buffer_ptr = _buffer;

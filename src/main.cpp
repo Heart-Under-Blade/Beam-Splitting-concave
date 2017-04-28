@@ -943,7 +943,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 
 			beam.RotateSpherical(-incidentDir, polarizationBasis);
 
-			Point3f center = beam.polygon.Center();
+			Point3f center = beam.Center();
 			double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
 			Point3f T = CrossProduct(beam.e, beam.direction);
@@ -967,7 +967,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 
 					matrixC Jn_rot(2, 2);
 					{
-						Point3f normal = beam.polygon.Normal();
+						Point3f normal = beam.Normal();
 
 						Point3d vf, vt;
 						vf = (!j) ? -polarizationBasis : Point3d(-sinF ,cosF ,0);
@@ -977,7 +977,7 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 						Point3f cpNT = CrossProduct(normal, T);
 						Point3f cpNE = CrossProduct(normal, beam.e);
 
-						Jn_rot[0][0] = -DotProductD(Point3d(cpNT.cx, cpNT.cy, cpNT.cz), vf); // OPT: похоже на SetJMatrix
+						Jn_rot[0][0] = -DotProductD(Point3d(cpNT.cx, cpNT.cy, cpNT.cz), vf);
 						Jn_rot[0][1] = -DotProductD(Point3d(cpNE.cx, cpNE.cy, cpNE.cz), vf);
 						Jn_rot[1][0] =  DotProductD(Point3d(cpNT.cx, cpNT.cy, cpNT.cz), vt);
 						Jn_rot[1][1] =  DotProductD(Point3d(cpNE.cx, cpNE.cy, cpNE.cz), vt);

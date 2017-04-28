@@ -41,7 +41,7 @@ private:
 
 	void TraceFirstBeam();
 
-	bool HasExternalBeam(Beam &incidentBeam);
+	bool isExternalNonEmptyBeam(Beam &incidentBeam);
 
 	int FindFacetID(int facetID, const IntArray &arr);
 

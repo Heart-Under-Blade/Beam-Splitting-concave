@@ -10,6 +10,7 @@
 //#define _OUTPUT_NRG_CONV // energy conversation of input and output beams outputs in file
 
 void Dellines(int count);
+void EraseConsoleLine(int lenght);
 
 double DegToRad(double deg);
 double RadToDeg(double rad);
