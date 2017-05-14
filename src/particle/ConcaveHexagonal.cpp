@@ -24,15 +24,7 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 
 	SetDefaultNormals();
 	SetActualState();
-	SetCenters();
-}
-
-void ConcaveHexagonal::SetCenters()
-{
-	for (int i = 0; i < facetNum; ++i)
-	{
-		defaultFacets[i].SetCenter();
-	}
+	SetDefaultCenters();
 }
 
 void ConcaveHexagonal::SetFacetParams()

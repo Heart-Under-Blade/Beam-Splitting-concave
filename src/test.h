@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "Hexagonal.h"
+#include "HexagonalAggregate.h"
 #include "TiltedHexagonal.h"
 #include "ConcaveHexagonal.h"
 #include "Intersection.h"
@@ -43,6 +44,7 @@ void SetOutputPolygon(__m128 *_output_points, int outputSize,
 		p0 = _output_points[i];
 	}
 }
+
 bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 								  const Point3f &normal, __m128 *_projection)
 {
@@ -310,7 +312,20 @@ void testHexagonRotate()
 //	outputParticle(*hex);
 //}
 
+void testHexagonalAggregateBuild()
+{
+	Particle *hex = new HexagonalAggregate(1.31, 40, 80, 2);
+	toFile(*hex);
+}
 
+void testHexagonalAggregateRot(double b, double g)
+{
+	Particle *hex = new HexagonalAggregate(1.31, 40, 80, 2);
+	double beta = (b*M_PI)/180;
+	double gamma = (g*M_PI)/180;
+	hex->Rotate(beta, gamma, 0);
+	toFile(*hex);
+}
 //void testCompareParticles()
 //{
 //	Particle *hex1 = new TiltedHexagonal(40, 100, 1.31, 0);

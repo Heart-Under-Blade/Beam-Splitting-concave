@@ -297,6 +297,8 @@ public:
 	}
 };
 
+// TODO: try to create template class 'Array<type>'
+
 struct PolygonArray
 {
 	Polygon arr[MAX_POLYGON_NUM];

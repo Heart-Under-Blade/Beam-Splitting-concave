@@ -50,7 +50,5 @@ double DegToRad(double deg)
 
 double RadToDeg(double rad)
 {
-	rad = (rad*180);
-	rad = rad/M_PI;
-	return rad;
+	return (rad*180)/M_PI;
 }

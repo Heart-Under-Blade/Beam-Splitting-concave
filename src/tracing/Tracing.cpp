@@ -170,7 +170,7 @@ void Tracing::TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam)
 void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
 {
 	const Point3f &startDir = m_waveFront.direction;
-	const Point3f &normal = m_particle->facets[facetId].in_normal;
+	const Point3f &normal = m_facets[facetId].in_normal;
 	double cosIN = DotProduct(startDir, normal);
 	m_lightSurfaceArea += beam.Area() * cosIN;
 }
@@ -184,7 +184,7 @@ void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<s
 	for (unsigned int i = 0; i < tracks.size(); ++i)
 	{
 		int facetId = tracks.at(i).at(0);
-		const Point3f &extNormal = m_particle->facets[facetId].ex_normal;
+		const Point3f &extNormal = m_facets[facetId].ex_normal;
 
 		double cosIN = DotProduct(m_waveFront.direction, extNormal);
 

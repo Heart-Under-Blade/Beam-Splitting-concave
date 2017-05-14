@@ -32,13 +32,14 @@ protected:
 
 	double m_mainSize;			///< max size of particle (diameter or height or smth)
 	double m_symmetryAngle;		///< angle of particle symmetry
-	complex m_refractionIndex;	///< complex value of refraction index of the particle
+	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 
 protected:
 	void Init(int facetCount, const complex &refrIndex, double symAngle,
 			  double size);
 
 	void SetDefaultNormals();
+	void SetDefaultCenters();
 	void SetActualState();
 	virtual void SetFacetParams() {}
 
@@ -51,5 +52,6 @@ private:
 
 private:
 	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
+	void RotateCenters();
 };
 

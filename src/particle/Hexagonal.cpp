@@ -12,10 +12,13 @@ Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 	Init(8, refrIndex, M_PI/3, size);
 
 	SetFacetParams();
+
 	SetBases(defaultFacets[0], defaultFacets[7]);
 	SetSides(defaultFacets[0], defaultFacets[7]);
+
 	SetDefaultNormals();
 	SetActualState();
+	SetDefaultCenters();
 }
 
 void Hexagonal::SetSize(double diameter, double height)
@@ -35,7 +38,7 @@ void Hexagonal::SetFacetParams()
 
 void Hexagonal::SetSideFacetParams(int first, int last)
 {
-	m_sideFacetIDs = Couple<int>{first, last};
+	m_sideFacetIDs = Couple<int>{first, last};// REF: как-нибудь избавиться от этого
 
 	for (int i = first; i < last; ++i)
 	{
@@ -43,7 +46,7 @@ void Hexagonal::SetSideFacetParams(int first, int last)
 	}
 }
 
-void Hexagonal::SetBases(Facet &baseTop, Facet &baseBottom)
+void Hexagonal::SetBases(Facet &top, Facet &bottom)
 {
 	Point3f *facet;
 
@@ -54,29 +57,26 @@ void Hexagonal::SetBases(Facet &baseTop, Facet &baseBottom)
 	double halfRadius = radius/2;
 	double inRadius = (sqrt(3) * radius) / 2;
 
-	auto SetTwoDiagonalPoints = [&] (int startPointIndex, double x, double y, double z)
+	auto SetTwoDiagonalPoints = [&] (int startIndex, double x, double y, double z)
 	{
-		int endPointIndex = startPointIndex + halfNumber;
+		int endIndex = startIndex + halfNumber;
 
-		for (int i = startPointIndex; i <= endPointIndex; i += halfNumber)
+		for (int i = startIndex; i <= endIndex; i += halfNumber)
 		{
-			facet[i].cx = x;
-			facet[i].cy = y;
-			facet[i].cz = z;
-
+			facet[i] = Point3f(x, y, z);
 			x = -x;
 			y = -y;
 		}
 	};
 
 	// top base facet
-	facet = baseTop.arr;
+	facet = top.arr;
 	SetTwoDiagonalPoints(0, halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(1, -halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(2, -radius, 0, halfHeight);
 
 	// bottom base facet
-	facet = baseBottom.arr;
+	facet = bottom.arr;
 	SetTwoDiagonalPoints(0, radius, 0, -halfHeight);
 	SetTwoDiagonalPoints(1, halfRadius, -inRadius, -halfHeight);
 	SetTwoDiagonalPoints(2, -halfRadius, -inRadius, -halfHeight);
@@ -87,20 +87,20 @@ void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 	const Point3f *top = baseTop.arr;
 	const Point3f *bot = baseBottom.arr;
 
-	int endPointIndex = BASE_VERTEX_NUM-1;
+	int endIndex = BASE_VERTEX_NUM-1;
 
-	int i1 = endPointIndex;
+	int i1 = endIndex;
 	int i2 = 0;
 
-	for (int i = m_sideFacetIDs.first; i <  m_sideFacetIDs.last; ++i)
+	for (int i = m_sideFacetIDs.first; i < m_sideFacetIDs.last; ++i)
 	{
 		Point3f *facet = defaultFacets[i].arr;
 
 		facet[0] = top[i2];
 		facet[1] = top[i1];
 
-		facet[2] = bot[endPointIndex-i1];
-		facet[3] = bot[endPointIndex-i2];
+		facet[2] = bot[endIndex-i1];
+		facet[3] = bot[endIndex-i2];
 
 		i1 = i2;
 		++i2;

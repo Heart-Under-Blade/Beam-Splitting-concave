@@ -1,5 +1,6 @@
 #include "Hexagonal.h"
 #include "ConcaveHexagonal.h"
+#include "HexagonalAggregate.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -9,11 +10,11 @@ void writeFacet(int beg, int end, std::ofstream &file, Particle *particle)
 {
 	for (int i = beg; i < end; ++i)
 	{
-		for (int j = particle->vertexNums[i]-1; j >= 0; --j)
+		for (int j = particle->facets[i].size-1; j >= 0; --j)
 		{
-			file << particle->facets[i][j].cx << ' '
-				 << particle->facets[i][j].cy << ' '
-				 << particle->facets[i][j].cz << ' '
+			file << particle->facets[i].arr[j].cx << ' '
+				 << particle->facets[i].arr[j].cy << ' '
+				 << particle->facets[i].arr[j].cz << ' '
 				 << '\n';
 		}
 	}
@@ -22,16 +23,16 @@ void writeFacet(int beg, int end, std::ofstream &file, Particle *particle)
 int main()
 {
 	int type;
-	double halfHeight, radius;
+	double height, diameter;
 
-	printf("Particle type (0 - Prism, 1 - Concave prism):\n");
+	printf("Particle type \n0 - Hex prism;\n1 - Concave hex prism;\n2 - Hex prism aggregate\n");
 	scanf("%d", &type);
 
-	printf("\nHalfheight:\n");
-	scanf("%lf", &halfHeight);
+	printf("\nHeight:\n");
+	scanf("%lf", &height);
 
-	printf("\nRadius:\n");
-	scanf("%lf", &radius);
+	printf("\nDiameter:\n");
+	scanf("%lf", &diameter);
 
 	Particle *particle;
 
@@ -41,11 +42,15 @@ int main()
 		printf("\nCavity dept:\n");
 		scanf("%lf", &cavityDept);
 
-		particle = new ConcaveHexagonal(radius, halfHeight, 1.31, cavityDept);
+		particle = new ConcaveHexagonal(1.31, diameter, height, cavityDept);
 	}
-	else
+	else if (type == 0)
 	{
-		particle = new Hexagonal(radius, halfHeight, 1.31);
+		particle = new Hexagonal(1.31, diameter, height);
+	}
+	else if (type == 2)
+	{
+		particle = new HexagonalAggregate(1.31, diameter, height, 2);
 	}
 
 	// output file
@@ -55,7 +60,7 @@ int main()
 	std::vector<int> vNums;
 	for (int i = 0; i < particle->facetNum; ++i)
 	{
-		vNums.push_back(particle->vertexNums[i]);
+		vNums.push_back(particle->facets[i].size);
 	}
 
 	std::sort(vNums.begin(), vNums.end(), std::greater<int>());
@@ -71,11 +76,20 @@ int main()
 		writeFacet(0, 6, file, particle);
 		writeFacet(12, 18, file, particle);
 	}
-	else
+	else if (type == 0)
 	{
 		writeFacet(0, 1, file, particle);
 		writeFacet(7, 8, file, particle);
 		writeFacet(1, 7, file, particle);
+	}
+	else if (type == 2)
+	{
+		writeFacet(0, 1, file, particle);
+		writeFacet(7, 8, file, particle);
+		writeFacet(8, 9, file, particle);
+		writeFacet(15, 16, file, particle);
+		writeFacet(1, 7, file, particle);
+		writeFacet(9, 15, file, particle);
 	}
 
 	printf("\nAll done. Press anykey...");

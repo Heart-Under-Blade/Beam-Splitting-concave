@@ -379,8 +379,8 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 //	int loc = !beam.location;
 	const Point3f &beamNormal = -m_facets[beam.lastFacetID].normal[!beam.location];
 
-	const Point3f &facetCenter = m_particle->facets[facetID].center;
-	const Point3f &beamCenter = m_particle->facets[beam.lastFacetID].center;
+	const Point3f &facetCenter = m_facets[facetID].center;
+	const Point3f &beamCenter = m_facets[beam.lastFacetID].center;
 	Point3f vectorFromBeamToFacet = facetCenter - beamCenter;
 
 	double cosBF = DotProduct(beamNormal, vectorFromBeamToFacet);

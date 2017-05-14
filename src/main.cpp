@@ -36,7 +36,8 @@ enum class ParticleType : int
 {
 	Hexagonal = 1,
 	ConcaveHexagonal = 10,
-	TiltedHexagonal = 11
+	TiltedHexagonal = 11,
+	HexagonalAggregate = 12
 };
 
 struct OrientationRange
@@ -236,124 +237,32 @@ void ImportTracks(int facetNum)
 //	delete particle;
 //}
 
-//void SetParams(int argc, char* argv[], CLArguments &params)
-//{
-//	try
-//	{
-//		int paramsNum = 0;
-
-//		for (int i = 1; i < argc; ++i)
-//		{
-//			string arg(argv[i]);
-
-//			if (arg == "-p")
-//			{
-//				params.particleType = (ParticleType)ArgToValue(argv, argc, ++i);
-//				params.halfHeight = GetArgValueD(argv, argc, ++i);
-//				params.radius = GetArgValueD(argv, argc, ++i);
-
-//				if (params.particleType == ParticleType::ConcaveHexagonal)
-//				{
-//					params.cavityDepth = GetArgValueD(argv, argc, ++i);
-//				}
-//				else if (params.particleType == ParticleType::TiltedHexagonal)
-//				{
-//					params.tiltAngle = GetArgValueD(argv, argc, ++i);
-//				}
-
-//				++paramsNum;
-//			}
-//			else if (arg == "-ri")
-//			{
-//				params.refractionIndex = GetArgValueD(argv, argc, ++i);
-//				++paramsNum;
-//			}
-//			else if (arg == "-rn")
-//			{
-//				params.interReflNum = ArgToValue(argv, argc, ++i);
-//				++paramsNum;
-//			}
-//			else if (arg == "-b")
-//			{
-//				params.betaRange.begin = ArgToValue(argv, argc, ++i);
-//				params.betaRange.end = ArgToValue(argv, argc, ++i);
-//				++paramsNum;
-//			}
-//			else if (arg == "-g")
-//			{
-//				params.gammaRange.begin = ArgToValue(argv, argc, ++i);
-//				params.gammaRange.end = ArgToValue(argv, argc, ++i);
-//				++paramsNum;
-//			}
-//			else if (arg == "-t")
-//			{
-//				params.thetaNumber = ArgToValue(argv, argc, ++i);
-//				++paramsNum;
-//			}
-//			else if (arg == "-r")
-//			{
-//				params.isRandom = true;
-//			}
-//			else if (arg == "-o")
-//			{
-//				if (argc <= i)
-//				{
-//					throw "Not enouth arguments.";
-//				}
-
-//				params.outfile = argv[++i];
-//			}
-//			else if (arg == "-bsc")
-//			{
-//				params.bsCone.radius = GetArgValueD(argv, argc, ++i);
-//				params.bsCone.phi = ArgToValue(argv, argc, ++i);
-//				params.bsCone.theta = ArgToValue(argv, argc, ++i);
-//			}
-//			else if (arg == "-w")
-//			{
-//				params.wavelength = GetArgValueD(argv, argc, ++i);
-//			}
-//		}
-
-//		if (paramsNum < 6) // REF: выделить как константу
-//		{
-//			throw string("Too few arguments.");
-//		}
-//	}
-//	catch (const string &e)
-//	{
-//		cout << "Error! " << e << " Please check it and restart the program."
-//				  << endl << "Press any key to exit...";
-//		getchar();
-//		exit(1);
-//	}
-//}
+// TODO: написать свой ArgParser
 
 void setAvalableArgs(ArgParser &parser)
 {
 	parser.addArgument("-p", "--particle", '+', false);
 	parser.addArgument("--ri", 1, false);
 	parser.addArgument("-n", "--interReflNum", 1, false);
-	parser.addArgument("--point", 2);
-	parser.addArgument("--range");
-	parser.addArgument("-b", "--beta", 3);
-	parser.addArgument("-b", "--beta", 3);
+	parser.addArgument("--point", 2); // REF: заменить на --fixed
+	parser.addArgument("--range"); // REF: перенести бета и гамма сюда в кач-ве параметров | заменить на --random
+	parser.addArgument("-b", "--beta", 3); // REF: попробовать задавать в частице
 	parser.addArgument("-g", "--gamma", 3);
 	parser.addArgument("-t", "--cellCount", 1);
-	parser.addArgument("--po");
+	parser.addArgument("--po"); // REF: ввести --go
 	parser.addArgument("-w", "--wavelength", 1);
 	parser.addArgument("--conus", 3);
 	parser.addArgument("-o", "--output", 1);
 }
 
-AngleInterval GetInterval(const char *name, ArgParser &parser)
+AngleRange GetRange(const char *name, double normCoef, ArgParser &parser)
 {
-	AngleInterval interval;
 	vector<string> argInterval = parser.retrieve<vector<string>>(name);
-	interval.begin = parser.argToValue<double>(argInterval[0]);
-	interval.end = parser.argToValue<double>(argInterval[1]);
-	interval.count = parser.argToValue<int>(argInterval[2]);
-	return interval;
+	double begin = parser.argToValue<double>(argInterval[0]);
+	double end = parser.argToValue<double>(argInterval[1]);
+	double count = parser.argToValue<int>(argInterval[2]);
+	AngleRange range(begin, end, count, normCoef);
+	return range;
 }
 
 Cone SetCone(ArgParser &parser)
@@ -375,6 +284,12 @@ int main(int argc, const char** argv)
 //	testTiltHexagonBuild();
 //	testCompareParticles();
 
+//	testHexagonalAggregateBuild();
+	testHexagonalAggregateRot(0, 0);
+//	testHexagonalAggregateRot(45, -90);
+//	testHexagonalAggregateRot(30/*RadToDeg(0.001963495408493621)*/,
+//							  RadToDeg(0.00392208820672883));
+
 	Particle *particle = nullptr;
 	Tracing *tracing = nullptr;
 
@@ -386,16 +301,17 @@ int main(int argc, const char** argv)
 
 		vector<string> vec = parser.retrieve<vector<string>>("particle");
 		ParticleType pt = (ParticleType)parser.argToValue<int>(vec[0]);
-		double hh = parser.argToValue<double>(vec[1]);
-		double r = parser.argToValue<double>(vec[2]);
+		double h = parser.argToValue<double>(vec[1]);
+		double d = parser.argToValue<double>(vec[2]);
 
 		double ri = parser.getArgValue<double>("ri");
 		double sup;
+		int num;
 
 		switch (pt)
 		{
 		case ParticleType::Hexagonal:
-			particle = new Hexagonal(ri, r, hh);
+			particle = new Hexagonal(ri, d, h);
 			break;
 //		case ParticleType::TiltedHexagonal:
 //			sup = parser.argToValue<double>(vec[3]);
@@ -403,7 +319,11 @@ int main(int argc, const char** argv)
 //			break;
 		case ParticleType::ConcaveHexagonal:
 			sup = parser.argToValue<double>(vec[3]);
-			particle = new ConcaveHexagonal(ri, r, hh, sup);
+			particle = new ConcaveHexagonal(ri, d, h, sup);
+			break;
+		case ParticleType::HexagonalAggregate:
+			num = parser.argToValue<int>(vec[3]);
+			particle = new HexagonalAggregate(ri, d, h, num);
 			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
@@ -412,7 +332,8 @@ int main(int argc, const char** argv)
 
 		int reflNum = parser.getArgValue<double>("n");
 
-		if (pt == ParticleType::ConcaveHexagonal)
+		if (pt == ParticleType::ConcaveHexagonal ||
+				pt == ParticleType::HexagonalAggregate)
 		{
 			tracing = new TracingConcave(particle, incidentDir, isOpticalPath,
 										 polarizationBasis, reflNum);
@@ -428,23 +349,40 @@ int main(int argc, const char** argv)
 		ImportTracks(particle->facetNum);
 		Tracer tracer(tracing, "M_all.dat");
 
-		Cone bsCone = SetCone(parser);
+		if (parser.count("--po") != 0)
+		{
+			Cone bsCone = SetCone(parser);
 
-		if (parser.count("point") != 0)
-		{
-			vector<string> vec = parser.retrieve<vector<string>>("point");
-			double beta  = parser.argToValue<double>(vec[0]);
-			double gamma = parser.argToValue<double>(vec[1]);
-//			beta = 32; gamma = 30;
-			tracer.TraceSingleOrPO(beta, gamma, bsCone, trackGroups, wave);
+			if (parser.count("point") != 0)
+			{
+				vector<string> vec = parser.retrieve<vector<string>>("point");
+				double beta  = parser.argToValue<double>(vec[0]);
+				double gamma = parser.argToValue<double>(vec[1]);
+				//			beta = 32; gamma = 30;
+				tracer.TraceSingleOrPO(beta, gamma, bsCone, trackGroups, wave);
+			}
+			else // "range"
+			{
+				AngleRange betaR = GetRange("beta", M_PI/2, parser);
+				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryAngle(), parser);
+				tracer.TraceIntervalPO(betaR, gammaR, bsCone, trackGroups, wave);
+				//			tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
+			}
 		}
-		else // "range"
+		else
 		{
-			AngleInterval betaI = GetInterval("beta", parser);
-			AngleInterval gammaI = GetInterval("gamma", parser);
-			betaI.SetNorm(M_PI/2);
-			gammaI.SetNorm(particle->GetSymmetryAngle());
-			tracer.TraceIntervalPO(betaI, gammaI, bsCone, trackGroups, wave);
+			if (parser.count("t") != 0)
+			{
+				AngleRange betaR = GetRange("beta", M_PI, parser);
+				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryAngle(), parser);
+
+				int cellNum = parser.getArgValue<int>("t");
+				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+			}
+			else
+			{
+				cout << endl << "error";
+			}
 		}
 
 		cout << endl << "done";
@@ -725,7 +663,6 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 //beta = (0.25*M_PI)/180;
 //gamma = (50*M_PI)/180;
 
-				/// TODO: сделать отдельную ф-цию для расчёта фиксированных траекторий
 	//			vector<vector<int>> tracks;
 	//			vector<int> track = {0, 7, 0};
 	//			tracks.push_back(track);

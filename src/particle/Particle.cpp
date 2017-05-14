@@ -6,15 +6,24 @@ void Particle::Init(int facetCount, const complex &refrIndex, double symAngle,
 					double size)
 {
 	facetNum = facetCount;
-	m_refractionIndex = refrIndex;
+	m_refractiveIndex = refrIndex;
 	m_symmetryAngle = symAngle;
 	m_mainSize = size;
+}
+
+void Particle::RotateCenters()
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		RotatePoint(defaultFacets[i].center, facets[i].center);
+	}
 }
 
 void Particle::Rotate(double beta, double gamma, double alpha)
 {
 	SetRotateMatrix(beta, gamma, alpha);
 
+	// REF: слить всё в один цикл
 	for (int i = 0; i < facetNum; ++i)
 	{
 		for (int j = 0; j < facets[i].size; ++j)
@@ -24,11 +33,7 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 	}
 
 	RotateNormals();
-
-	for (int i = 0; i < facetNum; ++i)
-	{
-		RotatePoint(defaultFacets[i].center, facets[i].center);
-	}
+	RotateCenters();
 }
 
 const double &Particle::GetMainSize() const
@@ -38,7 +43,7 @@ const double &Particle::GetMainSize() const
 
 const complex &Particle::GetRefractionIndex() const
 {
-	return m_refractionIndex;
+	return m_refractiveIndex;
 }
 
 void Particle::SetDefaultNormals()
@@ -54,6 +59,14 @@ void Particle::SetActualState()
 	for (int i = 0; i < facetNum; ++i)
 	{
 		facets[i] = defaultFacets[i];
+	}
+}
+
+void Particle::SetDefaultCenters()
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		defaultFacets[i].SetCenter();
 	}
 }
 

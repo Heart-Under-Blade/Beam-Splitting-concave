@@ -28,7 +28,6 @@ protected:
 	void SetFacetParams() override;
 
 private:
-	void SetCenters();
 	void SetCavities(Facet &baseTop, Facet &baseBottom, const CavityPoints &cavities);
 
 	void SetCavityFacets(int start, int end, const Point3f *baseFacet,

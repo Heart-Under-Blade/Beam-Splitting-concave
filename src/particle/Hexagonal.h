@@ -13,7 +13,7 @@ public:
 	Hexagonal(const complex &refrIndex, double diameter, double height);
 
 protected:
-	static const int BASE_FACET_NUM  = 2;	///< number of bases of hexagon
+	static const int BASE_NUM		 = 2;	///< number hexagon's of bases
 	static const int SIDE_VERTEX_NUM = 4;	///< number of vertex of the each side facet
 	static const int BASE_VERTEX_NUM = 6;	///< number of side facets
 
@@ -24,7 +24,7 @@ protected:
 
 protected:
 	void SetFacetParams() override;
-	void SetBases(Facet &baseTop, Facet &baseBottom);
+	void SetBases(Facet &top, Facet &bottom);
 	void SetSides(Facet &baseTop, Facet &baseBottom);
 	void SetSideFacetParams(int first, int last);
 	void SetSize(double diameter, double height);

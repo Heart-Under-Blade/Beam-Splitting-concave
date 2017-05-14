@@ -47,7 +47,8 @@ HEADERS += \
 	../src/PhisBeam.h \
 	../src/particle/TiltedHexagonal.h \
 	../src/argparse.hpp \
-    ../src/ArgParser.h
+    ../src/ArgParser.h \
+    ../src/particle/HexagonalAggregate.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -72,5 +73,6 @@ SOURCES += \
 	../src/geometry/clipper/BeamClipper.cpp \
 	../src/geometry/geometry_lib.cpp \
 	../src/PhisBeam.cpp \
-    ../src/particle/TiltedHexagonal.cpp
+    ../src/particle/TiltedHexagonal.cpp \
+    ../src/particle/HexagonalAggregate.cpp
 

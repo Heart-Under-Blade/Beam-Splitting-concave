@@ -3,6 +3,7 @@
 #include "geometry_lib.h"
 #include "PhysMtr.hpp"
 #include "Tracing.h"
+#include "Mueller.hpp"
 
 struct TrackGroup
 {
@@ -49,21 +50,19 @@ struct Tracks
 	}
 };
 
-struct AngleInterval
+struct AngleRange
 {
 	double begin;
 	double end;
 	int count;
 	double norm;
+	double step;
 
-	void SetNorm(const double &coef)
+	AngleRange(double begin, double end, int count, double normCoef)
+		: begin(begin), end(end), count(count)
 	{
-		norm = coef/count;
-	}
-
-	double GetStep() const
-	{
-		return DegToRad(end - begin)/count;
+		norm = normCoef/count;
+		step = DegToRad(end - begin)/count;
 	}
 };
 
@@ -92,11 +91,11 @@ class Tracer
 public:
 	Tracer(Tracing *tracing, const std::string resultFileName);
 
-	void TraceIntervalPO(const AngleInterval &betaI, const AngleInterval &gammaI,
+	void TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR, int thetaNum);
+	void TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
-	void TraceIntervalPO2(const AngleInterval &betaI, const AngleInterval &gammaI,
+	void TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
-	void TraceIntervalGO(const AngleInterval &betaI, const AngleInterval &gammaI);
 	void TraceSingleOrPO(const double &beta, const double &gamma,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
 
@@ -108,9 +107,14 @@ private:
 	std::string m_resultFileName;
 	double m_gammaNorm;
 	std::vector<Arr2DC> J; // Jones matrices
+	double sizeBin;
+
+	matrix back;	///< Mueller matrix in backward direction
+	matrix forw;	///< Mueller matrix in forward direction
 
 private:
 	void CleanJ(int maxGroupID, const Cone &bsCone);
+	void HandleBeamsGO(std::vector<Beam> &outBeams, double betaDistrProb);
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, int groupID);
 	void SetJnRot(Beam &beam, const Point3f &T,
@@ -121,4 +125,9 @@ private:
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
 	void PrintProgress(int betaNumber, long long count);
+	void ExtractPeaksGO(int EDF, double NRM, int ThetaNumber);
+	void WriteResultsToFileGO(int thetaNum, double NRM, const std::string &filename);
+	void WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM);
+	std::string GetFileName(const std::string &filename);
+
 };
