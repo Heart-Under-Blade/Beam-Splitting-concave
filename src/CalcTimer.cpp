@@ -14,14 +14,43 @@ CalcTimer::CalcTimer()
 	Reset();
 }
 
-void CalcTimer::Start()
+const time_t &CalcTimer::Start()
 {
 	m_startPoint = system_clock::now();
+	return system_clock::to_time_t(m_startPoint);
 }
 
 void CalcTimer::Stop()
 {
 	m_nowPoint = system_clock::now();
+}
+
+std::string CalcTimer::Elapsed()
+{
+	m_nowPoint = system_clock::now();
+	auto dur = m_nowPoint - m_startPoint;
+	long long sec = duration_cast<seconds>(dur).count();
+
+	m_seconds = sec;
+
+	auto SetUnitValue = [](int &unitVal, int &lessUnitVal, int lim)
+	{
+		if (lessUnitVal > lim)
+		{
+			unitVal = lessUnitVal/lim;
+			lessUnitVal %= lim;
+		}
+		else
+		{
+			unitVal = 0;
+		}
+	};
+
+	SetUnitValue(m_minutes, m_seconds, SEC_PER_MIN);
+	SetUnitValue(m_hours, m_minutes, MIN_PER_HOUR);
+	SetUnitValue(m_days, m_hours, HOUR_PER_DAY);
+
+	return ToString();
 }
 
 long long CalcTimer::Duration()
@@ -38,7 +67,7 @@ void CalcTimer::Left(const long long &ms)
 	}
 
 	m_lastTimeLeft = ms;
-	seconds = ms/MSEC_PER_SEC;
+	m_seconds = ms/MSEC_PER_SEC;
 
 	auto SetUnitValue = [](int &unitVal, int &lessUnitVal, int lim)
 	{
@@ -53,9 +82,9 @@ void CalcTimer::Left(const long long &ms)
 		}
 	};
 
-	SetUnitValue(minutes, seconds, SEC_PER_MIN);
-	SetUnitValue(hours, minutes, MIN_PER_HOUR);
-	SetUnitValue(days, hours, HOUR_PER_DAY);
+	SetUnitValue(m_minutes, m_seconds, SEC_PER_MIN);
+	SetUnitValue(m_hours, m_minutes, MIN_PER_HOUR);
+	SetUnitValue(m_days, m_hours, HOUR_PER_DAY);
 }
 
 const time_t &CalcTimer::End(const long long &ms)
@@ -70,12 +99,17 @@ const time_t &CalcTimer::End(const long long &ms)
 	return m_lastEndTime;
 }
 
+const time_t &CalcTimer::Begin() const
+{
+	return system_clock::to_time_t(m_startPoint);
+}
+
 void CalcTimer::Reset()
 {
-	days = 0;
-	hours = 0;
-	minutes = 0;
-	seconds = 0;
+	m_days = 0;
+	m_hours = 0;
+	m_minutes = 0;
+	m_seconds = 0;
 	m_lastTimeLeft = LONG_MAX;
 	m_lastEndTime = 0;
 }
@@ -84,27 +118,27 @@ std::string CalcTimer::ToString()
 {
 	std::string strTime;
 
-	if (days != 0) // REF: merge
+	if (m_days != 0) // REF: merge
 	{
-		strTime.append(std::to_string(days));
+		strTime.append(std::to_string(m_days));
 		strTime.append("d ");
 	}
 
-	if (hours != 0)
+	if (m_hours != 0)
 	{
-		strTime.append(std::to_string(hours));
+		strTime.append(std::to_string(m_hours));
 		strTime.append("h ");
 	}
 
-	if (minutes != 0)
+	if (m_minutes != 0)
 	{
-		strTime.append(std::to_string(minutes));
+		strTime.append(std::to_string(m_minutes));
 		strTime.append("m ");
 	}
 
-	if (seconds != 0)
+	if (m_seconds != 0)
 	{
-		strTime.append(std::to_string(seconds));
+		strTime.append(std::to_string(m_seconds));
 		strTime.append("s ");
 	}
 

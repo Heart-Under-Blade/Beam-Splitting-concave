@@ -2,12 +2,13 @@
 
 Particle::Particle() {}
 
-void Particle::Init(int facetCount, const complex &refrIndex, double symAngle,
-					double size)
+void Particle::Init(int facetCount, const complex &refrIndex,
+					double symGamma, double symBeta, double size)
 {
 	facetNum = facetCount;
 	m_refractiveIndex = refrIndex;
-	m_symmetryAngle = symAngle;
+	m_symmetryGamma = symGamma;
+	m_symmetryBeta = symBeta;
 	m_mainSize = size;
 }
 
@@ -41,6 +42,11 @@ const double &Particle::GetMainSize() const
 	return m_mainSize;
 }
 
+const double &Particle::GetSymmetryBeta() const
+{
+	return m_symmetryBeta;
+}
+
 const complex &Particle::GetRefractionIndex() const
 {
 	return m_refractiveIndex;
@@ -70,9 +76,9 @@ void Particle::SetDefaultCenters()
 	}
 }
 
-const double &Particle::GetSymmetryAngle() const
+const double &Particle::GetSymmetryGamma() const
 {
-    return m_symmetryAngle;
+	return m_symmetryGamma;
 }
 
 void Particle::SetRotateMatrix(double beta, double gamma, double alpha)

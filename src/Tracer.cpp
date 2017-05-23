@@ -1,26 +1,26 @@
 #include "Tracer.h"
 
 #include <iostream>
-#include "CalcTimer.h"
 
 using namespace std;
 
 Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
-	  m_mxd(0, 0, 0, 0),
+	  m_muller(0, 0, 0, 0),
 	  m_incidentDir(0, 0, -1),
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultFileName(resultFileName),
-	  m_gammaNorm(tracing->m_particle->GetSymmetryAngle()),
+	  m_gammaNorm(tracing->m_particle->GetSymmetryGamma()),
 	  back(4, 4),
 	  forw(4, 4)
 {
 }
 
-void Tracer::PrintProgress(int betaNumber, long long count)
+void Tracer::PrintProgress(int betaNumber, long long count, CalcTimer &timer)
 {
 	EraseConsoleLine(50);
-	cout << (count*100)/betaNumber << '%';
+	cout << (count*100)/betaNumber << '%'
+		 << '\t' << timer.Elapsed();
 }
 
 void Tracer::ExtractPeaksGO(int EDF, double NRM, int ThetaNumber)
@@ -72,14 +72,14 @@ void Tracer::ExtractPeaksGO(int EDF, double NRM, int ThetaNumber)
 	}
 	else
 	{
-		m_mxd(0,ThetaNumber,0,0) += f[0];
-		m_mxd(0,0,0,0) += b[0];
-		m_mxd(0,ThetaNumber,1,1) += f[1];
-		m_mxd(0,0,1,1) += b[1];
-		m_mxd(0,ThetaNumber,2,2) += f[1];
-		m_mxd(0,0,2,2) -= b[1];
-		m_mxd(0,ThetaNumber,3,3) += f[2];
-		m_mxd(0,0,3,3) += b[2];
+		m_muller(0,ThetaNumber,0,0) += f[0];
+		m_muller(0,0,0,0) += b[0];
+		m_muller(0,ThetaNumber,1,1) += f[1];
+		m_muller(0,0,1,1) += b[1];
+		m_muller(0,ThetaNumber,2,2) += f[1];
+		m_muller(0,0,2,2) -= b[1];
+		m_muller(0,ThetaNumber,3,3) += f[2];
+		m_muller(0,0,3,3) += b[2];
 	}
 }
 
@@ -99,7 +99,7 @@ void Tracer::WriteResultsToFileGO(int thetaNum, double NRM, const string &filena
 		sn = (j==0 || j==(int)thetaNum) ? 1-cos(sizeBin/2.0)
 										: (cos((j-0.5)*sizeBin)-cos((j+0.5)*sizeBin));
 
-		matrix bf = m_mxd(0, j);
+		matrix bf = m_muller(0, j);
 
 //		if (j == 46) // DEB
 //		{
@@ -129,12 +129,20 @@ void Tracer::WriteResultsToFileGO(int thetaNum, double NRM, const string &filena
 
 void Tracer::WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM)
 {
-	std::ofstream out("out.dat", std::ios::out);
+	ofstream out("out.dat", ios::out);
+
 	// Information for log-file
+	out << "\nStart of calculation = " << ctime(&m_startTime);
 //	out << "\nTotal time of calculation = " << t/CLOCKS_PER_SEC << " seconds";
 	out << "\nTotal number of body orientation = " << orNumber;
 	out << "\nTotal scattering energy = " << D_tot;
-//	out << "\nTotal incoming energy = " << incomingEnergy;
+
+#ifdef _CHECK_ENERGY_BALANCE
+	out << "\nTotal incoming energy = " << (m_incomingEnergy *= NRM);
+	out << "\nTotal outcoming energy = " << m_outcomingEnergy;
+	out << "\nEnergy passed = " << (m_outcomingEnergy/m_incomingEnergy)*100 << '%';
+#endif
+
 //	out << "\nAveraged cross section = " << incomingEnergy*NRM;
 	out.close();
 }
@@ -191,7 +199,7 @@ void Tracer::TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
 
 		WriteSumMatrix(outFile, M, bsCone);
 
-		PrintProgress(betaR.count, count);
+		PrintProgress(betaR.count, count, timer);
 		++count;
 	}
 
@@ -200,7 +208,7 @@ void Tracer::TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
 
 //REF: объединить с предыдущим
 void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
-							 const Cone &bsCone, const Tracks &tracks, double wave)
+							  const Cone &bsCone, const Tracks &tracks, double wave)
 {
 	CalcTimer timer;
 	long long count = 0;
@@ -242,7 +250,7 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 
 		WriteSumMatrix(outFile, M, bsCone);
 
-		PrintProgress(betaR.count, count);
+		PrintProgress(betaR.count, count, timer);
 		++count;
 	}
 
@@ -301,164 +309,197 @@ void Tracer::CleanJ(int maxGroupID, const Cone &bsCone)
 	}
 }
 
-void Tracer::HandleBeamsGO(std::vector<Beam> &outBeams, double betaDistrProb)
+void Tracer::HandleBeamsGO(std::vector<Beam> &outBeams, double beta)
 {
-	for (unsigned int i = 0; i < outBeams.size(); ++i)
+	double sinBeta = sin(beta);
+
+	for (Beam &beam : outBeams)
 	{
-		Beam &beam = outBeams.at(i);
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
-//if (beam.lastFacetID != 8) // DEB
-//	continue;
 		double cross = m_tracing->BeamCrossSection(beam);
-		double Area = betaDistrProb * cross;
-//if (beam.lastFacetID == 8 ||
-//		beam.lastFacetID == 9 ||
-//		beam.lastFacetID == 10 ||
-//		beam.lastFacetID == 11 ||
-//		beam.lastFacetID == 12 ||
-//		beam.lastFacetID == 13 ||
-//		beam.lastFacetID == 14 ||
-//		beam.lastFacetID == 15) // DEB
-//{
-//	int fff = 0;
-//}
+		double area = cross*sinBeta;
 		matrix bf = Mueller(beam.J);
 
-		const float &x = beam.direction.cx;
-		const float &y = beam.direction.cy;
-		const float &z = beam.direction.cz;
+		AddToResultMullerGO(beam.direction, bf, area);
+	}
+}
 
-#ifdef _OUTPUT_NRG_CONV
-		if (bf[0][0]>0.000001)
-		{
-			bcount++;
-			SS+=cross;
+void Tracer::RotateMuller(const Point3f &dir, matrix &bf)
+{
+	const float &x = dir.cx;
+	const float &y = dir.cy;
+
+	double tmp = y*y;
+
+	tmp = acos(x/sqrt(x*x+tmp));
+
+	if (y < 0)
+	{
+		tmp = M_2PI-tmp;
+	}
+
+	tmp *= -2.0;
+	RightRotateMueller(bf, cos(tmp), sin(tmp));
+}
+
+void Tracer::AddToResultMullerGO(const Point3f &dir, matrix &bf, double area)
+{
+	const float &z = dir.cz;
+
+	// Collect the beam in array
+	if (z >= 1-DBL_EPSILON)
+	{
+		back += area*bf;
+	}
+	else if (z <= DBL_EPSILON-1)
+	{
+		forw += area*bf;
+	}
+	else
+	{
+		const float &y = dir.cy;
+
+		if (y*y > DBL_EPSILON)
+		{	// rotate the Mueller matrix of the beam to appropriate coordinate system
+			RotateMuller(dir, bf);
 		}
-#endif
-		// Collect the beam in array
-		if (z >= 1-DBL_EPSILON)
-		{
-			back += Area*bf;
-		}
-		else if (z <= DBL_EPSILON-1)
-		{
-			forw += Area*bf;
-		}
-		else
-		{
-			// Rotate the Mueller matrix of the beam to appropriate coordinate system
-			const unsigned int ZenAng = round(acos(z)/sizeBin);
-			double tmp = y*y;
-
-			if (tmp > DBL_EPSILON)
-			{
-				tmp = acos(x/sqrt(x*x+tmp));
-
-				if (y < 0)
-				{
-					tmp = M_2PI-tmp;
-				}
-
-				tmp *= -2.0;
-				RightRotateMueller(bf, cos(tmp), sin(tmp));
-			}
 
 #ifdef _CALC_AREA_CONTIBUTION_ONLY
-			bf = matrix(4,4);
-			bf.Identity();
+		bf = matrix(4,4);
+		bf.Identity();
 #endif
-			m_mxd.insert(0, ZenAng, Area*bf);
-//			if (ZenAng == 46) // DEB
-//			{
-//				double s = m_mxd(0, ZenAng)[0][0];
-//				if (s < 0)
-//				cout << s << endl;
-//			}
-		}
+		const unsigned int zenAng = round(acos(z)/sizeBin);
+		m_muller.insert(0, zenAng, area*bf);
 	}
+}
+
+void Tracer::HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks)
+{
+	double sinBeta = sin(beta);
+
+	for (Beam &beam : outBeams)
+	{
+		if (tracks.GetGroupID(beam.id) < 0)
+		{
+			continue;
+		}
+
+		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
+
+		double cross = m_tracing->BeamCrossSection(beam);
+		double area = cross*sinBeta;
+		matrix bf = Mueller(beam.J);
+
+		AddToResultMullerGO(beam.direction, bf, area);
+	}
+}
+
+double Tracer::CalcNorm(long long orNum)
+{
+	double symBeta = m_tracing->m_particle->GetSymmetryBeta();
+	double tmp = (/*isRandom*/true) ? symBeta : 1.0;
+	double dBeta = -(cos(symBeta) - cos(0));
+	return tmp/(orNum*dBeta);
+}
+
+double Tracer::CalcTotalScatteringEnergy(int thetaNum)
+{
+	double D_tot = back[0][0] + forw[0][0];
+
+	for (int i = 0; i <= thetaNum; ++i)
+	{
+		D_tot += m_muller(0, i, 0, 0);
+	}
+
+	return D_tot;
 }
 
 void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR, int thetaNum)
 {
 	int EDF = 0;
-//	incomingEnergy = 0;
+	CalcTimer timer;
+
+#ifdef _CHECK_ENERGY_BALANCE
+	m_incomingEnergy = 0;
+	m_outcomingEnergy = 0;
+#endif
 
 	back.Fill(0);
 	forw.Fill(0);
 
 	sizeBin = M_PI/thetaNum;
-	m_mxd = Arr2D(1, thetaNum+1, 4, 4);
-	m_mxd.ClearArr();
+	m_muller = Arr2D(1, thetaNum+1, 4, 4);
+	m_muller.ClearArr();
 
 	vector<Beam> outBeams;
-	double betaDistrProbability;
 	double beta, gamma;
-//	double square;
-	long long count = 0;
 
-#ifdef _OUTPUT_NRG_CONV
-	double sss=3.0*sqrt(3.0)/2.0*40.0*40.0*sin(M_PI/2.0-beta)+2.0*40.0*200.0*cos(M_PI/2.0-beta)*cos(M_PI/6.0-gamma);
-	energyFile<<153<<" "<<100<<" "<<beta*180.0/3.1415926<<" "<<gamma*180./3.1415926<<" "<<bcount<<" "<<sss<<" "<<SS<<" "<<(fabs(sss-SS)<0.1?0:sss-SS)<<std::endl;
-	if (fabs(sss-SS) > 40)
-		int fff = 0;
-#endif
-
-	long long sum = 0;
+	m_startTime = timer.Start();
+	cout << "Started at " << ctime(&m_startTime) << endl;
 
 	for (int i = 0; i < betaR.count; ++i)
 	{
 		beta = (i + 0.5)*betaR.norm;
-		betaDistrProbability = sin(beta);
 
 		for (int j = 0; j < gammaR.count; ++j)
 		{
 			gamma = (j + 0.5)*gammaR.norm;
-
-#ifdef _OUTPUT_NRG_CONV
-			SS=0;
-			bcount=0;
-#endif
-//beta = DegToRad(45); gamma = DegToRad(-90); // DEB
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
-//			incomingEnergy += tracer.GetLightSurfaceArea();
-			HandleBeamsGO(outBeams, betaDistrProbability);
-			sum += outBeams.size();
+#ifdef _CHECK_ENERGY_BALANCE
+			m_incomingEnergy += m_tracing->GetIncomingEnergy()*sin(beta);
+#endif
+			HandleBeamsGO(outBeams, beta);
 			outBeams.clear();
 		}
 
-		PrintProgress(betaR.count, i);
-		++count;
+		PrintProgress(betaR.count, i, timer);
 	}
 
-
-	// Integrating
-	double D_tot = back[0][0] + forw[0][0];
-
-	for (int j = 0; j <= thetaNum; ++j)
-	{
-		D_tot += m_mxd(0, j, 0, 0);
-	}
-
-	// Normalizing coefficient
+	double D_tot = CalcTotalScatteringEnergy(thetaNum);
 	long long orNum = gammaR.count * betaR.count;
-	double NRM;
+	double NRM = CalcNorm(orNum);
 
-//	if (params.isRandom)
-//	{
-//		NRM = 1.0/(double)orNum;
-//	}
-//	else
+#ifdef _CHECK_ENERGY_BALANCE
+	for (int deg = 0; deg <= thetaNum; ++deg)
 	{
-		NRM = M_PI/((double)orNum*2.0);
+		m_outcomingEnergy += m_muller(0, deg, 0, 0)*NRM;
 	}
+#endif
 
 	ExtractPeaksGO(EDF, NRM, thetaNum);
 
 	WriteResultsToFileGO(thetaNum, NRM, m_resultFileName);
 	WriteStatisticsToFileGO(orNum, D_tot, NRM);
 //	WriteStatisticsToConsole(orNum, D_tot, NRM);
+}
+
+void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
+							 int thetaNum, const Tracks &tracks)
+{
+	int EDF = 0;
+	vector<Beam> outBeams;
+
+	back.Fill(0);
+	forw.Fill(0);
+
+	sizeBin = M_PI/thetaNum;
+	m_muller = Arr2D(1, thetaNum+1, 4, 4);
+	m_muller.ClearArr();
+
+	double b = DegToRad(beta);
+	double g = DegToRad(gamma);
+	m_tracing->SplitBeamByParticle(b, g, outBeams);
+
+	HandleBeamsGO(outBeams, beta, tracks);
+
+	double D_tot = CalcTotalScatteringEnergy(thetaNum);
+
+	ExtractPeaksGO(EDF, 1, thetaNum);
+
+	WriteResultsToFileGO(thetaNum, 1, m_resultFileName);
+	WriteStatisticsToFileGO(1, D_tot, 1);
 }
 
 void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
@@ -470,7 +511,6 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 
 	double b = DegToRad(beta);
 	double g = DegToRad(gamma);
-
 	m_tracing->SplitBeamByParticle(b, g, outBeams);
 
 	int maxGroupID = tracks.GetMaxGroupID();
@@ -505,9 +545,8 @@ void Tracer::SetJnRot(Beam &beam, const Point3f &T,
 void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 						   double wavelength, const Tracks &tracks)
 {
-	for (unsigned int i = 0; i < outBeams.size(); ++i)
+	for (Beam &beam : outBeams)
 	{
-		Beam &beam = outBeams.at(i);
 //		double ctetta = DotProduct(beam.direction, -m_incidentDir);
 
 //		if (ctetta < 0.17364817766693034885171662676931)
@@ -534,7 +573,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 		for (int i = 0; i <= bsCone.phiCount; ++i)
 		{
 			for (int j = 0; j <= bsCone.thetaCount; ++j)
-			{
+			{	//
 				double f = i*bsCone.dPhi;
 				double t = j*bsCone.dTheta;
 
@@ -543,6 +582,8 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 				Point3d vr(sinT*cosF, sinT*sinF, cos(t));
 				Point3d vf = (j == 0) ? -m_polarizationBasis
 									  : Point3d(-sinF ,cosF ,0);
+				// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
+
 				matrixC Jn_rot(2, 2);
 				SetJnRot(beam, T, vf, vr, Jn_rot);
 

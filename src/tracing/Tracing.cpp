@@ -8,12 +8,12 @@
 
 #define NORM_CEIL	FLT_EPSILON + 1
 
-Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOpticalPath,
+Tracing::Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalPath,
 				 const Point3f &polarizationBasis, int interReflectionNumber)
 {
-	LOG_ASSERT(startBeamDir.cx <= NORM_CEIL
-		   && startBeamDir.cy <= NORM_CEIL
-		   && startBeamDir.cz <= NORM_CEIL
+	LOG_ASSERT(incidentDir.cx <= NORM_CEIL
+		   && incidentDir.cy <= NORM_CEIL
+		   && incidentDir.cz <= NORM_CEIL
 		   && "Direction of the start beam is not normalized.");
 
 	m_particle = particle;
@@ -22,7 +22,7 @@ Tracing::Tracing(Particle *particle, const Point3f &startBeamDir, bool isOptical
 	m_isOpticalPath = isOpticalPath;
 	m_polarizationBasis = polarizationBasis;
 	m_interReflectionNumber = interReflectionNumber;
-	m_waveFront.direction = startBeamDir;
+	m_incidentDir = incidentDir;
 
 	m_refrIndex = m_particle->GetRefractionIndex();
 	double re = real(m_refrIndex);
@@ -84,9 +84,6 @@ void Tracing::SetBeamID(Beam &beam)
 	beam.id += (beam.lastFacetID + 1);
 	beam.id *= (m_particle->facetNum + 1);
 	//	AddToTrack(beam, facetId);
-#ifdef _TRACK_OUTPUT
-	PrintTrack(beam, facetId);
-#endif
 #endif
 }
 
@@ -111,25 +108,24 @@ void Tracing::PushBeamToTree(Beam &beam)
 
 void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	const Point3f &startDir = m_waveFront.direction;
-	const Point3f &normal = m_particle->facets[facetId].in_normal;
-	double cosIN = DotProduct(startDir, normal);
+	const Point3f &normal = m_facets[facetId].in_normal;
+	double cosIN = DotProduct(m_incidentDir, normal);
 
 	if (cosIN < EPS_COS_00) // slopping incidence
 	{
-		SetSloppingBeamParams_initial(startDir, cosIN, facetId, inBeam, outBeam);
+		SetSloppingBeamParams_initial(m_incidentDir, cosIN, facetId, inBeam, outBeam);
 	}
 	else // normal incidence
 	{
 		inBeam.J.m11 = 2.0/(m_refrIndex + 1.0);
 		inBeam.J.m22 = inBeam.J.m11;
 		inBeam.e = m_polarizationBasis;
-		inBeam.direction = startDir;
+		inBeam.direction = m_incidentDir;
 
 		outBeam.J.m11 = (m_refrIndex - 1.0)/(m_refrIndex + 1.0);
 		outBeam.J.m22 = -outBeam.J.m11;
 		outBeam.e = m_polarizationBasis;
-		outBeam.direction = -startDir;
+		outBeam.direction = -m_incidentDir;
 	}
 
 	if (m_isOpticalPath)
@@ -154,7 +150,7 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 	Point3f center = inBeam.Center();
 
 	inBeam.D = DotProduct(-inBeam.direction, center);
-	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_waveFront.direction, center);
+	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, center);
 
 	outBeam.D = DotProduct(-outBeam.direction, center);
 	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
@@ -162,17 +158,16 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 
 void Tracing::TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam)
 {
-	SetPolygonByFacet(facetId, inBeam);
+	SetPolygonByFacet(facetId, inBeam); // REF: try to exchange this to inBeam = m_facets[facetId]
 	SetPolygonByFacet(facetId, outBeam);
 	SetBeamOpticalParams(facetId, inBeam, outBeam);
 }
 
-void Tracing::CalcLigthSurfaceArea(int facetId, const Beam &beam)
+void Tracing::CalcFacetEnergy(int facetID, const Polygon &lightedPolygon)
 {
-	const Point3f &startDir = m_waveFront.direction;
-	const Point3f &normal = m_facets[facetId].in_normal;
-	double cosIN = DotProduct(startDir, normal);
-	m_lightSurfaceArea += beam.Area() * cosIN;
+	const Point3f &normal = m_facets[facetID].in_normal;
+	double cosIN = DotProduct(m_incidentDir, normal);
+	m_incommingEnergy += lightedPolygon.Area() * cosIN;
 }
 
 // TODO: пофиксить
@@ -186,7 +181,7 @@ void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<s
 		int facetId = tracks.at(i).at(0);
 		const Point3f &extNormal = m_facets[facetId].ex_normal;
 
-		double cosIN = DotProduct(m_waveFront.direction, extNormal);
+		double cosIN = DotProduct(m_incidentDir, extNormal);
 
 		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
 		{
@@ -199,9 +194,7 @@ void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<s
 		/// first incident beam
 		{
 			Beam outBeam;
-
 			TraceFirstBeam(facetId, incidentBeam, outBeam);
-
 			outBuff.push_back(outBeam);
 		}
 
@@ -730,9 +723,9 @@ void Tracing::SetPolygonByFacet(int facetId, Polygon &polygon) const
 	}
 }
 
-double Tracing::GetLightSurfaceArea() const
+double Tracing::GetIncomingEnergy() const
 {
-	return m_lightSurfaceArea;
+	return m_incommingEnergy;
 }
 
 double Tracing::CrossSection(const Point3f &beamDir) const

@@ -3,6 +3,7 @@
 #include "geometry_lib.h"
 #include "PhysMtr.hpp"
 #include "Tracing.h"
+#include "CalcTimer.h"
 #include "Mueller.hpp"
 
 struct TrackGroup
@@ -46,20 +47,23 @@ struct Tracks
 			}
 		}
 
+		if (count == 0)
+		{
+			return 0;
+		}
+
 		return -1;
 	}
 };
 
 struct AngleRange
 {
-	double begin;
-	double end;
 	int count;
 	double norm;
 	double step;
 
 	AngleRange(double begin, double end, int count, double normCoef)
-		: begin(begin), end(end), count(count)
+		: count(count)
 	{
 		norm = normCoef/count;
 		step = DegToRad(end - begin)/count;
@@ -92,6 +96,9 @@ public:
 	Tracer(Tracing *tracing, const std::string resultFileName);
 
 	void TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR, int thetaNum);
+	void TraceSingleOrGO(const double &beta, const double &gamma,
+						 int thetaNum, const Tracks &tracks);
+
 	void TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
 	void TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
@@ -101,7 +108,7 @@ public:
 
 private:
 	Tracing *m_tracing;
-	Arr2D m_mxd;
+	Arr2D m_muller;
 	Point3f m_incidentDir;
 	Point3f m_polarizationBasis;
 	std::string m_resultFileName;
@@ -112,9 +119,15 @@ private:
 	matrix back;	///< Mueller matrix in backward direction
 	matrix forw;	///< Mueller matrix in forward direction
 
+	// light energy balance
+	double m_incomingEnergy;
+	double m_outcomingEnergy;
+	time_t m_startTime;
+
 private:
 	void CleanJ(int maxGroupID, const Cone &bsCone);
-	void HandleBeamsGO(std::vector<Beam> &outBeams, double betaDistrProb);
+	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);
+	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks);
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, int groupID);
 	void SetJnRot(Beam &beam, const Point3f &T,
@@ -124,10 +137,14 @@ private:
 	void WriteSumMatrix(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
-	void PrintProgress(int betaNumber, long long count);
+	void PrintProgress(int betaNumber, long long count, CalcTimer &timer);
 	void ExtractPeaksGO(int EDF, double NRM, int ThetaNumber);
 	void WriteResultsToFileGO(int thetaNum, double NRM, const std::string &filename);
 	void WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM);
 	std::string GetFileName(const std::string &filename);
 
+	double CalcNorm(long long orNum);
+	double CalcTotalScatteringEnergy(int thetaNum);
+	void RotateMuller(const Point3f &dir, matrix &bf);
+	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area);
 };

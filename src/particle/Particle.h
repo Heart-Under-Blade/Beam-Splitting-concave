@@ -20,7 +20,8 @@ public:
 	void Rotate(double beta, double gamma, double alpha);
 
 	const double &GetMainSize() const;
-	const double &GetSymmetryAngle() const;
+	const double &GetSymmetryBeta() const;
+	const double &GetSymmetryGamma() const;
 	const complex &GetRefractionIndex() const;
 
 public:
@@ -31,12 +32,13 @@ protected:
 	Facet defaultFacets[MAX_FACET_NUM];
 
 	double m_mainSize;			///< max size of particle (diameter or height or smth)
-	double m_symmetryAngle;		///< angle of particle symmetry
+	double m_symmetryBeta;		///< angle of particle symmetry of beta angle
+	double m_symmetryGamma;		///< angle of particle symmetry of gamma angle
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 
 protected:
-	void Init(int facetCount, const complex &refrIndex, double symAngle,
-			  double size);
+	void Init(int facetCount, const complex &refrIndex,
+			  double symGamma, double symBeta, double size);
 
 	void SetDefaultNormals();
 	void SetDefaultCenters();

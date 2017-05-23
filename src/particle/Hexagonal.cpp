@@ -9,7 +9,7 @@ Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 	SetSize(diameter, height);
 
 	double size = std::max(m_height, m_diameter);
-	Init(8, refrIndex, M_PI/3, size);
+	Init(8, refrIndex, M_PI/3, M_PI/2, size);
 
 	SetFacetParams();
 

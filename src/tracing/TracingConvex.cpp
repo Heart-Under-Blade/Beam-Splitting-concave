@@ -10,14 +10,14 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 {
 	m_particle->Rotate(beta, gamma, 0);
 
-	m_lightSurfaceArea = 0;
+	m_incommingEnergy = 0;
 	m_treeSize = 0;
 
 	/// first extermal beam
 	for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
 	{
-		const Point3f &extNormal = m_particle->facets[facetID].ex_normal;
-		double cosIN = DotProduct(m_waveFront.direction, extNormal);
+		const Point3f &extNormal = m_facets[facetID].ex_normal;
+		double cosIN = DotProduct(m_incidentDir, extNormal);
 
 		if (cosIN >= EPS_M_COS_90) /// beam is not incident to this facet
 		{
@@ -25,9 +25,6 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 		}
 
 		Beam inBeam, outBeam;
-
-//		if (facetID == 3) // DEB
-//			int ggg = 0;
 		TraceFirstBeam(facetID, inBeam, outBeam);
 
 		outBeam.lastFacetID = facetID;
@@ -36,20 +33,19 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 		outBeams.push_back(outBeam);
 		PushBeamToTree(inBeam, facetID, 0);
 
-		if (m_isArea)
-		{
-			CalcLigthSurfaceArea(facetID, outBeam);
-		}
+#ifdef _CHECK_ENERGY_BALANCE
+		CalcFacetEnergy(facetID, outBeam);
+#endif
 	}
 
-	TraceInternalReflections(outBeams);
+	TraceInternalBeams(outBeams);
 }
 
 void TracingConvex::SplitBeamByParticle(double, double, const std::vector<std::vector<int>> &/*tracks*/, std::vector<Beam> &)
 {
 }
 
-void TracingConvex::TraceInternalReflections(std::vector<Beam> &outBeams)
+void TracingConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 {
 	while (m_treeSize != 0)
 	{

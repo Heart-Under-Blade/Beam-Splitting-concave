@@ -46,24 +46,6 @@ struct OrientationRange
 	int end;
 };
 
-//struct CLArguments
-//{
-//	ParticleType particleType;
-//	double halfHeight;
-//	double radius;
-//	double cavityDepth;
-//	double tiltAngle;
-//	complex refractionIndex;
-//	OrientationRange betaRange;
-//	OrientationRange gammaRange;
-//	int thetaNumber;
-//	int interReflNum;
-//	bool isRandom = false;
-//	string outfile;
-//	Cone bsCone; ///< конус в направлении назад
-//	double wavelength;
-//} params;
-
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
 
@@ -145,97 +127,6 @@ void ImportTracks(int facetNum)
 		}
 	}
 }
-
-//void Calculate(const CLArguments &params)
-//{
-//	Particle *particle;
-//	Tracing *tracer = nullptr;
-
-//	int orNumBeta = params.betaRange.end - params.betaRange.begin;
-//	int orNumGamma = params.gammaRange.end - params.gammaRange.begin;
-
-
-//	if (isPhisOptics)
-//	{
-//		ImportTracks(particle->facetNum);
-
-//		double radius = (params.bsCone.radius*M_PI)/180.0;
-
-//		if (params.bsCone.thetaCount)
-//		{
-//			dt = radius/(double)params.bsCone.thetaCount;
-//		}
-
-//		if (params.bsCone.phiCount)
-//		{
-//			df = M_2PI/(double)(params.bsCone.phiCount+1);
-//		}
-//	}
-
-//	int EDF = 0;
-
-//	incomingEnergy = 0;
-
-//	// the arrays for exact backscattering and forwardscattering Mueller matrices
-//	back.Fill(0);
-//	forw.Fill(0);
-
-//	sizeBin = M_PI/params.thetaNumber; // the size of the bin (radians)
-
-//	mxd = Arr2D(1, params.thetaNumber+1, 4, 4);
-//	mxd.ClearArr();
-
-//	cout << endl;
-
-//	time_point<system_clock> startCalc = system_clock::now();
-
-//	if (params.isRandom)
-//	{
-//		TraceRandom(params.gammaRange, params.betaRange, *tracer);
-//	}
-//	else
-//	{
-//		TraceFixed(params.gammaRange, params.betaRange, *tracer);
-//	}
-
-//	auto total = system_clock::now() - startCalc;
-
-//	if (assertNum > 0)
-//	{
-//		cout << endl << "WARRNING! Asserts are occured (see log file) " << assertNum << endl;
-//	}
-
-//	cout << "\nTotal time of calculation = " << duration_cast<seconds>(total).count() << " seconds";
-
-//	// Integrating
-//	double D_tot = back[0][0] + forw[0][0];
-
-//	for (int j = 0; j <= params.thetaNumber; ++j)
-//	{
-//		D_tot += mxd(0, j, 0, 0);
-//	}
-
-//	// Normalizing coefficient
-//	long long orNum = orNumGamma * orNumBeta;
-//	double NRM;
-
-//	if (params.isRandom)
-//	{
-//		NRM = 1.0/(double)orNum;
-//	}
-//	else
-//	{
-//		NRM = M_PI/((double)orNum*2.0);
-//	}
-
-//	ExtractPeaks(EDF, NRM, params.thetaNumber);
-
-//	WriteResultsToFile(params.thetaNumber, NRM, params.outfile);
-////	WriteStatisticsToFile(timer, orNum, D_tot, NRM);
-//	WriteStatisticsToConsole(orNum, D_tot, NRM);
-
-//	delete particle;
-//}
 
 // TODO: написать свой ArgParser
 
@@ -363,21 +254,22 @@ int main(int argc, const char** argv)
 			}
 			else // "range"
 			{
-				AngleRange betaR = GetRange("beta", M_PI/2, parser);
-				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryAngle(), parser);
+				AngleRange betaR = GetRange("beta", particle->GetSymmetryBeta(), parser);
+				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
 				tracer.TraceIntervalPO(betaR, gammaR, bsCone, trackGroups, wave);
-				//			tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
+	//			tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
 			}
 		}
 		else
 		{
 			if (parser.count("t") != 0)
 			{
-				AngleRange betaR = GetRange("beta", M_PI, parser);
-				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryAngle(), parser);
+				AngleRange betaR = GetRange("beta", particle->GetSymmetryBeta(), parser);
+				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
 
 				int cellNum = parser.getArgValue<int>("t");
-				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+//				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 			}
 			else
 			{
@@ -386,18 +278,8 @@ int main(int argc, const char** argv)
 		}
 
 		cout << endl << "done";
-
-//		SetParams(argc, argv, params);
 	}
 
-#ifdef _OUTPUT_NRG_CONV
-		cout << "WARNING: Energy conversation is calculating now."
-				  << endl << endl;
-		params.refractionIndex = complex(1000000000000001.31, 0.0);
-		params.interReflNum = 10;
-#endif
-
-//	Calculate(params);
 	getchar();
 	return 0;
 }
@@ -581,11 +463,6 @@ void TraceSinglePO(Tracing &tracer, double beta, double gamma)
 	M_all_file.close();
 }
 
-int GetMaxGroupID()
-{
-	return 1;
-}
-
 void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &betaRange,
 				Tracing &tracer)
 {
@@ -605,7 +482,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 
 	// PO params
 	ofstream M_all_file("M_all.dat", ios::out); // матрица Мюллера общая (физ. опт.)
-	int maxGroupID = GetMaxGroupID();
+	int maxGroupID = /*GetMaxGroupID()*/0;
 	++maxGroupID;
 
 	vector<Arr2D> M;
@@ -770,66 +647,6 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 //		cout << (100*(++count))/orNumBeta << "%" << endl;
 //	}
 //}
-
-void ExtractPeaks(int EDF, double NRM, int ThetaNumber)
-{
-	//Analytical averaging over alpha angle
-	double b[3], f[3];
-	b[0] = back[0][0];
-	b[1] = (back[1][1] - back[2][2])/2.0;
-	b[2] = back[3][3];
-
-	f[0] = forw[0][0];
-	f[1] = (forw[1][1] + forw[2][2])/2.0;
-	f[2] = forw[3][3];
-
-	// Extracting the forward and backward peak in a separate file if needed
-	if (EDF)
-	{
-		ofstream bck("back.dat", ios::out);
-		ofstream frw("forward.dat", ios::out);
-		frw << "M11 M22/M11 M33/M11 M44/M11";
-		bck << "M11 M22/M11 M33/M11 M44/M11";
-
-		if (f[0] <= DBL_EPSILON)
-		{
-			frw << "\n0 0 0 0";
-		}
-		else
-		{
-			frw << "\n" << f[0]*NRM
-				<< " " << f[1]/f[0]
-				<< " " << f[1]/f[0]
-				<< " " << f[2]/f[0];
-		}
-
-		if (b[0] <= DBL_EPSILON)
-		{
-			bck << "\n0 0 0 0";
-		}
-		else
-		{
-			bck << "\n" << b[0]*NRM
-				<< " " << b[1]/b[0]
-				<< " " << -b[1]/b[0]
-				<< " " << b[2]/b[0];
-		}
-
-		bck.close();
-		frw.close();
-	}
-	else
-	{
-		mxd(0,ThetaNumber,0,0) += f[0];
-		mxd(0,0,0,0) += b[0];
-		mxd(0,ThetaNumber,1,1) += f[1];
-		mxd(0,0,1,1) += b[1];
-		mxd(0,ThetaNumber,2,2) += f[1];
-		mxd(0,0,2,2) -= b[1];
-		mxd(0,ThetaNumber,3,3) += f[2];
-		mxd(0,0,3,3) += b[2];
-	}
-}
 
 bool IsMatchTrack(const vector<int> &track, const vector<int> &compared)
 {
@@ -1020,68 +837,6 @@ void HandleBeams(vector<Beam> &outBeams, double betaDistrProb, const Tracing &tr
 //		complex ff = (J[0](0, 0))[0][0];
 //		cout << endl << real(ff) << ' ' << imag(ff) << endl << endl << endl << endl;
 #endif
-}
-
-string GetFileName(const string &filename)
-{
-	string fname = string("M_") + filename;
-	string name = fname;
-
-	for (int i = 1; ifstream(name += ".dat") != NULL; ++i)
-	{
-		name = fname + "(" + to_string(i) + ")";
-	}
-
-	return name;
-}
-
-void WriteResultsToFile(int ThetaNumber, double NRM, const string &filename)
-{
-	string name = GetFileName(filename);
-
-	ofstream M(name, ios::out);
-
-	M <<  "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
-
-	for (int j = ThetaNumber; j >= 0; j--)
-	{
-		double sn;
-
-		//Special case in first and last step
-		M << '\n' << 180.0/ThetaNumber*(ThetaNumber-j) + (j==0 ?-0.25*180.0/ThetaNumber:0)+(j==(int)ThetaNumber ?0.25*180.0/ThetaNumber:0);
-		sn = (j==0 || j==(int)ThetaNumber) ? 1-cos(sizeBin/2.0) : (cos((j-0.5)*sizeBin)-cos((j+0.5)*sizeBin));
-
-		matrix bf = mxd(0,j);
-
-		if(bf[0][0] <= DBL_EPSILON)
-		{
-			M << " 0 0 0 0 0 0 0 0";
-		}
-		else
-		{
-			M << ' ' << bf[0][0]*NRM/(2.0*M_PI*sn)
-					<< ' ' << bf[0][1]/bf[0][0]
-					<< ' ' << bf[1][0]/bf[0][0]
-					<< ' ' << bf[1][1]/bf[0][0]
-					<< ' ' << bf[2][2]/bf[0][0]
-					<< ' ' << bf[2][3]/bf[0][0]
-					<< ' ' << bf[3][2]/bf[0][0]
-					<< ' ' << bf[3][3]/bf[0][0];
-		}
-	}
-	M.close();
-}
-
-void WriteStatisticsToFile(clock_t t, int orNumber, double D_tot, double NRM)
-{
-	ofstream out("out.dat", ios::out);
-	// Information for log-file
-	out << "\nTotal time of calculation = " << t/CLOCKS_PER_SEC << " seconds";
-	out << "\nTotal number of body orientation = " << orNumber;
-	out << "\nTotal scattering energy = " << D_tot;
-	out << "\nTotal incoming energy = " << incomingEnergy;
-	out << "\nAveraged cross section = " << incomingEnergy*NRM;
-	out.close();
 }
 
 void WriteStatisticsToConsole(int orNumber, double D_tot, double NRM)

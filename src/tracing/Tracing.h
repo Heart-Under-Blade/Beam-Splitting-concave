@@ -37,13 +37,12 @@ protected:
 	Facet *m_facets;
 	Point3f m_polarizationBasis;	///<
 	bool m_isOpticalPath;
-	bool m_isArea;
 	int m_interReflectionNumber;
-	Beam m_waveFront;				///< origin infinity beam
+	Point3f m_incidentDir;			///< origin incident light direction
 
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
-	double m_lightSurfaceArea;
+	double m_incommingEnergy;
 
 	const double FAR_ZONE_DISTANCE = 10000.0;
 	const double LOW_ENERGY_LEVEL = 2e-12;
@@ -54,7 +53,7 @@ private:
 	complex m_refrIndex;
 
 public:
-	Tracing(Particle *particle, const Point3f &startBeamDir, bool isOpticalPath,
+	Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalPath,
 			const Point3f &polarizationBasis, int interReflectionNumber);
 
 	double BeamCrossSection(const Beam &beam) const;
@@ -63,7 +62,7 @@ public:
 	virtual void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
-	double GetLightSurfaceArea() const;
+	double GetIncomingEnergy() const;
 
 	double CrossSection(const Point3f &beamDir) const;
 
@@ -105,7 +104,7 @@ protected:
 										Beam &incidentBeam, Beam &inBeam, Beam &outBeam,
 										bool &isTrivialIncidence);
 
-	void CalcLigthSurfaceArea(int facetId, const Beam &beam);
+	void CalcFacetEnergy(int facetID, const Polygon &lightedPolygon);
 
 	void CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam);
 

@@ -14,5 +14,5 @@ public:
 							 std::vector<Beam> &) override; ///> for predefined trajectories
 
 protected:
-	void TraceInternalReflections(std::vector<Beam> &outBeams);
+	void TraceInternalBeams(std::vector<Beam> &outBeams);
 };

@@ -19,10 +19,8 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   int interReflectionNumber)
 	: Tracing(particle, startBeamDir, isOpticalPath, polarizationBasis, interReflectionNumber)
 {
-	Point3f point = m_waveFront.direction * m_particle->GetMainSize();
-	m_waveFront.direction.d_param = DotProduct(point, m_waveFront.direction);
-	m_waveFront.location = Location::Out;
-	m_isArea = false;
+	Point3f point = m_incidentDir * m_particle->GetMainSize();
+	m_incidentDir.d_param = DotProduct(point, m_incidentDir);
 }
 
 void TracingConcave::SplitBeamByParticle(double beta, double gamma,
@@ -48,10 +46,9 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 		PushBeamToTree( inBeam, facetID, 0, Location::In );
 		PushBeamToTree(outBeam, facetID, 0, Location::Out);
 
-		if (m_isArea)
-		{
-			CalcLigthSurfaceArea(facetID, outBeam);
-		}
+#ifdef _CHECK_ENERGY_BALANCE
+		CalcFacetEnergy(facetID, outBeam);
+#endif
 	}
 }
 
@@ -71,12 +68,10 @@ void TracingConcave::TraceByFacet(const IntArray &facetIDs, int facetIndex)
 
 void TracingConcave::TraceFirstBeam()
 {
-#ifdef _TRACK_OUTPUT
-	trackMapFile << "0 lvl: ";
+#ifdef _CHECK_ENERGY_BALANCE
+	m_incommingEnergy = 0;
 #endif
-
 	m_treeSize = 0;
-	m_lightSurfaceArea = 0;
 
 	IntArray facetIDs;
 	SelectVisibleFacetsForWavefront(facetIDs);
@@ -90,7 +85,7 @@ void TracingConcave::TraceFirstBeam()
 void TracingConcave::SelectVisibleFacetsForWavefront(IntArray &facetIDs)
 {
 	FindVisibleFacetsForWavefront(facetIDs);
-	SortFacets(m_waveFront.direction, facetIDs);
+	SortFacets(m_incidentDir, facetIDs);
 }
 
 void TracingConcave::IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
@@ -174,25 +169,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 //	if (size == 0 || (size > 0 && facetId != tr.at(size-1)))
 //		tr.push_back(facetId);
 //}
-
-//void TracingConcave::PrintTrack(const Beam &beam, int facetId)
-//{
-//	trackMapFile << "(" << beam.track.at(0);
-
-//	for (int i = 1; i < beam.track.size(); ++i)
-//	{
-//		trackMapFile << ", ";
-//		trackMapFile << beam.track.at(i);
-//	}
-
-//	if (facetId != beam.track.back())
-//	{
-//		trackMapFile << ", " << facetId;
-//	}
-
-//	trackMapFile << "), ";
-//	trackMapFile.flush();
-//}
 #endif
 
 void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
@@ -275,9 +251,6 @@ void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutB
 		PushBeamToTree(outBeam, facetID, beam.level+1, Location::Out);
 	}
 
-#ifdef _TRACK_OUTPUT
-	trackMapFile << "[in] ";
-#endif
 	PushBeamToTree(inBeam, facetID, beam.level+1, Location::In);
 }
 
@@ -297,10 +270,6 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 			continue;
 		}
 
-#ifdef _TRACK_OUTPUT
-		trackMapFile << "\n" << incidentBeam.level << " lvl: ";
-		trackMapFile.flush();
-#endif
 		IntArray facetIds;
 		SelectVisibleFacets(beam, facetIds);
 
@@ -365,7 +334,7 @@ void TracingConcave::FindVisibleFacetsForWavefront(IntArray &facetIDs)
 {
 	for (int i = 0; i < m_particle->facetNum; ++i)
 	{
-		double cosIN = DotProduct(m_waveFront.direction, m_facets[i].in_normal);
+		double cosIN = DotProduct(m_incidentDir, m_facets[i].in_normal);
 
 		if (cosIN >= EPS_COS_90) // beam incidents to this facet
 		{
@@ -414,7 +383,7 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 	for (int i = 0; i < prevFacetNum; ++i)
 	{
 		int id = shadowFacetIDs.arr[i];
-		Polygon diffFacets[MAX_POLYGON_NUM];
+		Polygon diffFacets[MAX_POLYGON_NUM]; // REF: заменить на структуру с size
 		int diffSize = 0;
 
 		while (resFacets.size != 0)
@@ -425,16 +394,14 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 					   diffFacets, diffSize);
 		}
 
-		if (diffSize != 0)
-		{
-			for (int i = 0; i < diffSize; ++i)
-			{
-				resFacets.arr[resFacets.size++] = diffFacets[i];
-			}
-		}
-		else // beam is totaly swallowed by facet
+		if (diffSize == 0) // beam is totaly swallowed by facet
 		{
 			break;
+		}
+
+		for (int i = 0; i < diffSize; ++i)
+		{
+			resFacets.arr[resFacets.size++] = diffFacets[i];
 		}
 	}
 }

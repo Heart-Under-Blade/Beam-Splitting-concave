@@ -5,7 +5,7 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 									   int particleNumber)
 {
 	SetSize(diameter, height);
-	Init(8*particleNumber, refrIndex, 2*M_PI, m_height*2);
+	Init(8*particleNumber, refrIndex, 2*M_PI, M_PI, m_height*2);
 
 	SetFacetParams();
 
@@ -110,8 +110,10 @@ void HexagonalAggregate::SetFacetParams()
 	defaultFacets[8].size = BASE_VERTEX_NUM;
 	defaultFacets[15].size = BASE_VERTEX_NUM;
 
-	for (int i = 0; i < facetNum; ++i)
-	{
-		facets[i].SetVisibility(false, false);
-	}
+	facets[1].isVisibleOut = false;
+	facets[2].isVisibleOut = false;
+	facets[3].isVisibleOut = false;
+	facets[10].isVisibleOut = false;
+	facets[11].isVisibleOut = false;
+	facets[12].isVisibleOut = false;
 }
