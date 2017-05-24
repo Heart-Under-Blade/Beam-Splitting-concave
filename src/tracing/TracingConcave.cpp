@@ -138,16 +138,14 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 					normal1, -beam.direction, diffFacets, diffSize);
 		}
 
-		if (diffSize != 0)
-		{
-			for (int i = 0; i < diffSize; ++i)
-			{
-				resultBeams[resSize++] = diffFacets[i];
-			}
-		}
-		else // beam is totaly swallowed by facet
+		if (diffSize == 0) // beam is totaly swallowed by facet
 		{
 			break;
+		}
+
+		for (int i = 0; i < diffSize; ++i)
+		{
+			resultBeams[resSize++] = diffFacets[i];
 		}
 	}
 
@@ -390,7 +388,7 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 		{
 			const Polygon &clip = m_facets[id];
 			const Polygon &subj = resFacets.arr[--resFacets.size];
-			Difference(subj, normal, clip, normal, m_facets[id].in_normal,
+			Difference(subj, normal, clip, normal, /*m_facets[id].in_normal*/m_incidentDir,
 					   diffFacets, diffSize);
 		}
 

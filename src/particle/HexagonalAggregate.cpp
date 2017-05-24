@@ -113,7 +113,9 @@ void HexagonalAggregate::SetFacetParams()
 	facets[1].isVisibleOut = false;
 	facets[2].isVisibleOut = false;
 	facets[3].isVisibleOut = false;
+	facets[7].isVisibleOut = false;
 	facets[10].isVisibleOut = false;
 	facets[11].isVisibleOut = false;
 	facets[12].isVisibleOut = false;
+	facets[15].isVisibleOut = false;
 }
