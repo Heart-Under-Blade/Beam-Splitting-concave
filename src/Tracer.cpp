@@ -74,6 +74,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 		for (int j = 0; j < gammaR.count; ++j)
 		{
 			gamma = (j + 0.5)*gammaR.norm;
+//gamma = DegToRad(90); beta = DegToRad(116.56); // DEB
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -83,8 +84,9 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 			outBeams.clear();
 		}
 
-		PrintProgress(betaR.count, i, timer);
+//		PrintProgress(betaR.count, i, timer);
 	}
+
 
 	double D_tot = CalcTotalScatteringEnergy(thetaNum);
 	long long orNum = gammaR.count * betaR.count;
@@ -109,8 +111,6 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 void Tracer::PrintProgress(int betaNumber, long long count, CalcTimer &timer)
 {
 	EraseConsoleLine(50);
-	if ((count*100)/betaNumber == 99)
-		int fff = 0;
 	cout << (count*100)/betaNumber << '%'
 		 << '\t' << timer.Elapsed();
 }
@@ -214,15 +214,16 @@ void Tracer::WriteResultsToFileGO(int thetaNum, double NRM, const string &filena
 	M.close();
 }
 
-void Tracer::WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM)
+void Tracer::WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM,
+									 const CalcTimer &timer)
 {
 	ofstream out("out.dat", ios::out);
 
 	// Information for log-file
 	out << "\nStart of calculation = " << ctime(&m_startTime);
-//	out << "\nTotal time of calculation = " << t/CLOCKS_PER_SEC << " seconds";
+	out << "\nTotal time of calculation = " << timer.Elapsed();
 	out << "\nTotal number of body orientation = " << orNumber;
-	out << "\nTotal scattering energy = " << D_tot;
+	out << "\nTotal scattering energy = " << D_tot ;
 
 #ifdef _CHECK_ENERGY_BALANCE
 	out << "\nTotal incoming energy = " << (m_incomingEnergy *= NRM);

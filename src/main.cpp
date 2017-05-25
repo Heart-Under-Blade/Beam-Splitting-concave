@@ -257,7 +257,7 @@ int main(int argc, const char** argv)
 //	testCompareParticles();
 
 //	testHexagonalAggregateBuild();
-	testHexagonalAggregateRot(0, 0);
+	testHexagonalAggregateRot(45, 90);
 //	testHexagonalAggregateRot(45, -90);
 //	testHexagonalAggregateRot(30/*RadToDeg(0.001963495408493621)*/,
 //							  RadToDeg(0.00392208820672883));

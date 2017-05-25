@@ -36,6 +36,9 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 {
 	for (int j = 0; j < polygons.size; ++j)
 	{
+		long long inID = inBeam.id;
+		long long outID = outBeam.id;
+
 		// set geometry of beam
 		 inBeam.SetPolygon(polygons.arr[j]);
 		outBeam.SetPolygon(polygons.arr[j]);
@@ -49,6 +52,8 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 #ifdef _CHECK_ENERGY_BALANCE
 		CalcFacetEnergy(facetID, outBeam);
 #endif
+		inBeam.id = inID;
+		outBeam.id = outID;
 	}
 }
 
