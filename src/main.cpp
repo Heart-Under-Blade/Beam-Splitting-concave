@@ -82,51 +82,132 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 				Tracing &tracer);
 void TraceSingle(Tracing &tracer, double beta, double gamma);
 
-void ImportTracks(int facetNum)
+void ImportTracks2(int facetNum)
 {
 	const int bufSize = 1024;
-	ifstream trackFile("tracks.dat", ios::in);
+	ifstream trackFile("tracks2.dat", ios::in);
 	char *buff = (char*)malloc(sizeof(char) * bufSize);
+
+	TrackGroup buffGroup;
 
 	while (!trackFile.eof())
 	{
 		trackFile.getline(buff, bufSize);
 
-		if (buff[0] == '@')
+		vector<int> track;
+
+		char *ptr, *trash;
+		ptr = strtok(buff, " ");
+
+		int groupIndex = 0;
+		bool haveGroup = false;
+
+		while (ptr != NULL)
 		{
-			char *ptr = strtok(buff, "@ ");
-			++trackGroups.count;
-			trackGroups.groups[trackGroups.count-1].groupID = strtol(ptr, &ptr, 10);
+			if (ptr[0] == ':')
+			{
+				haveGroup = true;
+				ptr = strtok(NULL, " ");
+				groupIndex = strtol(ptr, &ptr, 10);
+
+				if (groupIndex >= trackGroups.size())
+				{
+					for (int i = trackGroups.size();
+						 i <= groupIndex; ++i)
+					{
+						trackGroups.push_back(TrackGroup());
+					}
+				}
+
+				trackGroups[groupIndex].groupID = groupIndex;
+				break;
+			}
+
+			int tmp = strtol(ptr, &trash, 10);
+			track.push_back(tmp);
+			ptr = strtok(NULL, " ");
+		}
+
+		long long int trackID = 0;
+
+		for (int t : track)
+		{
+			trackID += (t + 1);
+			trackID *= (facetNum + 1);
+		}
+
+		if (haveGroup)
+		{
+			trackGroups[groupIndex].tracks.push_back(track);
+			trackGroups[groupIndex].arr[trackGroups[groupIndex].size++] = trackID;
 		}
 		else
 		{
-			vector<int> track;
+			buffGroup.tracks.push_back(track);
+			buffGroup.arr[buffGroup.size++] = trackID;
+		}
 
-			char *ptr, *trash;
-			ptr = strtok(buff, " ");
+		track.clear();
+	}
 
-			while (ptr != NULL)
-			{
-				int tmp = strtol(ptr, &trash, 10);
-				track.push_back(tmp);
-				ptr = strtok(NULL, " ");
-			}
-
-			trackGroups.groups[trackGroups.count-1].tracks.push_back(track);
-
-			long long int trackID = 0;
-
-			for (int t : track)
-			{
-				trackID += (t + 1);
-				trackID *= (facetNum + 1);
-			}
-
-			trackGroups.groups[trackGroups.count-1].arr[trackGroups.groups[trackGroups.count-1].size++] = trackID;
-			track.clear();
+	if (buffGroup.size != 0) // добавляем треки без группы в отдельные группы
+	{
+		for (int i = 0; i < buffGroup.size; ++i)
+		{
+			TrackGroup newGroup;
+			newGroup.arr[newGroup.size++] = buffGroup.arr[i];
+			newGroup.tracks.push_back(buffGroup.tracks[i]);
+			newGroup.groupID = trackGroups.size();
+			trackGroups.push_back(newGroup);
 		}
 	}
 }
+
+//void ImportTracks(int facetNum)
+//{
+//	const int bufSize = 1024;
+//	ifstream trackFile("tracks.dat", ios::in);
+//	char *buff = (char*)malloc(sizeof(char) * bufSize);
+
+//	while (!trackFile.eof())
+//	{
+//		trackFile.getline(buff, bufSize);
+
+//		if (buff[0] == '@')
+//		{
+//			char *ptr = strtok(buff, "@ ");
+//			++trackGroups.count;
+//			trackGroups.groups[trackGroups.count-1].groupID = strtol(ptr, &ptr, 10);
+//		}
+//		else
+//		{
+//			vector<int> track;
+
+//			char *ptr, *trash;
+//			ptr = strtok(buff, " ");
+
+//			while (ptr != NULL)
+//			{
+//				int tmp = strtol(ptr, &trash, 10);
+//				track.push_back(tmp);
+//				ptr = strtok(NULL, " ");
+//			}
+
+//			trackGroups.groups[trackGroups.count-1].tracks.push_back(track);
+
+//			long long int trackID = 0;
+
+//			for (int t : track)
+//			{
+//				trackID += (t + 1);
+//				trackID *= (facetNum + 1);
+//			}
+
+//			trackGroups.groups[trackGroups.count-1].arr[trackGroups.groups[trackGroups.count-1].size++] = trackID;
+//			track.clear();
+//		}
+//	}
+//}
 
 // TODO: написать свой ArgParser
 
@@ -237,8 +318,9 @@ int main(int argc, const char** argv)
 
 		double wave = parser.getArgValue<double>("wavelength");
 
-		ImportTracks(particle->facetNum);
-		Tracer tracer(tracing, "M_all.dat");
+//		ImportTracks(particle->facetNum);
+		ImportTracks2(particle->facetNum);
+		Tracer tracer(tracing, "M");
 
 		if (parser.count("--po") != 0)
 		{
@@ -268,7 +350,8 @@ int main(int argc, const char** argv)
 				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
 
 				int cellNum = parser.getArgValue<int>("t");
-				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+//				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+				tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
 //				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 			}
 			else

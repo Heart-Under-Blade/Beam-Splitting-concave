@@ -6,6 +6,21 @@
 #include "CalcTimer.h"
 #include "Mueller.hpp"
 
+struct Contribution
+{
+	Contribution()
+		: scatMatrix(0, 0, 0, 0), back(4, 4), forw(4, 4)
+	{
+		scatMatrix = Arr2D(1, 180 + 1/*TODO: this is 'thetaNum',
+				   should i do smth with it?*/, 4, 4);
+		scatMatrix.ClearArr();
+	}
+
+	Arr2D scatMatrix;	///< Scattering matrix
+	matrix back;		///< Mueller matrix in backward direction
+	matrix forw;		///< Mueller matrix in forward direction
+};
+
 struct TrackGroup
 {
 	int groupID;
@@ -14,20 +29,18 @@ struct TrackGroup
 	std::vector<std::vector<int>> tracks;
 };
 
-struct Tracks
+class Tracks : public std::vector<TrackGroup>
 {
-	TrackGroup groups[32];
-	int count = 0;
-
+public:
 	int GetMaxGroupID() const // REF: вызывать в конструкторе
 	{
 		int maxGroupID = 0;
 
-		for (int i = 0; i < count; ++i)
+		for (int i = 0; i < size(); ++i)
 		{
-			if (groups[i].groupID > maxGroupID)
+			if ((*this)[i].groupID > maxGroupID)
 			{
-				maxGroupID = groups[i].groupID;
+				maxGroupID = (*this)[i].groupID;
 			}
 		}
 
@@ -36,18 +49,18 @@ struct Tracks
 
 	int GetGroupID(long long int trackID) const
 	{
-		for (int i = 0; i < count; ++i)
+		for (int i = 0; i < size(); ++i)
 		{
-			for (int j = 0; j < groups[i].size; ++j)
+			for (int j = 0; j < (*this)[i].size; ++j)
 			{
-				if (groups[i].arr[j] == trackID)
+				if ((*this)[i].arr[j] == trackID)
 				{
-					return groups[i].groupID;
+					return (*this)[i].groupID;
 				}
 			}
 		}
 
-		if (count == 0)
+		if (size() == 0)
 		{
 			return 0;
 		}
@@ -95,6 +108,8 @@ class Tracer
 public:
 	Tracer(Tracing *tracing, const std::string resultFileName);
 
+	void TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
+						 int thetaNum, const Tracks &tracks);
 	void TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR, int thetaNum);
 	void TraceSingleOrGO(const double &beta, const double &gamma,
 						 int thetaNum, const Tracks &tracks);
@@ -108,16 +123,17 @@ public:
 
 private:
 	Tracing *m_tracing;
-	Arr2D m_muller;
+
+	// result scattering martices
+	Contribution m_totalMtrx;
+	std::vector<Contribution> m_sepatateMatrices; // матрицы для вклада в отдельные траектории
+
 	Point3f m_incidentDir;
 	Point3f m_polarizationBasis;
 	std::string m_resultFileName;
 	double m_gammaNorm;
 	std::vector<Arr2DC> J; // Jones matrices
 	double sizeBin;
-
-	matrix back;	///< Mueller matrix in backward direction
-	matrix forw;	///< Mueller matrix in forward direction
 
 	// light energy balance
 	double m_incomingEnergy;
@@ -138,13 +154,16 @@ private:
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
 	void PrintProgress(int betaNumber, long long count, CalcTimer &timer);
-	void ExtractPeaksGO(int EDF, double NRM, int ThetaNumber);
-	void WriteResultsToFileGO(int thetaNum, double NRM, const std::string &filename);
+	void ExtractPeaksGO(int EDF, double NRM, int ThetaNumber, Contribution &contr);
+	void WriteResultsToFileGO(int thetaNum, double NRM, const std::string &filename,
+							  Contribution &contr);
 	void WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM);
 	std::string GetFileName(const std::string &filename);
 
 	double CalcNorm(long long orNum);
 	double CalcTotalScatteringEnergy(int thetaNum);
 	void RotateMuller(const Point3f &dir, matrix &bf);
-	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area);
+	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
+							 Contribution &contr);
+	void WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF, const Tracks &tracks);
 };

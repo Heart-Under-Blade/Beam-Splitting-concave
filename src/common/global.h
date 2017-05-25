@@ -6,7 +6,7 @@
 // debug
 #define _TRACK_ALLOW // tracks of beams writes to beams
 //#define _CALC_AREA_CONTIBUTION_ONLY
-#define _CHECK_ENERGY_BALANCE // energy conversation of input and output beams outputs in file
+//#define _CHECK_ENERGY_BALANCE // energy conversation of input and output beams outputs in file
 
 void Dellines(int count);
 void EraseConsoleLine(int lenght);
