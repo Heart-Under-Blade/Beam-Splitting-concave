@@ -157,7 +157,8 @@ private:
 	void ExtractPeaksGO(int EDF, double NRM, int ThetaNumber, Contribution &contr);
 	void WriteResultsToFileGO(int thetaNum, double NRM, const std::string &filename,
 							  Contribution &contr);
-	void WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM);
+	void WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM,
+								 CalcTimer &timer);
 	std::string GetFileName(const std::string &filename);
 
 	double CalcNorm(long long orNum);

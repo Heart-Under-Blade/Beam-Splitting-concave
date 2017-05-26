@@ -350,8 +350,8 @@ int main(int argc, const char** argv)
 				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
 
 				int cellNum = parser.getArgValue<int>("t");
-//				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
-				tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
+				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+//				tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
 //				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 			}
 			else

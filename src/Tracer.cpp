@@ -104,7 +104,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	ExtractPeaksGO(EDF, NRM, thetaNum, m_totalMtrx);
 	WriteResultsToFileGO(thetaNum, NRM, m_resultFileName + "_all", m_totalMtrx);
 
-	WriteStatisticsToFileGO(orNum, D_tot, NRM);
+	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
 //	WriteStatisticsToConsole(orNum, D_tot, NRM);
 }
 
@@ -215,7 +215,7 @@ void Tracer::WriteResultsToFileGO(int thetaNum, double NRM, const string &filena
 }
 
 void Tracer::WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM,
-									 const CalcTimer &timer)
+									 CalcTimer &timer)
 {
 	ofstream out("out.dat", ios::out);
 
@@ -568,7 +568,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	ExtractPeaksGO(EDF, NRM, thetaNum, m_totalMtrx);
 
 	WriteResultsToFileGO(thetaNum, NRM, m_resultFileName + "_all", m_totalMtrx);
-	WriteStatisticsToFileGO(orNum, D_tot, NRM);
+	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
 //	WriteStatisticsToConsole(orNum, D_tot, NRM);
 }
 
@@ -596,7 +596,7 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 	ExtractPeaksGO(EDF, 1, thetaNum, m_totalMtrx);
 
 	WriteResultsToFileGO(thetaNum, 1, m_resultFileName, m_totalMtrx);
-	WriteStatisticsToFileGO(1, D_tot, 1);
+//	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
 
 void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
