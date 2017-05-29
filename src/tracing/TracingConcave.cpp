@@ -262,7 +262,10 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
-
+#ifdef _DEBUG // DEB
+		if (beam.lastFacetID == 13)
+			int fff = 0;
+#endif
 		if (IsTerminalBeam(beam))
 		{
 			if (beam.location == Location::Out)

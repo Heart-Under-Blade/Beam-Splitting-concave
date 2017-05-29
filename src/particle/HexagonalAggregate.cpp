@@ -19,7 +19,7 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 		double radius = m_diameter/2;
 		double halfHeight = m_height/2;
 
-		double offset = halfHeight + radius - 2/*REF: вынести как конст.*/;
+		double offset = halfHeight + radius + 1/*REF: вынести как конст.*/;
 
 		int halfNumber = BASE_VERTEX_NUM/2;
 		double halfRadius = radius/2;
@@ -118,4 +118,9 @@ void HexagonalAggregate::SetFacetParams()
 	facets[11].isVisibleOut = false;
 	facets[12].isVisibleOut = false;
 	facets[15].isVisibleOut = false;
+
+	for (int i = 0; i < facetNum; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+	{
+		facets[i].isVisibleIn = false;
+	}
 }
