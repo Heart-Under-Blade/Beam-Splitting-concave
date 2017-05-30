@@ -68,9 +68,9 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	cout << "Started at " << ctime(&m_startTime) << endl;
 
 	// DEB
-	beta = (99 + 0.5)*betaR.norm;
-	gamma = (50 + 0.5)*gammaR.norm;
-	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+//	beta = (99 + 0.5)*betaR.norm;
+//	gamma = (50 + 0.5)*gammaR.norm;
+//	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 	//
 
 	for (int i = 0; i < betaR.count; ++i)
