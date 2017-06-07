@@ -31,6 +31,43 @@ void Dellines(int count)
 #endif
 }
 
+void CreateDir(const char *name, char *dir)
+{
+#ifdef _WIN32
+	size_t bufferSize = MAX_PATH;
+	char cdir[MAX_PATH]; // store the current directory
+
+	// get the current directory, and store it
+	if (!GetCurrentDirectoryA(bufferSize, cdir))
+	{
+		std::cerr << "Error getting current directory: #" << GetLastError();
+	}
+
+	strcat(cdir, "\\");
+	strcat(cdir, name);
+
+	char dirN[MAX_PATH];
+	strcpy(dirN, cdir);
+
+	for (int i = 1; !CreateDirectoryA(cdir, NULL); ++i)
+	{
+		std::string dirName = dirN;
+		dirName += "(" + std::to_string(i) + ")";
+		strcpy(cdir, dirName.c_str());
+	}
+
+//	if (!CreateDirectoryA(cdir, NULL))
+//	{
+//		std::cerr << "Error creating directory: #" << GetLastError();
+//	}
+
+	strcat(cdir, "\\");
+	strcat(dir, cdir);
+#else
+	strcpy(dir, name);
+#endif
+}
+
 void EraseConsoleLine(int lenght)
 {
 	std::cout << '\r';

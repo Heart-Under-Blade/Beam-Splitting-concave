@@ -4,6 +4,8 @@
 
 using namespace std;
 
+ofstream tfile("tracks_other1.dat", ios::out);
+
 Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
 	  m_incidentDir(0, 0, -1),
@@ -13,6 +15,49 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 {
 }
 
+string Tracer::GetFileSubName(const Tracks &tracks, int i)
+{
+	string subname;
+
+	if (tracks[i].size == 1)
+	{
+		for (int index : tracks[i].tracks[0])
+		{
+			subname += '_' + to_string(index);
+		}
+
+		subname += "__" + to_string(i);
+	}
+	else
+	{
+		subname += "_group_" + to_string(i);
+	}
+
+	return subname;
+}
+
+void Tracer::RecoverTrack(const Beam &beam, std::vector<int> &track)
+{
+	int coef = m_tracing->m_particle->facetNum + 1;
+	std::vector<int> tmp_track;
+
+	int tmpId = beam.id/coef;
+	for (int i = 0; i <= beam.level; ++i)
+	{
+		int tmp = tmpId%coef;
+		tmpId -= tmp;
+		tmpId /= coef;
+		tmp -= 1;
+//		if (tmp < 0) tmp = coef-2;
+		tmp_track.push_back(tmp);
+	}
+
+	for (int i = tmp_track.size()-1; i >= 0; --i)
+	{
+		track.push_back(tmp_track.at(i));
+	}
+}
+
 void Tracer::WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF,
 										  const Tracks &tracks)
 {
@@ -20,22 +65,7 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF,
 	{
 		if (tracks[i].size != 0)
 		{
-			string subname;
-
-			if (tracks[i].size == 1)
-			{
-				for (int index : tracks[i].tracks[0])
-				{
-					subname += '_' + to_string(index);
-				}
-
-				subname += "__" + to_string(i);
-			}
-			else
-			{
-				subname += "_group_" + to_string(i);
-			}
-
+			string subname = GetFileSubName(tracks, i);
 			ExtractPeaksGO(EDF, NRM, thetaNum, m_sepatateMatrices[i]);
 			WriteResultsToFileGO(thetaNum, NRM, m_resultFileName + subname,
 								 m_sepatateMatrices[i]);
@@ -246,7 +276,7 @@ string Tracer::GetFileName(const string &filename)
 	string fname = string("M_") + filename;
 	string name = fname;
 
-	for (int i = 1; ifstream(name += ".dat") != NULL; ++i)
+	for (int i = 1; ifstream(name + ".dat") != NULL; ++i)
 	{
 		name = fname + "(" + to_string(i) + ")";
 	}
@@ -254,8 +284,8 @@ string Tracer::GetFileName(const string &filename)
 	return name;
 }
 
-void Tracer::TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
-							 const Cone &bsCone, const Tracks &tracks, double wave)
+void Tracer::TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
+						   const Cone &bsCone, const Tracks &tracks, double wave)
 {
 	CalcTimer timer;
 	long long count = 0;
@@ -279,7 +309,7 @@ void Tracer::TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
-			gamma = j*gammaR.norm + M_PI/6;
+			gamma = j*gammaR.norm;
 //beta = DegToRad(32); gamma = DegToRad(30); // DEB
 //cout << j << endl;// DEB
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
@@ -288,16 +318,124 @@ void Tracer::TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
 			HandleBeamsPO(outBeams, bsCone, wave, tracks);
 
 			outBeams.clear();
-			AddResultToSumMatrix(M, maxGroupID, bsCone, gNorm);
+			AddResultToMatrix(M, maxGroupID, bsCone, gNorm);
 		}
 
-		WriteSumMatrix(outFile, M, bsCone);
+		WriteConusMatrices(outFile, M, bsCone);
 
 		PrintProgress(betaR.count, count, timer);
 		++count;
 	}
 
 	outFile.close();
+}
+
+void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
+{
+	for (size_t i = 0; i < maxGroupID; ++i)
+	{
+		Arr2D m(1, 1, 4, 4);
+		mtrcs.push_back(m);
+	}
+}
+
+void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &gammaR,
+									 const Tracks &tracks, double wave)
+{
+	Cone bsCone(2, 0, 0);
+	CalcTimer timer;
+	long long count = 0;
+
+//	string fname = GetFileName(m_resultFileName);
+
+	char dir[260] = "";
+	CreateDir(m_resultFileName.c_str(), dir);
+	string dirName = dir;
+
+	ofstream diffFile(dirName + "difference.dat", ios::out);
+
+	ofstream allFile(dirName + "all.dat", ios::out);
+
+	ofstream otherFile;
+
+	if (isCalcOther)
+	{
+		otherFile.open(dirName + "other.dat", ios::out);
+		Other = Arr2D(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
+	}
+
+	vector<Beam> outBeams;
+	double beta, gamma;
+	double bStep = betaR.step;
+
+	int maxGroupID = tracks.GetMaxGroupID();
+	All = Arr2D(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
+
+	vector<Arr2D> groupMatrices;
+	AllocGroupMatrices(groupMatrices, maxGroupID);
+
+	int halfGammaCount = gammaR.count/2;
+	gNorm = gammaR.norm/m_gammaNorm;
+
+	timer.Start();
+
+	for (int i = 0; i <= betaR.count; ++i)
+	{
+		beta = bStep*i;
+
+		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
+		{
+			gamma = j*gammaR.norm;
+			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+
+			CleanJ(maxGroupID, bsCone);
+			HandleBeamsBackScatterPO(outBeams, wave, tracks);
+
+			outBeams.clear();
+			AddResultToMatrices(groupMatrices, maxGroupID, bsCone, gNorm);
+			AddResultToMatrix(All, maxGroupID, bsCone, gNorm);
+		}
+
+		double degBeta = RadToDeg(beta);
+		allFile << degBeta << ' ';
+		matrix m = All(0, 0);
+		allFile << m << endl;
+		All.ClearArr();
+
+		for (size_t q = 0; q < groupMatrices.size(); ++q)
+		{
+			Arr2D &mtrx = groupMatrices[q];
+			string subname = GetFileSubName(tracks, q);
+			string filename = dirName + m_resultFileName + subname + ".dat";
+			ofstream file(filename, ios::app);
+			matrix m1 = mtrx(0, 0);
+			file << degBeta << ' ';
+			file << m1 << endl;
+			file.close();
+		}
+
+		groupMatrices.clear();
+		AllocGroupMatrices(groupMatrices, maxGroupID);
+
+		if (isCalcOther)
+		{
+			otherFile << degBeta << ' ';
+			matrix m0 = Other(0, 0);
+			otherFile << m0 << endl;
+			Other.ClearArr();
+
+			diffFile << degBeta << ' ';
+			matrix m00 = m - m0;
+			diffFile << m00 << endl;
+		}
+
+		PrintProgress(betaR.count, count, timer);
+		++count;
+	}
+
+	allFile.close();
+	otherFile.close();
+	diffFile.close();
 }
 
 //REF: объединить с предыдущим
@@ -326,7 +464,7 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 //cout << endl;// DEB
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
-			gamma = j*gammaR.norm + M_PI/6;
+			gamma = j*gammaR.norm;
 
 //EraseConsoleLine(50); // DEB
 //cout << j;
@@ -338,11 +476,11 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 				HandleBeamsPO2(outBeams, bsCone, wave, groupID);
 
 				outBeams.clear();
-				AddResultToSumMatrix(M, maxGroupID, bsCone, gNorm);
+				AddResultToMatrix(M, maxGroupID, bsCone, gNorm);
 			}
 		}
 
-		WriteSumMatrix(outFile, M, bsCone);
+		WriteConusMatrices(outFile, M, bsCone);
 
 		PrintProgress(betaR.count, count, timer);
 		++count;
@@ -351,8 +489,8 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 	outFile.close();
 }
 
-void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum,
-							const Cone &bsCone)
+void Tracer::WriteConusMatrices(ofstream &outFile, const Arr2D &sum,
+								const Cone &bsCone)
 {
 	outFile << to_string(bsCone.radius)	<< ' '
 			<< to_string(bsCone.thetaCount) << ' '
@@ -374,8 +512,8 @@ void Tracer::WriteSumMatrix(ofstream &outFile, const Arr2D &sum,
 	}
 }
 
-void Tracer::AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
-								  double norm)
+void Tracer::AddResultToMatrix(Arr2D &M, int maxGroupID, const Cone &bsCone,
+							   double norm)
 {
 	for (int q = 0; q < maxGroupID; ++q)
 	{
@@ -383,9 +521,25 @@ void Tracer::AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
 		{
 			for (int p = 0; p <= bsCone.phiCount; ++p)
 			{
-//				complex ee = J[q](p, t)[0][0]; // DEB
+				matrix m = Mueller(J[q](p, t));
+				m *= norm;
+				M.insert(p, t, m);
+			}
+		}
+	}
+}
+
+void Tracer::AddResultToMatrices(vector<Arr2D> &M, int maxGroupID,
+								 const Cone &bsCone, double norm)
+{
+	for (int q = 0; q < maxGroupID; ++q)
+	{
+		for (int t = 0; t <= bsCone.thetaCount; ++t)
+		{
+			for (int p = 0; p <= bsCone.phiCount; ++p)
+			{
 				matrix Mk = Mueller(J[q](p, t));
-				M_.insert(p, t, norm*Mk);
+				M[q].insert(p, t, norm*Mk);
 			}
 		}
 	}
@@ -621,8 +775,13 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 	HandleBeamsPO(outBeams, bsCone, wave, tracks);
 
 	outBeams.clear();
-	AddResultToSumMatrix(M, maxGroupID, bsCone);
-	WriteSumMatrix(outFile, M, bsCone);
+	AddResultToMatrix(M, maxGroupID, bsCone);
+	WriteConusMatrices(outFile, M, bsCone);
+}
+
+void Tracer::setIsCalcOther(bool value)
+{
+	isCalcOther = value;
 }
 
 void Tracer::SetJnRot(Beam &beam, const Point3f &T,
@@ -746,6 +905,87 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
 				matrixC c = fn*Jn_rot*fn_jn;
 				J[groupID].insert(i, j, c);
 			}
+		}
+	}
+}
+
+void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
+									  double wavelength, const Tracks &tracks)
+{
+	for (Beam &beam : outBeams)
+	{
+		if (beam.direction.cz < 0.9396)
+		{
+			continue;
+		}
+
+		int groupID = tracks.GetGroupID(beam.id);
+
+		if (groupID < 0 && !isCalcOther)
+		{
+			continue;
+		}
+
+#ifdef _DEBUG // DEB
+
+		if (groupID >= 0)
+		{
+			int ff = 0;
+		}
+#endif
+		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
+
+		Point3f center = beam.Center();
+		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
+
+		Point3f T = CrossProduct(beam.e, beam.direction);
+		T = T/Length(T); // базис выходящего пучка
+		//
+		double f = 0;
+		double t = 0;
+
+		double sinT = sin(t), sinF = sin(f), cosF = cos(f);
+
+		Point3d vr(sinT*cosF, sinT*sinF, cos(t));
+		Point3d vf = -m_polarizationBasis;
+		// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
+
+		matrixC Jn_rot(2, 2);
+		SetJnRot(beam, T, vf, vr, Jn_rot);
+
+		complex fn(0, 0);
+		fn = beam.DiffractionIncline(vr, wavelength);
+
+		double dp = DotProductD(vr, Point3d(center));
+		complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
+		matrixC fn_jn = beam.J * tmp;
+
+		matrixC c = fn*Jn_rot*fn_jn;
+#ifdef _DEBUG // DEB
+		if (beam.level > 2)
+		{
+			complex dd = c[0][0];
+		}
+#endif
+		if (groupID < 0 && isCalcOther)
+		{
+			Arr2DC mt(1, 1, 2, 2);
+			mt.insert(0, 0, c);
+			matrix m = Mueller(mt(0, 0));
+			m *= gNorm;
+
+//std::vector<int> track;
+//RecoverTrack(beam, track);
+//for (int t : track) {
+//	tfile << t << ';';
+//}
+//tfile << m[0][0] << endl;
+			Other.insert(0, 0, m);
+			All.insert(0, 0, m);
+		}
+		else
+		{
+			J[groupID].insert(0, 0, c);
 		}
 	}
 }

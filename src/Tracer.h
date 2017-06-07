@@ -36,7 +36,7 @@ public:
 	{
 		int maxGroupID = 0;
 
-		for (int i = 0; i < size(); ++i)
+		for (size_t i = 0; i < size(); ++i)
 		{
 			if ((*this)[i].groupID > maxGroupID)
 			{
@@ -49,7 +49,7 @@ public:
 
 	int GetGroupID(long long int trackID) const
 	{
-		for (int i = 0; i < size(); ++i)
+		for (size_t i = 0; i < size(); ++i)
 		{
 			for (int j = 0; j < (*this)[i].size; ++j)
 			{
@@ -114,12 +114,15 @@ public:
 	void TraceSingleOrGO(const double &beta, const double &gamma,
 						 int thetaNum, const Tracks &tracks);
 
-	void TraceIntervalPO(const AngleRange &betaR, const AngleRange &gammaR,
+	void TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
+	void TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &gammaR, const Tracks &tracks, double wave);
 	void TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
 	void TraceSingleOrPO(const double &beta, const double &gamma,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
+
+	void setIsCalcOther(bool value); // REF: заменить
 
 private:
 	Tracing *m_tracing;
@@ -140,17 +143,27 @@ private:
 	double m_outcomingEnergy;
 	time_t m_startTime;
 
+	// REF: заменить
+	bool isCalcOther = false;
+	double gNorm;
+	Arr2D Other;
+	Arr2D All;
+
 private:
 	void CleanJ(int maxGroupID, const Cone &bsCone);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks);
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, int groupID);
+	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
+								  double wavelength, const Tracks &tracks);
 	void SetJnRot(Beam &beam, const Point3f &T,
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
-	void AddResultToSumMatrix(Arr2D &M_, int maxGroupID, const Cone &bsCone,
+	void AddResultToMatrix(Arr2D &M, int maxGroupID, const Cone &bsCone,
 							  double norm = 1);
-	void WriteSumMatrix(std::ofstream &outFile, const Arr2D &sum,
+	void AddResultToMatrices(std::vector<Arr2D> &M, int maxGroupID,
+									 const Cone &bsCone, double norm = 1);
+	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
 	void PrintProgress(int betaNumber, long long count, CalcTimer &timer);
@@ -167,4 +180,8 @@ private:
 	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
 							 Contribution &contr);
 	void WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF, const Tracks &tracks);
+	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
+	std::string GetFileSubName(const Tracks &tracks, int i);
+
+	void RecoverTrack(const Beam &beam, std::vector<int> &track);
 };

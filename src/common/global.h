@@ -13,3 +13,4 @@ void EraseConsoleLine(int lenght);
 
 double DegToRad(double deg);
 double RadToDeg(double rad);
+void CreateDir(const char *name, char *dir);

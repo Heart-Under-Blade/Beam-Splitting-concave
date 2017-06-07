@@ -225,6 +225,7 @@ void setAvalableArgs(ArgParser &parser)
 	parser.addArgument("-w", "--wavelength", 1);
 	parser.addArgument("--conus", 3);
 	parser.addArgument("-o", "--output", 1);
+	parser.addArgument("--all");
 }
 
 AngleRange GetRange(const char *name, double normCoef, ArgParser &parser)
@@ -281,6 +282,7 @@ int main(int argc, const char** argv)
 		double sup;
 		int num;
 
+		// TODO: AggregateBuilder
 		switch (pt)
 		{
 		case ParticleType::Hexagonal:
@@ -339,7 +341,7 @@ int main(int argc, const char** argv)
 			{
 				AngleRange betaR = GetRange("beta", particle->GetSymmetryBeta(), parser);
 				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
-				tracer.TraceIntervalPO(betaR, gammaR, bsCone, trackGroups, wave);
+				tracer.TraceRandomPO(betaR, gammaR, bsCone, trackGroups, wave);
 	//			tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
 			}
 		}
@@ -351,9 +353,18 @@ int main(int argc, const char** argv)
 				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
 
 				int cellNum = parser.getArgValue<int>("t");
-				tracer.TraceIntervalGO(betaR, gammaR, cellNum);
-//				tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
-//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
+
+				if (parser.count("all") != 0)
+				{
+					tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+				}
+				else
+				{
+					tracer.setIsCalcOther(true);
+					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, 0.532);
+//					tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
+				}
+				//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 			}
 			else
 			{
@@ -399,7 +410,7 @@ void WriteSumMatrix(ofstream &M_all_file, const Arr2D &M_)
 //			<< to_string(params.bsCone.theta) << ' '
 //			<< to_string(params.bsCone.phi+1);
 
-	for (int t = 0; t <=0 /*params.bsCone.theta*/; ++t)
+	for (int t = 0; t <= 0 /*params.bsCone.theta*/; ++t)
 	{
 		double tt = (double)(t*dt*180.0)/M_PI;
 
@@ -609,7 +620,7 @@ void TraceFixed(const OrientationRange &gammaRange, const OrientationRange &beta
 		for (int j = gammaRange.begin; j <= gammaRange.end/*gammaRange.begin*/; ++j)
 		{
 //			gamma = (j + 0.5)*gammaNorm;
-			gamma = (j - gammaRange.end/2)*gammaNorm + M_PI/6;
+			gamma = (j - gammaRange.end/2)*gammaNorm;
 
 #ifdef _OUTPUT_NRG_CONV
 			SS=0;
