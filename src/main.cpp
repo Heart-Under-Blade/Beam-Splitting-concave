@@ -13,6 +13,7 @@
 
 #include "Hexagonal.h"
 #include "ConcaveHexagonal.h"
+#include "CertainAggregate.h"
 
 #include "global.h"
 #include "Beam.h"
@@ -37,7 +38,8 @@ enum class ParticleType : int
 	Hexagonal = 1,
 	ConcaveHexagonal = 10,
 	TiltedHexagonal = 11,
-	HexagonalAggregate = 12
+	HexagonalAggregate = 12,
+	CertainAggregate = 999
 };
 
 struct OrientationRange
@@ -258,7 +260,7 @@ int main(int argc, const char** argv)
 //	testCompareParticles();
 
 //	testHexagonalAggregateBuild();
-	testHexagonalAggregateRot(0, 0);
+//	testHexagonalAggregateRot(0, 0);
 //	testHexagonalAggregateRot(45, 90);
 //	testHexagonalAggregateRot(45, -90);
 //	testHexagonalAggregateRot(30/*RadToDeg(0.001963495408493621)*/,
@@ -300,10 +302,16 @@ int main(int argc, const char** argv)
 			num = parser.argToValue<int>(vec[3]);
 			particle = new HexagonalAggregate(ri, d, h, num);
 			break;
+		case ParticleType::CertainAggregate:
+			num = parser.argToValue<int>(vec[3]);
+			particle = new CertainAggregate(ri, num);
+			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
 			break;
 		}
+
+		toFile(*particle);
 
 		int reflNum = parser.getArgValue<double>("n");
 
