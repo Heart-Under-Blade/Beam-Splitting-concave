@@ -242,7 +242,8 @@ int main(int argc, const char** argv)
 		int reflNum = parser.getArgValue<double>("n");
 
 		if (pt == ParticleType::ConcaveHexagonal ||
-				pt == ParticleType::HexagonalAggregate)
+				pt == ParticleType::HexagonalAggregate ||
+				pt == ParticleType::CertainAggregate)
 		{
 			tracing = new TracingConcave(particle, incidentDir, isOpticalPath,
 										 polarizationBasis, reflNum);
