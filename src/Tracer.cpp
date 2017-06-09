@@ -118,7 +118,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
-			logfile << i << ' ' << j << endl;
+			logfile << "i: " << i << "; j: " << j << endl;
 			logfile.flush();
 		}
 
