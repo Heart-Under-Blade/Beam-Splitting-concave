@@ -109,7 +109,6 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 		for (int j = 0; j < gammaR.count; ++j)
 		{
 			gamma = (j + 0.5)*gammaR.norm;
-//gamma = DegToRad(90); beta = DegToRad(116.56); // DEB
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE

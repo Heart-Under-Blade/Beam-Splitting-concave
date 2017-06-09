@@ -316,7 +316,8 @@ int main(int argc, const char** argv)
 		int reflNum = parser.getArgValue<double>("n");
 
 		if (pt == ParticleType::ConcaveHexagonal ||
-				pt == ParticleType::HexagonalAggregate)
+				pt == ParticleType::HexagonalAggregate ||
+				pt == ParticleType::CertainAggregate)
 		{
 			tracing = new TracingConcave(particle, incidentDir, isOpticalPath,
 										 polarizationBasis, reflNum);
@@ -369,8 +370,8 @@ int main(int argc, const char** argv)
 				else
 				{
 					tracer.setIsCalcOther(true);
-					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, 0.532);
-//					tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
+//					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, 0.532);
+					tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
 				}
 				//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 			}
