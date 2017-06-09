@@ -96,12 +96,6 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 
-	// DEB
-//	beta = (99 + 0.5)*betaR.norm;
-//	gamma = (50 + 0.5)*gammaR.norm;
-//	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
-	//
-
 	for (int i = 0; i < betaR.count; ++i)
 	{
 		beta = (i + 0.5)*betaR.norm;
@@ -109,7 +103,6 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 		for (int j = 0; j < gammaR.count; ++j)
 		{
 			gamma = (j + 0.5)*gammaR.norm;
-//gamma = DegToRad(90); beta = DegToRad(116.56); // DEB
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -309,8 +302,9 @@ void Tracer::TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaR.norm;
-//beta = DegToRad(32); gamma = DegToRad(30); // DEB
-//cout << j << endl;// DEB
+// DEB
+//beta = DegToRad(32); gamma = DegToRad(30);
+//cout << j << endl;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 			CleanJ(maxGroupID, bsCone);
@@ -509,12 +503,12 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 	for (int i = 0; i <= betaR.count; ++i)
 	{
 		beta = bStep*i;
-//cout << endl;// DEB
+
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaR.norm;
-
-//EraseConsoleLine(50); // DEB
+// DEB
+//EraseConsoleLine(50);
 //cout << j;
 			for (int groupID = 0; groupID < maxGroupID; ++groupID)
 			{

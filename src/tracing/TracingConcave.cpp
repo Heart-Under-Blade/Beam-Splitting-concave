@@ -142,11 +142,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 			Difference(resultBeams[--resSize], normal, m_facets[id],
 					normal1, -beam.direction, diffFacets, diffSize);
 		}
-#ifdef _DEBUG // DEB
-		if (diffSize >= MAX_POLYGON_NUM)
-			int fff = 0;
-#endif
-assert(diffSize < MAX_POLYGON_NUM); // DEB
 
 		if (diffSize == 0) // beam is totaly swallowed by facet
 		{
@@ -156,7 +151,6 @@ assert(diffSize < MAX_POLYGON_NUM); // DEB
 		for (int i = 0; i < diffSize; ++i)
 		{
 			resultBeams[resSize++] = diffFacets[i];
-assert((resSize < MAX_VERTEX_NUM) && resSize); // DEB
 		}
 	}
 
@@ -248,7 +242,6 @@ int TracingConcave::FindFacetID(int facetID, const IntArray &arr)
 void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutBeam,
 									 Beam &inBeam, Beam &outBeam)
 {
-assert((m_treeSize < MAX_BEAM_REFL_NUM)); // DEB
 #ifdef _TRACK_ALLOW
 	inBeam.id = beam.id;
 #endif
