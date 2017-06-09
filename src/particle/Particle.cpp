@@ -1,6 +1,13 @@
 #include "Particle.h"
+#include <fstream>
 
 Particle::Particle() {}
+
+void Particle::SetFromFile(const char *filename)
+{
+	std::ifstream pfile(filename, std::ios::in);
+	//pfile >>
+}
 
 void Particle::Init(int facetCount, const complex &refrIndex,
 					double symGamma, double symBeta, double size)

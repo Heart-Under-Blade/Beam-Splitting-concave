@@ -5,7 +5,7 @@
 #define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
 #define MAX_VERTEX_NUM 64		///< maximum number of vertices in polygon
 #define MAX_POLYGON_NUM 128		///< maximum number of polygons in array of polygons
-#define MAX_FACET_NUM 64
+#define MAX_FACET_NUM 256
 
 enum Location: bool
 {
@@ -297,7 +297,7 @@ public:
 	}
 };
 
-// TODO: try to create template class 'Array<type>'
+// REF: try to create template class 'Array<type>'
 
 struct PolygonArray
 {

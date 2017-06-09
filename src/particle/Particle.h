@@ -17,6 +17,9 @@ class Particle
 public:
 	Particle();
 
+	// TODO: допилить
+	void SetFromFile(const char *filename);
+
 	void Rotate(double beta, double gamma, double alpha);
 
 	const double &GetMainSize() const;

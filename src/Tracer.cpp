@@ -10,29 +10,29 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
 	  m_incidentDir(0, 0, -1),
 	  m_polarizationBasis(0, 1, 0),
-	  m_resultFileName(resultFileName),
+	  m_resultDirName(resultFileName),
 	  m_gammaNorm(tracing->m_particle->GetSymmetryGamma())
 {
 }
 
-string Tracer::GetFileSubName(const Tracks &tracks, int i)
+string Tracer::CreateGroupName(const TrackGroup &tracks, int group)
 {
 	string subname;
 
-	if (tracks[i].size == 1)
+	if (tracks.size <= 2)
 	{
-		for (int index : tracks[i].tracks[0])
+		for (int i = 0; i < tracks.size; ++i)
 		{
-			subname += '_' + to_string(index);
+			for (int index : tracks.tracks[i])
+			{
+				subname += to_string(index) + '_';
+			}
+
+			subname += '_' + to_string(group);
 		}
-
-		subname += "__" + to_string(i);
-	}
-	else
-	{
-		subname += "_group_" + to_string(i);
 	}
 
+	subname += "_gr_" + to_string(group);
 	return subname;
 }
 
@@ -48,7 +48,6 @@ void Tracer::RecoverTrack(const Beam &beam, std::vector<int> &track)
 		tmpId -= tmp;
 		tmpId /= coef;
 		tmp -= 1;
-//		if (tmp < 0) tmp = coef-2;
 		tmp_track.push_back(tmp);
 	}
 
@@ -61,13 +60,13 @@ void Tracer::RecoverTrack(const Beam &beam, std::vector<int> &track)
 void Tracer::WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF,
 										  const Tracks &tracks)
 {
-	for (int i = 0; i < m_sepatateMatrices.size(); ++i)
+	for (size_t i = 0; i < m_sepatateMatrices.size(); ++i)
 	{
 		if (tracks[i].size != 0)
 		{
-			string subname = GetFileSubName(tracks, i);
+			string subname = CreateGroupName(tracks[i], i);
 			ExtractPeaksGO(EDF, NRM, thetaNum, m_sepatateMatrices[i]);
-			WriteResultsToFileGO(thetaNum, NRM, m_resultFileName + subname,
+			WriteResultsToFileGO(thetaNum, NRM, m_resultDirName + subname,
 								 m_sepatateMatrices[i]);
 		}
 	}
@@ -138,7 +137,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	WriteResultToSeparateFilesGO(NRM, thetaNum, EDF, tracks);
 
 	ExtractPeaksGO(EDF, NRM, thetaNum, m_totalMtrx);
-	WriteResultsToFileGO(thetaNum, NRM, m_resultFileName + "_all", m_totalMtrx);
+	WriteResultsToFileGO(thetaNum, NRM, m_resultDirName + "_all", m_totalMtrx);
 
 	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
 //	WriteStatisticsToConsole(orNum, D_tot, NRM);
@@ -291,7 +290,7 @@ void Tracer::TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
 	long long count = 0;
 
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-	ofstream outFile(m_resultFileName, ios::out);
+	ofstream outFile(m_resultDirName, ios::out);
 
 	vector<Beam> outBeams;
 	double beta, gamma;
@@ -339,6 +338,38 @@ void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
 	}
 }
 
+void Tracer::CreateGroupResultFiles(const Tracks &tracks, const string &dirName,
+									vector<ofstream*> &groupFiles)
+{
+	for (int group = 0; group < tracks.size(); ++group)
+	{
+		string groupName = CreateGroupName(tracks[group], group);
+		string filename = dirName + groupName + ".dat";
+		ofstream *file = new ofstream(filename, ios::out);
+		groupFiles.push_back(file);
+	}
+}
+
+void Tracer::AllocJ(int m, int n, int size)
+{
+	J.clear();
+	Arr2DC tmp(m, n, 2, 2);
+	tmp.ClearArr();
+
+	for(int i = 0; i < size; i++)
+	{
+		J.push_back(tmp);
+	}
+}
+
+void Tracer::CleanJ()
+{
+	for (Arr2DC &m : J)
+	{
+		m.ClearArr();
+	}
+}
+
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &gammaR,
 									 const Tracks &tracks, double wave)
 {
@@ -346,33 +377,36 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &
 	CalcTimer timer;
 	long long count = 0;
 
-//	string fname = GetFileName(m_resultFileName);
+	int maxGroupID = tracks.GetMaxGroupID();
 
 	char dir[260] = "";
-	CreateDir(m_resultFileName.c_str(), dir);
+	CreateDir(m_resultDirName.c_str(), dir);
 	string dirName = dir;
-
-	ofstream diffFile(dirName + "difference.dat", ios::out);
 
 	ofstream allFile(dirName + "all.dat", ios::out);
 
-	ofstream otherFile;
+	vector<ofstream*> groupFiles;
+	CreateGroupResultFiles(tracks, dirName, groupFiles);
+
+	ofstream otherFile, diffFile;
 
 	if (isCalcOther)
 	{
+		diffFile.open(dirName + "difference.dat", ios::out);
 		otherFile.open(dirName + "other.dat", ios::out);
-		Other = Arr2D(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
+		Other = Arr2D(1, 1, 4, 4);
 	}
+
+	AllocJ(1, 1, maxGroupID);
+
+	vector<Arr2D> groupResultM;
+	AllocGroupMatrices(groupResultM, maxGroupID);
 
 	vector<Beam> outBeams;
 	double beta, gamma;
 	double bStep = betaR.step;
 
-	int maxGroupID = tracks.GetMaxGroupID();
-	All = Arr2D(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-
-	vector<Arr2D> groupMatrices;
-	AllocGroupMatrices(groupMatrices, maxGroupID);
+	All = Arr2D(1, 1, 4, 4);
 
 	int halfGammaCount = gammaR.count/2;
 	gNorm = gammaR.norm/m_gammaNorm;
@@ -381,19 +415,29 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &
 
 	for (int i = 0; i <= betaR.count; ++i)
 	{
+		PrintProgress(betaR.count, count, timer);
+		++count;
+
 		beta = bStep*i;
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaR.norm;
+//beta = DegToRad(135); gamma = DegToRad(57);
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
-			CleanJ(maxGroupID, bsCone);
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 
+//			CleanJ();
+//			CleanJ(maxGroupID, bsCone);
 			outBeams.clear();
-			AddResultToMatrices(groupMatrices, maxGroupID, bsCone, gNorm);
+
+			AddResultToMatrices(groupResultM, maxGroupID, bsCone, gNorm);
 			AddResultToMatrix(All, maxGroupID, bsCone, gNorm);
+
+			CleanJ();
+//			EraseConsoleLine(50);
+//			cout << j;
 		}
 
 		double degBeta = RadToDeg(beta);
@@ -402,20 +446,17 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &
 		allFile << m << endl;
 		All.ClearArr();
 
-		for (size_t q = 0; q < groupMatrices.size(); ++q)
+		for (size_t group = 0; group < groupResultM.size(); ++group)
 		{
-			Arr2D &mtrx = groupMatrices[q];
-			string subname = GetFileSubName(tracks, q);
-			string filename = dirName + m_resultFileName + subname + ".dat";
-			ofstream file(filename, ios::app);
+			Arr2D &mtrx = groupResultM[group];
 			matrix m1 = mtrx(0, 0);
+			ofstream &file = *(groupFiles[group]);
 			file << degBeta << ' ';
 			file << m1 << endl;
-			file.close();
 		}
 
-		groupMatrices.clear();
-		AllocGroupMatrices(groupMatrices, maxGroupID);
+		groupResultM.clear();
+		AllocGroupMatrices(groupResultM, maxGroupID);
 
 		if (isCalcOther)
 		{
@@ -428,14 +469,21 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &
 			matrix m00 = m - m0;
 			diffFile << m00 << endl;
 		}
-
-		PrintProgress(betaR.count, count, timer);
-		++count;
 	}
 
 	allFile.close();
-	otherFile.close();
-	diffFile.close();
+
+	if (isCalcOther)
+	{
+		otherFile.close();
+		diffFile.close();
+	}
+
+	for (size_t group = 0; group < groupResultM.size(); ++group)
+	{
+		ofstream &file = *(groupFiles[group]);
+		file.close();
+	}
 }
 
 //REF: объединить с предыдущим
@@ -446,7 +494,7 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 	long long count = 0;
 
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-	ofstream outFile(m_resultFileName, ios::out);
+	ofstream outFile(m_resultDirName, ios::out);
 
 	vector<Beam> outBeams;
 	double beta, gamma;
@@ -727,7 +775,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 
 	ExtractPeaksGO(EDF, NRM, thetaNum, m_totalMtrx);
 
-	WriteResultsToFileGO(thetaNum, NRM, m_resultFileName + "_all", m_totalMtrx);
+	WriteResultsToFileGO(thetaNum, NRM, m_resultDirName + "_all", m_totalMtrx);
 	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
 //	WriteStatisticsToConsole(orNum, D_tot, NRM);
 }
@@ -755,7 +803,7 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 
 	ExtractPeaksGO(EDF, 1, thetaNum, m_totalMtrx);
 
-	WriteResultsToFileGO(thetaNum, 1, m_resultFileName, m_totalMtrx);
+	WriteResultsToFileGO(thetaNum, 1, m_resultDirName, m_totalMtrx);
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
 
@@ -763,7 +811,7 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-	ofstream outFile(m_resultFileName, ios::out);
+	ofstream outFile(m_resultDirName, ios::out);
 	vector<Beam> outBeams;
 
 	double b = DegToRad(beta);
@@ -809,13 +857,6 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 {
 	for (Beam &beam : outBeams)
 	{
-//		double ctetta = DotProduct(beam.direction, -m_incidentDir);
-
-//		if (ctetta < 0.17364817766693034885171662676931)
-//		{	// отбрасываем пучки, которые далеко от конуса направления назад
-//			continue;// DEB
-//		}
-
 		int groupID = tracks.GetGroupID(beam.id);
 
 		if (groupID < 0)
@@ -823,7 +864,6 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 			continue;
 		}
 
-//		double area = beam.polygon.Area(); // DEB
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
 		Point3f center = beam.Center();
@@ -912,9 +952,12 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
 void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 									  double wavelength, const Tracks &tracks)
 {
+	Point3d vr(0, 0, 1);
+	Point3d vf = -m_polarizationBasis;
+
 	for (Beam &beam : outBeams)
 	{
-		if (beam.direction.cz < 0.9396)
+		if (beam.direction.cz < 0.9396) /* REF: вынести как константу */
 		{
 			continue;
 		}
@@ -926,13 +969,6 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 			continue;
 		}
 
-#ifdef _DEBUG // DEB
-
-		if (groupID >= 0)
-		{
-			int ff = 0;
-		}
-#endif
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
 		Point3f center = beam.Center();
@@ -940,15 +976,6 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 
 		Point3f T = CrossProduct(beam.e, beam.direction);
 		T = T/Length(T); // базис выходящего пучка
-		//
-		double f = 0;
-		double t = 0;
-
-		double sinT = sin(t), sinF = sin(f), cosF = cos(f);
-
-		Point3d vr(sinT*cosF, sinT*sinF, cos(t));
-		Point3d vf = -m_polarizationBasis;
-		// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
 
 		matrixC Jn_rot(2, 2);
 		SetJnRot(beam, T, vf, vr, Jn_rot);
@@ -961,17 +988,10 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 		matrixC fn_jn = beam.J * tmp;
 
 		matrixC c = fn*Jn_rot*fn_jn;
-#ifdef _DEBUG // DEB
-		if (beam.level > 2)
-		{
-			complex dd = c[0][0];
-		}
-#endif
+
 		if (groupID < 0 && isCalcOther)
 		{
-			Arr2DC mt(1, 1, 2, 2);
-			mt.insert(0, 0, c);
-			matrix m = Mueller(mt(0, 0));
+			matrix m = Mueller(c);
 			m *= gNorm;
 
 //std::vector<int> track;

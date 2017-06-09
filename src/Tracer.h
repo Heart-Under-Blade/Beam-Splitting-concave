@@ -133,7 +133,7 @@ private:
 
 	Point3f m_incidentDir;
 	Point3f m_polarizationBasis;
-	std::string m_resultFileName;
+	std::string m_resultDirName;
 	double m_gammaNorm;
 	std::vector<Arr2DC> J; // Jones matrices
 	double sizeBin;
@@ -181,7 +181,11 @@ private:
 							 Contribution &contr);
 	void WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF, const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
-	std::string GetFileSubName(const Tracks &tracks, int i);
+	std::string CreateGroupName(const TrackGroup &tracks, int group);
 
 	void RecoverTrack(const Beam &beam, std::vector<int> &track);
+	void CreateGroupResultFiles(const Tracks &tracks, const std::string &dirName,
+								std::vector<std::ofstream*> &groupFiles);
+	void AllocJ(int m, int n, int size);
+	void CleanJ();
 };
