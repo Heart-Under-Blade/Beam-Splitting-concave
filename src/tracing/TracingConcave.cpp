@@ -59,6 +59,10 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 
 void TracingConcave::TraceByFacet(const IntArray &facetIDs, int facetIndex)
 {
+#ifdef _DEBUG // DEB
+	if (facetIndex == 25)
+		int fff = 0;
+#endif
 	PolygonArray resPolygons;
 	IntersectWithFacet(facetIDs, facetIndex, resPolygons);
 
@@ -398,7 +402,10 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 		int id = shadowFacetIDs.arr[i];
 		Polygon diffFacets[MAX_POLYGON_NUM]; // REF: заменить на структуру с size
 		int diffSize = 0;
-
+#ifdef _DEBUG // DEB
+		if (i == 24)
+			int fff = 0;
+#endif
 		while (resFacets.size != 0)
 		{
 			const Polygon &clip = m_facets[id];
