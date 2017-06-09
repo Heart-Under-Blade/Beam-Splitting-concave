@@ -1,6 +1,8 @@
 #include "Tracer.h"
 
 #include <iostream>
+#include "global.h"
+#include "macro.h"
 
 using namespace std;
 
@@ -110,6 +112,8 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
+			logfile << "i: " << i << "; j: " << j << endl;
+			logfile.flush();
 		}
 
 		PrintProgress(betaR.count, i, timer);
