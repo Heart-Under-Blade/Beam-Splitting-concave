@@ -59,6 +59,10 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 
 void TracingConcave::TraceByFacet(const IntArray &facetIDs, int facetIndex)
 {
+#ifdef _DEBUG // DEB
+	if (facetIndex == 25)
+		int fff = 0;
+#endif
 	PolygonArray resPolygons;
 	IntersectWithFacet(facetIDs, facetIndex, resPolygons);
 
@@ -364,7 +368,19 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 
 void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-	for (int i = 0; i < m_particle->facetNum; ++i)
+	int begin, end;
+
+	if (m_particle->isAggregate && beam.location == Location::In)
+	{
+		m_particle->GetAggPartFacetIDRange(beam.lastFacetID, begin, end);
+	}
+	else
+	{
+		begin = 0;
+		end = m_particle->facetNum;
+	}
+
+	for (int i = begin; i < end; ++i)
 	{
 		const Point3f &facetNormal = m_facets[i].normal[!beam.location];
 		double cosFB = DotProduct(beam.direction, facetNormal);
@@ -391,7 +407,10 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 		int id = shadowFacetIDs.arr[i];
 		Polygon diffFacets[MAX_POLYGON_NUM]; // REF: заменить на структуру с size
 		int diffSize = 0;
-
+#ifdef _DEBUG // DEB
+		if (i == 24)
+			int fff = 0;
+#endif
 		while (resFacets.size != 0)
 		{
 			const Polygon &clip = m_facets[id];

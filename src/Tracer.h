@@ -188,4 +188,5 @@ private:
 								std::vector<std::ofstream*> &groupFiles);
 	void AllocJ(int m, int n, int size);
 	void CleanJ();
+	void OutputState(int i, int j);
 };

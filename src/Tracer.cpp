@@ -1,6 +1,8 @@
 #include "Tracer.h"
 
 #include <iostream>
+#include "global.h"
+#include "macro.h"
 
 using namespace std;
 
@@ -72,6 +74,12 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF,
 	}
 }
 
+void Tracer::OutputState(int i, int j)
+{
+	logfile << "i: " << i << "; j: " << j << endl;
+	logfile.flush();
+}
+
 void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 							 int thetaNum, const Tracks &tracks)
 {
@@ -110,6 +118,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
+			OutputState(i, j);
 		}
 
 		PrintProgress(betaR.count, i, timer);
@@ -751,6 +760,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 #endif
 			HandleBeamsGO(outBeams, beta);
 			outBeams.clear();
+			OutputState(i, j);
 		}
 
 		PrintProgress(betaR.count, i, timer);

@@ -27,9 +27,12 @@ public:
 	const double &GetSymmetryGamma() const;
 	const complex &GetRefractionIndex() const;
 
+	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) {}
+
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
 	int facetNum;					///< number of facets
+	bool isAggregate = false;
 
 protected:
 	Facet defaultFacets[MAX_FACET_NUM];

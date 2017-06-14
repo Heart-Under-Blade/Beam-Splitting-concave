@@ -297,7 +297,7 @@ int main(int argc, const char** argv)
 				{
 					tracer.setIsCalcOther(true);
 //					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, 0.532);
-					tracer.TraceIntervalGO(betaR, gammaR, cellNum, trackGroups);
+					tracer.TraceIntervalGO(betaR, gammaR, cellNum/*, trackGroups*/);
 				}
 				//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 			}
