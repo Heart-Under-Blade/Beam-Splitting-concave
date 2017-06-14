@@ -11,6 +11,8 @@ QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 CONFIG(release, debug|release): DEFINES += _NDEBUG
 CONFIG(debug,	debug|release): DEFINES += _DEBUG
 
+VERSION = 1.0.0
+
 INCLUDEPATH += \
 	../src \
 	../src/math \
@@ -49,7 +51,8 @@ HEADERS += \
 	../src/argparse.hpp \
     ../src/ArgParser.h \
     ../src/particle/HexagonalAggregate.h \
-    ../src/particle/CertainAggregate.h
+	../src/particle/CertainAggregate.h\
+	../src/ArgPP.h
 
 SOURCES += \
     ../src/Beam.cpp \
