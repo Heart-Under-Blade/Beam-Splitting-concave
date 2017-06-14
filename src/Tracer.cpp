@@ -124,7 +124,6 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 		PrintProgress(betaR.count, i, timer);
 	}
 
-
 	double D_tot = CalcTotalScatteringEnergy(thetaNum);
 	long long orNum = gammaR.count * betaR.count;
 	double NRM = CalcNorm(orNum);

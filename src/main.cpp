@@ -19,10 +19,10 @@
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
-#include "ArgParser.h"
 #include "Tracer.h"
 #include "TracingConvex.h"
 #include "TracingConcave.h"
+#include "ArgPP.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -51,7 +51,6 @@ struct OrientationRange
 matrix back(4,4),	///< Mueller matrix in backward direction
 		forw(4,4);	///< Mueller matrix in forward direction
 
-Arr2D mxd(0, 0, 0, 0);
 double sizeBin;
 double gammaNorm, betaNorm;
 double incomingEnergy;
@@ -75,6 +74,13 @@ void ImportTracks(int facetNum)
 {
 	const int bufSize = 1024;
 	ifstream trackFile("tracks2.dat", ios::in);
+
+	if (!trackFile.is_open())
+	{
+		std::cerr << "Track file not found" << std::endl;
+		throw std::exception();
+	}
+
 	char *buff = (char*)malloc(sizeof(char) * bufSize);
 
 	TrackGroup buffGroup;
@@ -88,7 +94,7 @@ void ImportTracks(int facetNum)
 		char *ptr, *trash;
 		ptr = strtok(buff, " ");
 
-		int groupIndex = 0;
+		size_t groupIndex = 0;
 		bool haveGroup = false;
 
 		while (ptr != NULL)
@@ -101,8 +107,7 @@ void ImportTracks(int facetNum)
 
 				if (groupIndex >= trackGroups.size())
 				{
-					for (int i = trackGroups.size();
-						 i <= groupIndex; ++i)
+					for (size_t i = trackGroups.size(); i <= groupIndex; ++i)
 					{
 						trackGroups.push_back(TrackGroup());
 					}
@@ -152,61 +157,47 @@ void ImportTracks(int facetNum)
 	}
 }
 
-// TODO: написать свой ArgParser
-
-void setAvalableArgs(ArgParser &parser)
+void SetArgRules(ArgPP &parser)
 {
-	parser.addArgument("-p", "--particle", '+', false);
-	parser.addArgument("--ri", 1, false);
-	parser.addArgument("-n", "--interReflNum", 1, false);
-	parser.addArgument("--point", 2); // REF: заменить на --fixed
-	parser.addArgument("--range"); // REF: перенести бета и гамма сюда в кач-ве параметров | заменить на --random
-	parser.addArgument("-b", "--beta", 3); // REF: попробовать задавать в частице
-	parser.addArgument("-g", "--gamma", 3);
-	parser.addArgument("-t", "--cellCount", 1);
-	parser.addArgument("--po"); // REF: ввести --go
-	parser.addArgument("-w", "--wavelength", 1);
-	parser.addArgument("--conus", 3);
-	parser.addArgument("-o", "--output", 1);
-	parser.addArgument("--all");
+	int zero = 0;
+	parser.AddRule("p", '+'); // particle (type, size, ...)
+	parser.AddRule("ri", 1); // reflection index
+	parser.AddRule("n", 1); // number of internal reflection
+	parser.AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
+	parser.AddRule("random", 2, true); // random orientarion (beta number, gamma number)
+	parser.AddRule("go", 0, true); // geometrical optics method
+	parser.AddRule("po", 0, true); // phisical optics method
+	parser.AddRule("w", 1, true, "po"); // wavelength
+	parser.AddRule("conus", 3, true); // calculate only backscatter cone (radius, phi, theta)
+	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
+	parser.AddRule("all", 0, true); // calculate all
+	parser.AddRule("o", 1, true); // output file name
 }
 
-AngleRange GetRange(const char *name, double normCoef, ArgParser &parser)
+Cone SetCone(ArgPP &parser)
 {
-	vector<string> argInterval = parser.retrieve<vector<string>>(name);
-	double begin = parser.argToValue<double>(argInterval[0]);
-	double end = parser.argToValue<double>(argInterval[1]);
-	double count = parser.argToValue<int>(argInterval[2]);
-	AngleRange range(begin, end, count, normCoef);
-	return range;
-}
-
-Cone SetCone(ArgParser &parser)
-{
-	vector<string> cone_arg = parser.retrieve<vector<string>>("conus");
-	double radius = parser.argToValue<double>(cone_arg[0]);
-	int phiCount = parser.argToValue<double>(cone_arg[1]);
-	int thetaCount = parser.argToValue<double>(cone_arg[2]);
+	double radius = parser.GetDoubleValue("conus", 0);
+	int phiCount = parser.GetDoubleValue("conus", 1);
+	int thetaCount = parser.GetDoubleValue("conus", 2);
 	return Cone(radius, phiCount, thetaCount);
 }
 
-int main(int argc, const char** argv)
+int main(int argc, const char* argv[])
 {
 	Particle *particle = nullptr;
 	Tracing *tracing = nullptr;
 
 	if (argc > 1) // has command line arguments
 	{
-		ArgParser parser;
-		setAvalableArgs(parser);
-		parser.parse(argc, argv);
+		ArgPP parser;
+		SetArgRules(parser);
+		parser.Parse(argc, argv);
 
-		vector<string> vec = parser.retrieve<vector<string>>("particle");
-		ParticleType pt = (ParticleType)parser.argToValue<int>(vec[0]);
-		double h = parser.argToValue<double>(vec[1]);
-		double d = parser.argToValue<double>(vec[2]);
+		ParticleType pt = (ParticleType)parser.GetIntValue("p", 0);
+		double h = parser.GetDoubleValue("p", 1);
+		double d = parser.GetDoubleValue("p", 2);
 
-		double ri = parser.getArgValue<double>("ri");
+		double ri = parser.GetDoubleValue("ri");
 		double sup;
 		int num;
 
@@ -221,15 +212,15 @@ int main(int argc, const char** argv)
 //			particle = new TiltedHexagonal(r, hh, ri, sup);
 //			break;
 		case ParticleType::ConcaveHexagonal:
-			sup = parser.argToValue<double>(vec[3]);
+			sup = parser.GetDoubleValue("p", 3);
 			particle = new ConcaveHexagonal(ri, d, h, sup);
 			break;
 		case ParticleType::HexagonalAggregate:
-			num = parser.argToValue<int>(vec[3]);
+			num = parser.GetIntValue("p", 3);
 			particle = new HexagonalAggregate(ri, d, h, num);
 			break;
 		case ParticleType::CertainAggregate:
-			num = parser.argToValue<int>(vec[3]);
+			num = parser.GetIntValue("p", 3);
 			particle = new CertainAggregate(ri, num);
 			break;
 		default:
@@ -239,7 +230,7 @@ int main(int argc, const char** argv)
 
 		toFile(*particle);
 
-		int reflNum = parser.getArgValue<double>("n");
+		int reflNum = parser.GetDoubleValue("n");
 
 		if (pt == ParticleType::ConcaveHexagonal ||
 				pt == ParticleType::HexagonalAggregate ||
@@ -254,57 +245,83 @@ int main(int argc, const char** argv)
 										polarizationBasis, reflNum);
 		}
 
-		double wave = parser.getArgValue<double>("wavelength");
-
-//		ImportTracks(particle->facetNum);
 		ImportTracks(particle->facetNum);
 		Tracer tracer(tracing, "M");
 
-		if (parser.count("--po") != 0)
+		if (parser.IsOccuredKey("po"))
 		{
-			Cone bsCone = SetCone(parser);
+			double wave = parser.GetDoubleValue("w");
 
-			if (parser.count("point") != 0)
+			if (parser.IsOccuredKey("fixed"))
 			{
-				vector<string> vec = parser.retrieve<vector<string>>("point");
-				double beta  = parser.argToValue<double>(vec[0]);
-				double gamma = parser.argToValue<double>(vec[1]);
+				Cone bsCone = SetCone(parser);
+
+				double beta  = parser.GetDoubleValue("fixed", 0);
+				double gamma = parser.GetDoubleValue("fixed", 1);
 				//			beta = 32; gamma = 30;
 				tracer.TraceSingleOrPO(beta, gamma, bsCone, trackGroups, wave);
 			}
-			else // "range"
+			else if (parser.IsOccuredKey("random")) // "random"
 			{
-				AngleRange betaR = GetRange("beta", particle->GetSymmetryBeta(), parser);
-				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
-				tracer.TraceRandomPO(betaR, gammaR, bsCone, trackGroups, wave);
-	//			tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
-			}
-		}
-		else
-		{
-			if (parser.count("t") != 0)
-			{
-				AngleRange betaR = GetRange("beta", particle->GetSymmetryBeta(), parser);
-				AngleRange gammaR = GetRange("gamma", particle->GetSymmetryGamma(), parser);
+				double betaMaxR = particle->GetSymmetryBeta();
+				double betaMax = RadToDeg(betaMaxR);
+				int betaCount = parser.GetIntValue("random", 0);
+				AngleRange betaR(0, betaMax, betaCount, betaMaxR);
 
-				int cellNum = parser.getArgValue<int>("t");
+				double gammaMaxR = particle->GetSymmetryGamma();
+				double gammaMax = RadToDeg(gammaMaxR);
+				int gammaCount = parser.GetIntValue("random", 1);
+				AngleRange gammaR(0, gammaMax, gammaCount, betaMaxR);
 
-				if (parser.count("all") != 0)
+				if (parser.IsOccuredKey("point"))
 				{
-					tracer.TraceIntervalGO(betaR, gammaR, cellNum);
+					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, wave);
 				}
 				else
 				{
+<<<<<<< HEAD
 					tracer.setIsCalcOther(true);
 //					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, 0.532);
 					tracer.TraceIntervalGO(betaR, gammaR, cellNum/*, trackGroups*/);
+=======
+					Cone bsCone = SetCone(parser);
+
+					tracer.TraceRandomPO(betaR, gammaR, bsCone, trackGroups, wave);
+//					tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
+>>>>>>> feature/command_line_params
 				}
-				//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 			}
 			else
 			{
 				cout << endl << "error";
 			}
+		}
+		else if (parser.IsOccuredKey("go"))
+		{
+			double betaMaxR = particle->GetSymmetryBeta();
+			double betaMax = RadToDeg(betaMaxR);
+			int betaCount = parser.GetIntValue("random", 0);
+			AngleRange betaR(0, betaMax, betaCount, betaMaxR);
+
+			double gammaMaxR = particle->GetSymmetryGamma();
+			double gammaMax = RadToDeg(gammaMaxR);
+			int gammaCount = parser.GetIntValue("random", 1);
+			AngleRange gammaR(0, gammaMax, gammaCount, betaMaxR);
+
+			if (parser.IsOccuredKey("all"))
+			{
+				tracer.TraceIntervalGO(betaR, gammaR, 180);
+			}
+			else
+			{
+				tracer.setIsCalcOther(true);
+				tracer.TraceIntervalGO(betaR, gammaR, 180, trackGroups);
+			}
+			//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
+		}
+		else
+		{
+			cout << endl << "error";
 		}
 
 		cout << endl << "done";
