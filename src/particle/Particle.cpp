@@ -59,6 +59,7 @@ const complex &Particle::GetRefractionIndex() const
 	return m_refractiveIndex;
 }
 
+
 void Particle::SetDefaultNormals()
 {
 	for (int i = 0; i < facetNum; ++i)

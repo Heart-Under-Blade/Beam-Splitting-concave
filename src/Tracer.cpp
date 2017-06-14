@@ -74,6 +74,12 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF,
 	}
 }
 
+void Tracer::OutputState(int i, int j)
+{
+	logfile << "i: " << i << "; j: " << j << endl;
+	logfile.flush();
+}
+
 void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 							 int thetaNum, const Tracks &tracks)
 {
@@ -118,8 +124,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
-			logfile << "i: " << i << "; j: " << j << endl;
-			logfile.flush();
+			OutputState(i, j);
 		}
 
 		PrintProgress(betaR.count, i, timer);
@@ -760,6 +765,7 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 #endif
 			HandleBeamsGO(outBeams, beta);
 			outBeams.clear();
+			OutputState(i, j);
 		}
 
 		PrintProgress(betaR.count, i, timer);

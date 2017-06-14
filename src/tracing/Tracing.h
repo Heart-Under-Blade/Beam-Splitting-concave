@@ -7,7 +7,8 @@
 #include <float.h>
 #include <vector>
 
-#define MAX_BEAM_REFL_NUM 32768
+//#define MAX_BEAM_REFL_NUM 32768
+#define MAX_BEAM_REFL_NUM 65536
 
 #define EPS_M_COS_90	-1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_90	1.7453292519943295769148298069306e-10	//cos(89.99999999)
@@ -40,6 +41,7 @@ protected:
 	int m_interReflectionNumber;
 	Point3f m_incidentDir;			///< origin incident light direction
 
+//	std::vector<Beam> m_beamTree;
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
 	double m_incommingEnergy;

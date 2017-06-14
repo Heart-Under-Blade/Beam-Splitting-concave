@@ -10,4 +10,8 @@ public:
 	// Particle interface
 protected:
 	void SetFacetParams() override;
+
+	// Particle interface
+public:
+	void GetAggPartFacetIDRange(int id, int &begin, int &end) override;
 };

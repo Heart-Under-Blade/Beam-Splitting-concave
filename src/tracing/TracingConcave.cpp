@@ -375,7 +375,19 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 
 void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-	for (int i = 0; i < m_particle->facetNum; ++i)
+	int begin, end;
+
+	if (m_particle->isAggregate && beam.location == Location::In)
+	{
+		m_particle->GetAggPartFacetIDRange(beam.lastFacetID, begin, end);
+	}
+	else
+	{
+		begin = 0;
+		end = m_particle->facetNum;
+	}
+
+	for (int i = begin; i < end; ++i)
 	{
 		const Point3f &facetNormal = m_facets[i].normal[!beam.location];
 		double cosFB = DotProduct(beam.direction, facetNormal);

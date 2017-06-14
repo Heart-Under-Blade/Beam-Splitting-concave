@@ -5,6 +5,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 {
 	Init(64, refrIndex, 2*M_PI, M_PI, sizeIndex*120);
 	SetFacetParams();
+	isAggregate = true;
 
 	defaultFacets[0].arr[0] = Point3f(66.11043637052107, -60.41464034745621, 18.34343028407722);
 	defaultFacets[0].arr[1] = Point3f(27.05498686460732, -84.3359628839182, 22.63786761597252);
@@ -347,4 +348,49 @@ void CertainAggregate::SetFacetParams()
 		}
 	}
 
+}
+
+void CertainAggregate::GetAggPartFacetIDRange(int id, int &begin, int &end)
+{
+	// REF: make universal
+	if (id < 8)
+	{
+		begin = 0;
+		end = 8;
+	}
+	else if (id >= 8 && id < 16)
+	{
+		begin = 8;
+		end = 16;
+	}
+	else if (id >= 16 && id < 24)
+	{
+		begin = 16;
+		end = 24;
+	}
+	else if (id >= 24 && id < 32)
+	{
+		begin = 24;
+		end = 32;
+	}
+	else if (id >= 32 && id < 40)
+	{
+		begin = 32;
+		end = 40;
+	}
+	else if (id >= 40 && id < 48)
+	{
+		begin = 40;
+		end = 48;
+	}
+	else if (id >= 48 && id < 56)
+	{
+		begin = 48;
+		end = 56;
+	}
+	else if (id >= 56 && id < 64)
+	{
+		begin = 56;
+		end = 64;
+	}
 }
