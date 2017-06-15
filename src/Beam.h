@@ -10,7 +10,6 @@
 //#include <vector>
 #endif
 
-// REF: try to inherit 'Polygon' for this class
 class Beam : public Polygon
 {
 public:
@@ -56,25 +55,6 @@ public:
 	long long int id = 0;
 //	std::vector<int> track;
 #endif
-
-//	friend Point3d Proj(const Point3d& _r, const Point3d &pnt)
-//	{
-//		Point3d _Tx,  // условная горизонталь СК экрана в СК тела
-//				_Ty;  // третья ось (условная вертикаль СК экрана)
-//		const double tmp = sqrt(SQR(_r.x)+SQR(_r.y));
-
-//		(fabs(_r.z)>1-DBL_EPSILON) ? (_Tx=Point3d(0,-_r.z,0), _Ty=Point3d(1,0,0))
-//								   : (_Tx=Point3d(_r.y/tmp,-_r.x/tmp,0), _Ty=CrossProductD(_r,_Tx));
-
-//		return Proj(_Tx, _Ty, _r, pnt);
-//	}
-
-//	friend Point3d Proj(const Point3d& Tx, const Point3d& Ty,
-//						const Point3d& r,  const Point3d& pnt)
-//	{
-//		const  Point3d p_pr = pnt-(r*DotProductD(r,pnt)); // расчёт коор-т в СК наблюдателя
-//		return Point3d(DotProductD(p_pr,Tx), DotProductD(p_pr,Ty), 0); //*/
-//	}
 
 private:
 	void RotateJMatrix(const Point3f &newBasis);

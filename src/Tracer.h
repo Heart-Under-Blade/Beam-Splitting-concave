@@ -108,11 +108,10 @@ class Tracer
 public:
 	Tracer(Tracing *tracing, const std::string resultFileName);
 
-	void TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
-						 const Tracks &tracks);
-	void TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum);
+	void TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &tracks);
+	void TraceIntervalGO(int betaNumber, int gammaNumber);
 	void TraceSingleOrGO(const double &beta, const double &gamma,
-						 int thetaNum, const Tracks &tracks);
+						 const Tracks &tracks);
 
 	void TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 					   const Tracks &tracks, double wave);
@@ -138,7 +137,6 @@ private:
 	Point3f m_polarizationBasis;
 	std::string m_resultDirName;
 	std::vector<Arr2DC> J; // Jones matrices
-	double sizeBin;
 
 	// light energy balance
 	double m_incomingEnergy;
@@ -168,20 +166,20 @@ private:
 	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
-	void PrintProgress(int betaNumber, long long count, CalcTimer &timer);
-	void ExtractPeaksGO(int EDF, double NRM, int ThetaNumber, Contribution &contr);
-	void WriteResultsToFileGO(int thetaNum, double NRM, const std::string &filename,
+	void OutputProgress(int betaNumber, long long count, CalcTimer &timer);
+	void ExtractPeaksGO(int EDF, double NRM, Contribution &contr);
+	void WriteResultsToFileGO(double NRM, const std::string &filename,
 							  Contribution &contr);
 	void WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM,
 								 CalcTimer &timer);
 	std::string GetFileName(const std::string &filename);
 
 	double CalcNorm(long long orNum);
-	double CalcTotalScatteringEnergy(int thetaNum);
+	double CalcTotalScatteringEnergy();
 	void RotateMuller(const Point3f &dir, matrix &bf);
 	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
 							 Contribution &contr);
-	void WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF, const Tracks &tracks);
+	void WriteResultToSeparateFilesGO(double NRM, int EDF, const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
 	std::string CreateGroupName(const TrackGroup &tracks, int group);
 
@@ -190,5 +188,5 @@ private:
 								std::vector<std::ofstream*> &groupFiles);
 	void AllocJ(int m, int n, int size);
 	void CleanJ();
-	void OutputState(int i, int j);
+	void OutputStartTime(CalcTimer timer);
 };

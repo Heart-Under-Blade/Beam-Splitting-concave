@@ -4,6 +4,10 @@
 #include "global.h"
 #include "macro.h"
 
+#define BEAM_DIR_LIM	0.9396
+#define SPHERE_RING_NUM 180
+#define BIN_SIZE		M_PI/SPHERE_RING_NUM
+
 using namespace std;
 
 ofstream tfile("tracks_other1.dat", ios::out);
@@ -17,6 +21,7 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
 }
 
+// REF: move to Tracks
 string Tracer::CreateGroupName(const TrackGroup &tracks, int group)
 {
 	string subname;
@@ -38,6 +43,7 @@ string Tracer::CreateGroupName(const TrackGroup &tracks, int group)
 	return subname;
 }
 
+// REF: move to Tracks
 void Tracer::RecoverTrack(const Beam &beam, std::vector<int> &track)
 {
 	int coef = m_tracing->m_particle->facetNum + 1;
@@ -59,30 +65,21 @@ void Tracer::RecoverTrack(const Beam &beam, std::vector<int> &track)
 	}
 }
 
-void Tracer::WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF,
-										  const Tracks &tracks)
+void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const Tracks &tracks)
 {
 	for (size_t i = 0; i < m_sepatateMatrices.size(); ++i)
 	{
 		if (tracks[i].size != 0)
 		{
 			string subname = CreateGroupName(tracks[i], i);
-			ExtractPeaksGO(EDF, NRM, thetaNum, m_sepatateMatrices[i]);
-			WriteResultsToFileGO(thetaNum, NRM, m_resultDirName + subname,
+			ExtractPeaksGO(EDF, NRM, m_sepatateMatrices[i]);
+			WriteResultsToFileGO(NRM, m_resultDirName + subname,
 								 m_sepatateMatrices[i]);
 		}
 	}
 }
 
-// REF: вынести в global.h
-void Tracer::OutputState(int i, int j)
-{
-	logfile << "i: " << i << "; j: " << j << endl;
-	logfile.flush();
-}
-
-void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
-							 const Tracks &tracks)
+void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &tracks)
 {
 	int EDF = 0;
 	CalcTimer timer;
@@ -97,8 +94,6 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
 
 	m_sepatateMatrices.resize(tracks.GetMaxGroupID());
 
-	sizeBin = M_PI/thetaNum;
-
 //	m_totalMtrx.scatMatrix = Arr2D(1, thetaNum+1, 4, 4);
 //	m_totalMtrx.scatMatrix.ClearArr();
 
@@ -108,11 +103,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 
-<<<<<<< HEAD
 	for (int i = 0; i < betaNumber; ++i)
-=======
-	for (int i = 0; i < betaR.count; ++i)
->>>>>>> origin/feature/particle/certain_aggregate
 	{
 		beta = (i + 0.5)*betaNorm;
 
@@ -129,10 +120,10 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
 			OutputState(i, j);
 		}
 
-		PrintProgress(betaNumber, i, timer);
+		OutputProgress(betaNumber, i, timer);
 	}
 
-	double D_tot = CalcTotalScatteringEnergy(thetaNum);
+	double D_tot = CalcTotalScatteringEnergy();
 	long long orNum = gammaNumber * betaNumber;
 	double NRM = CalcNorm(orNum);
 
@@ -143,24 +134,23 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
 	}
 #endif
 
-	WriteResultToSeparateFilesGO(NRM, thetaNum, EDF, tracks);
+	WriteResultToSeparateFilesGO(NRM, EDF, tracks);
 
-	ExtractPeaksGO(EDF, NRM, thetaNum, m_totalMtrx);
-	WriteResultsToFileGO(thetaNum, NRM, m_resultDirName + "_all", m_totalMtrx);
+	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
+	WriteResultsToFileGO(NRM, m_resultDirName + "_all", m_totalMtrx);
 
 	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
 //	WriteStatisticsToConsole(orNum, D_tot, NRM);
 }
 
-void Tracer::PrintProgress(int betaNumber, long long count, CalcTimer &timer)
+void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
 {
 	EraseConsoleLine(50);
 	cout << (count*100)/betaNumber << '%'
 		 << '\t' << timer.Elapsed();
 }
 
-void Tracer::ExtractPeaksGO(int EDF, double NRM, int ThetaNumber,
-							Contribution &contr)
+void Tracer::ExtractPeaksGO(int EDF, double NRM, Contribution &contr)
 {
 	//Analytical averaging over alpha angle
 	double b[3], f[3];
@@ -209,42 +199,47 @@ void Tracer::ExtractPeaksGO(int EDF, double NRM, int ThetaNumber,
 	}
 	else
 	{
-		contr.scatMatrix(0,ThetaNumber,0,0) += f[0];
+		contr.scatMatrix(0,SPHERE_RING_NUM,0,0) += f[0];
 		contr.scatMatrix(0,0,0,0) += b[0];
-		contr.scatMatrix(0,ThetaNumber,1,1) += f[1];
+		contr.scatMatrix(0,SPHERE_RING_NUM,1,1) += f[1];
 		contr.scatMatrix(0,0,1,1) += b[1];
-		contr.scatMatrix(0,ThetaNumber,2,2) += f[1];
+		contr.scatMatrix(0,SPHERE_RING_NUM,2,2) += f[1];
 		contr.scatMatrix(0,0,2,2) -= b[1];
-		contr.scatMatrix(0,ThetaNumber,3,3) += f[2];
+		contr.scatMatrix(0,SPHERE_RING_NUM,3,3) += f[2];
 		contr.scatMatrix(0,0,3,3) += b[2];
 	}
 }
 
-void Tracer::WriteResultsToFileGO(int thetaNum, double NRM, const string &filename,
+void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 								  Contribution &contr)
 {
 	string name = GetFileName(filename);
-	ofstream M(name, std::ios::out);
+	ofstream allFile(name, std::ios::out);
 
-	M << "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
+	allFile << "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
 
-	for (int j = thetaNum; j >= 0; j--)
+	for (int j = SPHERE_RING_NUM; j >= 0; j--)
 	{
-		double sn;
+		double tmp0 = 180.0/SPHERE_RING_NUM*(SPHERE_RING_NUM-j);
+		double tmp1 = (j == 0) ? -(0.25*180.0)/SPHERE_RING_NUM : 0;
+		double tmp2 = (j == (int)SPHERE_RING_NUM) ? (0.25*180.0)/SPHERE_RING_NUM : 0;
 
-		//Special case in first and last step
-		M << '\n' << 180.0/thetaNum*(thetaNum-j) + (j==0 ?-0.25*180.0/thetaNum:0)+(j==(int)thetaNum ?0.25*180.0/thetaNum:0);
-		sn = (j==0 || j==(int)thetaNum) ? 1-cos(sizeBin/2.0)
-										: (cos((j-0.5)*sizeBin)-cos((j+0.5)*sizeBin));
+		// Special case in first and last step
+		allFile << '\n' << tmp0 + tmp1 + tmp2;
+
+		double sn = (j == 0 || j == (int)SPHERE_RING_NUM)
+				? 1-cos(BIN_SIZE/2.0)
+				: (cos((j-0.5)*BIN_SIZE)-cos((j+0.5)*BIN_SIZE));
+
 		matrix bf = contr.scatMatrix(0, j);
 
-		if(bf[0][0] <= DBL_EPSILON)
+		if (bf[0][0] <= DBL_EPSILON)
 		{
-			M << " 0 0 0 0 0 0 0 0";
+			allFile << " 0 0 0 0 0 0 0 0";
 		}
 		else
 		{
-			M << ' ' << bf[0][0]*NRM/(2.0*M_PI*sn)
+			allFile << ' ' << bf[0][0]*NRM/(2.0*M_PI*sn)
 					<< ' ' << bf[0][1]/bf[0][0]
 					<< ' ' << bf[1][0]/bf[0][0]
 					<< ' ' << bf[1][1]/bf[0][0]
@@ -255,7 +250,7 @@ void Tracer::WriteResultsToFileGO(int thetaNum, double NRM, const string &filena
 		}
 	}
 
-	M.close();
+	allFile.close();
 }
 
 void Tracer::WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM,
@@ -304,25 +299,23 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 	vector<Beam> outBeams;
 	double beta, gamma;
 
-	double betaNorm = m_symmetry.beta/betaNumber;
-	double gammaNorm = m_symmetry.gamma/gammaNumber;
+	double betaStep = m_symmetry.beta/betaNumber;
+	double gammaStep = m_symmetry.gamma/gammaNumber;
 
 	int maxGroupID = tracks.GetMaxGroupID();
 	int halfGammaCount = gammaNumber/2;
-	double gNorm = gammaNorm*m_symmetry.gamma;
+	gNorm = gammaStep/m_symmetry.gamma;
 
 	timer.Start();
 
 	for (int i = 0; i <= betaNumber; ++i)
 	{
-		beta = i*betaNorm;
+		beta = i*betaStep;
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
-			gamma = j*gammaNorm;
-// DEB
-//beta = DegToRad(32); gamma = DegToRad(30);
-//cout << j << endl;
+			gamma = j*gammaStep;
+
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 			CleanJ(maxGroupID, bsCone);
@@ -334,7 +327,7 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 
 		WriteConusMatrices(outFile, M, bsCone);
 
-		PrintProgress(betaNumber, count, timer);
+		OutputProgress(betaNumber, count, timer);
 		++count;
 	}
 
@@ -353,7 +346,7 @@ void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
 void Tracer::CreateGroupResultFiles(const Tracks &tracks, const string &dirName,
 									vector<ofstream*> &groupFiles)
 {
-	for (int group = 0; group < tracks.size(); ++group)
+	for (size_t group = 0; group < tracks.size(); ++group)
 	{
 		string groupName = CreateGroupName(tracks[group], group);
 		string filename = dirName + groupName + ".dat";
@@ -429,7 +422,7 @@ void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 
 	for (int i = 0; i <= betaNumber; ++i)
 	{
-		PrintProgress(betaNumber, count, timer);
+		OutputProgress(betaNumber, count, timer);
 		++count;
 
 		beta = betaNorm*i;
@@ -518,7 +511,7 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 
 	int maxGroupID = tracks.GetMaxGroupID();
 	int halfGammaCount = gammaNumber/2;
-	double gNorm = gammaNorm*m_symmetry.gamma;
+	gNorm = gammaNorm/m_symmetry.gamma;
 
 	timer.Start();
 
@@ -529,9 +522,7 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaNorm;
-// DEB
-//EraseConsoleLine(50);
-//cout << j;
+
 			for (int groupID = 0; groupID < maxGroupID; ++groupID)
 			{
 				m_tracing->SplitBeamByParticle(beta, gamma, tracks[groupID].tracks, outBeams);
@@ -546,7 +537,7 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 
 		WriteConusMatrices(outFile, M, bsCone);
 
-		PrintProgress(betaNumber, count, timer);
+		OutputProgress(betaNumber, count, timer);
 		++count;
 	}
 
@@ -682,7 +673,7 @@ void Tracer::AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
 		bf = matrix(4,4);
 		bf.Identity();
 #endif
-		const unsigned int zenAng = round(acos(z)/sizeBin);
+		const unsigned int zenAng = round(acos(z)/BIN_SIZE);
 		contr.scatMatrix.insert(0, zenAng, area*bf);
 	}
 }
@@ -723,11 +714,11 @@ double Tracer::CalcNorm(long long orNum)
 	return tmp/(orNum*dBeta);
 }
 
-double Tracer::CalcTotalScatteringEnergy(int thetaNum)
+double Tracer::CalcTotalScatteringEnergy()
 {
 	double D_tot = m_totalMtrx.back[0][0] + m_totalMtrx.forw[0][0];
 
-	for (int i = 0; i <= thetaNum; ++i)
+	for (int i = 0; i <= SPHERE_RING_NUM; ++i)
 	{
 		D_tot += m_totalMtrx.scatMatrix(0, i, 0, 0);
 	}
@@ -735,7 +726,13 @@ double Tracer::CalcTotalScatteringEnergy(int thetaNum)
 	return D_tot;
 }
 
-void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum)
+void Tracer::OutputStartTime(CalcTimer timer)
+{
+	m_startTime = timer.Start();
+	cout << "Started at " << ctime(&m_startTime) << endl;
+}
+
+void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 {
 	int EDF = 0;
 	CalcTimer timer;
@@ -751,15 +748,13 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum)
 	m_totalMtrx.back.Fill(0);
 	m_totalMtrx.forw.Fill(0);
 
-	sizeBin = M_PI/thetaNum;
-	m_totalMtrx.scatMatrix = Arr2D(1, thetaNum+1, 4, 4);
+	m_totalMtrx.scatMatrix = Arr2D(1, SPHERE_RING_NUM+1, 4, 4);
 	m_totalMtrx.scatMatrix.ClearArr();
 
 	vector<Beam> outBeams;
 	double beta, gamma;
 
-	m_startTime = timer.Start();
-	cout << "Started at " << ctime(&m_startTime) << endl;
+	OutputStartTime(timer);
 
 	for (int i = 0; i < betaNumber; ++i)
 	{
@@ -778,10 +773,10 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum)
 			OutputState(i, j);
 		}
 
-		PrintProgress(betaNumber, i, timer);
+		OutputProgress(betaNumber, i, timer);
 	}
 
-	double D_tot = CalcTotalScatteringEnergy(thetaNum);
+	double D_tot = CalcTotalScatteringEnergy();
 	long long orNum = gammaNumber * betaNumber;
 	double NRM = CalcNorm(orNum);
 
@@ -792,15 +787,15 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum)
 	}
 #endif
 
-	ExtractPeaksGO(EDF, NRM, thetaNum, m_totalMtrx);
+	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
 
-	WriteResultsToFileGO(thetaNum, NRM, m_resultDirName + "_all", m_totalMtrx);
+	WriteResultsToFileGO(NRM, m_resultDirName + "_all", m_totalMtrx);
 	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
 //	WriteStatisticsToConsole(orNum, D_tot, NRM);
 }
 
 void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
-							 int thetaNum, const Tracks &tracks)
+							 const Tracks &tracks)
 {
 	int EDF = 0;
 	vector<Beam> outBeams;
@@ -808,8 +803,7 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 	m_totalMtrx.back.Fill(0);
 	m_totalMtrx.forw.Fill(0);
 
-	sizeBin = M_PI/thetaNum;
-	m_totalMtrx.scatMatrix = Arr2D(1, thetaNum+1, 4, 4);
+	m_totalMtrx.scatMatrix = Arr2D(1, SPHERE_RING_NUM+1, 4, 4);
 	m_totalMtrx.scatMatrix.ClearArr();
 
 	double b = DegToRad(beta);
@@ -818,11 +812,11 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 
 	HandleBeamsGO(outBeams, beta, tracks);
 
-	double D_tot = CalcTotalScatteringEnergy(thetaNum);
+//	double D_tot = CalcTotalScatteringEnergy();
 
-	ExtractPeaksGO(EDF, 1, thetaNum, m_totalMtrx);
+	ExtractPeaksGO(EDF, 1, m_totalMtrx);
 
-	WriteResultsToFileGO(thetaNum, 1, m_resultDirName, m_totalMtrx);
+	WriteResultsToFileGO(1, m_resultDirName, m_totalMtrx);
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
 
@@ -976,7 +970,7 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 
 	for (Beam &beam : outBeams)
 	{
-		if (beam.direction.cz < 0.9396) /* REF: вынести как константу */
+		if (beam.direction.cz < BEAM_DIR_LIM)
 		{
 			continue;
 		}

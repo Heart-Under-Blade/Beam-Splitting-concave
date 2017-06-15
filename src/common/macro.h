@@ -9,3 +9,5 @@ if (!(expr)) \
 	logfile << "ASSERT: \"" << #expr << "\", file: " << __FILE__ << ", line: " << __LINE__; \
 	throw false; \
 }
+
+void OutputState(int i, int j);

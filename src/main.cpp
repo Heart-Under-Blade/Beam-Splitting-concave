@@ -258,12 +258,11 @@ int main(int argc, const char* argv[])
 
 				double beta  = parser.GetDoubleValue("fixed", 0);
 				double gamma = parser.GetDoubleValue("fixed", 1);
-				//			beta = 32; gamma = 30;
 				tracer.TraceSingleOrPO(beta, gamma, bsCone, trackGroups, wave);
 			}
 			else if (parser.IsOccuredKey("random")) // "random"
 			{
-				int betaCount = parser.GetIntValue("random", 0);
+				int betaCount  = parser.GetIntValue("random", 0);
 				int gammaCount = parser.GetIntValue("random", 1);
 
 				if (parser.IsOccuredKey("point"))
@@ -274,8 +273,7 @@ int main(int argc, const char* argv[])
 				else
 				{
 					tracer.setIsCalcOther(true);
-//					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, 0.532);
-					tracer.TraceIntervalGO(betaCount, gammaCount, 180/*, trackGroups*/);
+					tracer.TraceIntervalGO(betaCount, gammaCount);
 					Cone bsCone = SetCone(parser);
 
 					tracer.TraceRandomPO(betaCount, gammaCount, bsCone,
@@ -295,12 +293,12 @@ int main(int argc, const char* argv[])
 
 			if (parser.IsOccuredKey("all"))
 			{
-				tracer.TraceIntervalGO(betaR, gammaR, 180);
+				tracer.TraceIntervalGO(betaR, gammaR);
 			}
 			else
 			{
 				tracer.setIsCalcOther(true);
-				tracer.TraceIntervalGO(betaR, gammaR, 180, trackGroups);
+				tracer.TraceIntervalGO(betaR, gammaR, trackGroups);
 			}
 			//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 		}

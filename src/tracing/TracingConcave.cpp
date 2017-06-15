@@ -59,10 +59,6 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 
 void TracingConcave::TraceByFacet(const IntArray &facetIDs, int facetIndex)
 {
-#ifdef _DEBUG // DEB
-	if (facetIndex == 25)
-		int fff = 0;
-#endif
 	PolygonArray resPolygons;
 	IntersectWithFacet(facetIDs, facetIndex, resPolygons);
 
@@ -266,10 +262,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
-#ifdef _DEBUG // DEB
-		if (beam.lastFacetID == 13)
-			int fff = 0;
-#endif
+
 		if (IsTerminalBeam(beam))
 		{
 			if (beam.location == Location::Out)
@@ -407,15 +400,12 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 		int id = shadowFacetIDs.arr[i];
 		Polygon diffFacets[MAX_POLYGON_NUM]; // REF: заменить на структуру с size
 		int diffSize = 0;
-#ifdef _DEBUG // DEB
-		if (i == 24)
-			int fff = 0;
-#endif
+
 		while (resFacets.size != 0)
 		{
 			const Polygon &clip = m_facets[id];
 			const Polygon &subj = resFacets.arr[--resFacets.size];
-			Difference(subj, normal, clip, normal, /*m_facets[id].in_normal*/m_incidentDir,
+			Difference(subj, normal, clip, normal, m_incidentDir,
 					   diffFacets, diffSize);
 		}
 

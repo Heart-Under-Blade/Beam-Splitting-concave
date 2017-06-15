@@ -1,10 +1,17 @@
 #include "global.h"
+#include "macro.h"
 #include <string>
 #include <iostream>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+void OutputState(int i, int j)
+{
+	logfile << "i: " << i << "; j: " << j << std::endl;
+	logfile.flush();
+}
 
 void Dellines(int count)
 {
