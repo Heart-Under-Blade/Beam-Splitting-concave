@@ -14,7 +14,7 @@ enum Location: bool
 
 struct IntArray
 {
-	int arr[64];
+	int arr[MAX_FACET_NUM];
 	int size = 0;
 
 	void Add(int elem)

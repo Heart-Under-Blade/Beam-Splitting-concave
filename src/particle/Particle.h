@@ -29,6 +29,8 @@ public:
 
 	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) {}
 
+	void Output();
+
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
 	int facetNum;					///< number of facets
