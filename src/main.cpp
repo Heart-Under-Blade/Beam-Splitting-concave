@@ -263,32 +263,24 @@ int main(int argc, const char* argv[])
 			}
 			else if (parser.IsOccuredKey("random")) // "random"
 			{
-				double betaMaxR = particle->GetSymmetryBeta();
-				double betaMax = RadToDeg(betaMaxR);
 				int betaCount = parser.GetIntValue("random", 0);
-				AngleRange betaR(0, betaMax, betaCount, betaMaxR);
-
-				double gammaMaxR = particle->GetSymmetryGamma();
-				double gammaMax = RadToDeg(gammaMaxR);
 				int gammaCount = parser.GetIntValue("random", 1);
-				AngleRange gammaR(0, gammaMax, gammaCount, betaMaxR);
 
 				if (parser.IsOccuredKey("point"))
 				{
-					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, wave);
+					tracer.TraceBackScatterPointPO(betaCount, gammaCount,
+												   trackGroups, wave);
 				}
 				else
 				{
-<<<<<<< HEAD
 					tracer.setIsCalcOther(true);
 //					tracer.TraceBackScatterPointPO(betaR, gammaR, trackGroups, 0.532);
-					tracer.TraceIntervalGO(betaR, gammaR, cellNum/*, trackGroups*/);
-=======
+					tracer.TraceIntervalGO(betaCount, gammaCount, 180/*, trackGroups*/);
 					Cone bsCone = SetCone(parser);
 
-					tracer.TraceRandomPO(betaR, gammaR, bsCone, trackGroups, wave);
+					tracer.TraceRandomPO(betaCount, gammaCount, bsCone,
+										 trackGroups, wave);
 //					tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
->>>>>>> feature/command_line_params
 				}
 			}
 			else
@@ -298,15 +290,8 @@ int main(int argc, const char* argv[])
 		}
 		else if (parser.IsOccuredKey("go"))
 		{
-			double betaMaxR = particle->GetSymmetryBeta();
-			double betaMax = RadToDeg(betaMaxR);
-			int betaCount = parser.GetIntValue("random", 0);
-			AngleRange betaR(0, betaMax, betaCount, betaMaxR);
-
-			double gammaMaxR = particle->GetSymmetryGamma();
-			double gammaMax = RadToDeg(gammaMaxR);
-			int gammaCount = parser.GetIntValue("random", 1);
-			AngleRange gammaR(0, gammaMax, gammaCount, betaMaxR);
+			int betaR = parser.GetIntValue("random", 0);
+			int gammaR = parser.GetIntValue("random", 1);
 
 			if (parser.IsOccuredKey("all"))
 			{

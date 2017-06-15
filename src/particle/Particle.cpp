@@ -9,13 +9,10 @@ void Particle::SetFromFile(const char *filename)
 	//pfile >>
 }
 
-void Particle::Init(int facetCount, const complex &refrIndex,
-					double symGamma, double symBeta, double size)
+void Particle::Init(int facetCount, const complex &refrIndex, double size)
 {
 	facetNum = facetCount;
 	m_refractiveIndex = refrIndex;
-	m_symmetryGamma = symGamma;
-	m_symmetryBeta = symBeta;
 	m_mainSize = size;
 }
 
@@ -49,14 +46,14 @@ const double &Particle::GetMainSize() const
 	return m_mainSize;
 }
 
-const double &Particle::GetSymmetryBeta() const
-{
-	return m_symmetryBeta;
-}
-
 const complex &Particle::GetRefractionIndex() const
 {
 	return m_refractiveIndex;
+}
+
+const Symmetry &Particle::GetSymmetry() const
+{
+	return m_symmetry;
 }
 
 
@@ -82,11 +79,6 @@ void Particle::SetDefaultCenters()
 	{
 		defaultFacets[i].SetCenter();
 	}
-}
-
-const double &Particle::GetSymmetryGamma() const
-{
-	return m_symmetryGamma;
 }
 
 void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
@@ -145,4 +137,11 @@ void Particle::RotatePoint(const Point3f &point, Point3f &result)
 	result.cx = point.cx*m_rotMatrix[0][0] + point.cy*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];
 	result.cy = point.cx*m_rotMatrix[1][0] + point.cy*m_rotMatrix[1][1] + point.cz*m_rotMatrix[1][2];
 	result.cz = point.cx*m_rotMatrix[2][0] + point.cy*m_rotMatrix[2][1] + point.cz*m_rotMatrix[2][2];
+}
+
+void Particle::SetSymmetry(double beta, double gamma, double alpha)
+{
+	m_symmetry.beta = beta;
+	m_symmetry.gamma = gamma;
+	m_symmetry.alpha = alpha;
 }

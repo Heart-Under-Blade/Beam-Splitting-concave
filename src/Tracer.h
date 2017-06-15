@@ -47,7 +47,7 @@ public:
 		return ++maxGroupID;
 	}
 
-	int GetGroupID(long long int trackID) const
+	int FindGroup(long long int trackID) const
 	{
 		for (size_t i = 0; i < size(); ++i)
 		{
@@ -108,17 +108,18 @@ class Tracer
 public:
 	Tracer(Tracing *tracing, const std::string resultFileName);
 
-	void TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
-						 int thetaNum, const Tracks &tracks);
-	void TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR, int thetaNum);
+	void TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
+						 const Tracks &tracks);
+	void TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum);
 	void TraceSingleOrGO(const double &beta, const double &gamma,
 						 int thetaNum, const Tracks &tracks);
 
-	void TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
-						 const Cone &bsCone, const Tracks &tracks, double wave);
-	void TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &gammaR, const Tracks &tracks, double wave);
-	void TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
-						 const Cone &bsCone, const Tracks &tracks, double wave);
+	void TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
+					   const Tracks &tracks, double wave);
+	void TraceBackScatterPointPO(int betaNumber, int gammaNumber,
+								 const Tracks &tracks, double wave);
+	void TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
+						  const Tracks &tracks, double wave);
 	void TraceSingleOrPO(const double &beta, const double &gamma,
 						 const Cone &bsCone, const Tracks &tracks, double wave);
 
@@ -127,6 +128,8 @@ public:
 private:
 	Tracing *m_tracing;
 
+	Symmetry m_symmetry;
+
 	// result scattering martices
 	Contribution m_totalMtrx;
 	std::vector<Contribution> m_sepatateMatrices; // матрицы для вклада в отдельные траектории
@@ -134,7 +137,6 @@ private:
 	Point3f m_incidentDir;
 	Point3f m_polarizationBasis;
 	std::string m_resultDirName;
-	double m_gammaNorm;
 	std::vector<Arr2DC> J; // Jones matrices
 	double sizeBin;
 

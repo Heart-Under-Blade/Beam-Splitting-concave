@@ -23,11 +23,9 @@ public:
 	void Rotate(double beta, double gamma, double alpha);
 
 	const double &GetMainSize() const;
-	const double &GetSymmetryBeta() const;
-	const double &GetSymmetryGamma() const;
 	const complex &GetRefractionIndex() const;
-
-	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) {}
+	const Symmetry &GetSymmetry() const;
+	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
@@ -37,29 +35,28 @@ public:
 protected:
 	Facet defaultFacets[MAX_FACET_NUM];
 
-	double m_mainSize;			///< max size of particle (diameter or height or smth)
-	double m_symmetryBeta;		///< angle of particle symmetry of beta angle
-	double m_symmetryGamma;		///< angle of particle symmetry of gamma angle
+	double m_mainSize;			///< max size of particle (diameter or height or smth)	
+	Symmetry m_symmetry;		///< angle of particle symmetry
+
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 
 protected:
-	void Init(int facetCount, const complex &refrIndex,
-			  double symGamma, double symBeta, double size);
+	void Init(int facetCount, const complex &refrIndex, double size);
 
 	void SetDefaultNormals();
 	void SetDefaultCenters();
 	void SetActualState();
+	void SetSymmetry(double beta, double gamma, double alpha = 0);
 	virtual void SetFacetParams() {}
-
-	void SetRotateMatrix(double beta, double gamma, double alpha);
-	void RotateNormals();
-	void RotatePoint(const Point3f &point, Point3f &result);
 
 private:
 	void SetDParams();
+	void RotateNormals();
+	void RotatePoint(const Point3f &point, Point3f &result);
+	void RotateCenters();
+	void SetRotateMatrix(double beta, double gamma, double alpha);
 
 private:
 	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
-	void RotateCenters();
 };
 

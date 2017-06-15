@@ -12,9 +12,9 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
 	  m_incidentDir(0, 0, -1),
 	  m_polarizationBasis(0, 1, 0),
-	  m_resultDirName(resultFileName),
-	  m_gammaNorm(tracing->m_particle->GetSymmetryGamma())
+	  m_resultDirName(resultFileName)
 {
+	m_symmetry = m_tracing->m_particle->GetSymmetry();
 }
 
 string Tracer::CreateGroupName(const TrackGroup &tracks, int group)
@@ -74,14 +74,15 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int thetaNum, int EDF,
 	}
 }
 
+// REF: вынести в global.h
 void Tracer::OutputState(int i, int j)
 {
 	logfile << "i: " << i << "; j: " << j << endl;
 	logfile.flush();
 }
 
-void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
-							 int thetaNum, const Tracks &tracks)
+void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
+							 const Tracks &tracks)
 {
 	int EDF = 0;
 	CalcTimer timer;
@@ -90,6 +91,9 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
 #endif
+
+	double betaNorm = m_symmetry.beta/betaNumber;
+	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
 	m_sepatateMatrices.resize(tracks.GetMaxGroupID());
 
@@ -104,13 +108,13 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 
-	for (int i = 0; i < betaR.count; ++i)
+	for (int i = 0; i < betaNumber; ++i)
 	{
-		beta = (i + 0.5)*betaR.norm;
+		beta = (i + 0.5)*betaNorm;
 
-		for (int j = 0; j < gammaR.count; ++j)
+		for (int j = 0; j < gammaNumber; ++j)
 		{
-			gamma = (j + 0.5)*gammaR.norm;
+			gamma = (j + 0.5)*gammaNorm;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -121,11 +125,11 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 			OutputState(i, j);
 		}
 
-		PrintProgress(betaR.count, i, timer);
+		PrintProgress(betaNumber, i, timer);
 	}
 
 	double D_tot = CalcTotalScatteringEnergy(thetaNum);
-	long long orNum = gammaR.count * betaR.count;
+	long long orNum = gammaNumber * betaNumber;
 	double NRM = CalcNorm(orNum);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -284,8 +288,8 @@ string Tracer::GetFileName(const string &filename)
 	return name;
 }
 
-void Tracer::TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
-						   const Cone &bsCone, const Tracks &tracks, double wave)
+void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
+						   const Tracks &tracks, double wave)
 {
 	CalcTimer timer;
 	long long count = 0;
@@ -295,21 +299,23 @@ void Tracer::TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
 
 	vector<Beam> outBeams;
 	double beta, gamma;
-	double bStep = betaR.step;
+
+	double betaNorm = m_symmetry.beta/betaNumber;
+	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
 	int maxGroupID = tracks.GetMaxGroupID();
-	int halfGammaCount = gammaR.count/2;
-	double gNorm = gammaR.norm*m_gammaNorm;
+	int halfGammaCount = gammaNumber/2;
+	double gNorm = gammaNorm*m_symmetry.gamma;
 
 	timer.Start();
 
-	for (int i = 0; i <= betaR.count; ++i)
+	for (int i = 0; i <= betaNumber; ++i)
 	{
-		beta = bStep*i;
+		beta = i*betaNorm;
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
-			gamma = j*gammaR.norm;
+			gamma = j*gammaNorm;
 // DEB
 //beta = DegToRad(32); gamma = DegToRad(30);
 //cout << j << endl;
@@ -324,7 +330,7 @@ void Tracer::TraceRandomPO(const AngleRange &betaR, const AngleRange &gammaR,
 
 		WriteConusMatrices(outFile, M, bsCone);
 
-		PrintProgress(betaR.count, count, timer);
+		PrintProgress(betaNumber, count, timer);
 		++count;
 	}
 
@@ -372,7 +378,7 @@ void Tracer::CleanJ()
 	}
 }
 
-void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &gammaR,
+void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 									 const Tracks &tracks, double wave)
 {
 	Cone bsCone(2, 0, 0);
@@ -406,25 +412,27 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &
 
 	vector<Beam> outBeams;
 	double beta, gamma;
-	double bStep = betaR.step;
+
+	double betaNorm = m_symmetry.beta/betaNumber;
+	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
 	All = Arr2D(1, 1, 4, 4);
 
-	int halfGammaCount = gammaR.count/2;
-	gNorm = gammaR.norm/m_gammaNorm;
+	int halfGammaCount = gammaNumber/2;
+	gNorm = gammaNorm/m_symmetry.gamma;
 
 	timer.Start();
 
-	for (int i = 0; i <= betaR.count; ++i)
+	for (int i = 0; i <= betaNumber; ++i)
 	{
-		PrintProgress(betaR.count, count, timer);
+		PrintProgress(betaNumber, count, timer);
 		++count;
 
-		beta = bStep*i;
+		beta = betaNorm*i;
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
-			gamma = j*gammaR.norm;
+			gamma = j*gammaNorm;
 //beta = DegToRad(135); gamma = DegToRad(57);
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
@@ -489,8 +497,8 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaR, const AngleRange &
 }
 
 //REF: объединить с предыдущим
-void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
-							  const Cone &bsCone, const Tracks &tracks, double wave)
+void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
+							  const Tracks &tracks, double wave)
 {
 	CalcTimer timer;
 	long long count = 0;
@@ -500,21 +508,23 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 
 	vector<Beam> outBeams;
 	double beta, gamma;
-	double bStep = betaR.step;
+
+	double betaNorm = m_symmetry.beta/betaNumber;
+	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
 	int maxGroupID = tracks.GetMaxGroupID();
-	int halfGammaCount = gammaR.count/2;
-	double gNorm = gammaR.norm*m_gammaNorm;
+	int halfGammaCount = gammaNumber/2;
+	double gNorm = gammaNorm*m_symmetry.gamma;
 
 	timer.Start();
 
-	for (int i = 0; i <= betaR.count; ++i)
+	for (int i = 0; i <= betaNumber; ++i)
 	{
-		beta = bStep*i;
+		beta = i*betaNorm;
 
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
-			gamma = j*gammaR.norm;
+			gamma = j*gammaNorm;
 // DEB
 //EraseConsoleLine(50);
 //cout << j;
@@ -532,7 +542,7 @@ void Tracer::TraceIntervalPO2(const AngleRange &betaR, const AngleRange &gammaR,
 
 		WriteConusMatrices(outFile, M, bsCone);
 
-		PrintProgress(betaR.count, count, timer);
+		PrintProgress(betaNumber, count, timer);
 		++count;
 	}
 
@@ -680,7 +690,7 @@ void Tracer::HandleBeamsGO(std::vector<Beam> &outBeams, double beta,
 
 	for (Beam &beam : outBeams)
 	{
-		int grID = tracks.GetGroupID(beam.id);
+		int grID = tracks.FindGroup(beam.id);
 
 		if (grID < 0)
 		{
@@ -703,7 +713,7 @@ void Tracer::HandleBeamsGO(std::vector<Beam> &outBeams, double beta,
 
 double Tracer::CalcNorm(long long orNum)
 {
-	double symBeta = m_tracing->m_particle->GetSymmetryBeta();
+	double &symBeta = m_symmetry.beta;
 	double tmp = (/*isRandom*/true) ? symBeta : 1.0;
 	double dBeta = -(cos(symBeta) - cos(0));
 	return tmp/(orNum*dBeta);
@@ -721,8 +731,7 @@ double Tracer::CalcTotalScatteringEnergy(int thetaNum)
 	return D_tot;
 }
 
-void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
-							 int thetaNum)
+void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum)
 {
 	int EDF = 0;
 	CalcTimer timer;
@@ -731,6 +740,9 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
 #endif
+
+	double betaNorm = m_symmetry.beta/betaNumber;
+	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
 	m_totalMtrx.back.Fill(0);
 	m_totalMtrx.forw.Fill(0);
@@ -745,13 +757,13 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 
-	for (int i = 0; i < betaR.count; ++i)
+	for (int i = 0; i < betaNumber; ++i)
 	{
-		beta = (i + 0.5)*betaR.norm;
+		beta = (i + 0.5)*betaNorm;
 
-		for (int j = 0; j < gammaR.count; ++j)
+		for (int j = 0; j < gammaNumber; ++j)
 		{
-			gamma = (j + 0.5)*gammaR.norm;
+			gamma = (j + 0.5)*gammaNorm;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -762,11 +774,11 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 			OutputState(i, j);
 		}
 
-		PrintProgress(betaR.count, i, timer);
+		PrintProgress(betaNumber, i, timer);
 	}
 
 	double D_tot = CalcTotalScatteringEnergy(thetaNum);
-	long long orNum = gammaR.count * betaR.count;
+	long long orNum = gammaNumber * betaNumber;
 	double NRM = CalcNorm(orNum);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -860,7 +872,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 {
 	for (Beam &beam : outBeams)
 	{
-		int groupID = tracks.GetGroupID(beam.id);
+		int groupID = tracks.FindGroup(beam.id);
 
 		if (groupID < 0)
 		{
@@ -965,7 +977,7 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 			continue;
 		}
 
-		int groupID = tracks.GetGroupID(beam.id);
+		int groupID = tracks.FindGroup(beam.id);
 
 		if (groupID < 0 && !isCalcOther)
 		{

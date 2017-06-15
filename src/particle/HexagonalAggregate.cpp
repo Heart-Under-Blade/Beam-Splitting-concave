@@ -5,8 +5,9 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 									   int particleNumber)
 {
 	SetSize(diameter, height);
-	Init(8*particleNumber, refrIndex, 2*M_PI, M_PI, m_height*2);
+	Init(8*particleNumber, refrIndex, m_height*2);
 
+	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
 
 //  SetBases1 REF: вынести в отд. ф-цию

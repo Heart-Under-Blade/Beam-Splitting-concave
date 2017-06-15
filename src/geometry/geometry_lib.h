@@ -12,6 +12,15 @@ enum Location: bool
 	In, Out
 };
 
+struct Orientation
+{
+	double beta;
+	double gamma;
+	double alpha;
+};
+
+typedef Orientation Symmetry;
+
 struct IntArray
 {
 	int arr[64];

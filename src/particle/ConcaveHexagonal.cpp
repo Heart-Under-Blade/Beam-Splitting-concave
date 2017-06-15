@@ -10,8 +10,9 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 	m_cavityDept = cavityDept;
 
 	double size = std::max(height, diameter);
-	Init(18, refrIndex, M_PI/3, M_PI/2, size);
+	Init(18, refrIndex, size);
 
+	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();
 
 	Facet baseTop, baseBottom;
