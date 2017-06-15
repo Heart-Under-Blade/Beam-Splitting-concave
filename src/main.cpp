@@ -228,7 +228,7 @@ int main(int argc, const char* argv[])
 			break;
 		}
 
-		toFile(*particle);
+		particle->Output();
 
 		int reflNum = parser.GetDoubleValue("n");
 

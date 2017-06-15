@@ -27,6 +27,8 @@ public:
 	const Symmetry &GetSymmetry() const;
 	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
+	void Output();
+
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
 	int facetNum;					///< number of facets

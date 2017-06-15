@@ -108,7 +108,11 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, int thetaNum,
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 
+<<<<<<< HEAD
 	for (int i = 0; i < betaNumber; ++i)
+=======
+	for (int i = 0; i < betaR.count; ++i)
+>>>>>>> origin/feature/particle/certain_aggregate
 	{
 		beta = (i + 0.5)*betaNorm;
 

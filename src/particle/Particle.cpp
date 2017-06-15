@@ -56,6 +56,28 @@ const Symmetry &Particle::GetSymmetry() const
 	return m_symmetry;
 }
 
+void Particle::Output()
+{
+	std::ofstream M("particle.dat", std::ios::out);
+
+	for (int i = 0; i < facetNum; ++i)
+	{
+		for (int j = 0; j < facets[i].size; ++j)
+		{
+			Point3f p = facets[i].arr[j];
+			M << p.point[0] << ' '
+							<< p.point[1] << ' '
+							<< p.point[2] << ' '
+							<< i ;
+			M << std::endl;
+		}
+
+		M << std::endl << std::endl;;
+	}
+
+	M.close();
+}
+
 
 void Particle::SetDefaultNormals()
 {

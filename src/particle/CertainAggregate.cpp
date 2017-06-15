@@ -325,6 +325,18 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 //		}
 //	}
 
+	for (int i = 0; i < facetNum; ++i)
+	{
+		int last = defaultFacets[i].size-1;
+
+		for (int j = 0; j < defaultFacets[i].size/2; ++j)
+		{
+			Point3f buf = defaultFacets[i].arr[j];
+			defaultFacets[i].arr[j] = defaultFacets[i].arr[last-j];
+			defaultFacets[i].arr[last-j] = buf;
+		}
+	}
+
 	SetDefaultNormals();
 	SetDefaultCenters();
 	SetActualState();
@@ -340,7 +352,7 @@ void CertainAggregate::SetFacetParams()
 
 	for (int i = 0; i < facetNum; ++i)
 	{
-		if (i%8 == 7 || i == 0)
+		if (i%8 == 7 || i%8 == 0 || i == 0)
 		{
 			defaultFacets[i].size = 6;
 		}
