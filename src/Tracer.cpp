@@ -745,6 +745,12 @@ void Tracer::TraceIntervalGO(const AngleRange &betaR, const AngleRange &gammaR,
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 
+#ifdef _DEBUG
+	beta = (155 + 0.5)*betaR.norm;
+	gamma = (640 + 0.5)*gammaR.norm;
+	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+#endif
+
 	for (int i = 0; i < betaR.count; ++i)
 	{
 		beta = (i + 0.5)*betaR.norm;

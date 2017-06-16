@@ -129,7 +129,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 	IntArray facetIds;
 	SelectVisibleFacets(beam, facetIds);
 
-	Polygon resultBeams[MAX_VERTEX_NUM];
+	Polygon resultBeams[MAX_POLYGON_NUM];
 	int resSize = 0;
 	resultBeams[resSize++] = beam;
 
@@ -146,10 +146,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 			Difference(resultBeams[--resSize], normal, m_facets[id],
 					normal1, -beam.direction, diffFacets, diffSize);
 		}
-#ifdef _DEBUG // DEB
-		if (diffSize >= MAX_POLYGON_NUM)
-			int fff = 0;
-#endif
 assert(diffSize < MAX_POLYGON_NUM); // DEB
 
 		if (diffSize == 0) // beam is totaly swallowed by facet
