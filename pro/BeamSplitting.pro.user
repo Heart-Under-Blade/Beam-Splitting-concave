@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
+<<<<<<< HEAD
 <!-- Written by QtCreator 4.1.0, 2017-06-15T16:06:27. -->
+=======
+<!-- Written by QtCreator 4.1.0, 2017-06-16T09:09:29. -->
+>>>>>>> origin/feature/particle/certain_aggregate
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>

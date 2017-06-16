@@ -756,7 +756,17 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 
 	OutputStartTime(timer);
 
+<<<<<<< HEAD
 	for (int i = 0; i < betaNumber; ++i)
+=======
+#ifdef _DEBUG
+	beta = (155 + 0.5)*betaR.norm;
+	gamma = (640 + 0.5)*gammaR.norm;
+	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+#endif
+
+	for (int i = 0; i < betaR.count; ++i)
+>>>>>>> origin/feature/particle/certain_aggregate
 	{
 		beta = (i + 0.5)*betaNorm;
 
