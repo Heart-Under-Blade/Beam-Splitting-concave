@@ -21,57 +21,13 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
 }
 
-// REF: move to Tracks
-string Tracer::CreateGroupName(const TrackGroup &tracks, int group)
-{
-	string subname;
-
-	if (tracks.size <= 2)
-	{
-		for (int i = 0; i < tracks.size; ++i)
-		{
-			for (int index : tracks.tracks[i])
-			{
-				subname += to_string(index) + '_';
-			}
-
-			subname += '_' + to_string(group);
-		}
-	}
-
-	subname += "_gr_" + to_string(group);
-	return subname;
-}
-
-// REF: move to Tracks
-void Tracer::RecoverTrack(const Beam &beam, std::vector<int> &track)
-{
-	int coef = m_tracing->m_particle->facetNum + 1;
-	std::vector<int> tmp_track;
-
-	int tmpId = beam.id/coef;
-	for (int i = 0; i <= beam.level; ++i)
-	{
-		int tmp = tmpId%coef;
-		tmpId -= tmp;
-		tmpId /= coef;
-		tmp -= 1;
-		tmp_track.push_back(tmp);
-	}
-
-	for (int i = tmp_track.size()-1; i >= 0; --i)
-	{
-		track.push_back(tmp_track.at(i));
-	}
-}
-
 void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const Tracks &tracks)
 {
 	for (size_t i = 0; i < m_sepatateMatrices.size(); ++i)
 	{
 		if (tracks[i].size != 0)
 		{
-			string subname = CreateGroupName(tracks[i], i);
+			string subname = tracks[i].CreateGroupName();
 			ExtractPeaksGO(EDF, NRM, m_sepatateMatrices[i]);
 			WriteResultsToFileGO(NRM, m_resultDirName + subname,
 								 m_sepatateMatrices[i]);
@@ -346,9 +302,9 @@ void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
 void Tracer::CreateGroupResultFiles(const Tracks &tracks, const string &dirName,
 									vector<ofstream*> &groupFiles)
 {
-	for (size_t group = 0; group < tracks.size(); ++group)
+	for (size_t i = 0; i < tracks.size(); ++i)
 	{
-		string groupName = CreateGroupName(tracks[group], group);
+		string groupName = tracks[i].CreateGroupName();
 		string filename = dirName + groupName + ".dat";
 		ofstream *file = new ofstream(filename, ios::out);
 		groupFiles.push_back(file);
@@ -756,17 +712,13 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 
 	OutputStartTime(timer);
 
-<<<<<<< HEAD
-	for (int i = 0; i < betaNumber; ++i)
-=======
-#ifdef _DEBUG
+#ifdef _DEBUG // DEB
 	beta = (155 + 0.5)*betaR.norm;
 	gamma = (640 + 0.5)*gammaR.norm;
 	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 #endif
 
-	for (int i = 0; i < betaR.count; ++i)
->>>>>>> origin/feature/particle/certain_aggregate
+	for (int i = 0; i < betaNumber; ++i)
 	{
 		beta = (i + 0.5)*betaNorm;
 

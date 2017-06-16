@@ -6,6 +6,8 @@
 #include "CalcTimer.h"
 #include "Mueller.hpp"
 
+#define MAX_GROUP_NUM 1024
+
 struct Contribution
 {
 	Contribution()
@@ -24,15 +26,36 @@ struct Contribution
 struct TrackGroup
 {
 	int groupID;
-	long long int arr[1024];
+	long long int arr[MAX_GROUP_NUM];
 	int size = 0;
 	std::vector<std::vector<int>> tracks;
+
+	std::string CreateGroupName() const
+	{
+		std::string subname;
+
+		if (size <= 2)
+		{
+			for (int i = 0; i < size; ++i)
+			{
+				for (int index : tracks[i])
+				{
+					subname += std::to_string(index) + '_';
+				}
+
+				subname += '_' + std::to_string(groupID);
+			}
+		}
+
+		subname += "_gr_" + std::to_string(groupID);
+		return subname;
+	}
 };
 
 class Tracks : public std::vector<TrackGroup>
 {
 public:
-	int GetMaxGroupID() const // REF: вызывать в конструкторе
+	int GetMaxGroupID() const // REF: вызывать в конструкторе один раз
 	{
 		int maxGroupID = 0;
 
@@ -66,6 +89,28 @@ public:
 		}
 
 		return -1;
+	}
+
+	static void RecoverTrack(const Beam &beam, int facetNum,
+							 std::vector<int> &track)
+	{
+		int coef = facetNum + 1;
+		std::vector<int> tmp_track;
+
+		int tmpId = beam.id/coef;
+		for (int i = 0; i <= beam.level; ++i)
+		{
+			int tmp = tmpId%coef;
+			tmpId -= tmp;
+			tmpId /= coef;
+			tmp -= 1;
+			tmp_track.push_back(tmp);
+		}
+
+		for (int i = tmp_track.size()-1; i >= 0; --i)
+		{
+			track.push_back(tmp_track.at(i));
+		}
 	}
 };
 
@@ -181,9 +226,7 @@ private:
 							 Contribution &contr);
 	void WriteResultToSeparateFilesGO(double NRM, int EDF, const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
-	std::string CreateGroupName(const TrackGroup &tracks, int group);
 
-	void RecoverTrack(const Beam &beam, std::vector<int> &track);
 	void CreateGroupResultFiles(const Tracks &tracks, const std::string &dirName,
 								std::vector<std::ofstream*> &groupFiles);
 	void AllocJ(int m, int n, int size);

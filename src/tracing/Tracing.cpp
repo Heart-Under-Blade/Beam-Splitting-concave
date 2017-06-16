@@ -78,8 +78,6 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 
 void Tracing::SetBeamID(Beam &beam)
 {
-	assert(m_treeSize < MAX_BEAM_REFL_NUM);
-
 #ifdef _TRACK_ALLOW
 	beam.id += (beam.lastFacetID + 1);
 	beam.id *= (m_particle->facetNum + 1);

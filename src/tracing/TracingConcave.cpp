@@ -142,7 +142,6 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 			Difference(resultBeams[--resSize], normal, m_facets[id],
 					normal1, -beam.direction, diffFacets, diffSize);
 		}
-assert(diffSize < MAX_POLYGON_NUM); // DEB
 
 		if (diffSize == 0) // beam is totaly swallowed by facet
 		{
