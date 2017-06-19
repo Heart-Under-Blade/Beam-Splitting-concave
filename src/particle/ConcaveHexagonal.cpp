@@ -4,10 +4,13 @@
 
 ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 								   double diameter, double height,
-								   double cavityDept)
+								   double cavityAngle)
 {
 	SetSize(diameter, height);
-	m_cavityDept = cavityDept;
+
+	double angleD = DegToRad(cavityAngle);
+	double r = diameter/2;
+	m_cavityDept = (r*sin(angleD))/cos(angleD);
 
 	double size = std::max(height, diameter);
 	Init(18, refrIndex, size);

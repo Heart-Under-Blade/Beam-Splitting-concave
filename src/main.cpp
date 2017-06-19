@@ -267,13 +267,12 @@ int main(int argc, const char* argv[])
 
 				if (parser.IsOccuredKey("point"))
 				{
+					tracer.setIsCalcOther(true);
 					tracer.TraceBackScatterPointPO(betaCount, gammaCount,
 												   trackGroups, wave);
 				}
 				else
 				{
-					tracer.setIsCalcOther(true);
-					tracer.TraceIntervalGO(betaCount, gammaCount);
 					Cone bsCone = SetCone(parser);
 
 					tracer.TraceRandomPO(betaCount, gammaCount, bsCone,
