@@ -95,8 +95,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
 	WriteResultsToFileGO(NRM, m_resultDirName + "_all", m_totalMtrx);
 
-	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
-//	WriteStatisticsToConsole(orNum, D_tot, NRM);
+	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
 
 void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
@@ -207,27 +206,6 @@ void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 	}
 
 	allFile.close();
-}
-
-void Tracer::WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM,
-									 CalcTimer &timer)
-{
-	ofstream out("out.dat", ios::out);
-
-	// Information for log-file
-	out << "\nStart of calculation = " << ctime(&m_startTime);
-	out << "\nTotal time of calculation = " << timer.Elapsed();
-	out << "\nTotal number of body orientation = " << orNumber;
-	out << "\nTotal scattering energy = " << D_tot ;
-
-#ifdef _CHECK_ENERGY_BALANCE
-	out << "\nTotal incoming energy = " << (m_incomingEnergy *= NRM);
-	out << "\nTotal outcoming energy = " << m_outcomingEnergy;
-	out << "\nEnergy passed = " << (m_outcomingEnergy/m_incomingEnergy)*100 << '%';
-#endif
-
-//	out << "\nAveraged cross section = " << incomingEnergy*NRM;
-	out.close();
 }
 
 string Tracer::GetFileName(const string &filename)
@@ -688,6 +666,33 @@ void Tracer::OutputStartTime(CalcTimer timer)
 	cout << "Started at " << ctime(&m_startTime) << endl;
 }
 
+void Tracer::OutputStatisticsGO(int orNumber, double D_tot, double NRM,
+							  CalcTimer &timer)
+{
+	string totalTime = ctime(&m_startTime);
+
+	m_statistics += "\nStart of calculation = " + totalTime
+			+ "\nTotal time of calculation = " + timer.Elapsed()
+			+ "\nTotal number of body orientation = " + to_string(orNumber)
+			+ "\nTotal scattering energy = " + to_string(D_tot);
+
+#ifdef _CHECK_ENERGY_BALANCE
+	double normEnergy = m_incomingEnergy * NRM;
+	double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
+
+	m_statistics += "\nTotal incoming energy = " + to_string(normEnergy)
+			+ "\nTotal outcoming energy = " + to_string(m_outcomingEnergy)
+			+ "\nEnergy passed = " + to_string(passedEnergy) + '%';
+#endif
+
+	//	out << "\nAveraged cross section = " << incomingEnergy*NRM;
+	ofstream out("out.dat", ios::out);
+	out << m_statistics;
+	out.close();
+
+	cout << m_statistics;
+}
+
 void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 {
 	int EDF = 0;
@@ -752,8 +757,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
 
 	WriteResultsToFileGO(NRM, m_resultDirName + "_all", m_totalMtrx);
-	WriteStatisticsToFileGO(orNum, D_tot, NRM, timer);
-//	WriteStatisticsToConsole(orNum, D_tot, NRM);
+	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
 
 void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,

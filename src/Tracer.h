@@ -194,6 +194,8 @@ private:
 	Arr2D Other;
 	Arr2D All;
 
+	std::string m_statistics;
+
 private:
 	void CleanJ(int maxGroupID, const Cone &bsCone);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);
@@ -215,8 +217,6 @@ private:
 	void ExtractPeaksGO(int EDF, double NRM, Contribution &contr);
 	void WriteResultsToFileGO(double NRM, const std::string &filename,
 							  Contribution &contr);
-	void WriteStatisticsToFileGO(int orNumber, double D_tot, double NRM,
-								 CalcTimer &timer);
 	std::string GetFileName(const std::string &filename);
 
 	double CalcNorm(long long orNum);
@@ -232,4 +232,6 @@ private:
 	void AllocJ(int m, int n, int size);
 	void CleanJ();
 	void OutputStartTime(CalcTimer timer);
+	void OutputStatisticsGO(int orNumber, double D_tot, double NRM,
+						  CalcTimer &timer);
 };
