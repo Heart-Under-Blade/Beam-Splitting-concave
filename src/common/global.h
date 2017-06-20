@@ -8,9 +8,11 @@
 //#define _CALC_AREA_CONTIBUTION_ONLY
 //#define _CHECK_ENERGY_BALANCE // energy conversation of input and output beams outputs in file
 
+#include <string>
+
 void Dellines(int count);
 void EraseConsoleLine(int lenght);
 
 double DegToRad(double deg);
 double RadToDeg(double rad);
-void CreateDir(const char *name, char *dir);
+std::string CreateDir(const std::string &name);

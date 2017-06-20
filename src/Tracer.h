@@ -217,14 +217,15 @@ private:
 	void ExtractPeaksGO(int EDF, double NRM, Contribution &contr);
 	void WriteResultsToFileGO(double NRM, const std::string &filename,
 							  Contribution &contr);
-	std::string GetFileName(const std::string &filename);
+	std::string GetDATFileName(const std::string &filename);
 
 	double CalcNorm(long long orNum);
 	double CalcTotalScatteringEnergy();
 	void RotateMuller(const Point3f &dir, matrix &bf);
 	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
 							 Contribution &contr);
-	void WriteResultToSeparateFilesGO(double NRM, int EDF, const Tracks &tracks);
+	void WriteResultToSeparateFilesGO(double NRM, int EDF, const std::string &dir,
+									  const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
 
 	void CreateGroupResultFiles(const Tracks &tracks, const std::string &dirName,

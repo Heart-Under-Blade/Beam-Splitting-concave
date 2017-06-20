@@ -10,7 +10,9 @@
 
 using namespace std;
 
+#ifdef _DEBUG // DEB
 ofstream tfile("tracks_other1.dat", ios::out);
+#endif
 
 Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
@@ -21,7 +23,8 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
 }
 
-void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const Tracks &tracks)
+void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const string &dir,
+										  const Tracks &tracks)
 {
 	for (size_t i = 0; i < m_sepatateMatrices.size(); ++i)
 	{
@@ -29,8 +32,7 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const Tracks &tra
 		{
 			string subname = tracks[i].CreateGroupName();
 			ExtractPeaksGO(EDF, NRM, m_sepatateMatrices[i]);
-			WriteResultsToFileGO(NRM, m_resultDirName + subname,
-								 m_sepatateMatrices[i]);
+			WriteResultsToFileGO(NRM, dir + subname, m_sepatateMatrices[i]);
 		}
 	}
 }
@@ -39,6 +41,8 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 {
 	int EDF = 0;
 	CalcTimer timer;
+
+	string dirName = CreateDir(m_resultDirName);
 
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incomingEnergy = 0;
@@ -90,10 +94,10 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 	}
 #endif
 
-	WriteResultToSeparateFilesGO(NRM, EDF, tracks);
+	WriteResultToSeparateFilesGO(NRM, EDF, dirName, tracks);
 
 	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
-	WriteResultsToFileGO(NRM, m_resultDirName + "_all", m_totalMtrx);
+	WriteResultsToFileGO(NRM, dirName + "all", m_totalMtrx);
 
 	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
@@ -168,7 +172,7 @@ void Tracer::ExtractPeaksGO(int EDF, double NRM, Contribution &contr)
 void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 								  Contribution &contr)
 {
-	string name = GetFileName(filename);
+	string name = GetDATFileName(filename);
 	ofstream allFile(name, std::ios::out);
 
 	allFile << "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
@@ -208,14 +212,13 @@ void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 	allFile.close();
 }
 
-string Tracer::GetFileName(const string &filename)
+string Tracer::GetDATFileName(const string &filename)
 {
-	string fname = string("M_") + filename;
-	string name = fname;
+	string name = filename + ".dat";
 
-	for (int i = 1; ifstream(name + ".dat") != NULL; ++i)
+	for (int i = 1; ifstream(name) != NULL; ++i)
 	{
-		name = fname + "(" + to_string(i) + ")";
+		name = filename + '(' + to_string(i) + ')' + ".dat";
 	}
 
 	return name;
@@ -318,9 +321,7 @@ void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 
 	int maxGroupID = tracks.GetMaxGroupID();
 
-	char dir[260] = "";
-	CreateDir(m_resultDirName.c_str(), dir);
-	string dirName = dir;
+	string dirName = CreateDir(m_resultDirName);
 
 	ofstream allFile(dirName + "all.dat", ios::out);
 
@@ -364,7 +365,7 @@ void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
 		{
 			gamma = j*gammaNorm;
-//beta = DegToRad(135); gamma = DegToRad(57);
+// beta = DegToRad(135); gamma = DegToRad(57);
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
@@ -718,8 +719,8 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 	OutputStartTime(timer);
 
 #ifdef _DEBUG // DEB
-	beta = (155 + 0.5)*betaR.norm;
-	gamma = (640 + 0.5)*gammaR.norm;
+	beta = (155 + 0.5)*betaNorm;
+	gamma = (640 + 0.5)*gammaNorm;
 	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 #endif
 
@@ -755,7 +756,6 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 #endif
 
 	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
-
 	WriteResultsToFileGO(NRM, m_resultDirName + "_all", m_totalMtrx);
 	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
@@ -781,7 +781,6 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 //	double D_tot = CalcTotalScatteringEnergy();
 
 	ExtractPeaksGO(EDF, 1, m_totalMtrx);
-
 	WriteResultsToFileGO(1, m_resultDirName, m_totalMtrx);
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
