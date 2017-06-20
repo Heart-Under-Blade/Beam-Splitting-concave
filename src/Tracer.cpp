@@ -424,6 +424,15 @@ void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 	}
 }
 
+void Tracer::OutputTableHead(const AngleRange &betaRange, ofstream &allFile)
+{
+	allFile << betaRange.number << ' '
+			<< RadToDeg(betaRange.max) << ' '
+			<< RadToDeg(betaRange.step) << endl;
+
+	allFile << "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44";
+}
+
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
@@ -436,6 +445,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	string dirName = CreateDir(m_resultDirName);
 
 	ofstream allFile(dirName + "all.dat", ios::out);
+	OutputTableHead(betaRange, allFile);
 
 	vector<ofstream*> groupFiles;
 	CreateGroupResultFiles(tracks, dirName, groupFiles);
@@ -445,7 +455,10 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	if (isCalcOther)
 	{
 		diffFile.open(dirName + "difference.dat", ios::out);
+		OutputTableHead(betaRange, diffFile);
+
 		otherFile.open(dirName + "other.dat", ios::out);
+		OutputTableHead(betaRange, otherFile);
 		Other = Arr2D(1, 1, 4, 4);
 	}
 
@@ -478,10 +491,15 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 		beta = betaMin + betaNorm*i;
 
+		m_incomingEnergy = 0;
+
 		for (int j = 0; j <= gammaNumber; ++j)
 		{
 			gamma = gammaMin + gammaNorm*j;
+
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+
+			m_incomingEnergy += m_tracing->GetIncomingEnergy();
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 			outBeams.clear();
@@ -491,6 +509,8 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			CleanJ();
 		}
+
+		m_incomingEnergy *= gNorm;
 
 		double degBeta = RadToDeg(beta);
 		allFile << degBeta << ' ';
@@ -503,7 +523,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			Arr2D &mtrx = groupResultM[group];
 			matrix m1 = mtrx(0, 0);
 			ofstream &file = *(groupFiles[group]);
-			file << degBeta << ' ';
+			file << degBeta << ' ' << m_incomingEnergy << ' ';
 			file << m1 << endl;
 		}
 
@@ -512,12 +532,12 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 		if (isCalcOther)
 		{
-			otherFile << degBeta << ' ';
+			otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
 			matrix m0 = Other(0, 0);
 			otherFile << m0 << endl;
 			Other.ClearArr();
 
-			diffFile << degBeta << ' ';
+			diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
 			matrix m00 = m - m0;
 			diffFile << m00 << endl;
 		}
@@ -1058,6 +1078,8 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 		}
 
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
+
+		m_tracing->BeamCrossSection(beam);
 
 		Point3f center = beam.Center();
 		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);

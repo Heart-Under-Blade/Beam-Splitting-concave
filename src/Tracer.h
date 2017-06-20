@@ -211,8 +211,8 @@ private:
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks);
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, int groupID);
-	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
-								  double wavelength, const Tracks &tracks);
+	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, double wavelength,
+								  const Tracks &tracks);
 	void SetJnRot(Beam &beam, const Point3f &T,
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToMatrix(Arr2D &M, int maxGroupID, const Cone &bsCone,
@@ -244,4 +244,5 @@ private:
 	void OutputStartTime(CalcTimer timer);
 	void OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 						  CalcTimer &timer);
+	void OutputTableHead(const AngleRange &betaRange, std::ofstream &allFile);
 };
