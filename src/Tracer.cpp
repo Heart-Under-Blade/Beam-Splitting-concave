@@ -315,7 +315,7 @@ void Tracer::CleanJ()
 void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 									 const Tracks &tracks, double wave)
 {
-	Cone bsCone(2, 0, 0);
+	Cone bsCone(2, 0, 0);// REF: delete
 	CalcTimer timer;
 	long long count = 0;
 
@@ -350,36 +350,146 @@ void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 
 	All = Arr2D(1, 1, 4, 4);
 
-	int halfGammaCount = gammaNumber/2;
 	gNorm = gammaNorm/m_symmetry.gamma;
 
 	timer.Start();
+
+	double betaMin = 0;
+	double gammaMin = 0;
 
 	for (int i = 0; i <= betaNumber; ++i)
 	{
 		OutputProgress(betaNumber, count, timer);
 		++count;
 
-		beta = betaNorm*i;
+		beta = betaMin + betaNorm*i;
 
-		for (int j = -halfGammaCount; j <= halfGammaCount; ++j)
+		for (int j = 0; j <= gammaNumber; ++j)
 		{
-			gamma = j*gammaNorm;
-// beta = DegToRad(135); gamma = DegToRad(57);
+			gamma = gammaMin + gammaNorm*j;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
-
-//			CleanJ();
-//			CleanJ(maxGroupID, bsCone);
 			outBeams.clear();
 
 			AddResultToMatrices(groupResultM, maxGroupID, bsCone, gNorm);
 			AddResultToMatrix(All, maxGroupID, bsCone, gNorm);
 
 			CleanJ();
-//			EraseConsoleLine(50);
-//			cout << j;
+		}
+
+		double degBeta = RadToDeg(beta);
+		allFile << degBeta << ' ';
+		matrix m = All(0, 0);
+		allFile << m << endl;
+		All.ClearArr();
+
+		for (size_t group = 0; group < groupResultM.size(); ++group)
+		{
+			Arr2D &mtrx = groupResultM[group];
+			matrix m1 = mtrx(0, 0);
+			ofstream &file = *(groupFiles[group]);
+			file << degBeta << ' ';
+			file << m1 << endl;
+		}
+
+		groupResultM.clear();
+		AllocGroupMatrices(groupResultM, maxGroupID);
+
+		if (isCalcOther)
+		{
+			otherFile << degBeta << ' ';
+			matrix m0 = Other(0, 0);
+			otherFile << m0 << endl;
+			Other.ClearArr();
+
+			diffFile << degBeta << ' ';
+			matrix m00 = m - m0;
+			diffFile << m00 << endl;
+		}
+	}
+
+	allFile.close();
+
+	if (isCalcOther)
+	{
+		otherFile.close();
+		diffFile.close();
+	}
+
+	for (size_t group = 0; group < groupResultM.size(); ++group)
+	{
+		ofstream &file = *(groupFiles[group]);
+		file.close();
+	}
+}
+
+void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
+									 const Tracks &tracks, double wave)
+{
+	Cone bsCone(2, 0, 0);// REF: delete
+	CalcTimer timer;
+	long long count = 0;
+
+	int maxGroupID = tracks.GetMaxGroupID();
+
+	string dirName = CreateDir(m_resultDirName);
+
+	ofstream allFile(dirName + "all.dat", ios::out);
+
+	vector<ofstream*> groupFiles;
+	CreateGroupResultFiles(tracks, dirName, groupFiles);
+
+	ofstream otherFile, diffFile;
+
+	if (isCalcOther)
+	{
+		diffFile.open(dirName + "difference.dat", ios::out);
+		otherFile.open(dirName + "other.dat", ios::out);
+		Other = Arr2D(1, 1, 4, 4);
+	}
+
+	AllocJ(1, 1, maxGroupID);
+
+	vector<Arr2D> groupResultM;
+	AllocGroupMatrices(groupResultM, maxGroupID);
+
+	vector<Beam> outBeams;
+	double beta, gamma;
+
+	double betaNorm = betaRange.step;
+	double gammaNorm = gammaRange.step;
+
+	All = Arr2D(1, 1, 4, 4);
+
+	gNorm = gammaNorm/gammaRange.norm;
+
+	timer.Start();
+
+	double betaMin = betaRange.min;
+	double gammaMin = gammaRange.min;
+	double betaNumber = betaRange.number;
+	double gammaNumber = gammaRange.number;
+
+	for (int i = 0; i <= betaNumber; ++i)
+	{
+		OutputProgress(betaNumber, count, timer);
+		++count;
+
+		beta = betaMin + betaNorm*i;
+
+		for (int j = 0; j <= gammaNumber; ++j)
+		{
+			gamma = gammaMin + gammaNorm*j;
+			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+
+			HandleBeamsBackScatterPO(outBeams, wave, tracks);
+			outBeams.clear();
+
+			AddResultToMatrices(groupResultM, maxGroupID, bsCone, gNorm);
+			AddResultToMatrix(All, maxGroupID, bsCone, gNorm);
+
+			CleanJ();
 		}
 
 		double degBeta = RadToDeg(beta);

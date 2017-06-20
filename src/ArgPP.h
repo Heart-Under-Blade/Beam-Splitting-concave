@@ -70,7 +70,7 @@ public: // methods
 		return m_programName;
 	}
 
-	bool IsOccuredKey(const std::string &key)
+	bool Occured(const std::string &key) const
 	{
 		auto it = m_args.find(key);
 		return it != m_args.end();

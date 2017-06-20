@@ -168,7 +168,9 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("go", 0, true); // geometrical optics method
 	parser.AddRule("po", 0, true); // phisical optics method
 	parser.AddRule("w", 1, true, "po"); // wavelength
-	parser.AddRule("conus", 3, true); // calculate only backscatter cone (radius, phi, theta)
+	parser.AddRule("b", 2, true, "po"); // beta range (begin, end)
+	parser.AddRule("g", 2, true, "po"); // gamma range (begin, end)
+	parser.AddRule("conus", 3, true, "po"); // calculate only backscatter cone (radius, phi, theta)
 	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
 	parser.AddRule("all", 0, true); // calculate all
 	parser.AddRule("o", 1, true); // output file name
@@ -180,6 +182,50 @@ Cone SetCone(ArgPP &parser)
 	int phiCount = parser.GetDoubleValue("conus", 1);
 	int thetaCount = parser.GetDoubleValue("conus", 2);
 	return Cone(radius, phiCount, thetaCount);
+}
+
+AngleRange GetRange(const ArgPP &parser, const std::string &key,
+					Particle *particle)
+{
+	int number;
+	int min, max;
+
+	if (key == "b")
+	{
+		number = parser.GetIntValue("random", 0);
+
+		if (parser.Occured("b"))
+		{
+			min = parser.GetIntValue(key, 0);
+			max = parser.GetIntValue(key, 1);
+		}
+		else
+		{
+			min = 0;
+			max = DegToRad(particle->GetSymmetry().beta);
+		}
+	}
+	else if (key == "g")
+	{
+		number = parser.GetIntValue("random", 1);
+
+		if (parser.Occured("g"))
+		{
+			min = parser.GetIntValue(key, 0);
+			max = parser.GetIntValue(key, 1);
+		}
+		else
+		{
+			min = 0;
+			max = DegToRad(particle->GetSymmetry().gamma);
+		}
+	}
+	else
+	{
+		cerr << "Error! " << __FUNCTION__;
+	}
+
+	return AngleRange(min, max, number);
 }
 
 int main(int argc, const char* argv[])
@@ -248,11 +294,11 @@ int main(int argc, const char* argv[])
 		ImportTracks(particle->facetNum);
 		Tracer tracer(tracing, "M");
 
-		if (parser.IsOccuredKey("po"))
+		if (parser.Occured("po"))
 		{
 			double wave = parser.GetDoubleValue("w");
 
-			if (parser.IsOccuredKey("fixed"))
+			if (parser.Occured("fixed"))
 			{
 				Cone bsCone = SetCone(parser);
 
@@ -260,22 +306,21 @@ int main(int argc, const char* argv[])
 				double gamma = parser.GetDoubleValue("fixed", 1);
 				tracer.TraceSingleOrPO(beta, gamma, bsCone, trackGroups, wave);
 			}
-			else if (parser.IsOccuredKey("random")) // "random"
+			else if (parser.Occured("random")) // "random"
 			{
-				int betaCount  = parser.GetIntValue("random", 0);
-				int gammaCount = parser.GetIntValue("random", 1);
+				AngleRange beta = GetRange(parser, "b", particle);
+				AngleRange gamma = GetRange(parser, "g", particle);
 
-				if (parser.IsOccuredKey("point"))
+				if (parser.Occured("point"))
 				{
 					tracer.setIsCalcOther(true);
-					tracer.TraceBackScatterPointPO(betaCount, gammaCount,
-												   trackGroups, wave);
+					tracer.TraceBackScatterPointPO(beta, gamma, trackGroups, wave);
 				}
 				else
 				{
 					Cone bsCone = SetCone(parser);
 
-					tracer.TraceRandomPO(betaCount, gammaCount, bsCone,
+					tracer.TraceRandomPO(beta.number, gamma.number, bsCone,
 										 trackGroups, wave);
 //					tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
 				}
@@ -285,12 +330,12 @@ int main(int argc, const char* argv[])
 				cout << endl << "error";
 			}
 		}
-		else if (parser.IsOccuredKey("go"))
+		else if (parser.Occured("go"))
 		{
 			int betaR = parser.GetIntValue("random", 0);
 			int gammaR = parser.GetIntValue("random", 1);
 
-			if (parser.IsOccuredKey("all"))
+			if (parser.Occured("all"))
 			{
 				tracer.TraceIntervalGO(betaR, gammaR);
 			}

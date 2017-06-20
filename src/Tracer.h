@@ -116,15 +116,19 @@ public:
 
 struct AngleRange
 {
-	int count;
+	double min;
+	double max;
+	int number;
 	double norm;
 	double step;
 
-	AngleRange(double begin, double end, int count, double normCoef)
-		: count(count)
+	AngleRange(double _min, double _max, int _number)
+		: number(_number)
 	{
-		norm = normCoef/count;
-		step = DegToRad(end - begin)/count;
+		min = DegToRad(_min);
+		max = DegToRad(_max);
+		norm = max - min;
+		step = norm/number;
 	}
 };
 
@@ -160,8 +164,13 @@ public:
 
 	void TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 					   const Tracks &tracks, double wave);
+
 	void TraceBackScatterPointPO(int betaNumber, int gammaNumber,
 								 const Tracks &tracks, double wave);
+
+	void TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
+								 const Tracks &tracks, double wave);
+
 	void TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
 						  const Tracks &tracks, double wave);
 	void TraceSingleOrPO(const double &beta, const double &gamma,
