@@ -110,8 +110,8 @@ struct AngleRange
 	AngleRange(double _min, double _max, int _number)
 		: number(_number)
 	{
-		min = DegToRad(_min);
-		max = DegToRad(_max);
+		min = _min;
+		max = _max;
 		norm = max - min;
 		step = norm/number;
 	}

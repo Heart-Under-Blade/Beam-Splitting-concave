@@ -983,6 +983,9 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 //	tfile << t << ';';
 //}
 //tfile << m[0][0] << endl;
+#ifdef _DEBUG // DEB
+			double f = m[0][0];
+#endif
 			Other.insert(0, 0, m);
 			All.insert(0, 0, m);
 		}
