@@ -4,7 +4,7 @@
 #include "global.h"
 #include "macro.h"
 
-#define BEAM_DIR_LIM	0.9396
+#define BEAM_DIR_LIM	0.9396 // cos(20)
 #define SPHERE_RING_NUM 180
 #define BIN_SIZE		M_PI/SPHERE_RING_NUM
 
@@ -270,12 +270,11 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 	outFile.close();
 }
 
-void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
+void Tracer::AllocGroupMatrices(vector<matrix> &mtrcs, size_t maxGroupID)
 {
 	for (size_t i = 0; i < maxGroupID; ++i)
 	{
-		Arr2D m(1, 1, 4, 4);
-		mtrcs.push_back(m);
+		mtrcs.push_back(matrix(4, 4));
 	}
 }
 
@@ -293,23 +292,25 @@ void Tracer::CreateGroupResultFiles(const Tracks &tracks, const string &dirName,
 
 void Tracer::AllocJ(int m, int n, int size)
 {
-	J.clear();
+	m_groupJ.clear();
 	Arr2DC tmp(m, n, 2, 2);
 	tmp.ClearArr();
 
-	for(int i = 0; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
-		J.push_back(tmp);
+		m_groupJ.push_back(tmp);
 	}
 }
 
 void Tracer::CleanJ()
 {
-	for (Arr2DC &m : J)
+	for (Arr2DC &m : m_groupJ)
 	{
 		m.ClearArr();
 	}
 }
+
+// TODO добавить свой класс матриц 2:2 и 4:4
 
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
@@ -330,19 +331,17 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	{
 		diffFile.open(dirName + "difference.dat", ios::out);
 		otherFile.open(dirName + "other.dat", ios::out);
-		Other = Arr2D(1, 1, 4, 4);
 	}
 
 	AllocJ(1, 1, tracks.size());
 
-	vector<Arr2D> groupResultM;
-	AllocGroupMatrices(groupResultM, tracks.size());
+	vector<matrix> groupM;
+	AllocGroupMatrices(groupM, tracks.size());
 
 	vector<Beam> outBeams;
 
-	All = Arr2D(1, 1, 4, 4);
-
 	gNorm = gammaRange.step/gammaRange.norm;
+
 
 	timer.Start();
 
@@ -353,50 +352,52 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		OutputProgress(betaRange.number, count, timer);
 		++count;
 
+		matrix otherM(4, 4);
+		otherM.Fill(0);
+
 		beta = betaRange.min + betaRange.step*i;
 
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
 			gamma = gammaRange.min + gammaRange.step*j;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
-
-			HandleBeamsBackScatterPO(outBeams, wave, tracks);
-			outBeams.clear();
-
-			AddResultToMatrices(groupResultM, gNorm);
-			AddResultToMatrix(All, gNorm);
-
-			CleanJ();
+			HandleBeamsBackScatterPO(outBeams, wave, tracks, otherM, groupM);
 		}
 
 		double degBeta = RadToDeg(beta);
 		allFile << degBeta << ' ';
-		matrix m = All(0, 0);
-		allFile << m << endl;
-		All.ClearArr();
 
-		for (size_t group = 0; group < groupResultM.size(); ++group)
+		matrix allM(4, 4);
+		allM.Fill(0);
+//		double dd = allM[0][1];
+		allM += otherM;
+//		dd = allM[0][1];
+
+		for (size_t group = 0; group < tracks.size(); ++group)
 		{
-			Arr2D &mtrx = groupResultM[group];
-			matrix m1 = mtrx(0, 0);
-			ofstream &file = *(groupFiles[group]);
-			file << degBeta << ' ';
-			file << m1 << endl;
+			allM += groupM[group];
 		}
 
-		groupResultM.clear();
-		AllocGroupMatrices(groupResultM, tracks.size());
+		allFile << allM << endl;
+
+		for (size_t group = 0; group < tracks.size(); ++group)
+		{
+			ofstream &file = *(groupFiles[group]);
+			file << degBeta << ' ';
+			file << groupM[group] << endl;
+		}
+
+		groupM.clear();
+		AllocGroupMatrices(groupM, tracks.size());
 
 		if (isCalcOther)
 		{
 			otherFile << degBeta << ' ';
-			matrix m0 = Other(0, 0);
-			otherFile << m0 << endl;
-			Other.ClearArr();
+			otherFile << otherM << endl;
 
 			diffFile << degBeta << ' ';
-			matrix m00 = m - m0;
-			diffFile << m00 << endl;
+			matrix diff = allM - otherM;
+			diffFile << diff << endl;
 		}
 	}
 
@@ -408,7 +409,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		diffFile.close();
 	}
 
-	for (size_t group = 0; group < groupResultM.size(); ++group)
+	for (size_t group = 0; group < groupM.size(); ++group)
 	{
 		ofstream &file = *(groupFiles[group]);
 		file.close();
@@ -490,13 +491,13 @@ void Tracer::WriteConusMatrices(ofstream &outFile, const Arr2D &sum,
 
 void Tracer::AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm)
 {
-	for (size_t q = 0; q < J.size(); ++q)
+	for (size_t q = 0; q < m_groupJ.size(); ++q)
 	{
 		for (int t = 0; t <= bsCone.thetaCount; ++t)
 		{
 			for (int p = 0; p <= bsCone.phiCount; ++p)
 			{
-				matrix m = Mueller(J[q](p, t));
+				matrix m = Mueller(m_groupJ[q](p, t));
 				m *= norm;
 				M.insert(p, t, m);
 			}
@@ -506,9 +507,9 @@ void Tracer::AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm)
 
 void Tracer::AddResultToMatrix(Arr2D &M, double norm)
 {
-	for (size_t q = 0; q < J.size(); ++q)
+	for (size_t q = 0; q < m_groupJ.size(); ++q)
 	{
-		matrix m = Mueller(J[q](0, 0));
+		matrix m = Mueller(m_groupJ[q](0, 0));
 		m *= norm;
 		M.insert(0, 0, m);
 	}
@@ -517,13 +518,13 @@ void Tracer::AddResultToMatrix(Arr2D &M, double norm)
 void Tracer::AddResultToMatrices(vector<Arr2D> &M, const Cone &bsCone,
 								 double norm)
 {
-	for (size_t q = 0; q < J.size(); ++q)
+	for (size_t q = 0; q < m_groupJ.size(); ++q)
 	{
 		for (int t = 0; t <= bsCone.thetaCount; ++t)
 		{
 			for (int p = 0; p <= bsCone.phiCount; ++p)
 			{
-				matrix m = Mueller(J[q](0, 0));
+				matrix m = Mueller(m_groupJ[q](0, 0));
 				m *= norm;
 				M[q].insert(p, t, m);
 			}
@@ -533,9 +534,9 @@ void Tracer::AddResultToMatrices(vector<Arr2D> &M, const Cone &bsCone,
 
 void Tracer::AddResultToMatrices(std::vector<Arr2D> &M, double norm)
 {
-	for (size_t q = 0; q < J.size(); ++q)
+	for (size_t q = 0; q < m_groupJ.size(); ++q)
 	{
-		matrix m = Mueller(J[q](0, 0));
+		matrix m = Mueller(m_groupJ[q](0, 0));
 		m *= norm;
 		M[q].insert(0, 0, m);
 	}
@@ -543,13 +544,13 @@ void Tracer::AddResultToMatrices(std::vector<Arr2D> &M, double norm)
 
 void Tracer::CleanJ(int size, const Cone &bsCone)
 {
-	J.clear();
+	m_groupJ.clear();
 	Arr2DC tmp(bsCone.phiCount+1, bsCone.thetaCount+1, 2, 2);
 	tmp.ClearArr();
 
 	for(int q = 0; q < size; q++)
 	{
-		J.push_back(tmp);
+		m_groupJ.push_back(tmp);
 	}
 }
 
@@ -880,7 +881,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 				matrixC fn_jn = beam.J * tmp;
 
 				matrixC c = fn*Jn_rot*fn_jn;
-				J[groupID].insert(i, j, c);
+				m_groupJ[groupID].insert(i, j, c);
 			}
 		}
 	}
@@ -926,17 +927,25 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
 				matrixC fn_jn = beam.J * tmp;
 
 				matrixC c = fn*Jn_rot*fn_jn;
-				J[groupID].insert(i, j, c);
+				m_groupJ[groupID].insert(i, j, c);
 			}
 		}
 	}
 }
 
 void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
-									  double wavelength, const Tracks &tracks)
+									  double wavelength, const Tracks &tracks,
+									  matrix &otherM, vector<matrix> &groupM)
 {
 	Point3d vr(0, 0, 1);
 	Point3d vf = -m_polarizationBasis;
+
+	vector<matrixC> groupJ;
+
+	for (size_t i = 0; i < tracks.size(); ++i)
+	{
+		groupJ.push_back(matrixC(2, 2));
+	}
 
 	for (Beam &beam : outBeams)
 	{
@@ -970,28 +979,30 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 		complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
 		matrixC fn_jn = beam.J * tmp;
 
-		matrixC c = fn*Jn_rot*fn_jn;
+		matrixC J = fn*Jn_rot*fn_jn;
 
 		if (groupID < 0 && isCalcOther)
 		{
-			matrix m = Mueller(c);
-			m *= gNorm;
+			matrix M = Mueller(J);
+			M *= gNorm;
 
-//std::vector<int> track;
-//RecoverTrack(beam, track);
-//for (int t : track) {
-//	tfile << t << ';';
-//}
-//tfile << m[0][0] << endl;
 #ifdef _DEBUG // DEB
-			double f = m[0][0];
+			double f = M[0][0];
 #endif
-			Other.insert(0, 0, m);
-			All.insert(0, 0, m);
+			otherM += M;
 		}
 		else
 		{
-			J[groupID].insert(0, 0, c);
+			groupJ[groupID] += J;
 		}
 	}
+
+	for (size_t q = 0; q < groupJ.size(); ++q)
+	{
+		matrix M = Mueller(groupJ[q]);
+		M *= gNorm;
+		groupM[q] += M;
+	}
+
+	outBeams.clear();
 }

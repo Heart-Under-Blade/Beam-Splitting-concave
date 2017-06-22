@@ -175,7 +175,7 @@ private:
 	Point3f m_incidentDir;
 	Point3f m_polarizationBasis;
 	std::string m_resultDirName;
-	std::vector<Arr2DC> J; // Jones matrices
+	std::vector<Arr2DC> m_groupJ; // Jones matrices
 
 	// light energy balance
 	double m_incomingEnergy;
@@ -185,8 +185,8 @@ private:
 	// REF: заменить
 	bool isCalcOther = false;
 	double gNorm;
-	Arr2D Other;
-	Arr2D All;
+//	Arr2D m_otherM;
+//	Arr2D m_allM;
 
 	std::string m_statistics;
 
@@ -196,8 +196,8 @@ private:
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks);
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, int groupID);
-	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
-								  double wavelength, const Tracks &tracks);
+	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, double wavelength,
+								  const Tracks &tracks, matrix &otherM, std::vector<matrix> &groupM);
 	void SetJnRot(Beam &beam, const Point3f &T,
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm = 1);
@@ -221,7 +221,7 @@ private:
 							 Contribution &contr);
 	void WriteResultToSeparateFilesGO(double NRM, int EDF, const std::string &dir,
 									  const Tracks &tracks);
-	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
+	void AllocGroupMatrices(std::vector<matrix> &mtrcs, size_t maxGroupID);
 
 	void CreateGroupResultFiles(const Tracks &tracks, const std::string &dirName,
 								std::vector<std::ofstream*> &groupFiles);
