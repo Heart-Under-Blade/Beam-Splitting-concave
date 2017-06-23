@@ -52,7 +52,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 	double betaNorm = m_symmetry.beta/betaNumber;
 	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
-	m_sepatateMatrices.resize(tracks.GetMaxGroupID());
+	m_sepatateMatrices.resize(tracks.size());
 
 //	m_totalMtrx.scatMatrix = Arr2D(1, thetaNum+1, 4, 4);
 //	m_totalMtrx.scatMatrix.ClearArr();
@@ -239,7 +239,6 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 	double betaStep = m_symmetry.beta/betaNumber;
 	double gammaStep = m_symmetry.gamma/gammaNumber;
 
-	int maxGroupID = tracks.GetMaxGroupID();
 	int halfGammaCount = gammaNumber/2;
 	gNorm = gammaStep/m_symmetry.gamma;
 
@@ -255,11 +254,11 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
-			CleanJ(maxGroupID, bsCone);
+			CleanJ(tracks.size(), bsCone);
 			HandleBeamsPO(outBeams, bsCone, wave, tracks);
 
 			outBeams.clear();
-			AddResultToMatrix(M, maxGroupID, bsCone, gNorm);
+			AddResultToMatrix(M, bsCone, gNorm);
 		}
 
 		WriteConusMatrices(outFile, M, bsCone);
@@ -312,135 +311,11 @@ void Tracer::CleanJ()
 	}
 }
 
-void Tracer::TraceBackScatterPointPO(int betaNumber, int gammaNumber,
-									 const Tracks &tracks, double wave)
-{
-	Cone bsCone(2, 0, 0);// REF: delete
-	CalcTimer timer;
-	long long count = 0;
-
-	int maxGroupID = tracks.GetMaxGroupID();
-
-	string dirName = CreateDir(m_resultDirName);
-
-	ofstream allFile(dirName + "all.dat", ios::out);
-
-	vector<ofstream*> groupFiles;
-	CreateGroupResultFiles(tracks, dirName, groupFiles);
-
-	ofstream otherFile, diffFile;
-
-	if (isCalcOther)
-	{
-		diffFile.open(dirName + "difference.dat", ios::out);
-		otherFile.open(dirName + "other.dat", ios::out);
-		Other = Arr2D(1, 1, 4, 4);
-	}
-
-	AllocJ(1, 1, maxGroupID);
-
-	vector<Arr2D> groupResultM;
-	AllocGroupMatrices(groupResultM, maxGroupID);
-
-	vector<Beam> outBeams;
-	double beta, gamma;
-
-	double betaNorm = m_symmetry.beta/betaNumber;
-	double gammaNorm = m_symmetry.gamma/gammaNumber;
-
-	All = Arr2D(1, 1, 4, 4);
-
-	gNorm = gammaNorm/m_symmetry.gamma;
-
-	timer.Start();
-
-	double betaMin = 0;
-	double gammaMin = 0;
-
-	for (int i = 0; i <= betaNumber; ++i)
-	{
-		OutputProgress(betaNumber, count, timer);
-		++count;
-
-		beta = betaMin + betaNorm*i;
-
-		for (int j = 0; j <= gammaNumber; ++j)
-		{
-			gamma = gammaMin + gammaNorm*j;
-			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
-
-			HandleBeamsBackScatterPO(outBeams, wave, tracks);
-			outBeams.clear();
-
-			AddResultToMatrices(groupResultM, maxGroupID, bsCone, gNorm);
-			AddResultToMatrix(All, maxGroupID, bsCone, gNorm);
-
-			CleanJ();
-		}
-
-		double degBeta = RadToDeg(beta);
-		allFile << degBeta << ' ';
-		matrix m = All(0, 0);
-		allFile << m << endl;
-		All.ClearArr();
-
-		for (size_t group = 0; group < groupResultM.size(); ++group)
-		{
-			Arr2D &mtrx = groupResultM[group];
-			matrix m1 = mtrx(0, 0);
-			ofstream &file = *(groupFiles[group]);
-			file << degBeta << ' ';
-			file << m1 << endl;
-		}
-
-		groupResultM.clear();
-		AllocGroupMatrices(groupResultM, maxGroupID);
-
-		if (isCalcOther)
-		{
-			otherFile << degBeta << ' ';
-			matrix m0 = Other(0, 0);
-			otherFile << m0 << endl;
-			Other.ClearArr();
-
-			diffFile << degBeta << ' ';
-			matrix m00 = m - m0;
-			diffFile << m00 << endl;
-		}
-	}
-
-	allFile.close();
-
-	if (isCalcOther)
-	{
-		otherFile.close();
-		diffFile.close();
-	}
-
-	for (size_t group = 0; group < groupResultM.size(); ++group)
-	{
-		ofstream &file = *(groupFiles[group]);
-		file.close();
-	}
-}
-
-void Tracer::OutputTableHead(const AngleRange &betaRange, ofstream &allFile)
-{
-	allFile << betaRange.number << ' '
-			<< RadToDeg(betaRange.max) << ' '
-			<< RadToDeg(betaRange.step) << endl;
-
-	allFile << "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44";
-}
-
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
-	Cone bsCone(2, 0, 0);// REF: delete
 	CalcTimer timer;
 	long long count = 0;
-
-	int maxGroupID = tracks.GetMaxGroupID();
 
 	string dirName = CreateDir(m_resultDirName);
 
@@ -462,41 +337,31 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		Other = Arr2D(1, 1, 4, 4);
 	}
 
-	AllocJ(1, 1, maxGroupID);
+	AllocJ(1, 1, tracks.size());
 
 	vector<Arr2D> groupResultM;
-	AllocGroupMatrices(groupResultM, maxGroupID);
+	AllocGroupMatrices(groupResultM, tracks.size());
 
 	vector<Beam> outBeams;
-	double beta, gamma;
-
-	double betaNorm = betaRange.step;
-	double gammaNorm = gammaRange.step;
 
 	All = Arr2D(1, 1, 4, 4);
 
-	gNorm = gammaNorm/gammaRange.norm;
+	gNorm = gammaRange.step/gammaRange.norm;
 
 	timer.Start();
 
-	double betaMin = betaRange.min;
-	double gammaMin = gammaRange.min;
-	double betaNumber = betaRange.number;
-	double gammaNumber = gammaRange.number;
+	double beta, gamma;
 
-	for (int i = 0; i <= betaNumber; ++i)
+	for (int i = 0; i <= betaRange.number; ++i)
 	{
-		OutputProgress(betaNumber, count, timer);
+		OutputProgress(betaRange.number, count, timer);
 		++count;
 
-		beta = betaMin + betaNorm*i;
+		beta = betaRange.min + betaRange.step*i;
 
-		m_incomingEnergy = 0;
-
-		for (int j = 0; j <= gammaNumber; ++j)
+		for (int j = 0; j <= gammaRange.number; ++j)
 		{
-			gamma = gammaMin + gammaNorm*j;
-
+			gamma = gammaRange.min + gammaRange.step*j;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 			m_incomingEnergy += m_tracing->GetIncomingEnergy();
@@ -504,8 +369,8 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 			outBeams.clear();
 
-			AddResultToMatrices(groupResultM, maxGroupID, bsCone, gNorm);
-			AddResultToMatrix(All, maxGroupID, bsCone, gNorm);
+			AddResultToMatrices(groupResultM, gNorm);
+			AddResultToMatrix(All, gNorm);
 
 			CleanJ();
 		}
@@ -528,7 +393,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		}
 
 		groupResultM.clear();
-		AllocGroupMatrices(groupResultM, maxGroupID);
+		AllocGroupMatrices(groupResultM, tracks.size());
 
 		if (isCalcOther)
 		{
@@ -574,7 +439,6 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 	double betaNorm = m_symmetry.beta/betaNumber;
 	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
-	int maxGroupID = tracks.GetMaxGroupID();
 	int halfGammaCount = gammaNumber/2;
 	gNorm = gammaNorm/m_symmetry.gamma;
 
@@ -588,15 +452,15 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 		{
 			gamma = j*gammaNorm;
 
-			for (int groupID = 0; groupID < maxGroupID; ++groupID)
+			for (size_t groupID = 0; groupID < tracks.size(); ++groupID)
 			{
 				m_tracing->SplitBeamByParticle(beta, gamma, tracks[groupID].tracks, outBeams);
 
-				CleanJ(maxGroupID, bsCone);
+				CleanJ(tracks.size(), bsCone);
 				HandleBeamsPO2(outBeams, bsCone, wave, groupID);
 
 				outBeams.clear();
-				AddResultToMatrix(M, maxGroupID, bsCone, gNorm);
+				AddResultToMatrix(M, bsCone, gNorm);
 			}
 		}
 
@@ -632,10 +496,9 @@ void Tracer::WriteConusMatrices(ofstream &outFile, const Arr2D &sum,
 	}
 }
 
-void Tracer::AddResultToMatrix(Arr2D &M, int maxGroupID, const Cone &bsCone,
-							   double norm)
+void Tracer::AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm)
 {
-	for (int q = 0; q < maxGroupID; ++q)
+	for (size_t q = 0; q < J.size(); ++q)
 	{
 		for (int t = 0; t <= bsCone.thetaCount; ++t)
 		{
@@ -649,29 +512,50 @@ void Tracer::AddResultToMatrix(Arr2D &M, int maxGroupID, const Cone &bsCone,
 	}
 }
 
-void Tracer::AddResultToMatrices(vector<Arr2D> &M, int maxGroupID,
-								 const Cone &bsCone, double norm)
+void Tracer::AddResultToMatrix(Arr2D &M, double norm)
 {
-	for (int q = 0; q < maxGroupID; ++q)
+	for (size_t q = 0; q < J.size(); ++q)
+	{
+		matrix m = Mueller(J[q](0, 0));
+		m *= norm;
+		M.insert(0, 0, m);
+	}
+}
+
+void Tracer::AddResultToMatrices(vector<Arr2D> &M, const Cone &bsCone,
+								 double norm)
+{
+	for (size_t q = 0; q < J.size(); ++q)
 	{
 		for (int t = 0; t <= bsCone.thetaCount; ++t)
 		{
 			for (int p = 0; p <= bsCone.phiCount; ++p)
 			{
-				matrix Mk = Mueller(J[q](p, t));
-				M[q].insert(p, t, norm*Mk);
+				matrix m = Mueller(J[q](0, 0));
+				m *= norm;
+				M[q].insert(p, t, m);
 			}
 		}
 	}
 }
 
-void Tracer::CleanJ(int maxGroupID, const Cone &bsCone)
+void Tracer::AddResultToMatrices(std::vector<Arr2D> &M, double norm)
+{
+	for (size_t q = 0; q < J.size(); ++q)
+	{
+		matrix m = Mueller(J[q](0, 0));
+		m *= norm;
+		M[q].insert(0, 0, m);
+	}
+}
+
+void Tracer::CleanJ(int size, const Cone &bsCone)
 {
 	J.clear();
 	Arr2DC tmp(bsCone.phiCount+1, bsCone.thetaCount+1, 2, 2);
 	tmp.ClearArr();
 
-	for(int q = 0; q < maxGroupID; q++)
+	for(int q = 0; q < size; q++)
 	{
 		J.push_back(tmp);
 	}
@@ -798,7 +682,7 @@ void Tracer::OutputStartTime(CalcTimer timer)
 }
 
 void Tracer::OutputStatisticsGO(int orNumber, double D_tot, double NRM,
-							  CalcTimer &timer)
+								CalcTimer &timer)
 {
 	string totalTime = ctime(&m_startTime);
 
@@ -926,12 +810,11 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 	double g = DegToRad(gamma);
 	m_tracing->SplitBeamByParticle(b, g, outBeams);
 
-	int maxGroupID = tracks.GetMaxGroupID();
-	CleanJ(maxGroupID, bsCone);
+	CleanJ(tracks.size(), bsCone);
 	HandleBeamsPO(outBeams, bsCone, wave, tracks);
 
 	outBeams.clear();
-	AddResultToMatrix(M, maxGroupID, bsCone);
+	AddResultToMatrix(M, bsCone);
 	WriteConusMatrices(outFile, M, bsCone);
 }
 
@@ -1079,8 +962,6 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
-		m_tracing->BeamCrossSection(beam);
-
 		Point3f center = beam.Center();
 		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
@@ -1110,6 +991,9 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 //	tfile << t << ';';
 //}
 //tfile << m[0][0] << endl;
+#ifdef _DEBUG // DEB
+			double f = m[0][0];
+#endif
 			Other.insert(0, 0, m);
 			All.insert(0, 0, m);
 		}

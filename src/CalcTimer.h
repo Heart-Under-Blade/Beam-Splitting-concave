@@ -8,12 +8,12 @@ class CalcTimer
 public:
 	CalcTimer();
 
-	const time_t &Start();
+	time_t Start();
 	void Stop();
 	long long Duration();
 	void Left(const long long &ms);
 	const std::time_t &End(const long long &ms);
-	const std::time_t &Begin() const;
+	time_t Begin() const;
 	void Reset();
 	std::string ToString();
 	std::string Elapsed();

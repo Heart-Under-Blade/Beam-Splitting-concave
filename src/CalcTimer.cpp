@@ -14,7 +14,7 @@ CalcTimer::CalcTimer()
 	Reset();
 }
 
-const time_t &CalcTimer::Start()
+time_t CalcTimer::Start()
 {
 	m_startPoint = system_clock::now();
 	return system_clock::to_time_t(m_startPoint);
@@ -99,7 +99,7 @@ const time_t &CalcTimer::End(const long long &ms)
 	return m_lastEndTime;
 }
 
-const time_t &CalcTimer::Begin() const
+time_t CalcTimer::Begin() const
 {
 	return system_clock::to_time_t(m_startPoint);
 }

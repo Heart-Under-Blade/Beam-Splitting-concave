@@ -55,21 +55,6 @@ struct TrackGroup
 class Tracks : public std::vector<TrackGroup>
 {
 public:
-	int GetMaxGroupID() const // REF: вызывать в конструкторе один раз
-	{
-		int maxGroupID = 0;
-
-		for (size_t i = 0; i < size(); ++i)
-		{
-			if ((*this)[i].groupID > maxGroupID)
-			{
-				maxGroupID = (*this)[i].groupID;
-			}
-		}
-
-		return ++maxGroupID;
-	}
-
 	int FindGroup(long long int trackID) const
 	{
 		for (size_t i = 0; i < size(); ++i)
@@ -125,8 +110,8 @@ struct AngleRange
 	AngleRange(double _min, double _max, int _number)
 		: number(_number)
 	{
-		min = DegToRad(_min);
-		max = DegToRad(_max);
+		min = _min;
+		max = _max;
 		norm = max - min;
 		step = norm/number;
 	}
@@ -206,7 +191,7 @@ private:
 	std::string m_statistics;
 
 private:
-	void CleanJ(int maxGroupID, const Cone &bsCone);
+	void CleanJ(int size, const Cone &bsCone);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks);
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, const Tracks &tracks);
@@ -215,10 +200,11 @@ private:
 								  const Tracks &tracks);
 	void SetJnRot(Beam &beam, const Point3f &T,
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
-	void AddResultToMatrix(Arr2D &M, int maxGroupID, const Cone &bsCone,
-							  double norm = 1);
-	void AddResultToMatrices(std::vector<Arr2D> &M, int maxGroupID,
-									 const Cone &bsCone, double norm = 1);
+	void AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm = 1);
+	void AddResultToMatrix(Arr2D &M, double norm = 1);
+	void AddResultToMatrices(std::vector<Arr2D> &M, const Cone &bsCone,
+							 double norm = 1);
+	void AddResultToMatrices(std::vector<Arr2D> &M, double norm = 1);
 	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);

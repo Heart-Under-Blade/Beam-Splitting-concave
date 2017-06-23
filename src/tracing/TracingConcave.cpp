@@ -594,7 +594,7 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma, const std::v
 			continue;
 		}
 
-		for (int i = 0; i < track.size(); ++i)
+		for (size_t i = 0; i < track.size(); ++i)
 		{
 			int facetID = track.at(i);
 

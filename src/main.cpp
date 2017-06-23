@@ -188,7 +188,7 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 					Particle *particle)
 {
 	int number;
-	int min, max;
+	double min, max;
 
 	if (key == "b")
 	{
@@ -196,13 +196,13 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.Occured("b"))
 		{
-			min = parser.GetIntValue(key, 0);
-			max = parser.GetIntValue(key, 1);
+			min = DegToRad(parser.GetIntValue(key, 0));
+			max = DegToRad(parser.GetIntValue(key, 1));
 		}
 		else
 		{
 			min = 0;
-			max = DegToRad(particle->GetSymmetry().beta);
+			max = particle->GetSymmetry().beta;
 		}
 	}
 	else if (key == "g")
@@ -211,18 +211,19 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.Occured("g"))
 		{
-			min = parser.GetIntValue(key, 0);
-			max = parser.GetIntValue(key, 1);
+			min = DegToRad(parser.GetIntValue(key, 0));
+			max = DegToRad(parser.GetIntValue(key, 1));
 		}
 		else
 		{
 			min = 0;
-			max = DegToRad(particle->GetSymmetry().gamma);
+			max = particle->GetSymmetry().gamma;
 		}
 	}
 	else
 	{
 		cerr << "Error! " << __FUNCTION__;
+		throw std::exception();
 	}
 
 	return AngleRange(min, max, number);
