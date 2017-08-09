@@ -379,6 +379,8 @@ void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
 		CreateResultFile(diff, dirName, "difference", betaRange);
 		otherArr = Arr2D(1, 1, 4, 4);
 	}
+}
+
 void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
 {
 	string startTime = ctime(&m_startTime);
@@ -433,7 +435,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	All_cor = Arr2D(1, 1, 4, 4);
 	gNorm = gammaRange.step/gammaRange.norm;
 
-	timer.Start();
+	OutputStartTime(timer);
 
 	double beta, gamma;
 
