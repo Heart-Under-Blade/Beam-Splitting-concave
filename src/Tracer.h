@@ -232,7 +232,7 @@ private:
 								std::vector<std::ofstream*> &groupFiles);
 	void AllocJ(std::vector<Arr2DC> &j, int m, int n, int size);
 	void CleanJ(std::vector<Arr2DC> &j);
-	void OutputStartTime(CalcTimer timer);
+	void OutputStartTime(CalcTimer &timer);
 	void OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 						  CalcTimer &timer);
 	void OutputTableHead(const AngleRange &betaRange, std::ofstream &allFile);

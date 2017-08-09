@@ -751,7 +751,7 @@ double Tracer::CalcTotalScatteringEnergy()
 	return D_tot;
 }
 
-void Tracer::OutputStartTime(CalcTimer timer)
+void Tracer::OutputStartTime(CalcTimer &timer)
 {
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
@@ -760,9 +760,9 @@ void Tracer::OutputStartTime(CalcTimer timer)
 void Tracer::OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 								CalcTimer &timer)
 {
-	string totalTime = ctime(&m_startTime);
+	string startTime = ctime(&m_startTime);
 
-	m_statistics += "\nStart of calculation = " + totalTime
+	m_statistics += "\nStart of calculation = " + startTime
 			+ "\nTotal time of calculation = " + timer.Elapsed()
 			+ "\nTotal number of body orientation = " + to_string(orNumber)
 			+ "\nTotal scattering energy = " + to_string(D_tot);
