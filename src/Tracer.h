@@ -241,4 +241,8 @@ private:
 	void OutputToAllFile(std::ofstream &diffFile, std::ofstream &otherFile,
 						 double degBeta, std::ofstream &allFile, Arr2D &all,
 						 Arr2D &other);
+	void CreateResultFiles(std::ofstream &all, std::ofstream &diff, std::ofstream &other,
+									 const AngleRange &betaRange, std::string dirName, Arr2D &otherArr);
+	void CreateResultFile(std::ofstream &file, const std::string &dirName, const std::string &fileName,
+						  const AngleRange &betaRange);
 };

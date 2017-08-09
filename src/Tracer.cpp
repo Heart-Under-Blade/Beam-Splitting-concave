@@ -361,6 +361,26 @@ void Tracer::OutputToAllFile(ofstream &diffFile, ofstream &otherFile,
 	}
 }
 
+void Tracer::CreateResultFile(ofstream &file, const string &dirName, const string &fileName,
+							  const AngleRange &betaRange)
+{
+	file.open(dirName + fileName + "__" + m_resultDirName + ".dat", ios::out);
+	OutputTableHead(betaRange, file);
+}
+
+void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
+							   const AngleRange &betaRange, string dirName, Arr2D &otherArr)
+{
+	CreateResultFile(all, dirName, "all", betaRange);
+
+	if (isCalcOther)
+	{
+		CreateResultFile(other, dirName, "other", betaRange);
+		CreateResultFile(diff, dirName, "difference", betaRange);
+		otherArr = Arr2D(1, 1, 4, 4);
+	}
+}
+
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
@@ -369,46 +389,19 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 	/*string dirName = */CreateDir(m_resultDirName);
 
-	string resDirName = CreateDir(m_resultDirName + "\\res");
-
-	ofstream allFile(resDirName + "__" + m_resultDirName + "all.dat", ios::out);
-	OutputTableHead(betaRange, allFile);
-
+	ofstream allFile, otherFile, diffFile;
 	vector<ofstream*> groupFiles;
+
+	string resDirName = CreateDir(m_resultDirName + "\\res");
 	CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
+	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName, Other);
 
-	ofstream otherFile, diffFile;
-
-	if (isCalcOther)
-	{
-		diffFile.open(resDirName + "difference.dat", ios::out);
-		OutputTableHead(betaRange, diffFile);
-
-		otherFile.open(resDirName + "other.dat", ios::out);
-		OutputTableHead(betaRange, otherFile);
-		Other = Arr2D(1, 1, 4, 4);
-	}
+	ofstream allFile_cor, otherFile_cor, diffFile_cor;
+	vector<ofstream*> groupFiles_cor;
 
 	string corDirName = CreateDir(m_resultDirName + "\\cor");
-
-	ofstream allFile_cor(corDirName + "__" + m_resultDirName + "all.dat", ios::out);
-	OutputTableHead(betaRange, allFile);
-
-	vector<ofstream*> groupFiles_cor;
 	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor);
-
-	ofstream otherFile_cor, diffFile_cor;
-
-	if (isCalcOther)
-	{
-		diffFile.open(corDirName + "difference.dat", ios::out);
-		OutputTableHead(betaRange, diffFile_cor);
-
-		otherFile.open(corDirName + "other.dat", ios::out);
-		OutputTableHead(betaRange, otherFile_cor);
-		Other_cor = Arr2D(1, 1, 4, 4);
-	}
-
+	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor, betaRange, corDirName, Other_cor);
 
 	AllocJ(J, 1, 1, tracks.size());
 	AllocJ(J_cor, 1, 1, tracks.size());
