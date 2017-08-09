@@ -16,7 +16,7 @@ ofstream tfile("tracks_other1.dat", ios::out);
 
 Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
-	  m_incidentDir(0, 0, -1),
+	  m_incidentDir(0, 0, -1), // down direction
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultDirName(resultFileName)
 {
@@ -73,7 +73,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
-			m_incomingEnergy += m_tracing->GetIncomingEnergy()*sin(beta);
+//			m_incomingEnergy += m_tracing->GetIncomingEnergy()*sin(beta);
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
@@ -88,10 +88,10 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 	double NRM = CalcNorm(orNum);
 
 #ifdef _CHECK_ENERGY_BALANCE
-	for (int deg = 0; deg <= thetaNum; ++deg)
-	{
-		m_outcomingEnergy += m_muller(0, deg, 0, 0)*NRM;
-	}
+//	for (int deg = 0; deg <= thetaNum; ++deg)
+//	{
+//		m_outcomingEnergy += m_muller(0, deg, 0, 0)*NRM;
+//	}
 #endif
 
 	WriteResultToSeparateFilesGO(NRM, EDF, dirName, tracks);
@@ -279,35 +279,85 @@ void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
 	}
 }
 
-void Tracer::CreateGroupResultFiles(const Tracks &tracks, const string &dirName,
+void Tracer::CreateGroupResultFiles(const AngleRange &betaRange, const Tracks &tracks,
+									const string &dirName,
 									vector<ofstream*> &groupFiles)
 {
 	for (size_t i = 0; i < tracks.size(); ++i)
 	{
 		string groupName = tracks[i].CreateGroupName();
-		string filename = dirName + groupName + ".dat";
+		string filename = dirName + groupName + "__" + m_resultDirName + ".dat";
 		ofstream *file = new ofstream(filename, ios::out);
+		OutputTableHead(betaRange, *file);
 		groupFiles.push_back(file);
 	}
 }
 
-void Tracer::AllocJ(int m, int n, int size)
+void Tracer::AllocJ(std::vector<Arr2DC> &j, int m, int n, int size)
 {
-	J.clear();
+	j.clear();
 	Arr2DC tmp(m, n, 2, 2);
 	tmp.ClearArr();
 
 	for(int i = 0; i < size; i++)
 	{
-		J.push_back(tmp);
+		j.push_back(tmp);
 	}
 }
 
-void Tracer::CleanJ()
+void Tracer::CleanJ(std::vector<Arr2DC> &j)
 {
-	for (Arr2DC &m : J)
+	for (Arr2DC &m : j)
 	{
 		m.ClearArr();
+	}
+}
+
+void Tracer::OutputTableHead(const AngleRange &betaRange, ofstream &allFile)
+{
+	allFile << betaRange.number << ' '
+			<< RadToDeg(betaRange.max) << ' '
+			<< RadToDeg(betaRange.step) << endl;
+
+	allFile << "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44"
+			<< endl;
+}
+
+void Tracer::OutputToGroupFiles(double degBeta, std::vector<ofstream *> &groupFiles,
+								std::vector<Arr2D> &groupResultM, size_t size)
+{
+	for (size_t group = 0; group < size; ++group)
+	{
+		Arr2D &mtrx = groupResultM[group];
+		matrix m1 = mtrx(0, 0);
+		ofstream &file = *(groupFiles[group]);
+		file << degBeta << ' ' << m_incomingEnergy << ' ';
+		file << m1 << endl;
+	}
+
+	groupResultM.clear();
+	AllocGroupMatrices(groupResultM, size);
+}
+
+void Tracer::OutputToAllFile(ofstream &diffFile, ofstream &otherFile,
+							 double degBeta, ofstream &allFile, Arr2D &all,
+							 Arr2D &other)
+{
+	allFile << degBeta << ' ' << m_incomingEnergy << ' ';
+	matrix m = all(0, 0);
+	allFile << m << endl;
+	all.ClearArr();
+
+	if (isCalcOther)
+	{
+		otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
+		matrix m0 = other(0, 0);
+		otherFile << m0 << endl;
+		other.ClearArr();
+
+		diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
+		matrix m00 = m - m0;
+		diffFile << m00 << endl;
 	}
 }
 
@@ -317,35 +367,60 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	CalcTimer timer;
 	long long count = 0;
 
-	string dirName = CreateDir(m_resultDirName);
+	/*string dirName = */CreateDir(m_resultDirName);
 
-	ofstream allFile(dirName + "all.dat", ios::out);
+	string resDirName = CreateDir(m_resultDirName + "\\res");
+
+	ofstream allFile(resDirName + "__" + m_resultDirName + "all.dat", ios::out);
 	OutputTableHead(betaRange, allFile);
 
 	vector<ofstream*> groupFiles;
-	CreateGroupResultFiles(tracks, dirName, groupFiles);
+	CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
 
 	ofstream otherFile, diffFile;
 
 	if (isCalcOther)
 	{
-		diffFile.open(dirName + "difference.dat", ios::out);
+		diffFile.open(resDirName + "difference.dat", ios::out);
 		OutputTableHead(betaRange, diffFile);
 
-		otherFile.open(dirName + "other.dat", ios::out);
+		otherFile.open(resDirName + "other.dat", ios::out);
 		OutputTableHead(betaRange, otherFile);
 		Other = Arr2D(1, 1, 4, 4);
 	}
 
-	AllocJ(1, 1, tracks.size());
+	string corDirName = CreateDir(m_resultDirName + "\\cor");
 
-	vector<Arr2D> groupResultM;
+	ofstream allFile_cor(corDirName + "__" + m_resultDirName + "all.dat", ios::out);
+	OutputTableHead(betaRange, allFile);
+
+	vector<ofstream*> groupFiles_cor;
+	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor);
+
+	ofstream otherFile_cor, diffFile_cor;
+
+	if (isCalcOther)
+	{
+		diffFile.open(corDirName + "difference.dat", ios::out);
+		OutputTableHead(betaRange, diffFile_cor);
+
+		otherFile.open(corDirName + "other.dat", ios::out);
+		OutputTableHead(betaRange, otherFile_cor);
+		Other_cor = Arr2D(1, 1, 4, 4);
+	}
+
+
+	AllocJ(J, 1, 1, tracks.size());
+	AllocJ(J_cor, 1, 1, tracks.size());
+
+	vector<Arr2D> groupResultM, groupResultM_cor;
 	AllocGroupMatrices(groupResultM, tracks.size());
+	AllocGroupMatrices(groupResultM_cor, tracks.size());
 
 	vector<Beam> outBeams;
 
 	All = Arr2D(1, 1, 4, 4);
-
+	All_cor = Arr2D(1, 1, 4, 4);
 	gNorm = gammaRange.step/gammaRange.norm;
 
 	timer.Start();
@@ -354,11 +429,14 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
+		m_incomingEnergy = 0;
 		OutputProgress(betaRange.number, count, timer);
 		++count;
 
 		beta = betaRange.min + betaRange.step*i;
-
+#ifdef _DEBUG // DEB
+		double ff = RadToDeg(beta);
+#endif
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
 			gamma = gammaRange.min + gammaRange.step*j;
@@ -370,56 +448,44 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			outBeams.clear();
 
 			AddResultToMatrices(groupResultM, gNorm);
-			AddResultToMatrix(All, gNorm);
+			AddResultToMatrix(All, J, gNorm);
+			CleanJ(J);
 
-			CleanJ();
+			AddResultToMatrices(groupResultM_cor, gNorm);
+			AddResultToMatrix(All_cor, J_cor, gNorm);
+			CleanJ(J_cor);
 		}
 
 		m_incomingEnergy *= gNorm;
 
 		double degBeta = RadToDeg(beta);
-		allFile << degBeta << ' ';
-		matrix m = All(0, 0);
-		allFile << m << endl;
-		All.ClearArr();
+		OutputToAllFile(diffFile, otherFile, degBeta, allFile, All, Other);
+		OutputToAllFile(diffFile_cor, otherFile_cor, degBeta, allFile_cor,
+						All_cor, Other_cor);
 
-		for (size_t group = 0; group < groupResultM.size(); ++group)
-		{
-			Arr2D &mtrx = groupResultM[group];
-			matrix m1 = mtrx(0, 0);
-			ofstream &file = *(groupFiles[group]);
-			file << degBeta << ' ' << m_incomingEnergy << ' ';
-			file << m1 << endl;
-		}
-
-		groupResultM.clear();
-		AllocGroupMatrices(groupResultM, tracks.size());
-
-		if (isCalcOther)
-		{
-			otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
-			matrix m0 = Other(0, 0);
-			otherFile << m0 << endl;
-			Other.ClearArr();
-
-			diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
-			matrix m00 = m - m0;
-			diffFile << m00 << endl;
-		}
+		OutputToGroupFiles(degBeta, groupFiles, groupResultM, tracks.size());
+		OutputToGroupFiles(degBeta, groupFiles_cor, groupResultM_cor, tracks.size());
 	}
 
 	allFile.close();
+	allFile_cor.close();
 
 	if (isCalcOther)
 	{
 		otherFile.close();
 		diffFile.close();
+
+		otherFile_cor.close();
+		diffFile_cor.close();
 	}
 
 	for (size_t group = 0; group < groupResultM.size(); ++group)
 	{
 		ofstream &file = *(groupFiles[group]);
 		file.close();
+
+		ofstream &file_cor = *(groupFiles_cor[group]);
+		file_cor.close();
 	}
 }
 
@@ -512,11 +578,11 @@ void Tracer::AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm)
 	}
 }
 
-void Tracer::AddResultToMatrix(Arr2D &M, double norm)
+void Tracer::AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm)
 {
-	for (size_t q = 0; q < J.size(); ++q)
+	for (size_t q = 0; q < j.size(); ++q)
 	{
-		matrix m = Mueller(J[q](0, 0));
+		matrix m = Mueller(j[q](0, 0));
 		m *= norm;
 		M.insert(0, 0, m);
 	}
@@ -544,6 +610,16 @@ void Tracer::AddResultToMatrices(std::vector<Arr2D> &M, double norm)
 	for (size_t q = 0; q < J.size(); ++q)
 	{
 		matrix m = Mueller(J[q](0, 0));
+		m *= norm;
+		M[q].insert(0, 0, m);
+	}
+}
+// REF: merge with previous
+void Tracer::AddResultToMatrices_cor(std::vector<Arr2D> &M, double norm)
+{
+	for (size_t q = 0; q < J_cor.size(); ++q)
+	{
+		matrix m = Mueller(J_cor[q](0, 0));
 		m *= norm;
 		M[q].insert(0, 0, m);
 	}
@@ -622,7 +698,7 @@ void Tracer::AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
 		bf = matrix(4,4);
 		bf.Identity();
 #endif
-		const unsigned int zenAng = round(acos(z)/BIN_SIZE);
+		const unsigned int zenAng = round(acos(z)/(M_PI/SPHERE_RING_NUM));
 		contr.scatMatrix.insert(0, zenAng, area*bf);
 	}
 }
@@ -718,6 +794,8 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 	m_outcomingEnergy = 0;
 #endif
 
+//	double dd = M_PI/SPHERE_RING_NUM;
+
 	double betaNorm = m_symmetry.beta/betaNumber;
 	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
@@ -733,9 +811,9 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 	OutputStartTime(timer);
 
 #ifdef _DEBUG // DEB
-	beta = (155 + 0.5)*betaNorm;
-	gamma = (640 + 0.5)*gammaNorm;
-	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+//	beta = (155 + 0.5)*betaNorm;
+//	gamma = (640 + 0.5)*gammaNorm;
+//	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 #endif
 
 	for (int i = 0; i < betaNumber; ++i)
@@ -763,9 +841,9 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 	double NRM = CalcNorm(orNum);
 
 #ifdef _CHECK_ENERGY_BALANCE
-	for (int deg = 0; deg <= thetaNum; ++deg)
+	for (int deg = 0; deg <= SPHERE_RING_NUM; ++deg)
 	{
-		m_outcomingEnergy += m_muller(0, deg, 0, 0)*NRM;
+		m_outcomingEnergy += m_totalMtrx.scatMatrix(0, deg, 0, 0)*NRM;
 	}
 #endif
 
@@ -980,26 +1058,30 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 
 		matrixC c = fn*Jn_rot*fn_jn;
 
+		// correction
+		matrixC c_cor = c;
+		c_cor[0][1] -= c_cor[1][0];
+		c_cor[0][1] /= 2;
+		c_cor[1][0] = -c_cor[0][1];
+
 		if (groupID < 0 && isCalcOther)
 		{
 			matrix m = Mueller(c);
 			m *= gNorm;
 
-//std::vector<int> track;
-//RecoverTrack(beam, track);
-//for (int t : track) {
-//	tfile << t << ';';
-//}
-//tfile << m[0][0] << endl;
-#ifdef _DEBUG // DEB
-			double f = m[0][0];
-#endif
 			Other.insert(0, 0, m);
 			All.insert(0, 0, m);
+
+			matrix m_cor = Mueller(c_cor);
+			m_cor *= gNorm;
+
+			Other_cor.insert(0, 0, m_cor);
+			All_cor.insert(0, 0, m_cor);
 		}
 		else
 		{
 			J[groupID].insert(0, 0, c);
+			J_cor[groupID].insert(0, 0, c_cor);
 		}
 	}
 }

@@ -4,9 +4,9 @@
 #include <tgmath.h>
 #include <assert.h>
 
-#ifdef _DEBUG // DEB
+//#ifdef _DEBUG // DEB
 #include <iostream>
-#endif
+//#endif
 
 #define EPS_ORTO_FACET 0.0001
 

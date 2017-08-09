@@ -176,6 +176,7 @@ private:
 	Point3f m_polarizationBasis;
 	std::string m_resultDirName;
 	std::vector<Arr2DC> J; // Jones matrices
+	std::vector<Arr2DC> J_cor; //
 
 	// light energy balance
 	double m_incomingEnergy;
@@ -187,6 +188,8 @@ private:
 	double gNorm;
 	Arr2D Other;
 	Arr2D All;
+	Arr2D Other_cor;
+	Arr2D All_cor;
 
 	std::string m_statistics;
 
@@ -201,10 +204,11 @@ private:
 	void SetJnRot(Beam &beam, const Point3f &T,
 				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm = 1);
-	void AddResultToMatrix(Arr2D &M, double norm = 1);
+	void AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm = 1);
 	void AddResultToMatrices(std::vector<Arr2D> &M, const Cone &bsCone,
 							 double norm = 1);
 	void AddResultToMatrices(std::vector<Arr2D> &M, double norm = 1);
+	void AddResultToMatrices_cor(std::vector<Arr2D> &M, double norm = 1);
 	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
@@ -223,12 +227,18 @@ private:
 									  const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
 
-	void CreateGroupResultFiles(const Tracks &tracks, const std::string &dirName,
+	void CreateGroupResultFiles(const AngleRange &betaRange,
+								const Tracks &tracks, const std::string &dirName,
 								std::vector<std::ofstream*> &groupFiles);
-	void AllocJ(int m, int n, int size);
-	void CleanJ();
+	void AllocJ(std::vector<Arr2DC> &j, int m, int n, int size);
+	void CleanJ(std::vector<Arr2DC> &j);
 	void OutputStartTime(CalcTimer timer);
 	void OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 						  CalcTimer &timer);
 	void OutputTableHead(const AngleRange &betaRange, std::ofstream &allFile);
+	void OutputToGroupFiles(double degBeta, std::vector<std::ofstream*> &groupFiles,
+							std::vector<Arr2D> &groupResultM, size_t size);
+	void OutputToAllFile(std::ofstream &diffFile, std::ofstream &otherFile,
+						 double degBeta, std::ofstream &allFile, Arr2D &all,
+						 Arr2D &other);
 };

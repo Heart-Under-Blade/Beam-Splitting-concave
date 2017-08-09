@@ -196,8 +196,8 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.Occured("b"))
 		{
-			min = DegToRad(parser.GetIntValue(key, 0));
-			max = DegToRad(parser.GetIntValue(key, 1));
+			min = DegToRad(parser.GetDoubleValue(key, 0));
+			max = DegToRad(parser.GetDoubleValue(key, 1));
 		}
 		else
 		{
@@ -211,8 +211,8 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.Occured("g"))
 		{
-			min = DegToRad(parser.GetIntValue(key, 0));
-			max = DegToRad(parser.GetIntValue(key, 1));
+			min = DegToRad(parser.GetDoubleValue(key, 0));
+			max = DegToRad(parser.GetDoubleValue(key, 1));
 		}
 		else
 		{
@@ -292,11 +292,14 @@ int main(int argc, const char* argv[])
 										polarizationBasis, reflNum);
 		}
 
-		ImportTracks(particle->facetNum);
-		Tracer tracer(tracing, "M");
+		std::string dirName = (parser.Occured("o")) ? parser.GetStringValue("o")
+												   : "M";
+		Tracer tracer(tracing, dirName);
 
 		if (parser.Occured("po"))
 		{
+			ImportTracks(particle->facetNum);
+
 			double wave = parser.GetDoubleValue("w");
 
 			if (parser.Occured("fixed"))
@@ -342,6 +345,8 @@ int main(int argc, const char* argv[])
 			}
 			else
 			{
+				ImportTracks(particle->facetNum);
+
 				tracer.setIsCalcOther(true);
 				tracer.TraceIntervalGO(betaR, gammaR, trackGroups);
 			}

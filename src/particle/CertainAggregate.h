@@ -14,4 +14,6 @@ protected:
 	// Particle interface
 public:
 	void GetAggPartFacetIDRange(int id, int &begin, int &end) const override;
+private:
+        void Resize(double sizeIndex);
 };

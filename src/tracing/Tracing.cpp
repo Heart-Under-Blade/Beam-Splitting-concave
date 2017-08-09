@@ -6,6 +6,8 @@
 #include "macro.h"
 #include "geometry_lib.h"
 
+#include <iostream> // DEB
+
 #define NORM_CEIL	FLT_EPSILON + 1
 
 Tracing::Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalPath,

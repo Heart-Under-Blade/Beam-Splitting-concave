@@ -8,7 +8,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
 	isAggregate = true;
-
+	{
 	defaultFacets[0].arr[0] = Point3f(66.11043637052107, -60.41464034745621, 18.34343028407722);
 	defaultFacets[0].arr[1] = Point3f(27.05498686460732, -84.3359628839182, 22.63786761597252);
 	defaultFacets[0].arr[2] = Point3f(-3.484149030904852, -72.88101739791193, 55.07465849713191);
@@ -311,19 +311,9 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	defaultFacets[63].arr[3] = Point3f(12.49462627699921, -69.97927129792856, 9.502237333995758);
 	defaultFacets[63].arr[4] = Point3f(-27.25938340049844, -80.36344554182351, -3.17796928237496);
 	defaultFacets[63].arr[5] = Point3f(-35.21954898107649, -119.5204177598127, -19.06404150458911);
+	}
 
-
-//	double coef = 0.5;
-
-//	for (int i = 0; i < facetNum; ++i)
-//	{
-//		for (int j = 0; j < defaultFacets[i].size; ++j)
-//		{
-//			defaultFacets[i].arr[j].cx *= coef;
-//			defaultFacets[i].arr[j].cy *= coef;
-//			defaultFacets[i].arr[j].cz *= coef;
-//		}
-//	}
+	Resize(sizeIndex);
 
 	for (int i = 0; i < facetNum; ++i)
 	{
@@ -340,6 +330,19 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	SetDefaultNormals();
 	SetDefaultCenters();
 	SetActualState();
+}
+
+void CertainAggregate::Resize(double sizeIndex)
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		for (int j = 0; j < defaultFacets[i].size; ++j)
+		{
+			defaultFacets[i].arr[j].cx *= sizeIndex;
+			defaultFacets[i].arr[j].cy *= sizeIndex;
+			defaultFacets[i].arr[j].cz *= sizeIndex;
+		}
+	}
 }
 
 void CertainAggregate::SetFacetParams()
