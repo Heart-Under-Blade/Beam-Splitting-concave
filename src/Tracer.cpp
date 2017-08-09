@@ -379,6 +379,23 @@ void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
 		CreateResultFile(diff, dirName, "difference", betaRange);
 		otherArr = Arr2D(1, 1, 4, 4);
 	}
+void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
+{
+	string startTime = ctime(&m_startTime);
+	string totalTime = timer.Elapsed();
+	time_t end = timer.Stop();
+	string endTime = ctime(&end);
+
+	m_statistics += "\nStart of calculation = " + startTime
+			+ "End of calculation   = " + endTime
+			+ "\nTotal time of calculation = " + totalTime
+			+ "\nTotal number of body orientation = " + to_string(orNumber);
+
+	ofstream out("out.dat", ios::out);
+	out << m_statistics;
+	out.close();
+
+	cout << m_statistics;
 }
 
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
@@ -480,6 +497,9 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		ofstream &file_cor = *(groupFiles_cor[group]);
 		file_cor.close();
 	}
+
+	long long orNumber = betaRange.number * gammaRange.number;
+	OutputStatisticsPO(timer, orNumber);
 }
 
 //REF: объединить с предыдущим
@@ -754,9 +774,13 @@ void Tracer::OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 								CalcTimer &timer)
 {
 	string startTime = ctime(&m_startTime);
+	string totalTime = timer.Elapsed();
+	time_t end = timer.Stop();
+	string endTime = ctime(&end);
 
 	m_statistics += "\nStart of calculation = " + startTime
-			+ "\nTotal time of calculation = " + timer.Elapsed()
+			+ "End of calculation   = " + endTime
+			+ "\nTotal time of calculation = " + totalTime
 			+ "\nTotal number of body orientation = " + to_string(orNumber)
 			+ "\nTotal scattering energy = " + to_string(D_tot);
 

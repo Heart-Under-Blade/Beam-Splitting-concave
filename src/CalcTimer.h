@@ -9,7 +9,7 @@ public:
 	CalcTimer();
 
 	time_t Start();
-	void Stop();
+	time_t Stop();
 	long long Duration();
 	void Left(const long long &ms);
 	const std::time_t &End(const long long &ms);

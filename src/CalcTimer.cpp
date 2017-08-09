@@ -20,9 +20,10 @@ time_t CalcTimer::Start()
 	return system_clock::to_time_t(m_startPoint);
 }
 
-void CalcTimer::Stop()
+time_t CalcTimer::Stop()
 {
 	m_nowPoint = system_clock::now();
+	return system_clock::to_time_t(m_nowPoint);
 }
 
 std::string CalcTimer::Elapsed()
