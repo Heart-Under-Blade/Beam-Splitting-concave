@@ -10,4 +10,4 @@ if (!(expr)) \
 	throw false; \
 }
 
-void OutputState(int i, int j);
+void OutputOrientationToLog(int i, int j);

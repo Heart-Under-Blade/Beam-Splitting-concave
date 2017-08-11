@@ -7,7 +7,7 @@
 #include <windows.h>
 #endif
 
-void OutputState(int i, int j)
+void OutputOrientationToLog(int i, int j)
 {
 	logfile << "i: " << i << "; j: " << j << std::endl;
 	logfile.flush();
@@ -36,6 +36,18 @@ void Dellines(int count)
 	++count;
 	--count;
 #endif
+}
+
+std::string GetUniqueFileName(const std::string &filename)
+{
+	string name = filename + ".dat";
+
+	for (int i = 1; ifstream(name) != NULL; ++i)
+	{
+		name = filename + '(' + to_string(i) + ')' + ".dat";
+	}
+
+	return name;
 }
 
 std::string CreateDir(const std::string &name)
