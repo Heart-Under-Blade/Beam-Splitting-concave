@@ -163,6 +163,8 @@ public:
 
 	void setIsCalcOther(bool value); // REF: заменить
 
+	void OutputStatisticsPO(CalcTimer &timer, long long orNumber);
+
 private:
 	Tracing *m_tracing;
 
