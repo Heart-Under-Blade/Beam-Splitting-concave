@@ -40,11 +40,11 @@ void Dellines(int count)
 
 std::string GetUniqueFileName(const std::string &filename)
 {
-	string name = filename + ".dat";
+	std::string name = filename + ".dat";
 
-	for (int i = 1; ifstream(name) != NULL; ++i)
+	for (int i = 1; std::ifstream(name) != NULL; ++i)
 	{
-		name = filename + '(' + to_string(i) + ')' + ".dat";
+		name = filename + '(' + std::to_string(i) + ')' + ".dat";
 	}
 
 	return name;

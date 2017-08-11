@@ -20,8 +20,6 @@
 #include "PhysMtr.hpp"
 
 #include "Tracer.h"
-#include "TracingConvex.h"
-#include "TracingConcave.h"
 #include "ArgPP.h"
 
 #ifdef _OUTPUT_NRG_CONV
@@ -42,33 +40,7 @@ enum class ParticleType : int
 	CertainAggregate = 999
 };
 
-struct OrientationRange
-{
-	int begin;
-	int end;
-};
-
-matrix back(4,4),	///< Mueller matrix in backward direction
-		forw(4,4);	///< Mueller matrix in forward direction
-
-double sizeBin;
-double gammaNorm, betaNorm;
-double incomingEnergy;
-Point3f incidentDir(0, 0, -1);
-Point3f polarizationBasis(0, 1, 0); ///< Basis for polarization characteristic of light
-int assertNum = 0;
-
-bool isPhisOptics = true;
-bool isOpticalPath = true;
-vector<Arr2DC> J; // Jones matrices
-double df = 0, dt = 0;
-unsigned int MuellerMatrixNumber = 0;
-unsigned int NumSum = 16;
-int betaMax = 3;
-
 Tracks trackGroups;
-
-int groupCount = 0;
 
 void ImportTracks(int facetNum)
 {
@@ -232,7 +204,6 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 int main(int argc, const char* argv[])
 {
 	Particle *particle = nullptr;
-	Tracing *tracing = nullptr;
 
 	if (argc <= 1) // has command line arguments
 	{
@@ -280,26 +251,12 @@ int main(int argc, const char* argv[])
 		break;
 	}
 
-	particle->Output();
+//	particle->Output();
 
 	int reflNum = parser.GetDoubleValue("n");
-
-	if (type == ParticleType::ConcaveHexagonal ||
-			type == ParticleType::HexagonalAggregate ||
-			type == ParticleType::CertainAggregate)
-	{
-		tracing = new TracingConcave(particle, incidentDir, isOpticalPath,
-									 polarizationBasis, reflNum);
-	}
-	else
-	{
-		tracing = new TracingConvex(particle, incidentDir, isOpticalPath,
-									polarizationBasis, reflNum);
-	}
-
 	std::string dirName = (parser.Catched("o")) ? parser.GetStringValue("o")
 												: "M";
-	Tracer tracer(tracing, dirName);
+	Tracer tracer(particle, reflNum, dirName);
 
 	if (parser.Catched("po"))
 	{

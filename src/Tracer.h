@@ -140,7 +140,8 @@ struct Cone
 class Tracer
 {
 public:
-	Tracer(Tracing *tracing, const std::string resultFileName);
+	Tracer(Particle *particle, int reflNum, const std::string &resultFileName);
+	~Tracer();
 
 	void TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &tracks);
 	void TraceIntervalGO(int betaNumber, int gammaNumber);

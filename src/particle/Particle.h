@@ -27,6 +27,8 @@ public:
 	const Symmetry &GetSymmetry() const;
 	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
+	virtual bool IsComlicated() const;
+
 	void Output();
 
 public:

@@ -4,6 +4,9 @@
 #include "global.h"
 #include "macro.h"
 
+#include "TracingConvex.h"
+#include "TracingConcave.h"
+
 #define BEAM_DIR_LIM	0.9396
 #define SPHERE_RING_NUM 180
 #define BIN_SIZE		M_PI/SPHERE_RING_NUM
@@ -14,13 +17,28 @@ using namespace std;
 ofstream tfile("tracks_other1.dat", ios::out);
 #endif
 
-Tracer::Tracer(Tracing *tracing, const string resultFileName)
-	: m_tracing(tracing),
-	  m_incidentDir(0, 0, -1), // down direction
+Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
+	: m_incidentDir(0, 0, -1), // down direction
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultDirName(resultFileName)
 {
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
+
+	if (particle->IsComlicated())
+	{
+		m_tracing = new TracingConcave(particle, m_incidentDir, true,
+									   m_polarizationBasis, reflNum);
+	}
+	else
+	{
+		m_tracing = new TracingConvex(particle, m_incidentDir, true,
+									  m_polarizationBasis, reflNum);
+	}
+}
+
+Tracer::~Tracer()
+{
+	delete m_tracing;
 }
 
 void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const string &dir,

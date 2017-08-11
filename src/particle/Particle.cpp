@@ -56,6 +56,11 @@ const Symmetry &Particle::GetSymmetry() const
 	return m_symmetry;
 }
 
+bool Particle::IsComlicated() const
+{
+	return true;
+}
+
 void Particle::Output()
 {
 	std::ofstream M("particle.dat", std::ios::out);

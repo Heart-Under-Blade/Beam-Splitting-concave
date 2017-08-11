@@ -107,3 +107,9 @@ void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 		++i2;
 	}
 }
+
+
+bool Hexagonal::IsComlicated() const
+{
+	return false;
+}
