@@ -49,7 +49,8 @@ void Beam::Copy(const Beam &other)
 }
 
 Beam::Beam(const Beam &other)
-	: J(other.J)
+	: Polygon(other),
+	  J(other.J)
 {
 	Copy(other);
 }
@@ -155,7 +156,7 @@ void Beam::GetSpherical(double &fi, double &teta) const
 	teta = acos(z);
 }
 
-Beam & Beam::operator = (const Beam &other)
+Beam &Beam::operator = (const Beam &other)
 {
 	if (this != &other)
 	{
@@ -169,6 +170,7 @@ Beam & Beam::operator = (const Beam &other)
 Beam &Beam::operator =(const Polygon &other)
 {
 	Polygon::operator =(other);
+	return *this;
 }
 
 Beam &Beam::operator = (Beam &&other)
