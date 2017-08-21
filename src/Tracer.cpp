@@ -458,6 +458,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 			outBeams.clear();
+			OutputState(i, j);
 
 			AddResultToMatrices(groupResultM, gNorm);
 			AddResultToMatrix(All, J, gNorm);

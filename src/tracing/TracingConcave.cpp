@@ -208,6 +208,7 @@ void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
 		for (int i = 0; i < resultSize; ++i)
 		{
 			tmp = resultBeams[i];
+			assert(m_treeSize < MAX_BEAM_REFL_NUM);
 			m_beamTree[m_treeSize++] = tmp;
 		}
 
@@ -637,6 +638,7 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma, const std::v
 
 			for (const Beam &b : buffer)
 			{	// добавляем прошедшие пучки
+				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = b;
 			}
 		}
