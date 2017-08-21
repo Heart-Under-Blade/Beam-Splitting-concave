@@ -8,19 +8,24 @@ class CalcTimer
 public:
 	CalcTimer();
 
-	time_t Start();
-	time_t Stop();
+	std::string Start();
+	std::string Stop();
 	long long Duration();
 	void Left(const long long &ms);
-	const std::time_t &End(const long long &ms);
-	time_t Begin() const;
 	void Reset();
 	std::string ToString();
 	std::string Elapsed();
 
+	std::string GetStartTime() const;
+	std::string GetStopTime() const;
+
 private:
 	std::chrono::time_point<std::chrono::system_clock> m_startPoint;
 	std::chrono::time_point<std::chrono::system_clock> m_nowPoint;
+
+	std::string m_startTime;
+	std::string m_stopTime;
+
 	long long m_lastTimeLeft;
 	std::time_t m_lastEndTime;
 

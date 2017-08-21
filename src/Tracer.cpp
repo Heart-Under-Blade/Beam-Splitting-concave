@@ -20,7 +20,7 @@ ofstream tfile("tracks_other1.dat", ios::out);
 Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 	: m_incidentDir(0, 0, -1), // down direction
 	  m_polarizationBasis(0, 1, 0),
-	  m_resultDirName(resultFileName)
+	  m_resultDirectory(resultFileName)
 {
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
 
@@ -57,9 +57,6 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const string &dir
 
 void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &tracks)
 {
-	CalcTimer timer;
-	string dirName = CreateDir(m_resultDirName);
-
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
@@ -76,8 +73,8 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 	vector<Beam> outBeams;
 	double beta, gamma;
 
-	m_startTime = timer.Start();
-	cout << "Started at " << ctime(&m_startTime) << endl;
+	CalcTimer timer;
+	OutputStartTime(timer);
 
 	for (int i = 0; i < betaNumber; ++i)
 	{
@@ -98,6 +95,8 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 		OutputProgress(betaNumber, i, timer);
 	}
 
+	timer.Stop();
+
 	double D_tot = CalcTotalScatteringEnergy();
 	long long orNum = gammaNumber * betaNumber;
 	double NRM = CalcNorm(orNum);
@@ -109,11 +108,13 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 //	}
 #endif
 
+	string directory = CreateDir(m_resultDirectory);
 	int EDF = 0;
-	WriteResultToSeparateFilesGO(NRM, EDF, dirName, tracks);
+
+	WriteResultToSeparateFilesGO(NRM, EDF, directory, tracks);
 
 	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
-	WriteResultsToFileGO(NRM, dirName + "all", m_totalMtrx);
+	WriteResultsToFileGO(NRM, directory + "all", m_totalMtrx);
 	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
 
@@ -234,7 +235,7 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 	long long count = 0;
 
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-	ofstream outFile(m_resultDirName, ios::out);
+	ofstream outFile(m_resultDirectory, ios::out);
 
 	vector<Beam> outBeams;
 	double beta, gamma;
@@ -289,7 +290,7 @@ void Tracer::CreateGroupResultFiles(const AngleRange &betaRange, const Tracks &t
 	for (size_t i = 0; i < tracks.size(); ++i)
 	{
 		string groupName = tracks[i].CreateGroupName();
-		string filename = dirName + groupName + "__" + m_resultDirName + ".dat";
+		string filename = dirName + groupName + "__" + m_resultDirectory + ".dat";
 		ofstream *file = new ofstream(filename, ios::out);
 		OutputTableHead(betaRange, *file);
 		groupFiles.push_back(file);
@@ -367,7 +368,7 @@ void Tracer::OutputToAllFile(ofstream &diffFile, ofstream &otherFile,
 void Tracer::CreateResultFile(ofstream &file, const string &dirName, const string &fileName,
 							  const AngleRange &betaRange)
 {
-	file.open(dirName + fileName + "__" + m_resultDirName + ".dat", ios::out);
+	file.open(dirName + fileName + "__" + m_resultDirectory + ".dat", ios::out);
 	OutputTableHead(betaRange, file);
 }
 
@@ -386,10 +387,9 @@ void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
 
 void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
 {
-	string startTime = ctime(&m_startTime);
+	string startTime = timer.GetStartTime();
 	string totalTime = timer.Elapsed();
-	time_t end = timer.Stop();
-	string endTime = ctime(&end);
+	string endTime = timer.GetStopTime();
 
 	m_statistics += "\nStart of calculation = " + startTime
 			+ "End of calculation   = " + endTime
@@ -409,19 +409,19 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	CalcTimer timer;
 	long long count = 0;
 
-	CreateDir(m_resultDirName);
+	CreateDir(m_resultDirectory);
 
 	ofstream allFile, otherFile, diffFile;
 	vector<ofstream*> groupFiles;
 
-	string resDirName = CreateDir(m_resultDirName + "\\res");
+	string resDirName = CreateDir(m_resultDirectory + "\\res");
 	CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
 	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName, Other);
 
 	ofstream allFile_cor, otherFile_cor, diffFile_cor;
 	vector<ofstream*> groupFiles_cor;
 
-	string corDirName = CreateDir(m_resultDirName + "\\cor");
+	string corDirName = CreateDir(m_resultDirectory + "\\cor");
 	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor);
 	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor, betaRange, corDirName, Other_cor);
 
@@ -513,7 +513,7 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 	long long count = 0;
 
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-	ofstream outFile(m_resultDirName, ios::out);
+	ofstream outFile(m_resultDirectory, ios::out);
 
 	vector<Beam> outBeams;
 	double beta, gamma;
@@ -771,17 +771,16 @@ double Tracer::CalcTotalScatteringEnergy()
 
 void Tracer::OutputStartTime(CalcTimer &timer)
 {
-	m_startTime = timer.Start();
-	cout << "Started at " << ctime(&m_startTime) << endl;
+	timer.Start();
+	cout << "Started at " << timer.GetStartTime() << endl;
 }
 
 void Tracer::OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 								CalcTimer &timer)
 {
-	string startTime = ctime(&m_startTime);
+	string startTime = timer.GetStartTime();
 	string totalTime = timer.Elapsed();
-	time_t end = timer.Stop();
-	string endTime = ctime(&end);
+	string endTime = timer.GetStopTime();
 
 	m_statistics += "\nStart of calculation = " + startTime
 			+ "End of calculation   = " + endTime
@@ -870,7 +869,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 #endif
 
 	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
-	WriteResultsToFileGO(NRM, m_resultDirName + "_all", m_totalMtrx);
+	WriteResultsToFileGO(NRM, m_resultDirectory + "_all", m_totalMtrx);
 	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
 
@@ -895,7 +894,7 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 //	double D_tot = CalcTotalScatteringEnergy();
 
 	ExtractPeaksGO(EDF, 1, m_totalMtrx);
-	WriteResultsToFileGO(1, m_resultDirName, m_totalMtrx);
+	WriteResultsToFileGO(1, m_resultDirectory, m_totalMtrx);
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
 
@@ -903,7 +902,7 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
-	ofstream outFile(m_resultDirName, ios::out);
+	ofstream outFile(m_resultDirectory, ios::out);
 	vector<Beam> outBeams;
 
 	double b = DegToRad(beta);

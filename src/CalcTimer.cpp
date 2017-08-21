@@ -14,16 +14,20 @@ CalcTimer::CalcTimer()
 	Reset();
 }
 
-time_t CalcTimer::Start()
+std::string CalcTimer::Start()
 {
 	m_startPoint = system_clock::now();
-	return system_clock::to_time_t(m_startPoint);
+	time_t t = system_clock::to_time_t(m_startPoint);
+	m_startTime = ctime(&t);
+	return m_startTime;
 }
 
-time_t CalcTimer::Stop()
+std::string CalcTimer::Stop()
 {
 	m_nowPoint = system_clock::now();
-	return system_clock::to_time_t(m_nowPoint);
+	time_t t = system_clock::to_time_t(m_nowPoint);
+	m_stopTime = ctime(&t);
+	return m_stopTime;
 }
 
 std::string CalcTimer::Elapsed()
@@ -52,6 +56,16 @@ std::string CalcTimer::Elapsed()
 	SetUnitValue(m_days, m_hours, HOUR_PER_DAY);
 
 	return ToString();
+}
+
+std::string CalcTimer::GetStartTime() const
+{
+	return m_startTime;
+}
+
+std::string CalcTimer::GetStopTime() const
+{
+	return m_stopTime;
 }
 
 long long CalcTimer::Duration()
@@ -86,23 +100,6 @@ void CalcTimer::Left(const long long &ms)
 	SetUnitValue(m_minutes, m_seconds, SEC_PER_MIN);
 	SetUnitValue(m_hours, m_minutes, MIN_PER_HOUR);
 	SetUnitValue(m_days, m_hours, HOUR_PER_DAY);
-}
-
-const time_t &CalcTimer::End(const long long &ms)
-{
-	if (ms <= m_lastTimeLeft) // end time must not increase
-	{
-		auto now = m_nowPoint;
-		now += milliseconds(m_lastTimeLeft);
-		m_lastEndTime = system_clock::to_time_t(now);
-	}
-
-	return m_lastEndTime;
-}
-
-time_t CalcTimer::Begin() const
-{
-	return system_clock::to_time_t(m_startPoint);
 }
 
 void CalcTimer::Reset()

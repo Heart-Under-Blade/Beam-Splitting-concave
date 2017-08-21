@@ -57,6 +57,7 @@ private:
 public:
 	Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalPath,
 			const Point3f &polarizationBasis, int interReflectionNumber);
+	virtual ~Tracing();
 
 	double BeamCrossSection(const Beam &beam) const;
 

@@ -33,6 +33,8 @@ Tracing::Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalP
 	ri_coef_im = 4*re*re*im;
 }
 
+Tracing::~Tracing() {}
+
 double Tracing::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;

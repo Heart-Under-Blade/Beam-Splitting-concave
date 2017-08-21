@@ -177,14 +177,13 @@ private:
 
 	Point3f m_incidentDir;
 	Point3f m_polarizationBasis;
-	std::string m_resultDirName;
+	std::string m_resultDirectory;
 	std::vector<Arr2DC> J; // Jones matrices
 	std::vector<Arr2DC> J_cor; //
 
 	// light energy balance
 	double m_incomingEnergy;
 	double m_outcomingEnergy;
-	time_t m_startTime;
 
 	// REF: заменить
 	bool isCalcOther = false;

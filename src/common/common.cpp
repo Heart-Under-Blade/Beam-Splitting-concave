@@ -82,7 +82,7 @@ std::string CreateDir(const std::string &name)
 	strcat(dir, cdir);
 	dirName = dir;
 #else
-	dirName = dir;
+	dirName = name;
 #endif
 	return dirName;
 }
