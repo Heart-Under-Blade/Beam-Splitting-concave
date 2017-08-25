@@ -6,7 +6,10 @@
 #include "macro.h"
 #include "geometry_lib.h"
 
-#include <iostream> // DEB
+#ifdef _DEBUG // DEB
+#include <iostream>
+using namespace std;
+#endif
 
 #define NORM_CEIL	FLT_EPSILON + 1
 
@@ -129,11 +132,6 @@ void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 		outBeam.e = m_polarizationBasis;
 		outBeam.direction = -m_incidentDir;
 	}
-
-	if (m_isOpticalPath)
-	{
-		CalcOpticalPath_initial(inBeam, outBeam);
-	}
 }
 
 void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
@@ -147,7 +145,7 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 	beam.RotatePlane(newBasis);
 }
 
-void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
+void Tracing::SetFirstBeamOpticalPath(Beam &inBeam, Beam &outBeam)
 {
 	Point3f center = inBeam.Center();
 
@@ -163,6 +161,11 @@ void Tracing::TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam)
 	SetPolygonByFacet(facetId, inBeam); // REF: try to exchange this to inBeam = m_facets[facetId]
 	SetPolygonByFacet(facetId, outBeam);
 	SetBeamOpticalParams(facetId, inBeam, outBeam);
+
+	if (m_isOpticalPath)
+	{
+		SetFirstBeamOpticalPath(inBeam, outBeam);
+	}
 }
 
 void Tracing::CalcFacetEnergy(int facetID, const Polygon &lightedPolygon)

@@ -109,7 +109,7 @@ protected:
 
 	void CalcFacetEnergy(int facetID, const Polygon &lightedPolygon);
 
-	void CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam);
+	void SetFirstBeamOpticalPath(Beam &inBeam, Beam &outBeam);
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 	void PushBeamToTree(Beam &beam, int facetId, int level);

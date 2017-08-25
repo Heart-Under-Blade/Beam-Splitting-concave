@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<<<<<<< HEAD
-<!-- Written by QtCreator 4.1.0, 2017-08-09T13:25:46. -->
-=======
-<!-- Written by QtCreator 4.1.0, 2017-08-09T14:34:39. -->
->>>>>>> feature/log
+<!-- Written by QtCreator 4.1.0, 2017-08-24T17:19:55. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -241,7 +237,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test2</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Projects/Beam-Splitting-concave/pro/BeamSplitting.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 999 80 40 1 --ri 1.31 -n 5 --random 1 1 --po -w 0.532 --point -b 0 4.5 -g 0 360 -o 0_4.5</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 999 80 40 1 --ri 1.3116 -n 6 --random 100 18000 --po -w 0.532 --point -b 92.02 92.9 -g 0 360 -o 80.8_82.8_100</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">BeamSplitting.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">true</value>

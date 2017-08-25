@@ -22,8 +22,6 @@ Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultDirectory(resultFileName)
 {
-	m_symmetry = m_tracing->m_particle->GetSymmetry();
-
 	if (particle->IsComlicated())
 	{
 		m_tracing = new TracingConcave(particle, m_incidentDir, true,
@@ -34,6 +32,8 @@ Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 		m_tracing = new TracingConvex(particle, m_incidentDir, true,
 									  m_polarizationBasis, reflNum);
 	}
+
+	m_symmetry = m_tracing->m_particle->GetSymmetry();
 }
 
 Tracer::~Tracer()

@@ -43,8 +43,7 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 		 inBeam.SetPolygon(polygons.arr[j]);
 		outBeam.SetPolygon(polygons.arr[j]);
 
-		// REF: дублирует одиночный вызов в пред. ф-ции
-		CalcOpticalPath_initial(inBeam, outBeam);
+		SetFirstBeamOpticalPath(inBeam, outBeam);
 
 		PushBeamToTree( inBeam, facetID, 0, Location::In );
 		PushBeamToTree(outBeam, facetID, 0, Location::Out);
@@ -325,7 +324,7 @@ void TracingConcave::SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
 
 			SetSloppingBeamParams_initial(incidentDir, cosI, facetID,
 										  inBeam, outBeam);
-			if (m_isOpticalPath)
+			if (m_isOpticalPath) // OPT: delete this condition
 			{
 				CalcOpticalPathInternal(cosIN, incidentBeam, inBeam, outBeam);
 			}

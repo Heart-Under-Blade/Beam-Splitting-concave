@@ -116,29 +116,19 @@ std::string CalcTimer::ToString()
 {
 	std::string strTime;
 
-	if (m_days != 0) // REF: merge
+	auto f = [&](int unit, const std::string & strUnit)
 	{
-		strTime.append(std::to_string(m_days));
-		strTime.append("d ");
-	}
+		if (unit != 0)
+		{
+			strTime.append(std::to_string(unit));
+			strTime.append(strUnit);
+		}
+	};
 
-	if (m_hours != 0)
-	{
-		strTime.append(std::to_string(m_hours));
-		strTime.append("h ");
-	}
-
-	if (m_minutes != 0)
-	{
-		strTime.append(std::to_string(m_minutes));
-		strTime.append("m ");
-	}
-
-	if (m_seconds != 0)
-	{
-		strTime.append(std::to_string(m_seconds));
-		strTime.append("s ");
-	}
+	f(m_days, "d ");
+	f(m_hours, "h ");
+	f(m_minutes, "m ");
+	f(m_seconds, "s ");
 
 	return strTime;
 }
