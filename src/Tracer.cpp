@@ -1,6 +1,7 @@
 #include "Tracer.h"
 
 #include <iostream>
+#include <assert.h>
 #include "global.h"
 #include "macro.h"
 
@@ -9,10 +10,6 @@
 #define BIN_SIZE		M_PI/SPHERE_RING_NUM
 
 using namespace std;
-
-#ifdef _DEBUG // DEB
-ofstream tfile("tracks_other1.dat", ios::out);
-#endif
 
 Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	: m_tracing(tracing),
@@ -446,9 +443,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		++count;
 
 		beta = betaRange.min + betaRange.step*i;
-#ifdef _DEBUG // DEB
-		double ff = RadToDeg(beta);
-#endif
+
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
 			gamma = gammaRange.min + gammaRange.step*j;
@@ -467,6 +462,9 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			AddResultToMatrices(groupResultM_cor, gNorm);
 			AddResultToMatrix(All_cor, J_cor, gNorm);
 			CleanJ(J_cor);
+#ifdef _DEBUG // DEB
+			cout << "\r     \rj: " << j;
+#endif
 		}
 
 		m_incomingEnergy *= gNorm;

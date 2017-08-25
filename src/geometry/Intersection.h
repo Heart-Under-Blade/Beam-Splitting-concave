@@ -4,7 +4,7 @@
 #include "geometry_lib.h"
 
 #define EPS_PROJECTION		0.00174532836589830883577820272085
-const float EPS_INTERSECTION = 0.02;
+const float EPS_INTERSECTION = 0.04;
 
 bool inside(const Point3f &x, const Point3f &p1, const Point3f &p2, const Point3f &normal);
 
@@ -29,9 +29,10 @@ inline bool is_layOnLine_i(__m128 _x, __m128 _a, __m128 _b)
 	__m128 sqr_len_ax = _mm_dp_ps(ax, ax, MASK_1LOW);
 	__m128 sqr_len_bx = _mm_dp_ps(bx, bx, MASK_1LOW);
 
-	return (sqr_len_ax[0] + sqr_len_bx[0] < sqr_len_ab[0] + EPS_IN_LINE);
+	return (sqr_len_ax[0] + sqr_len_bx[0] < sqr_len_ab[0] + sqr_len_ab[0]*0.05);
 }
 
+// OPT: try to return 'ok' insted 'x'
 inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
 						  __m128 _normal_to_facet, bool &ok)
 {

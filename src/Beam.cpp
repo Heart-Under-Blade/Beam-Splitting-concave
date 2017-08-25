@@ -8,6 +8,26 @@
 #include "macro.h"
 #include "geometry_lib.h"
 
+std::ostream& operator << (std::ostream &os, const Beam &beam)
+{
+	using namespace std;
+
+	os << Polygon(beam);
+
+	os << "level: " << beam.level << endl
+	   << "last facet: " << beam.lastFacetID << endl
+	   << "location: " << beam.location << endl
+	   << "id: " << beam.id << endl
+	   << "D: " << beam.D << endl
+	   << "direction: "
+	   << beam.direction.cx << ", "
+	   << beam.direction.cy << ", "
+	   << beam.direction.cz << ", "
+	   << beam.direction.d_param << endl << endl;
+
+	return os;
+}
+
 Point3d Proj(const Point3d& Tx, const Point3d& Ty, const Point3d& r,  const Point3d& pnt)
 {
 	const  Point3d p_pr = pnt - r*DotProductD(r, pnt); // расчёт коор-т в СК наблюдателя

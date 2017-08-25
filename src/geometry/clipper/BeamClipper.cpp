@@ -340,6 +340,8 @@ void BeamClipper::RemoveEmptyPaths(Paths &result) const
 	}
 }
 
+// TODO: delete this class totally
+
 void BeamClipper::HandleResultPaths(Axis axis, Paths &result) const
 {
 	SwapCoords(Axis::aZ, axis, result); // меняем координаты обратно

@@ -14,7 +14,8 @@ public:
 	void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 private:
-	void CutBeamByFacet(int facetID, Beam &beam, bool &isDivided);
+	void CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
+						Polygon *resultBeams, int &resultSize);
 
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
@@ -48,7 +49,6 @@ private:
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
 
 #ifdef _TRACK_ALLOW
-//	void PrintTrack(const Beam &beam, int facetId);
 //	void AddToTrack(Beam &beam, int facetId);
 #endif
 

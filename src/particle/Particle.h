@@ -4,6 +4,7 @@
 
 #include "compl.hpp"
 #include "geometry_lib.h"
+#include "Facet.h"
 
 #define ROT_MTR_RANK 3
 
