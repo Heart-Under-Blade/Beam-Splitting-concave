@@ -245,7 +245,7 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 
 bool Tracing::IsTerminalBeam(const Beam &beam)
 {
-	double j_norm = beam.J.Norm();
+	double j_norm = beam.J.Norm(); // OPT: move to last element of comparison
 	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
 }
 
@@ -462,7 +462,7 @@ void Tracing::Difference(const Polygon &subject, const Point3f &subjNormal,
 	__m128 *_buff = _subject;
 	int bufSize = subject.size;
 
-	__m128 _first_p, _second_p; // points of projection
+	__m128 _first_p, _second_p;
 	bool isInFirst, isInSecond;
 
 	__m128 _p2 = _clip[clipSize-1];

@@ -9,6 +9,7 @@
 
 //#define MAX_BEAM_REFL_NUM 32768
 #define MAX_BEAM_REFL_NUM 65536
+//#define MAX_BEAM_REFL_NUM 1048576
 
 #define EPS_M_COS_90	-1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_90	1.7453292519943295769148298069306e-10	//cos(89.99999999)
@@ -77,8 +78,7 @@ protected:
 
 	void Difference(const Polygon &subject, const Point3f &subjNormal,
 					const Polygon &clip, const Point3f &clipNormal,
-					const Point3f &clipDir,
-					Polygon *difference, int &resultSize) const;
+					const Point3f &clipDir, Polygon *difference, int &resultSize) const;
 
 	bool Intersect(int facetId, const Beam& beam, Polygon &intersection) const;
 

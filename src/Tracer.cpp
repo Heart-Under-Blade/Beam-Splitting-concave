@@ -1,6 +1,7 @@
 #include "Tracer.h"
 
 #include <iostream>
+#include <assert.h>
 #include "global.h"
 #include "macro.h"
 
@@ -285,12 +286,13 @@ void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
 
 void Tracer::CreateGroupResultFiles(const AngleRange &betaRange, const Tracks &tracks,
 									const string &dirName,
-									vector<ofstream*> &groupFiles)
+									vector<ofstream*> &groupFiles,
+									const string &prefix)
 {
 	for (size_t i = 0; i < tracks.size(); ++i)
 	{
 		string groupName = tracks[i].CreateGroupName();
-		string filename = dirName + groupName + "__" + m_resultDirectory + ".dat";
+		string filename = dirName + prefix + groupName + "__" + m_resultDirectory + ".dat";
 		ofstream *file = new ofstream(filename, ios::out);
 		OutputTableHead(betaRange, *file);
 		groupFiles.push_back(file);
@@ -373,14 +375,15 @@ void Tracer::CreateResultFile(ofstream &file, const string &dirName, const strin
 }
 
 void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
-							   const AngleRange &betaRange, string dirName, Arr2D &otherArr)
+							   const AngleRange &betaRange, string dirName, Arr2D &otherArr,
+							   const string &prefix)
 {
-	CreateResultFile(all, dirName, "all", betaRange);
+	CreateResultFile(all, dirName, prefix + "all", betaRange);
 
 	if (isCalcOther)
 	{
-		CreateResultFile(other, dirName, "other", betaRange);
-		CreateResultFile(diff, dirName, "difference", betaRange);
+		CreateResultFile(other, dirName, prefix + "other", betaRange);
+		CreateResultFile(diff, dirName, prefix + "difference", betaRange);
 		otherArr = Arr2D(1, 1, 4, 4);
 	}
 }
@@ -422,8 +425,9 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	vector<ofstream*> groupFiles_cor;
 
 	string corDirName = CreateDir(m_resultDirectory + "\\cor");
-	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor);
-	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor, betaRange, corDirName, Other_cor);
+	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor, "cor_");
+	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor,
+					  betaRange, corDirName, Other_cor, "cor_");
 
 	AllocJ(J, 1, 1, tracks.size());
 	AllocJ(J_cor, 1, 1, tracks.size());
@@ -459,6 +463,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 			outBeams.clear();
+			OutputOrientationToLog(i, j);
 
 			AddResultToMatrices(groupResultM, gNorm);
 			AddResultToMatrix(All, J, gNorm);
@@ -467,6 +472,9 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			AddResultToMatrices(groupResultM_cor, gNorm);
 			AddResultToMatrix(All_cor, J_cor, gNorm);
 			CleanJ(J_cor);
+#ifdef _DEBUG // DEB
+			cout << "\r     \rj: " << j;
+#endif
 		}
 
 		m_incomingEnergy *= gNorm;

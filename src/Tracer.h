@@ -45,9 +45,11 @@ struct TrackGroup
 
 				subname += '_' + std::to_string(groupID);
 			}
+
+			subname += '_';
 		}
 
-		subname += "_gr_" + std::to_string(groupID);
+		subname += "gr_" + std::to_string(groupID);
 		return subname;
 	}
 };
@@ -230,7 +232,8 @@ private:
 
 	void CreateGroupResultFiles(const AngleRange &betaRange,
 								const Tracks &tracks, const std::string &dirName,
-								std::vector<std::ofstream*> &groupFiles);
+								std::vector<std::ofstream*> &groupFiles,
+								const std::string &prefix = "");
 	void AllocJ(std::vector<Arr2DC> &j, int m, int n, int size);
 	void CleanJ(std::vector<Arr2DC> &j);
 	void OutputStartTime(CalcTimer &timer);
@@ -243,7 +246,8 @@ private:
 						 double degBeta, std::ofstream &allFile, Arr2D &all,
 						 Arr2D &other);
 	void CreateResultFiles(std::ofstream &all, std::ofstream &diff, std::ofstream &other,
-									 const AngleRange &betaRange, std::string dirName, Arr2D &otherArr);
+						   const AngleRange &betaRange, std::string dirName, Arr2D &otherArr,
+						   const std::string &prefix = "");
 	void CreateResultFile(std::ofstream &file, const std::string &dirName, const std::string &fileName,
 						  const AngleRange &betaRange);
 };

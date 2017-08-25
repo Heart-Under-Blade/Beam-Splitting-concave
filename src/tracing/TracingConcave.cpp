@@ -4,14 +4,15 @@
 #include <tgmath.h>
 #include <assert.h>
 
-//#ifdef _DEBUG // DEB
+#ifdef _DEBUG // DEB
 #include <iostream>
-//#endif
+using namespace std;
+#endif
 
 #define EPS_ORTO_FACET 0.0001
 
 #ifdef _TRACK_ALLOW
-//std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
+std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 #endif
 
 TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
@@ -36,7 +37,7 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 {
 	for (int j = 0; j < polygons.size; ++j)
 	{
-		long long inID = inBeam.id;
+		long long  inID = inBeam.id;
 		long long outID = outBeam.id;
 
 		// set geometry of beam
@@ -173,7 +174,8 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 //}
 #endif
 
-void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
+void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
+									Polygon *resultBeams, int &resultSize)
 {
 	isDivided = false;
 	const Location &loc = beam.location;
@@ -186,8 +188,6 @@ void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
 
 	const Point3f &facetNormal = (loc == Location::Out) ? -beamFacet.normal[loc]
 														:  beamFacet.normal[loc];
-	Polygon resultBeams[MAX_VERTEX_NUM];
-	int resultSize = 0;
 	Difference(beam, beamFacet.normal[loc],
 			   m_facets[facetID], facetNormal, -beam.direction,
 			   resultBeams, resultSize);
@@ -196,29 +196,16 @@ void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided)
 	{
 		beam.size = 0;
 	}
-	else if (resultSize == CLIP_RESULT_SINGLE)
-	{
-		beam = resultBeams[0];
-	}
-	else // beam had divided by facet
-	{
-		Beam tmp = beam;
-
-		for (int i = 0; i < resultSize; ++i)
-		{
-			tmp = resultBeams[i];
-			m_beamTree[m_treeSize++] = tmp;
-		}
-
+	else if (resultSize > CLIP_RESULT_SINGLE)
+	{	// beam had divided by facet
 		isDivided = true;
-		beam.size = 0;
 	}
 }
 
 bool TracingConcave::isExternalNonEmptyBeam(Beam &incidentBeam)
 {
 	return (incidentBeam.location == Location::Out
-			&& incidentBeam.size != 0);
+			&& incidentBeam.size != 0); // OPT: replace each other
 }
 
 int TracingConcave::FindFacetID(int facetID, const IntArray &arr)
@@ -275,7 +262,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		IntArray facetIds;
 		SelectVisibleFacets(beam, facetIds);
 
-		for (int i = 0; i < facetIds.size; ++i)
+		for (int i = 0; i < facetIds.size; ++i)// OPT: move this loop to TraceSecondaryBeamByFacet
 		{
 			int facetID = facetIds.arr[i];
 
@@ -553,10 +540,29 @@ void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 		bool hasOutBeam;
 		SetOpticalBeamParams(facetID, beam, inBeam, outBeam, hasOutBeam);
 		PushBeamsToTree(beam, facetID, hasOutBeam, inBeam, outBeam);
-		CutBeamByFacet(facetID, beam, isDivided);
+
+		Polygon resultBeams[MAX_VERTEX_NUM];
+		int resultSize = 0;
+		CutBeamByFacet(facetID, beam, isDivided, resultBeams, resultSize);
+
+		if (isDivided)
+		{
+			Beam tmp = beam;// OPT: try to replace 'tmp' to 'beam'
+
+			for (int i = 0; i < resultSize; ++i)
+			{
+				tmp = resultBeams[i];
+				assert(m_treeSize < MAX_BEAM_REFL_NUM);
+				m_beamTree[m_treeSize++] = tmp;
+				beam.size = 0;
+			}
+		}
+		else if (resultSize == 1)
+		{
+			beam = resultBeams[0];
+		}
 	}
 }
-
 void TracingConcave::PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
 									   Beam &inBeam, Beam &outBeam,
 									   std::vector<Beam> &passed)
@@ -576,7 +582,8 @@ void TracingConcave::PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOu
 	passed.push_back(inBeam);
 }
 
-void TracingConcave::SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+void TracingConcave::SplitBeamByParticle(double beta, double gamma,
+										 const std::vector<std::vector<int>> &tracks,
 										 std::vector<Beam> &scaterredBeams)
 {
 	m_particle->Rotate(beta, gamma, 0);
@@ -593,7 +600,7 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma, const std::v
 			continue;
 		}
 
-		for (size_t i = 0; i < track.size(); ++i)
+		for (size_t i = 1; i < track.size(); ++i)
 		{
 			int facetID = track.at(i);
 
@@ -624,7 +631,7 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma, const std::v
 						bool hasOutBeam;
 						SetOpticalBeamParams(facetID, beam, inBeam, outBeam, hasOutBeam);
 						PushBeamsToBuffer(facetID, beam, hasOutBeam, inBeam, outBeam, buffer);
-						CutBeamByFacet(facetID, beam, isDivided);
+//						CutBeamByFacet(facetID, beam, isDivided);
 					}
 				}
 			}
@@ -636,6 +643,7 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma, const std::v
 
 			for (const Beam &b : buffer)
 			{	// добавляем прошедшие пучки
+				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = b;
 			}
 		}
@@ -651,7 +659,7 @@ void TracingConcave::TraceFirstBeamFixedFacet(int facetID, bool &isIncident)
 {
 	IntArray facetIDs;
 	isIncident = false;
-
+// REF: replace 'wavefront' to something certain in your paper
 	SelectVisibleFacetsForWavefront(facetIDs);
 	int index = FindFacetID(facetID, facetIDs);
 

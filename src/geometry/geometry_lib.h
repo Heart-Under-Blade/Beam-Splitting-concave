@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #define CLIP_RESULT_SINGLE 1
 
 #define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
@@ -197,163 +199,9 @@ double Norm(const Point3f &point);
 void Normalize(Point3f &v);
 double Length(const Point3f &v);
 
-/**
- * @brief The Polygon struct
- * Convex polygon
- */
-class Polygon
-{
-public:
-	Point3f arr[MAX_VERTEX_NUM];
-	int size = 0;
 
-	Polygon() {}
-
-	Polygon(int size) : size(size) {}
-
-	Polygon(const Polygon &other)
-	{
-		size = other.size;
-
-		for (int i = 0; i < other.size; ++i)
-		{
-			arr[i] = other.arr[i];
-		}
-	}
-	Polygon(Polygon &&other)
-	{
-		size = other.size;
-
-		for (int i = 0; i < size; ++i)
-		{
-			arr[i] = other.arr[i];
-		}
-
-		other.size = 0;
-	}
-
-	Polygon & operator = (const Polygon &other)
-	{
-		if (this != &other)
-		{
-			size = other.size;
-
-			for (int i = 0; i < size; ++i)
-			{
-				arr[i] = other.arr[i];
-			}
-		}
-
-		return *this;
-	}
-	Polygon & operator = (Polygon &&other)
-	{
-		if (this != &other)
-		{
-			size = other.size;
-
-			for (int i = 0; i < size; ++i)
-			{
-				arr[i] = other.arr[i];
-			}
-
-			other.size = 0;
-		}
-
-		return *this;
-	}
-
-	double Area() const
-	{
-		double square = 0;
-		const Point3f &basePoint = arr[0];
-		Point3f p1 = arr[1] - basePoint;
-
-		for (int i = 2; i < size; ++i)
-		{
-			Point3f p2 = arr[i] - basePoint;
-			Point3f res;
-			CrossProduct(p1, p2, res);
-			square += Length(res);
-			p1 = p2;
-		}
-
-		return square/2.0;
-	}
-
-	Point3f Center() const
-	{
-		Point3f p(0, 0, 0);
-
-		for (int i = 0; i < size; ++i)
-		{
-			p = p + arr[i];
-		}
-
-		return p/size;
-	}
-
-	Point3f Normal() const
-	{
-		Point3f normal;
-
-		Point3f p1 = arr[1] - arr[0];
-		Point3f p2 = arr[2] - arr[0];
-		CrossProduct(p1, p2, normal);
-
-		Normalize(normal);
-		return normal;
-	}
-};
 
 // REF: try to create template class 'Array<type>'
-
-struct PolygonArray
-{
-	Polygon arr[MAX_POLYGON_NUM];
-	int size = 0;
-};
-
-class Facet : public Polygon
-{
-public:
-	Point3f normal[2];	///< internal and external normals
-	Point3f center;		///< center of facet polygon (for fast access without calc)
-
-	bool isVisibleIn = true;
-	bool isVisibleOut = true;
-
-	void SetVisibility(bool in, bool out)
-	{
-		isVisibleIn = in;
-		isVisibleOut = out;
-	}
-
-	void SetNormal()
-	{
-		ex_normal = Normal();
-		in_normal = -ex_normal;
-	}
-
-	void SetCenter()
-	{
-		center = Center();
-	}
-
-	Facet & operator = (const Facet &other)
-	{
-		if (this != &other)
-		{
-			Polygon::operator =(other);
-			in_normal = other.in_normal;
-			ex_normal = other.ex_normal;
-			center = other.center;
-		}
-
-		return *this;
-	}
-};
-
 
 /**
  * Functions

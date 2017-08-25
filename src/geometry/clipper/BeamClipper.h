@@ -2,6 +2,7 @@
 
 #include "clipper.hpp"
 #include "geometry_lib.h"
+#include "Polygon.h"
 
 #define MULTI_INDEX		10000000l	// index for poligon's clip operations
 #define EPS_MULTI		(1.415*MULTI_INDEX*2)/10000	// погрешность, при которой точки операций Clipper'а можно считать совпадающими

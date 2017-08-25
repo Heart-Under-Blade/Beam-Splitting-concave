@@ -36,6 +36,8 @@ public:
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
 
+	friend std::ostream & operator << (std::ostream &os, const Beam &beam);
+
 	// REF: рассмотреть схему, где у пучка будет много полигонов
 
 public:
@@ -61,5 +63,3 @@ private:
 	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
 };
-
-
