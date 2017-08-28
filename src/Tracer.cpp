@@ -5,9 +5,9 @@
 #include "global.h"
 #include "macro.h"
 
-#define BEAM_DIR_LIM	0.9396
-#define SPHERE_RING_NUM 180
-#define BIN_SIZE		M_PI/SPHERE_RING_NUM
+#define BEAM_DIR_LIM		0.9396
+#define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
+#define BIN_SIZE			M_PI/SPHERE_RING_NUM
 
 using namespace std;
 
@@ -102,7 +102,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
 {
 	EraseConsoleLine(50);
-	cout << (count*100)/betaNumber << '%'
+	cout << (count*100)/(betaNumber+1) << '%'
 		 << '\t' << timer.Elapsed();
 }
 
@@ -458,6 +458,14 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			outBeams.clear();
 			OutputState(i, j);
 
+			if (isNan)
+			{
+				isNan = false;
+				CleanJ(J);
+				CleanJ(J_cor);
+				continue;
+			}
+
 			AddResultToMatrices(groupResultM, gNorm);
 			AddResultToMatrix(All, J, gNorm);
 			CleanJ(J);
@@ -480,6 +488,9 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		OutputToGroupFiles(degBeta, groupFiles, groupResultM, tracks.size());
 		OutputToGroupFiles(degBeta, groupFiles_cor, groupResultM_cor, tracks.size());
 	}
+
+	EraseConsoleLine(50);
+	cout << "100%";
 
 	allFile.close();
 	allFile_cor.close();
@@ -1057,6 +1068,13 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 		if (groupID < 0 && !isCalcOther)
 		{
 			continue;
+		}
+
+		// проверка на nan
+		if (isnan(beam.D * beam.direction.cx * beam.direction.cy * beam.direction.cz))
+		{
+			isNan = true;
+			break;
 		}
 
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
