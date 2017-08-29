@@ -731,22 +731,22 @@ double Tracing::GetIncomingEnergy() const
 	return m_incommingEnergy;
 }
 
-double Tracing::CrossSection(const Point3f &beamDir) const
-{
-	double cs = 0.0;
+//double Tracing::CrossSection(const Point3f &beamDir) const
+//{
+//	double cs = 0.0;
 
-	for (int i = 0; i < m_particle->facetNum; ++i)
-	{
-		const Point3f n = m_facets[i].Normal();
-		double csa = DotProduct(beamDir, n);
+//	for (int i = 0; i < m_particle->facetNum; ++i)
+//	{
+//		const Point3f n = m_facets[i].Normal();
+//		double csa = DotProduct(beamDir, n);
 
-		if (csa < EPS_COS_90)
-		{
-			continue;
-		}
+//		if (csa < EPS_COS_90)
+//		{
+//			continue;
+//		}
 
-		cs += m_facets[i].Area()*csa;
-	}
+//		cs += m_facets[i].Area()*csa;
+//	}
 
-	return cs;
-}
+//	return cs;
+//}

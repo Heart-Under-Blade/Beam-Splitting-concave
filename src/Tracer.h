@@ -198,6 +198,7 @@ private:
 	std::string m_statistics;
 
 	bool isNan = false;
+	bool isNanOccured = false;
 private:
 	void CleanJ(int size, const Cone &bsCone);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);

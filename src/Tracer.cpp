@@ -392,7 +392,13 @@ void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
 			+ "\nTotal time of calculation = " + totalTime
 			+ "\nTotal number of body orientation = " + to_string(orNumber);
 
+	if (isNanOccured)
+	{
+		m_statistics += "\n\nWARNING! NAN values occured. See 'log.txt'";
+	}
+
 	ofstream out("out.dat", ios::out);
+
 	out << m_statistics;
 	out.close();
 
@@ -458,14 +464,6 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			outBeams.clear();
 			OutputState(i, j);
 
-			if (isNan)
-			{
-				isNan = false;
-				CleanJ(J);
-				CleanJ(J_cor);
-				continue;
-			}
-
 			AddResultToMatrices(groupResultM, gNorm);
 			AddResultToMatrix(All, J, gNorm);
 			CleanJ(J);
@@ -473,6 +471,17 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			AddResultToMatrices(groupResultM_cor, gNorm);
 			AddResultToMatrix(All_cor, J_cor, gNorm);
 			CleanJ(J_cor);
+
+			if (isNan)
+			{
+				logfile << "------------------";
+				isNan = false;
+				CleanJ(J);
+				CleanJ(J_cor);
+//				assert(false); // DEB
+				continue;
+			}
+
 #ifdef _DEBUG // DEB
 			cout << "\r     \rj: " << j;
 #endif
@@ -1070,13 +1079,6 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 			continue;
 		}
 
-		// проверка на nan
-		if (isnan(beam.D * beam.direction.cx * beam.direction.cy * beam.direction.cz))
-		{
-			isNan = true;
-			break;
-		}
-
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
 		Point3f center = beam.Center();
@@ -1091,12 +1093,17 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 		complex fn(0, 0);
 		fn = beam.DiffractionIncline(vr, wavelength);
 
+		if (isnan(real(fn)))
+		{
+			isNanOccured = isNan = true;
+			return;
+		}
+
 		double dp = DotProductD(vr, Point3d(center));
 		complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
 		matrixC fn_jn = beam.J * tmp;
 
 		matrixC c = fn*Jn_rot*fn_jn;
-
 		// correction
 		matrixC c_cor = c;
 		c_cor[0][1] -= c_cor[1][0];

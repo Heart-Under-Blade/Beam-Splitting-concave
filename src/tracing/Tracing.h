@@ -67,7 +67,7 @@ public:
 
 	double GetIncomingEnergy() const;
 
-	double CrossSection(const Point3f &beamDir) const;
+//	double CrossSection(const Point3f &beamDir) const;
 
 protected:
 	void SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam);

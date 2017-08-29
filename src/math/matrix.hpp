@@ -85,6 +85,8 @@ public:
 	/// The operator outputs all elements of the array to the file separated by space
 	friend std::ofstream& operator<<(std::ofstream&, const matrix &);
 
+	unsigned int getN() const;
+	unsigned int getM() const;
 };
 //------------------------------------------------------------------------------
 
