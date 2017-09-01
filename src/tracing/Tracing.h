@@ -54,6 +54,8 @@ private:
 	double ri_coef_re;
 	double ri_coef_im;
 	complex m_refrIndex;
+	complex m_norm_case_i1;
+	complex m_norm_case_i2;
 
 public:
 	Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalPath,

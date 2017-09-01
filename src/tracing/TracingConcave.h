@@ -14,7 +14,7 @@ public:
 	void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 private:
-	void CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
+	void CutBeamByFacet(int facetID, Beam &beam,
 						Polygon *resultBeams, int &resultSize);
 
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
@@ -42,7 +42,7 @@ private:
 
 	void TraceFirstBeam();
 
-	bool isExternalNonEmptyBeam(Beam &incidentBeam);
+	inline bool IsExternalBeam(Beam &beam);
 
 	int FindFacetID(int facetID, const IntArray &arr);
 
@@ -61,7 +61,7 @@ private:
 
 	void TraceByFacet(const IntArray &facetIDs, int facetIndex);
 
-	void TraceSecondaryBeamByFacet(Beam &beam, int facetID, bool &isDivided);
+	void ScatterBeamByFacets(Beam &beam);
 
 	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam, Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 

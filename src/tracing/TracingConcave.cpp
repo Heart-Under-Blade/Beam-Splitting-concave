@@ -174,10 +174,9 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 //}
 #endif
 
-void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
+void TracingConcave::CutBeamByFacet(int facetID, Beam &beam,
 									Polygon *resultBeams, int &resultSize)
 {
-	isDivided = false;
 	const Location &loc = beam.location;
 	const Facet &beamFacet = m_facets[beam.lastFacetID];
 
@@ -196,16 +195,15 @@ void TracingConcave::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
 	{
 		beam.size = 0;
 	}
-	else if (resultSize > CLIP_RESULT_SINGLE)
-	{	// beam had divided by facet
-		isDivided = true;
+	else if (resultSize == CLIP_RESULT_SINGLE)
+	{
+		beam = resultBeams[0];
 	}
 }
 
-bool TracingConcave::isExternalNonEmptyBeam(Beam &incidentBeam)
+inline bool TracingConcave::IsExternalBeam(Beam &beam)
 {
-	return (incidentBeam.location == Location::Out
-			&& incidentBeam.size != 0); // OPT: replace each other
+	return (beam.size != 0 && beam.location == Location::Out);
 }
 
 int TracingConcave::FindFacetID(int facetID, const IntArray &arr)
@@ -259,23 +257,9 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 			continue;
 		}
 
-		IntArray facetIds;
-		SelectVisibleFacets(beam, facetIds);
+		ScatterBeamByFacets(beam);
 
-		for (int i = 0; i < facetIds.size; ++i)// OPT: move this loop to TraceSecondaryBeamByFacet
-		{
-			int facetID = facetIds.arr[i];
-
-			bool isDivided;
-			TraceSecondaryBeamByFacet(beam, facetID, isDivided);
-
-			if (isDivided)
-			{
-				break;
-			}
-		}
-
-		if (isExternalNonEmptyBeam(beam))
+		if (IsExternalBeam(beam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
 			scaterredBeams.push_back(beam);
 		}
@@ -504,8 +488,7 @@ double TracingConcave::CalcMinDistanceToFacet(const Polygon &facet,
 	const Point3f *pol = facet.arr;
 
 	for (int i = 0; i < facet.size; ++i)
-	{
-		// measure dist
+	{	// measure dist
 		Point3f point;
 		ProjectPointToFacet(pol[i], -beamDir, beamDir, point);
 		double newDist = sqrt(Norm(point - pol[i]));
@@ -519,50 +502,49 @@ double TracingConcave::CalcMinDistanceToFacet(const Polygon &facet,
 	return dist;
 }
 
-/* TODO
- * Разобраться с параметром 'n' (кол-во вн. столкновений)
- * при заданных траекториях, возможно он не нужен т.к. заранее известен путь
- */
-
-void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
-											   bool &isDivided)
+void TracingConcave::ScatterBeamByFacets(Beam &beam)
 {
-	isDivided = false;
-	Polygon intersected;
-	bool hasIntersection = Intersect(facetID, beam, intersected);
+	IntArray facetIDs;
+	SelectVisibleFacets(beam, facetIDs);
 
-	if (hasIntersection)
+	for (int i = 0; i < facetIDs.size; ++i)
 	{
-		Beam inBeam, outBeam;
-		inBeam.SetPolygon(intersected);
-		outBeam.SetPolygon(intersected);
+		int facetID = facetIDs.arr[i];
 
-		bool hasOutBeam;
-		SetOpticalBeamParams(facetID, beam, inBeam, outBeam, hasOutBeam);
-		PushBeamsToTree(beam, facetID, hasOutBeam, inBeam, outBeam);
+		Polygon intersection;
+		bool isIntersected = Intersect(facetID, beam, intersection);
 
-		Polygon resultBeams[MAX_VERTEX_NUM];
-		int resultSize = 0;
-		CutBeamByFacet(facetID, beam, isDivided, resultBeams, resultSize);
-
-		if (isDivided)
+		if (isIntersected)
 		{
-			Beam tmp = beam;// OPT: try to replace 'tmp' to 'beam'
+			Beam inBeam, outBeam;
+			inBeam.SetPolygon(intersection);
+			outBeam.SetPolygon(intersection);
 
-			for (int i = 0; i < resultSize; ++i)
+			bool hasOutBeam;
+			SetOpticalBeamParams(facetID, beam, inBeam, outBeam, hasOutBeam);
+			PushBeamsToTree(beam, facetID, hasOutBeam, inBeam, outBeam);
+
+			Polygon resultBeams[MAX_VERTEX_NUM];
+			int resultSize = 0;
+			CutBeamByFacet(facetID, beam, resultBeams, resultSize);
+
+			if (resultSize > CLIP_RESULT_SINGLE)
 			{
-				tmp = resultBeams[i];
-				assert(m_treeSize < MAX_BEAM_REFL_NUM);
-				m_beamTree[m_treeSize++] = tmp;
-				beam.size = 0;
+				Beam tmp = beam; // OPT: try to replace 'tmp' to 'beam'
+
+				for (int i = 0; i < resultSize; ++i)
+				{
+					tmp = resultBeams[i];
+					assert(m_treeSize < MAX_BEAM_REFL_NUM);
+					m_beamTree[m_treeSize++] = tmp;
+				}
+
+				break;
 			}
-		}
-		else if (resultSize == 1)
-		{
-			beam = resultBeams[0];
 		}
 	}
 }
+
 void TracingConcave::PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
 									   Beam &inBeam, Beam &outBeam,
 									   std::vector<Beam> &passed)
@@ -616,8 +598,8 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma,
 
 				if (index != -1)
 				{
-					bool isDivided;
-					TraceSecondaryBeamByFacet(beam, facetID, isDivided);
+//					bool isDivided;
+					ScatterBeamByFacets(beam);
 
 					Polygon intersected;
 					bool hasIntersection = Intersect(facetID, beam, intersected);

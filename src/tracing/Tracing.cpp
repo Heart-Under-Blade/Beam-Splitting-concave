@@ -34,6 +34,9 @@ Tracing::Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalP
 	double im = imag(m_refrIndex);
 	ri_coef_re = re*re - im*im;
 	ri_coef_im = 4*re*re*im;
+
+	m_norm_case_i1 = (2.0*m_refrIndex)/(1.0 + m_refrIndex);
+	m_norm_case_i2 = (1.0 - m_refrIndex)/(1.0 + m_refrIndex);
 }
 
 Tracing::~Tracing() {}
@@ -59,7 +62,7 @@ double Tracing::BeamCrossSection(const Beam &beam) const
 void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN,
 											int facetId, Beam &inBeam, Beam &outBeam)
 {
-	const Point3f &facetNormal = m_particle->facets[facetId].in_normal;
+	const Point3f &facetNormal = m_facets[facetId].in_normal;
 
 	RotatePolarisationPlane(beamDir, facetNormal, inBeam);
 
@@ -68,19 +71,15 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 
 	double cosReflN = DotProduct(facetNormal, reflDir);
 
-	complex Tv00 = m_refrIndex*cosIN;
-	complex Th00 = m_refrIndex*cosReflN;
+	complex Tv0 = m_refrIndex*cosIN + cosReflN;
+	complex Th0 = m_refrIndex*cosReflN + cosIN;
 
-	complex Tv0 = Tv00 + cosReflN;
-	complex Th0 = Th00 + cosIN;
-
-	complex Tv = (Tv00 - cosReflN)/Tv0;
-	complex Th = (cosIN - Th00)/Th0;
+	complex Tv = (m_refrIndex*cosIN - cosReflN)/Tv0;
+	complex Th = (cosIN - m_refrIndex*cosReflN)/Th0;
 	SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
 
 	double cosInc2 = (2.0*cosIN);
-	SetBeam(inBeam, inBeam, reflDir, inBeam.e,
-			cosInc2/Tv0, cosInc2/Th0);
+	SetBeam(inBeam, inBeam, reflDir, inBeam.e, cosInc2/Tv0, cosInc2/Th0);
 }
 
 void Tracing::SetBeamID(Beam &beam)
@@ -88,7 +87,6 @@ void Tracing::SetBeamID(Beam &beam)
 #ifdef _TRACK_ALLOW
 	beam.id += (beam.lastFacetID + 1);
 	beam.id *= (m_particle->facetNum + 1);
-	//	AddToTrack(beam, facetId);
 #endif
 }
 
@@ -245,8 +243,8 @@ void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
 
 bool Tracing::IsTerminalBeam(const Beam &beam)
 {
-	double j_norm = beam.J.Norm(); // OPT: move to last element of comparison
-	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
+	return (beam.level >= m_interReflectionNumber)
+			|| (beam.J.Norm() < LOW_ENERGY_LEVEL);
 }
 
 double Tracing::CalcNr(const double &cosIN) const
@@ -347,13 +345,8 @@ void Tracing::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBea
 										   Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &dir = incidentBeam.direction;
-	complex temp;
-
-	temp = (2.0*m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
-	SetBeam(outBeam, incidentBeam, dir, incidentBeam.e, temp, temp);
-
-	temp = (1.0 - m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
-	SetBeam(inBeam, incidentBeam, -dir, incidentBeam.e, temp, -temp);
+	SetBeam(outBeam, incidentBeam,  dir, incidentBeam.e, m_norm_case_i1,  m_norm_case_i1);
+	SetBeam( inBeam, incidentBeam, -dir, incidentBeam.e, m_norm_case_i2, -m_norm_case_i2);
 
 	if (m_isOpticalPath)
 	{
@@ -398,9 +391,8 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 {
 	const Point3f &incidentDir = incidentBeam.direction;
 
-	double cosIN_sqr = cosIN*cosIN;
 	complex tmp0 = m_refrIndex*cosIN;
-	const double bf = Nr*(1.0 - cosIN_sqr) - 1.0;
+	const double bf = Nr*(1.0 - cosIN*cosIN) - 1.0;
 	double im = (bf > 0) ? sqrt(bf) : 0;
 
 	const complex sq(0, im);

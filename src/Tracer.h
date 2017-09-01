@@ -25,10 +25,10 @@ struct Contribution
 
 struct TrackGroup
 {
-	int groupID;
+	std::vector<std::vector<int>> tracks;
 	long long int arr[MAX_GROUP_NUM];
 	int size = 0;
-	std::vector<std::vector<int>> tracks;
+	int groupID;
 
 	std::string CreateGroupName() const
 	{
@@ -105,9 +105,9 @@ struct AngleRange
 {
 	double min;
 	double max;
-	int number;
 	double norm;
 	double step;
+	int number;
 
 	AngleRange(double _min, double _max, int _number)
 		: number(_number)
@@ -133,10 +133,10 @@ struct Cone
 	}
 
 	double radius;
-	int phiCount;
-	int thetaCount;
 	double dPhi;
 	double dTheta;
+	int phiCount;
+	int thetaCount;
 };
 
 class Tracer

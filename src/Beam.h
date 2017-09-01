@@ -45,10 +45,6 @@ public:
 	JonesMatrix J;					///< Jones matrix of beam
 	Point3f e;						///< basis of polarization plane
 
-	int lastFacetID;				///< last reflected facet
-	int level;						///< number of preview reflections
-	Location location;				///< beam state towards the particle (inside or outside)
-
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
@@ -57,6 +53,10 @@ public:
 	long long int id = 0;
 //	std::vector<int> track;
 #endif
+
+	int lastFacetID;				///< last reflected facet
+	int level;						///< number of preview reflections
+	Location location;				///< beam state towards the particle (inside or outside)
 
 private:
 	void RotateJMatrix(const Point3f &newBasis);
