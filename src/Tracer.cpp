@@ -380,7 +380,7 @@ void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
 	}
 }
 
-void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
+void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -397,7 +397,7 @@ void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
 		m_statistics += "\n\nWARNING! NAN values occured. See 'log.txt'";
 	}
 
-	ofstream out("out.dat", ios::out);
+	ofstream out(path + "\\out.dat", ios::out);
 
 	out << m_statistics;
 	out.close();
@@ -580,7 +580,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	}
 
 	long long orNumber = betaRange.number * gammaRange.number;
-	OutputStatisticsPO(timer, orNumber);
+	OutputStatisticsPO(timer, orNumber, m_resultDirName);
 }
 
 //REF: объединить с предыдущим
