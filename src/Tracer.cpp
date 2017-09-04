@@ -490,12 +490,69 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		m_incomingEnergy *= gNorm;
 
 		double degBeta = RadToDeg(beta);
-		OutputToAllFile(diffFile, otherFile, degBeta, allFile, All, Other);
-		OutputToAllFile(diffFile_cor, otherFile_cor, degBeta, allFile_cor,
-						All_cor, Other_cor);
 
-		OutputToGroupFiles(degBeta, groupFiles, groupResultM, tracks.size());
-		OutputToGroupFiles(degBeta, groupFiles_cor, groupResultM_cor, tracks.size());
+		{
+			allFile << degBeta << ' ' << m_incomingEnergy << ' ';
+			matrix m = All(0, 0);
+			allFile << m << endl;
+			All.ClearArr();
+
+			for (size_t group = 0; group < groupResultM.size(); ++group)
+			{
+				Arr2D &mtrx = groupResultM[group];
+				matrix m1 = mtrx(0, 0);
+				ofstream &file = *(groupFiles[group]);
+				file << degBeta << ' ' << m_incomingEnergy << ' ';
+				file << m1 << endl;
+			}
+
+			groupResultM.clear();
+			AllocGroupMatrices(groupResultM, tracks.size());
+
+			if (isCalcOther)
+			{
+				otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m0 = Other(0, 0);
+				otherFile << m0 << endl;
+				Other.ClearArr();
+
+				diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m00 = m - m0;
+				diffFile << m00 << endl;
+			}
+
+		}
+
+		{
+			allFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
+			matrix m = All_cor(0, 0);
+			allFile_cor << m << endl;
+			All_cor.ClearArr();
+
+			for (size_t group = 0; group < groupResultM_cor.size(); ++group)
+			{
+				Arr2D &mtrx = groupResultM_cor[group];
+				matrix m1 = mtrx(0, 0);
+				ofstream &file = *(groupFiles_cor[group]);
+				file << degBeta << ' ' << m_incomingEnergy << ' ';
+				file << m1 << endl;
+			}
+
+			groupResultM_cor.clear();
+			AllocGroupMatrices(groupResultM_cor, tracks.size());
+
+			if (isCalcOther)
+			{
+				otherFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m0 = Other_cor(0, 0);
+				otherFile_cor << m0 << endl;
+				Other_cor.ClearArr();
+
+				diffFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m00 = m - m0;
+				diffFile_cor << m00 << endl;
+			}
+		}
 	}
 
 	EraseConsoleLine(50);
