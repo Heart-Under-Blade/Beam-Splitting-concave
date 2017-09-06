@@ -468,7 +468,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			AddResultToMatrix(All, J, gNorm);
 			CleanJ(J);
 
-			AddResultToMatrices(groupResultM_cor, gNorm);
+			AddResultToMatrices_cor(groupResultM_cor, gNorm);
 			AddResultToMatrix(All_cor, J_cor, gNorm);
 			CleanJ(J_cor);
 

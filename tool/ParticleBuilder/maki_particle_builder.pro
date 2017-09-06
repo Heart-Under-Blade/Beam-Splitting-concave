@@ -18,15 +18,25 @@ INCLUDEPATH += \
 
 SOURCES += \
 	main.cpp \
+	../../src/geometry/Facet.cpp \
+	../../src/geometry/Polygon.cpp \
+	../../src/common/common.cpp \
 	../../src/particle/ConcaveHexagonal.cpp \
 	../../src/particle/Hexagonal.cpp \
 	../../src/particle/HexagonalAggregate.cpp \
+	../../src/particle/Bullet.cpp \
+	../../src/particle/BulletRosette.cpp \
 	../../src/particle/Particle.cpp \
 	../../src/geometry/geometry_lib.cpp
 
 HEADERS += \
+	../../src/geometry/Facet.h \
+	../../src/geometry/Polygon.h \
+	../../src/common/global.h \
 	../../src/particle/ConcaveHexagonal.h \
 	../../src/particle/Hexagonal.h \
-	../../src/particle/HexagonalAggregate.cpp \
+	../../src/particle/HexagonalAggregate.h \
+	../../src/particle/Bullet.h \
+	../../src/particle/BulletRosette.h \
 	../../src/particle/Particle.h \
 	../../src/geometry/geometry_lib.h
