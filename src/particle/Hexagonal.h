@@ -25,6 +25,8 @@ protected:
 protected:
 	void SetFacetParams() override;
 	void SetBases(Facet &top, Facet &bottom);
+	void SetTwoDiagonalPoints(int index, Point3f *facet,
+							  double x, double y, double z);
 	void SetSides(Facet &baseTop, Facet &baseBottom);
 	void SetSideFacetParams(int first, int last);
 	void SetSize(double diameter, double height);

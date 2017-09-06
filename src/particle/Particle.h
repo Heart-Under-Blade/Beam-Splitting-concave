@@ -5,6 +5,7 @@
 #include "compl.hpp"
 #include "geometry_lib.h"
 #include "Facet.h"
+#include <vector>
 
 #define ROT_MTR_RANK 3
 
@@ -22,6 +23,10 @@ public:
 	void SetFromFile(const char *filename);
 
 	void Rotate(double beta, double gamma, double alpha);
+	void Move(float dx, float dy, float dz);
+	void Fix();
+
+	void Concate(const std::vector<Particle> &parts);
 
 	const double &GetMainSize() const;
 	const complex &GetRefractionIndex() const;
@@ -48,7 +53,7 @@ protected:
 
 	void SetDefaultNormals();
 	void SetDefaultCenters();
-	void SetActualState();
+	void Reset();
 	void SetSymmetry(double beta, double gamma, double alpha = 0);
 	virtual void SetFacetParams() {}
 

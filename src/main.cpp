@@ -14,6 +14,8 @@
 #include "Hexagonal.h"
 #include "ConcaveHexagonal.h"
 #include "CertainAggregate.h"
+#include "Bullet.h"
+#include "BulletRosette.h"
 
 #include "global.h"
 #include "Beam.h"
@@ -36,6 +38,8 @@ using namespace chrono;
 enum class ParticleType : int
 {
 	Hexagonal = 1,
+	Bullet = 2,
+	BulletRosette = 3,
 	ConcaveHexagonal = 10,
 	TiltedHexagonal = 11,
 	HexagonalAggregate = 12,
@@ -254,6 +258,14 @@ int main(int argc, const char* argv[])
 		case ParticleType::Hexagonal:
 			particle = new Hexagonal(ri, d, h);
 			break;
+		case ParticleType::Bullet:
+			sup = parser.GetDoubleValue("p", 3);
+			particle = new Bullet(ri, d, h, sup);
+			break;
+		case ParticleType::BulletRosette:
+			sup = (d*sqrt(3)*tan(DegToRad(62)))/4;
+			particle = new BulletRosette(ri, d, h, sup);
+			break;
 //		case ParticleType::TiltedHexagonal:
 //			sup = parser.argToValue<double>(vec[3]);
 //			particle = new TiltedHexagonal(r, hh, ri, sup);
@@ -275,6 +287,9 @@ int main(int argc, const char* argv[])
 			break;
 		}
 
+//		particle->Move(0, 50, 0);
+//		particle->Fix();
+//		particle->Rotate(RadToDeg(90), 0, 0);
 		particle->Output();
 
 		int reflNum = parser.GetDoubleValue("n");

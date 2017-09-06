@@ -329,7 +329,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	SetActualState();
+	Reset();
 }
 
 void CertainAggregate::Resize(double sizeIndex)
