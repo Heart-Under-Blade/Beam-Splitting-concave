@@ -279,8 +279,8 @@ int main(int argc, const char* argv[])
 			particle = new HexagonalAggregate(ri, d, h, num);
 			break;
 		case ParticleType::CertainAggregate:
-			num = parser.GetIntValue("p", 3);
-			particle = new CertainAggregate(ri, num);
+			sup = parser.GetDoubleValue("p", 3);
+			particle = new CertainAggregate(ri, sup);
 			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
