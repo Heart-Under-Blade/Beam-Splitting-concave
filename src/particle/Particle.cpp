@@ -41,6 +41,33 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 	RotateCenters();
 }
 
+void Particle::Fix()
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		for (int j = 0; j < facets[i].size; ++j)
+		{
+			defaultFacets[i].arr[j] = facets[i].arr[j];
+		}
+	}
+}
+
+void Particle::Concate(const std::vector<Particle> &parts)
+{
+	int i = 0;
+	facetNum = 0;
+
+	for (const Particle &part : parts)
+	{
+		facetNum += part.facetNum;
+
+		for (int j = 0; j < part.facetNum; ++j)
+		{
+			defaultFacets[i++] = part.facets[j];
+		}
+	}
+}
+
 const double &Particle::GetMainSize() const
 {
 	return m_mainSize;
@@ -54,6 +81,17 @@ const complex &Particle::GetRefractionIndex() const
 const Symmetry &Particle::GetSymmetry() const
 {
 	return m_symmetry;
+}
+
+void Particle::Move(float dx, float dy, float dz)
+{
+	for (int i = 0; i < facetNum; ++i)
+	{
+		for (int j = 0; j < defaultFacets[i].size; ++j)
+		{
+			facets[i].arr[j] = defaultFacets[i].arr[j] + Point3f(dx, dy, dz);
+		}
+	}
 }
 
 void Particle::Output()
@@ -87,7 +125,7 @@ void Particle::SetDefaultNormals()
 	}
 }
 
-void Particle::SetActualState()
+void Particle::Reset()
 {
 	for (int i = 0; i < facetNum; ++i)
 	{

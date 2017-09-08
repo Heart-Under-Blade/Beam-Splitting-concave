@@ -165,7 +165,7 @@ public:
 
 	void setIsCalcOther(bool value); // REF: заменить
 
-	void OutputStatisticsPO(CalcTimer &timer, long long orNumber);
+	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
 private:
 	Tracing *m_tracing;
@@ -197,6 +197,8 @@ private:
 
 	std::string m_statistics;
 
+	bool isNan = false;
+	bool isNanOccured = false;
 private:
 	void CleanJ(int size, const Cone &bsCone);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);

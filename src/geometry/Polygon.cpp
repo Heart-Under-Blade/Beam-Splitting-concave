@@ -1,4 +1,7 @@
 #include "Polygon.h"
+#include <math.h>
+
+#define EPS_NORMAL 0.1
 
 Polygon::Polygon()
 {
@@ -114,10 +117,22 @@ Point3f Polygon::Normal() const
 {
 	Point3f normal;
 
-	Point3f p1 = arr[1] - arr[0];
-	Point3f p2 = arr[2] - arr[0];
-	CrossProduct(p1, p2, normal);
+	int count = 0;
+	int start, first, next;
+	start = size-1;
 
-	Normalize(normal);
+	do
+	{
+		start = (start + 1 != size) ? start + 1 : 0;
+		first = (start + 1 != size) ? start + 1 : 0;
+		next  = (first + 1 != size) ? first + 1 : 0;
+		Point3f p1 = arr[first] - arr[start];
+		Point3f p2 = arr[next] - arr[start];
+		CrossProduct(p1, p2, normal);
+		Normalize(normal);
+		++count;
+	}
+	while (isnan(normal.cx) && count < size);
+
 	return normal;
 }

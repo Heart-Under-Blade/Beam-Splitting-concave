@@ -555,7 +555,6 @@ void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 				tmp = resultBeams[i];
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = tmp;
-				beam.size = 0;
 			}
 		}
 		else if (resultSize == 1)

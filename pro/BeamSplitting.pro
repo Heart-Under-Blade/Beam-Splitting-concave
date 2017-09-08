@@ -54,7 +54,9 @@ HEADERS += \
 	../src/particle/CertainAggregate.h\
 	../src/ArgPP.h \
     ../src/geometry/Polygon.h \
-    ../src/geometry/Facet.h
+    ../src/geometry/Facet.h \
+    ../src/particle/BulletRosette.h \
+    ../src/particle/Bullet.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -83,5 +85,7 @@ SOURCES += \
     ../src/particle/HexagonalAggregate.cpp \
     ../src/particle/CertainAggregate.cpp \
     ../src/geometry/Polygon.cpp \
-    ../src/geometry/Facet.cpp
+    ../src/geometry/Facet.cpp \
+    ../src/particle/BulletRosette.cpp \
+    ../src/particle/Bullet.cpp
 

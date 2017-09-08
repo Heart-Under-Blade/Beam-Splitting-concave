@@ -329,7 +329,16 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	SetActualState();
+	Reset();
+
+	for (int i = 0; i < facetNum; ++i)
+	{
+		defaultFacets[i].isVisibleIn = false;
+		defaultFacets[i].isVisibleOut = false;
+		facets[i].isVisibleIn = false;
+		facets[i].isVisibleOut = false;
+	}
+
 }
 
 void CertainAggregate::Resize(double sizeIndex)
@@ -347,12 +356,6 @@ void CertainAggregate::Resize(double sizeIndex)
 
 void CertainAggregate::SetFacetParams()
 {
-	for (int i = 0; i < facetNum; ++i)
-	{
-		facets[i].isVisibleIn = false;
-		facets[i].isVisibleOut = false;
-	}
-
 	for (int i = 0; i < facetNum; ++i)
 	{
 		if (i%8 == 7 || i%8 == 0 || i == 0)

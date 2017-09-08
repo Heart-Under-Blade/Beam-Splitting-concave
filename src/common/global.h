@@ -10,7 +10,6 @@
 
 #include <string>
 
-void Dellines(int count);
 void EraseConsoleLine(int lenght);
 
 double DegToRad(double deg);

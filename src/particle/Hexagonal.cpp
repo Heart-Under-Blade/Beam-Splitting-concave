@@ -18,7 +18,7 @@ Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 	SetSides(defaultFacets[0], defaultFacets[7]);
 
 	SetDefaultNormals();
-	SetActualState();
+	Reset();
 	SetDefaultCenters();
 }
 
@@ -54,33 +54,29 @@ void Hexagonal::SetBases(Facet &top, Facet &bottom)
 	double radius = m_diameter/2;
 	double halfHeight = m_height/2;
 
-	int halfNumber = BASE_VERTEX_NUM/2;
 	double halfRadius = radius/2;
 	double inRadius = (sqrt(3) * radius) / 2;
 
-	auto SetTwoDiagonalPoints = [&] (int startIndex, double x, double y, double z)
-	{
-		int endIndex = startIndex + halfNumber;
-
-		for (int i = startIndex; i <= endIndex; i += halfNumber)
-		{
-			facet[i] = Point3f(x, y, z);
-			x = -x;
-			y = -y;
-		}
-	};
-
 	// top base facet
 	facet = top.arr;
-	SetTwoDiagonalPoints(0, halfRadius, inRadius, halfHeight);
-	SetTwoDiagonalPoints(1, -halfRadius, inRadius, halfHeight);
-	SetTwoDiagonalPoints(2, -radius, 0, halfHeight);
+	SetTwoDiagonalPoints(0, facet, halfRadius, inRadius, halfHeight);
+	SetTwoDiagonalPoints(1, facet, -halfRadius, inRadius, halfHeight);
+	SetTwoDiagonalPoints(2, facet, -radius, 0, halfHeight);
 
 	// bottom base facet
 	facet = bottom.arr;
-	SetTwoDiagonalPoints(0, radius, 0, -halfHeight);
-	SetTwoDiagonalPoints(1, halfRadius, -inRadius, -halfHeight);
-	SetTwoDiagonalPoints(2, -halfRadius, -inRadius, -halfHeight);
+	SetTwoDiagonalPoints(0, facet, radius, 0, -halfHeight);
+	SetTwoDiagonalPoints(1, facet, halfRadius, -inRadius, -halfHeight);
+	SetTwoDiagonalPoints(2, facet, -halfRadius, -inRadius, -halfHeight);
+}
+
+void Hexagonal::SetTwoDiagonalPoints(int index, Point3f *facet,
+									 double x, double y, double z)
+{
+	int halfNumber = BASE_VERTEX_NUM/2;
+	int endIndex = index + halfNumber;
+	facet[index] = Point3f(x, y, z);
+	facet[endIndex] = Point3f(-x, -y, z);
 }
 
 void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)

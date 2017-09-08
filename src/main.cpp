@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <assert.h>
@@ -14,6 +15,8 @@
 #include "Hexagonal.h"
 #include "ConcaveHexagonal.h"
 #include "CertainAggregate.h"
+#include "Bullet.h"
+#include "BulletRosette.h"
 
 #include "global.h"
 #include "Beam.h"
@@ -36,6 +39,8 @@ using namespace chrono;
 enum class ParticleType : int
 {
 	Hexagonal = 1,
+	Bullet = 2,
+	BulletRosette = 3,
 	ConcaveHexagonal = 10,
 	TiltedHexagonal = 11,
 	HexagonalAggregate = 12,
@@ -174,6 +179,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
 	parser.AddRule("all", 0, true); // calculate all
 	parser.AddRule("o", 1, true); // output file name
+	parser.AddRule("close", 0, true); // geometrical optics method
 }
 
 Cone SetCone(ArgPP &parser)
@@ -234,6 +240,8 @@ int main(int argc, const char* argv[])
 	Particle *particle = nullptr;
 	Tracing *tracing = nullptr;
 
+	bool isCloseConsole = false;
+
 	if (argc > 1) // has command line arguments
 	{
 		ArgPP parser;
@@ -254,6 +262,14 @@ int main(int argc, const char* argv[])
 		case ParticleType::Hexagonal:
 			particle = new Hexagonal(ri, d, h);
 			break;
+		case ParticleType::Bullet:
+			sup = parser.GetDoubleValue("p", 3);
+			particle = new Bullet(ri, d, h, sup);
+			break;
+		case ParticleType::BulletRosette:
+			sup = (d*sqrt(3)*tan(DegToRad(62)))/4;
+			particle = new BulletRosette(ri, d, h, sup);
+			break;
 //		case ParticleType::TiltedHexagonal:
 //			sup = parser.argToValue<double>(vec[3]);
 //			particle = new TiltedHexagonal(r, hh, ri, sup);
@@ -267,14 +283,17 @@ int main(int argc, const char* argv[])
 			particle = new HexagonalAggregate(ri, d, h, num);
 			break;
 		case ParticleType::CertainAggregate:
-			num = parser.GetIntValue("p", 3);
-			particle = new CertainAggregate(ri, num);
+			sup = parser.GetDoubleValue("p", 3);
+			particle = new CertainAggregate(ri, sup);
 			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
 			break;
 		}
 
+//		particle->Move(0, 50, 0);
+//		particle->Fix();
+//		particle->Rotate(RadToDeg(90), 0, 0);
 		particle->Output();
 
 		int reflNum = parser.GetDoubleValue("n");
@@ -350,7 +369,7 @@ int main(int argc, const char* argv[])
 				tracer.setIsCalcOther(true);
 				tracer.TraceIntervalGO(betaR, gammaR, trackGroups);
 			}
-			//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
+			// tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 		}
 		else
 		{
@@ -358,8 +377,17 @@ int main(int argc, const char* argv[])
 		}
 
 		cout << endl << "done";
+
+		if (parser.Occured("close"))
+		{
+			isCloseConsole = true;
+		}
 	}
 
-	getchar();
+	if (!isCloseConsole)
+	{
+		getchar();
+	}
+
 	return 0;
 }

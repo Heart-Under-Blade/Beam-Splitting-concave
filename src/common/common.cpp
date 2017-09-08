@@ -1,7 +1,9 @@
 #include "global.h"
 #include "macro.h"
 #include <string>
+
 #include <iostream>
+using namespace std;
 
 #ifdef _WIN32
 #include <windows.h>
@@ -9,33 +11,8 @@
 
 void OutputState(int i, int j)
 {
-	logfile << "i: " << i << "; j: " << j << std::endl;
+	logfile << "i: " << i << ", j: " << j << endl;
 	logfile.flush();
-}
-
-void Dellines(int count)
-{
-#ifdef _WIN32
-	std::string mask;
-
-	for (int i = 0; i < count*80; ++i)
-	{
-		mask.append(" ");
-	}
-
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_SCREEN_BUFFER_INFO ci;
-	GetConsoleScreenBufferInfo(hConsole, &ci);
-
-	ci.dwCursorPosition.X = 0;
-	ci.dwCursorPosition.Y -= count-1;
-	SetConsoleCursorPosition(hConsole, ci.dwCursorPosition);
-	std::cout<< mask;
-	SetConsoleCursorPosition(hConsole, ci.dwCursorPosition);
-#else
-	++count;
-	--count;
-#endif
 }
 
 std::string CreateDir(const std::string &name)
@@ -50,7 +27,7 @@ std::string CreateDir(const std::string &name)
 	// get the current directory, and store it
 	if (!GetCurrentDirectoryA(bufferSize, cdir))
 	{
-		std::cerr << "Error getting current directory: #" << GetLastError();
+		cerr << "Error getting current directory: #" << GetLastError();
 	}
 
 	strcat(cdir, "\\");
@@ -62,7 +39,7 @@ std::string CreateDir(const std::string &name)
 	for (int i = 1; !CreateDirectoryA(cdir, NULL); ++i)
 	{
 		std::string dirName = dirN;
-		dirName += "(" + std::to_string(i) + ")";
+		dirName += "(" + to_string(i) + ")";
 		strcpy(cdir, dirName.c_str());
 	}
 
@@ -77,14 +54,14 @@ std::string CreateDir(const std::string &name)
 
 void EraseConsoleLine(int lenght)
 {
-	std::cout << '\r';
+	cout << '\r';
 
 	for (int i = 0; i < lenght; ++i)
 	{
-		std::cout << ' ';
+		cout << ' ';
 	}
 
-	std::cout << '\r';
+	cout << '\r';
 }
 
 double DegToRad(double deg)

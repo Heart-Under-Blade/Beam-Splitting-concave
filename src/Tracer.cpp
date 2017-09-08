@@ -5,9 +5,9 @@
 #include "global.h"
 #include "macro.h"
 
-#define BEAM_DIR_LIM	0.9396
-#define SPHERE_RING_NUM 180
-#define BIN_SIZE		M_PI/SPHERE_RING_NUM
+#define BEAM_DIR_LIM		0.9396
+#define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
+#define BIN_SIZE			M_PI/SPHERE_RING_NUM
 
 using namespace std;
 
@@ -102,7 +102,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
 {
 	EraseConsoleLine(50);
-	cout << (count*100)/betaNumber << '%'
+	cout << (count*100)/(betaNumber+1) << '%'
 		 << '\t' << timer.Elapsed();
 }
 
@@ -380,7 +380,7 @@ void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
 	}
 }
 
-void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
+void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -392,7 +392,13 @@ void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber)
 			+ "\nTotal time of calculation = " + totalTime
 			+ "\nTotal number of body orientation = " + to_string(orNumber);
 
-	ofstream out("out.dat", ios::out);
+	if (isNanOccured)
+	{
+		m_statistics += "\n\nWARNING! NAN values occured. See 'log.txt'";
+	}
+
+	ofstream out(path + "\\out.dat", ios::out);
+
 	out << m_statistics;
 	out.close();
 
@@ -462,9 +468,20 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			AddResultToMatrix(All, J, gNorm);
 			CleanJ(J);
 
-			AddResultToMatrices(groupResultM_cor, gNorm);
+			AddResultToMatrices_cor(groupResultM_cor, gNorm);
 			AddResultToMatrix(All_cor, J_cor, gNorm);
 			CleanJ(J_cor);
+
+			if (isNan)
+			{
+				logfile << "------------------";
+				isNan = false;
+				CleanJ(J);
+				CleanJ(J_cor);
+//				assert(false); // DEB
+				continue;
+			}
+
 #ifdef _DEBUG // DEB
 			cout << "\r     \rj: " << j;
 #endif
@@ -473,13 +490,73 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		m_incomingEnergy *= gNorm;
 
 		double degBeta = RadToDeg(beta);
-		OutputToAllFile(diffFile, otherFile, degBeta, allFile, All, Other);
-		OutputToAllFile(diffFile_cor, otherFile_cor, degBeta, allFile_cor,
-						All_cor, Other_cor);
 
-		OutputToGroupFiles(degBeta, groupFiles, groupResultM, tracks.size());
-		OutputToGroupFiles(degBeta, groupFiles_cor, groupResultM_cor, tracks.size());
+		{
+			allFile << degBeta << ' ' << m_incomingEnergy << ' ';
+			matrix m = All(0, 0);
+			allFile << m << endl;
+			All.ClearArr();
+
+			for (size_t group = 0; group < groupResultM.size(); ++group)
+			{
+				Arr2D &mtrx = groupResultM[group];
+				matrix m1 = mtrx(0, 0);
+				ofstream &file = *(groupFiles[group]);
+				file << degBeta << ' ' << m_incomingEnergy << ' ';
+				file << m1 << endl;
+			}
+
+			groupResultM.clear();
+			AllocGroupMatrices(groupResultM, tracks.size());
+
+			if (isCalcOther)
+			{
+				otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m0 = Other(0, 0);
+				otherFile << m0 << endl;
+				Other.ClearArr();
+
+				diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m00 = m - m0;
+				diffFile << m00 << endl;
+			}
+
+		}
+
+		{
+			allFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
+			matrix m = All_cor(0, 0);
+			allFile_cor << m << endl;
+			All_cor.ClearArr();
+
+			for (size_t group = 0; group < groupResultM_cor.size(); ++group)
+			{
+				Arr2D &mtrx = groupResultM_cor[group];
+				matrix m1 = mtrx(0, 0);
+				ofstream &file = *(groupFiles_cor[group]);
+				file << degBeta << ' ' << m_incomingEnergy << ' ';
+				file << m1 << endl;
+			}
+
+			groupResultM_cor.clear();
+			AllocGroupMatrices(groupResultM_cor, tracks.size());
+
+			if (isCalcOther)
+			{
+				otherFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m0 = Other_cor(0, 0);
+				otherFile_cor << m0 << endl;
+				Other_cor.ClearArr();
+
+				diffFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
+				matrix m00 = m - m0;
+				diffFile_cor << m00 << endl;
+			}
+		}
 	}
+
+	EraseConsoleLine(50);
+	cout << "100%";
 
 	allFile.close();
 	allFile_cor.close();
@@ -503,7 +580,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	}
 
 	long long orNumber = betaRange.number * gammaRange.number;
-	OutputStatisticsPO(timer, orNumber);
+	OutputStatisticsPO(timer, orNumber, m_resultDirName);
 }
 
 //REF: объединить с предыдущим
@@ -1073,12 +1150,17 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 		complex fn(0, 0);
 		fn = beam.DiffractionIncline(vr, wavelength);
 
+		if (isnan(real(fn)))
+		{
+			isNanOccured = isNan = true;
+			return;
+		}
+
 		double dp = DotProductD(vr, Point3d(center));
 		complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
 		matrixC fn_jn = beam.J * tmp;
 
 		matrixC c = fn*Jn_rot*fn_jn;
-
 		// correction
 		matrixC c_cor = c;
 		c_cor[0][1] -= c_cor[1][0];

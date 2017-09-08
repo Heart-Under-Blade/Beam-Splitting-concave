@@ -27,7 +27,7 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 	SetSides(baseTop, baseBottom);
 
 	SetDefaultNormals();
-	SetActualState();
+	Reset();
 	SetDefaultCenters();
 }
 

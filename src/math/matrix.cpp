@@ -2,9 +2,19 @@
 //=============================================================================
 
 // members of matrix
+unsigned int matrix::getN() const
+{
+    return n;
+}
+
+unsigned int matrix::getM() const
+{
+    return m;
+}
+
 void matrix::AllocMem(void)
 {
-	this->ptr = new double*[this->n];
+    this->ptr = new double*[this->n];
 	#ifdef _DEBUG
 	if(!ptr)
 		throw "matrix::AllocMem(): Error!";

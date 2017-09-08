@@ -100,7 +100,7 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	SetActualState();
+	Reset();
 }
 
 void HexagonalAggregate::SetFacetParams()
