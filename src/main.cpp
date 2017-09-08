@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <assert.h>
@@ -178,6 +179,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
 	parser.AddRule("all", 0, true); // calculate all
 	parser.AddRule("o", 1, true); // output file name
+	parser.AddRule("close", 0, true); // geometrical optics method
 }
 
 Cone SetCone(ArgPP &parser)
@@ -237,6 +239,8 @@ int main(int argc, const char* argv[])
 {
 	Particle *particle = nullptr;
 	Tracing *tracing = nullptr;
+
+	bool isCloseConsole = false;
 
 	if (argc > 1) // has command line arguments
 	{
@@ -365,7 +369,7 @@ int main(int argc, const char* argv[])
 				tracer.setIsCalcOther(true);
 				tracer.TraceIntervalGO(betaR, gammaR, trackGroups);
 			}
-			//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
+			// tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 		}
 		else
 		{
@@ -373,8 +377,17 @@ int main(int argc, const char* argv[])
 		}
 
 		cout << endl << "done";
+
+		if (parser.Occured("close"))
+		{
+			isCloseConsole = true;
+		}
 	}
 
-	getchar();
+	if (!isCloseConsole)
+	{
+		getchar();
+	}
+
 	return 0;
 }
