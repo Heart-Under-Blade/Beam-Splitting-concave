@@ -11,10 +11,6 @@ using namespace std;
 
 #define EPS_ORTO_FACET 0.0001
 
-#ifdef _TRACK_ALLOW
-std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
-#endif
-
 TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   bool isOpticalPath, const Point3f &polarizationBasis,
 							   int interReflectionNumber)

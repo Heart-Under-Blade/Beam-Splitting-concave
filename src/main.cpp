@@ -300,7 +300,8 @@ int main(int argc, const char* argv[])
 
 		if (pt == ParticleType::ConcaveHexagonal ||
 				pt == ParticleType::HexagonalAggregate ||
-				pt == ParticleType::CertainAggregate)
+				pt == ParticleType::CertainAggregate||
+				pt == ParticleType::BulletRosette)
 		{
 			tracing = new TracingConcave(particle, incidentDir, isOpticalPath,
 										 polarizationBasis, reflNum);

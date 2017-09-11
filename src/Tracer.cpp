@@ -4,6 +4,10 @@
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
+#ifdef _TRACK_ALLOW
+std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
+#endif
+
 
 #define BEAM_DIR_LIM		0.9396
 #define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
@@ -929,6 +933,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 			HandleBeamsGO(outBeams, beta);
 			outBeams.clear();
 			OutputState(i, j);
+//			trackMapFile << m_totalMtrx.scatMatrix(0, 0)[0][0] << endl;
 		}
 
 		OutputProgress(betaNumber, i, timer);
