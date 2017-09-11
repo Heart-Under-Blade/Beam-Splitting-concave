@@ -4,11 +4,12 @@
 
 BulletRosette::BulletRosette()
 {
-
+	SetSymmetry(M_PI/2, M_PI);
 }
 
 BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 							 double height, double peakHeight)
+	: BulletRosette()
 {
 	double size = height*2 + diameter;
 	Init(8, refrIndex, size);
