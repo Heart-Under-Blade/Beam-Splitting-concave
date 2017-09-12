@@ -9,12 +9,6 @@ using namespace std;
 #include <windows.h>
 #endif
 
-void OutputState(int i, int j)
-{
-	logfile << "i: " << i << ", j: " << j << endl;
-	logfile.flush();
-}
-
 std::string CreateDir(const std::string &name)
 {
 	std::string dirName;
@@ -47,7 +41,33 @@ std::string CreateDir(const std::string &name)
 	strcat(dir, cdir);
 	dirName = dir;
 #else
-	dirName = dir;
+	dirName = name;
+#endif
+	return dirName;
+}
+
+std::string CreateDir2(const std::string &name)
+{
+	std::string dirName;
+#ifdef _WIN32
+	char cdir[MAX_PATH];
+	cdir[0] = '\0';
+	strcat(cdir, name.c_str());
+
+	char dirN[MAX_PATH];
+	strcpy(dirN, cdir);
+
+	for (int i = 1; !CreateDirectoryA(cdir, NULL); ++i)
+	{
+		std::string dirName = dirN;
+		dirName += "(" + to_string(i) + ")";
+		strcpy(cdir, dirName.c_str());
+	}
+
+	strcat(cdir, "\\");
+	dirName = cdir;
+#else
+	dirName = name;
 #endif
 	return dirName;
 }

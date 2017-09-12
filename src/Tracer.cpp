@@ -21,6 +21,12 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
 }
 
+void OutputState(int i, int j, ostream &logfile)
+{
+	logfile << "i: " << i << ", j: " << j << endl;
+	logfile.flush();
+}
+
 void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const string &dir,
 										  const Tracks &tracks)
 {
@@ -75,7 +81,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
-			OutputState(i, j);
+//			OutputState(i, j);
 		}
 
 		OutputProgress(betaNumber, i, timer);
@@ -413,20 +419,21 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	CalcTimer timer;
 	long long count = 0;
 
-	/*string dirName = */CreateDir(m_resultDirName);
-	logfile.open(m_resultDirName + "\\log.txt", std::ios::out);
+	string dirName = CreateDir(m_resultDirName);
+
+	ofstream logfile(dirName + "\\log.txt", ios::out);
 
 	ofstream allFile, otherFile, diffFile;
 	vector<ofstream*> groupFiles;
 
-	string resDirName = CreateDir(m_resultDirName + "\\res");
+	string resDirName = CreateDir2(dirName + "res");
 	CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
 	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName, Other);
 
 	ofstream allFile_cor, otherFile_cor, diffFile_cor;
 	vector<ofstream*> groupFiles_cor;
 
-	string corDirName = CreateDir(m_resultDirName + "\\cor");
+	string corDirName = CreateDir2(dirName + "cor");
 	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor, "cor_");
 	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor,
 					  betaRange, corDirName, Other_cor, "cor_");
@@ -474,7 +481,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 			outBeams.clear();
-			OutputState(i, j);
+			OutputState(i, j, logfile);
 
 			AddResultToMatrices(groupResultM, gNorm);
 			AddResultToMatrix(All, J, gNorm);
@@ -940,7 +947,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 #endif
 			HandleBeamsGO(outBeams, beta);
 			outBeams.clear();
-			OutputState(i, j);
+//			OutputState(i, j);
 		}
 
 		OutputProgress(betaNumber, i, timer);

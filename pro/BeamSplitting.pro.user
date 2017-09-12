@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.1.0, 2017-09-12T13:18:46. -->
+<!-- Written by QtCreator 4.1.0, 2017-09-12T14:31:54. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -254,7 +254,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Projects/BSc_0/pro/BeamSplitting.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 999 40 15 1 --ri 1.3116 -n 0 --random 180 10 --go -o testtest</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 999 40 15 1 --ri 1.3116 -n 0 --random 180 360 --go --all -o te</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">BeamSplitting.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>

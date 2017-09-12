@@ -16,10 +16,10 @@ using namespace std;
 Tracing::Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalPath,
 				 const Point3f &polarizationBasis, int interReflectionNumber)
 {
-	LOG_ASSERT(incidentDir.cx <= NORM_CEIL
-		   && incidentDir.cy <= NORM_CEIL
-		   && incidentDir.cz <= NORM_CEIL
-		   && "Direction of the start beam is not normalized.");
+//	LOG_ASSERT(incidentDir.cx <= NORM_CEIL
+//		   && incidentDir.cy <= NORM_CEIL
+//		   && incidentDir.cz <= NORM_CEIL
+//		   && "Direction of the start beam is not normalized.");
 
 	m_particle = particle;
 	m_facets = m_particle->facets;
@@ -705,7 +705,7 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 	tmp1 = (ri_coef_re + 1.0 - cosI_sqr + tmp1)/2.0;
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
 
-	LOG_ASSERT(tmp1 > 0);
+//	LOG_ASSERT(tmp1 > 0);
 	tmp1 = sqrt(tmp1);
 
 	reflDir = (tmp0/tmp1) - normal;
