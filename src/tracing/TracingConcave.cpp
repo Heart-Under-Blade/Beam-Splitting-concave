@@ -6,6 +6,7 @@
 
 #ifdef _DEBUG // DEB
 #include <iostream>
+#include "Tracer.h"
 using namespace std;
 #endif
 
@@ -246,10 +247,27 @@ void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutB
 
 void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 {
+#ifdef _DEBUG // DEB
+	int count = 0;
+#endif
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
+#ifdef _DEBUG // DEB
+		++count;
+
+		vector<int> tr;
+		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+		for (int gd : tr)
+		{
+			trackMapFile << gd << ' ';
+		}
+		trackMapFile << endl;
+
+		if (count == 3415)
+			int fg = 0;
+#endif
 		if (IsTerminalBeam(beam))
 		{
 			if (beam.location == Location::Out)
@@ -553,6 +571,10 @@ void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 			for (int i = 0; i < resultSize; ++i)
 			{
 				tmp = resultBeams[i];
+#ifdef _DEBUG // DEB
+				if (m_treeSize >= MAX_BEAM_REFL_NUM)
+					int f =0;
+#endif
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = tmp;
 			}
@@ -643,6 +665,10 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma,
 
 			for (const Beam &b : buffer)
 			{	// добавляем прошедшие пучки
+#ifdef _DEBUG // DEB
+				if (m_treeSize >= MAX_BEAM_REFL_NUM)
+					int f =0;
+#endif
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = b;
 			}
