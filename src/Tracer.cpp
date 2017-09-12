@@ -1,6 +1,7 @@
 #include "Tracer.h"
 
 #include <iostream>
+#include <iomanip>
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
@@ -287,6 +288,7 @@ void Tracer::CreateGroupResultFiles(const AngleRange &betaRange, const Tracks &t
 		string filename = dirName + prefix + groupName + "__" + m_resultDirName + ".dat";
 		ofstream *file = new ofstream(filename, ios::out);
 		OutputTableHead(betaRange, *file);
+		(*file) << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 		groupFiles.push_back(file);
 	}
 }
@@ -412,6 +414,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	long long count = 0;
 
 	/*string dirName = */CreateDir(m_resultDirName);
+	logfile.open(m_resultDirName + "\\log.txt", std::ios::out);
 
 	ofstream allFile, otherFile, diffFile;
 	vector<ofstream*> groupFiles;
@@ -427,6 +430,14 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor, "cor_");
 	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor,
 					  betaRange, corDirName, Other_cor, "cor_");
+
+	allFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	otherFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	diffFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+
+	allFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	otherFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	diffFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 
 	AllocJ(J, 1, 1, tracks.size());
 	AllocJ(J_cor, 1, 1, tracks.size());
