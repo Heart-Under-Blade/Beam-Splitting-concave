@@ -5,12 +5,14 @@
 
 #define EPS_PROJECTION		0.00174532836589830883577820272085
 const float EPS_INTERSECTION = 0.04;
+const float EPS_MERGE = 0.08;
+const float EPS_INSIDE = -0.06;
 
 bool inside(const Point3f &x, const Point3f &p1, const Point3f &p2, const Point3f &normal);
 
 inline bool is_inside_i(__m128 x, __m128 p1, __m128 p2, __m128 normal)
 {
-	__m128 m_eps = _mm_set_ss(-EPS_INTERSECTION);
+	__m128 m_eps = _mm_set_ss(EPS_INSIDE);
 
 	__m128 p1_p2 = _mm_sub_ps(p2, p1);
 	__m128 p1_x = _mm_sub_ps(x, p1);

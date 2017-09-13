@@ -348,7 +348,7 @@ void BeamClipper::HandleResultPaths(Axis axis, Paths &result) const
 	ClipperLib::CleanPolygons(result, EPS_MULTI);
 	RemoveEmptyPaths(result);
 
-	LOG_ASSERT(result.size() < 3);
+//	LOG_ASSERT(result.size() < 3);
 
 	if (result.size() == 2)
 	{
@@ -370,5 +370,5 @@ void BeamClipper::PathToPolygon(const Path &path, Polygon &polygon) const
 		polygon.arr[--vertexNum] = tmp;
 	}
 
-	LOG_ASSERT(polygon.size > 0 && polygon.size <= MAX_VERTEX_NUM);
+//	LOG_ASSERT(polygon.size > 0 && polygon.size <= MAX_VERTEX_NUM);
 }

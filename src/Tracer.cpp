@@ -1,6 +1,7 @@
 #include "Tracer.h"
 
 #include <iostream>
+#include <iomanip>
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
@@ -22,6 +23,12 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	  m_resultDirName(resultFileName)
 {
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
+}
+
+void OutputState(int i, int j, ostream &logfile)
+{
+	logfile << "i: " << i << ", j: " << j << endl;
+	logfile.flush();
 }
 
 void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const string &dir,
@@ -291,6 +298,7 @@ void Tracer::CreateGroupResultFiles(const AngleRange &betaRange, const Tracks &t
 		string filename = dirName + prefix + groupName + "__" + m_resultDirName + ".dat";
 		ofstream *file = new ofstream(filename, ios::out);
 		OutputTableHead(betaRange, *file);
+		(*file) << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 		groupFiles.push_back(file);
 	}
 }
@@ -415,22 +423,32 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	CalcTimer timer;
 	long long count = 0;
 
-	/*string dirName = */CreateDir(m_resultDirName);
+	string dirName = CreateDir(m_resultDirName);
+
+	ofstream logfile(dirName + "\\log.txt", ios::out);
 
 	ofstream allFile, otherFile, diffFile;
 	vector<ofstream*> groupFiles;
 
-	string resDirName = CreateDir(m_resultDirName + "\\res");
+	string resDirName = CreateDir2(dirName + "res");
 	CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
 	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName, Other);
 
 	ofstream allFile_cor, otherFile_cor, diffFile_cor;
 	vector<ofstream*> groupFiles_cor;
 
-	string corDirName = CreateDir(m_resultDirName + "\\cor");
+	string corDirName = CreateDir2(dirName + "cor");
 	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor, "cor_");
 	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor,
 					  betaRange, corDirName, Other_cor, "cor_");
+
+	allFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	otherFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	diffFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+
+	allFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	otherFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+	diffFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 
 	AllocJ(J, 1, 1, tracks.size());
 	AllocJ(J_cor, 1, 1, tracks.size());
@@ -466,7 +484,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 			outBeams.clear();
-			OutputState(i, j);
+			OutputState(i, j, logfile);
 
 			AddResultToMatrices(groupResultM, gNorm);
 			AddResultToMatrix(All, J, gNorm);

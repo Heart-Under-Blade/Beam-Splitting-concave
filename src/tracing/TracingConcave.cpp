@@ -3,13 +3,19 @@
 #include "macro.h"
 #include <tgmath.h>
 #include <assert.h>
-
-#ifdef _DEBUG // DEB
 #include <iostream>
-using namespace std;
-#endif
+
+//#ifdef _DEBUG // DEB
+#include "Tracer.h"
+//#endif
 
 #define EPS_ORTO_FACET 0.0001
+
+#ifdef _TRACK_ALLOW
+std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
+#endif
+
+using namespace std;
 
 TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   bool isOpticalPath, const Point3f &polarizationBasis,
@@ -242,10 +248,26 @@ void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutB
 
 void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 {
+#ifdef _DEBUG // DEB
+	int count = 0;
+#endif
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
+//#ifdef _DEBUG // DEB
+//		++count;
 
+//		vector<int> tr;
+//		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+//		for (int gd : tr)
+//		{
+//			trackMapFile << gd << ' ';
+//		}
+//		trackMapFile << endl;
+
+//		if (count == 3415)
+//			int fg = 0;
+//#endif
 		if (IsTerminalBeam(beam))
 		{
 			if (beam.location == Location::Out)
@@ -549,6 +571,10 @@ void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 			for (int i = 0; i < resultSize; ++i)
 			{
 				tmp = resultBeams[i];
+#ifdef _DEBUG // DEB
+				if (m_treeSize >= MAX_BEAM_REFL_NUM)
+					int f =0;
+#endif
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = tmp;
 			}
@@ -639,6 +665,10 @@ void TracingConcave::SplitBeamByParticle(double beta, double gamma,
 
 			for (const Beam &b : buffer)
 			{	// добавляем прошедшие пучки
+#ifdef _DEBUG // DEB
+				if (m_treeSize >= MAX_BEAM_REFL_NUM)
+					int f =0;
+#endif
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = b;
 			}

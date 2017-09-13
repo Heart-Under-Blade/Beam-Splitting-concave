@@ -416,7 +416,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 	}
 	else
 	{
-		LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
+//		LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
 
 		Point3f k;
 		CrossProduct(e, newBasis, k);

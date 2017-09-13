@@ -15,3 +15,4 @@ void EraseConsoleLine(int lenght);
 double DegToRad(double deg);
 double RadToDeg(double rad);
 std::string CreateDir(const std::string &name);
+std::string CreateDir2(const std::string &name);
