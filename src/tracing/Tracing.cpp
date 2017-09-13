@@ -662,7 +662,7 @@ void Tracing::SetOutputPolygon(__m128 *_output_points, int outputSize,
 {
 	Point3f p;
 
-	__m128 eps = _mm_load_ps1(&EPS_INTERSECTION);
+	__m128 eps = _mm_load_ps1(&EPS_MERGE);
 	__m128 sign_mask = _mm_set1_ps(-0.f);
 
 	__m128 p0 = _output_points[outputSize-1];

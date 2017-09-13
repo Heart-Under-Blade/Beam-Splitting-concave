@@ -3,18 +3,19 @@
 #include "macro.h"
 #include <tgmath.h>
 #include <assert.h>
-
-#ifdef _DEBUG // DEB
 #include <iostream>
+
+//#ifdef _DEBUG // DEB
 #include "Tracer.h"
-using namespace std;
-#endif
+//#endif
 
 #define EPS_ORTO_FACET 0.0001
 
 #ifdef _TRACK_ALLOW
 std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 #endif
+
+using namespace std;
 
 TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   bool isOpticalPath, const Point3f &polarizationBasis,
@@ -245,6 +246,7 @@ void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutB
 	PushBeamToTree(inBeam, facetID, beam.level+1, Location::In);
 }
 
+static long long count = 0;
 void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 {
 #ifdef _DEBUG // DEB
@@ -252,22 +254,27 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 #endif
 	while (m_treeSize != 0)
 	{
+//		++count;// DEB
+//		if (count == 133632)// DEB
+//			cout << "1";
 		Beam beam = m_beamTree[--m_treeSize];
+//		if (count == 133632)// DEB
+//			cout << "2";
 
-#ifdef _DEBUG // DEB
-		++count;
+//#ifdef _DEBUG // DEB
+//		++count;
 
-		vector<int> tr;
-		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
-		for (int gd : tr)
-		{
-			trackMapFile << gd << ' ';
-		}
-		trackMapFile << endl;
+//		vector<int> tr;
+//		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+//		for (int gd : tr)
+//		{
+//			trackMapFile << gd << ' ';
+//		}
+//		trackMapFile << endl;
 
-		if (count == 3415)
-			int fg = 0;
-#endif
+//		if (count == 3415)
+//			int fg = 0;
+//#endif
 		if (IsTerminalBeam(beam))
 		{
 			if (beam.location == Location::Out)
@@ -283,6 +290,8 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 
 		for (int i = 0; i < facetIds.size; ++i)// OPT: move this loop to TraceSecondaryBeamByFacet
 		{
+//			if (count == 133632)// DEB
+//				cout << endl << m_treeSize;
 			int facetID = facetIds.arr[i];
 
 			bool isDivided;
@@ -294,6 +303,8 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 			}
 		}
 
+//		if (count == 133632) // DEB
+//			cout << endl << m_treeSize;
 		if (isExternalNonEmptyBeam(beam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
 			scaterredBeams.push_back(beam);

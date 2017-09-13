@@ -473,10 +473,10 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
-//j = 4662;
+//j = 3110;
 			gamma = gammaRange.min + gammaRange.step*j;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
-
+//cout << "------------------";
 			m_incomingEnergy += m_tracing->GetIncomingEnergy();
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
