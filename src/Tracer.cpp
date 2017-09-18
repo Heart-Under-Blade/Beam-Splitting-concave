@@ -5,9 +5,9 @@
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
-#ifdef _TRACK_ALLOW
-std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
-#endif
+//#ifdef _TRACK_ALLOW
+//std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
+//#endif
 
 
 #define BEAM_DIR_LIM		0.9396
@@ -85,7 +85,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
-			OutputState(i, j);
+//			OutputState(i, j);
 		}
 
 		OutputProgress(betaNumber, i, timer);
@@ -950,7 +950,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 #endif
 			HandleBeamsGO(outBeams, beta);
 			outBeams.clear();
-			OutputState(i, j);
+//			OutputState(i, j);
 //			trackMapFile << m_totalMtrx.scatMatrix(0, 0)[0][0] << endl;
 		}
 
