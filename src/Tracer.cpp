@@ -930,12 +930,6 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 
 	OutputStartTime(timer);
 
-#ifdef _DEBUG // DEB
-//	beta = (155 + 0.5)*betaNorm;
-//	gamma = (640 + 0.5)*gammaNorm;
-//	m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
-#endif
-
 	for (int i = 0; i < betaNumber; ++i)
 	{
 		beta = (i + 0.5)*betaNorm;
