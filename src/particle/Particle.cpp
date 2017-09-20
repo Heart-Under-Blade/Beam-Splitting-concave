@@ -66,6 +66,8 @@ void Particle::Concate(const std::vector<Particle> &parts)
 			defaultFacets[i++] = part.facets[j];
 		}
 	}
+
+	isAggregate = true;
 }
 
 const double &Particle::GetMainSize() const

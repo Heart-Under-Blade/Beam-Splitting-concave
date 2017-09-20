@@ -1,6 +1,7 @@
 #include "Hexagonal.h"
 #include "ConcaveHexagonal.h"
 #include "HexagonalAggregate.h"
+#include "CertainAggregate.h"
 #include "BulletRosette.h"
 #include <stdio.h>
 #include <iostream>
@@ -59,12 +60,16 @@ int main()
 		double sup = (diameter*sqrt(3)*1,8807264653463320123608375958293)/4;
 		particle = new BulletRosette(1.31, diameter, height, sup);
 	}
+	else if (type == 4)
+	{
+		particle = new CertainAggregate(1.31, 1);
+	}
 
 	// output file
 	std::ofstream file("hexagon_crystal.crystal", std::ios::out);
 	file << particle->facetNum << "\n";
 
-	if (type == 3)
+	if (type == 3 || type == 4)
 	{
 		for (int i = 0; i < particle->facetNum; ++i)
 		{
@@ -108,9 +113,9 @@ int main()
 		writeFacet(1, 7, file, particle);
 		writeFacet(9, 15, file, particle);
 	}
-	else if (type == 3)
+	else //if (type == 3)
 	{
-		writeFacet(0, 78, file, particle);
+		writeFacet(0, particle->facetNum, file, particle);
 	}
 
 	printf("\nAll done. Press anykey...");

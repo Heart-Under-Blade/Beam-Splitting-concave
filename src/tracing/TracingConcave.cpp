@@ -11,8 +11,9 @@
 
 #define EPS_ORTO_FACET 0.0001
 
-#ifdef _TRACK_ALLOW
-std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
+#ifdef _DEBUG
+using namespace std;
+ofstream trackMapFile("tracks_deb.dat", ios::out);
 #endif
 
 using namespace std;
@@ -578,6 +579,7 @@ void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = tmp;
 			}
+			beam.size = 0;
 		}
 		else if (resultSize == 1)
 		{

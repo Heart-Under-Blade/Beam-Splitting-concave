@@ -24,6 +24,7 @@ SOURCES += \
 	../../src/particle/ConcaveHexagonal.cpp \
 	../../src/particle/Hexagonal.cpp \
 	../../src/particle/HexagonalAggregate.cpp \
+	../../src/particle/CertainAggregate.cpp \
 	../../src/particle/Bullet.cpp \
 	../../src/particle/BulletRosette.cpp \
 	../../src/particle/Particle.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
 	../../src/particle/ConcaveHexagonal.h \
 	../../src/particle/Hexagonal.h \
 	../../src/particle/HexagonalAggregate.h \
+	../../src/particle/CertainAggregate.h \
 	../../src/particle/Bullet.h \
 	../../src/particle/BulletRosette.h \
 	../../src/particle/Particle.h \
