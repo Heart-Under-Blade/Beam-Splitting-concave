@@ -25,7 +25,7 @@ Tracer::Tracer(Tracing *tracing, const string resultFileName)
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
 }
 
-void OutputState(int i, int j, ostream &logfile)
+void OutputOrientationToLog(int i, int j, ostream &logfile)
 {
 	logfile << "i: " << i << ", j: " << j << endl;
 	logfile.flush();
@@ -47,9 +47,7 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const string &dir
 
 void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &tracks)
 {
-	int EDF = 0;
 	CalcTimer timer;
-
 	string dirName = CreateDir(m_resultDirName);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -85,7 +83,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 #endif
 			HandleBeamsGO(outBeams, beta, tracks);
 			outBeams.clear();
-//			OutputState(i, j);
+//			OutputOrientationToLog(i, j, logfile);
 		}
 
 		OutputProgress(betaNumber, i, timer);
@@ -102,11 +100,11 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &trac
 //	}
 #endif
 
+	int EDF = 0;
 	WriteResultToSeparateFilesGO(NRM, EDF, dirName, tracks);
 
 	ExtractPeaksGO(EDF, NRM, m_totalMtrx);
 	WriteResultsToFileGO(NRM, dirName + "all", m_totalMtrx);
-
 	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
 
@@ -121,13 +119,13 @@ void Tracer::ExtractPeaksGO(int EDF, double NRM, Contribution &contr)
 {
 	//Analytical averaging over alpha angle
 	double b[3], f[3];
-	b[0] = contr.back[0][0];
+	b[0] =  contr.back[0][0];
 	b[1] = (contr.back[1][1] - contr.back[2][2])/2.0;
-	b[2] = contr.back[3][3];
+	b[2] =  contr.back[3][3];
 
-	f[0] = contr.forw[0][0];
+	f[0] =  contr.forw[0][0];
 	f[1] = (contr.forw[1][1] + contr.forw[2][2])/2.0;
-	f[2] = contr.forw[3][3];
+	f[2] =  contr.forw[3][3];
 
 	// Extracting the forward and backward peak in a separate file if needed
 	if (EDF)
@@ -180,7 +178,7 @@ void Tracer::ExtractPeaksGO(int EDF, double NRM, Contribution &contr)
 void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 								  Contribution &contr)
 {
-	string name = GetDATFileName(filename);
+	string name = GetUniqueFileName(filename);
 	ofstream allFile(name, std::ios::out);
 
 	allFile << "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
@@ -218,18 +216,6 @@ void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 	}
 
 	allFile.close();
-}
-
-string Tracer::GetDATFileName(const string &filename)
-{
-	string name = filename + ".dat";
-
-	for (int i = 1; ifstream(name) != NULL; ++i)
-	{
-		name = filename + '(' + to_string(i) + ')' + ".dat";
-	}
-
-	return name;
 }
 
 void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
@@ -426,7 +412,6 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	string dirName = CreateDir(m_resultDirName);
 
 	ofstream logfile(dirName + "\\log.txt", ios::out);
-
 	ofstream allFile, otherFile, diffFile;
 	vector<ofstream*> groupFiles;
 
@@ -484,7 +469,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			HandleBeamsBackScatterPO(outBeams, wave, tracks);
 			outBeams.clear();
-			OutputState(i, j, logfile);
+			OutputOrientationToLog(i, j, logfile);
 
 			AddResultToMatrices(groupResultM, gNorm);
 			AddResultToMatrix(All, J, gNorm);
@@ -845,6 +830,8 @@ void Tracer::HandleBeamsGO(std::vector<Beam> &outBeams, double beta,
 		// total contribution
 		AddToResultMullerGO(beam.direction, bf, area, m_totalMtrx);
 	}
+
+	outBeams.clear();
 }
 
 double Tracer::CalcNorm(long long orNum)
@@ -944,8 +931,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 #endif
 			HandleBeamsGO(outBeams, beta);
 			outBeams.clear();
-//			OutputState(i, j);
-//			trackMapFile << m_totalMtrx.scatMatrix(0, 0)[0][0] << endl;
+//			OutputOrientationToLog(i, j, logfile);
 		}
 
 		OutputProgress(betaNumber, i, timer);

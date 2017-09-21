@@ -65,12 +65,18 @@ public: // methods
 		return FindArgValue(key, valueIndex);
 	}
 
+	// TODO: несколько раз вызываешь - возвращает каждый раз сдед. значение аргумента
+	int GetNextIntValue(const std::string &key) const
+	{
+		// ...
+	}
+
 	const std::string &GetProgramName() const
 	{
 		return m_programName;
 	}
 
-	bool Occured(const std::string &key) const
+	bool Catched(const std::string &key) const
 	{
 		auto it = m_args.find(key);
 		return it != m_args.end();

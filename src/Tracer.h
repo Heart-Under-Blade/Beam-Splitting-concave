@@ -222,7 +222,6 @@ private:
 	void ExtractPeaksGO(int EDF, double NRM, Contribution &contr);
 	void WriteResultsToFileGO(double NRM, const std::string &filename,
 							  Contribution &contr);
-	std::string GetDATFileName(const std::string &filename);
 
 	double CalcNorm(long long orNum);
 	double CalcTotalScatteringEnergy();

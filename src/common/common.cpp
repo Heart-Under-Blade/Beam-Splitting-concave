@@ -9,6 +9,18 @@ using namespace std;
 #include <windows.h>
 #endif
 
+std::string GetUniqueFileName(const std::string &filename)
+{
+	string name = filename + ".dat";
+
+	for (int i = 1; ifstream(name) != NULL; ++i)
+	{
+		name = filename + '(' + to_string(i) + ')' + ".dat";
+	}
+
+	return name;
+}
+
 std::string CreateDir(const std::string &name)
 {
 	std::string dirName;
