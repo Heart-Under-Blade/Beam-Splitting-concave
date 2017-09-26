@@ -264,7 +264,7 @@ int main(int argc, const char* argv[])
 			particle = new Hexagonal(ri, d, h);
 			break;
 		case ParticleType::Bullet:
-			sup = parser.GetDoubleValue("p", 3);
+			sup = (d*sqrt(3)*tan(DegToRad(62)))/4;
 			particle = new Bullet(ri, d, h, sup);
 			break;
 		case ParticleType::BulletRosette:
