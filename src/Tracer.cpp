@@ -938,7 +938,9 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 		{
 			gamma = (j + 0.5)*gammaNorm;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
-
+#ifdef _DEBUG // DEB
+			beta = DegToRad(45);gamma = DegToRad(30);
+#endif
 #ifdef _CHECK_ENERGY_BALANCE
 			m_incomingEnergy += m_tracing->GetIncomingEnergy()*sin(beta);
 #endif
