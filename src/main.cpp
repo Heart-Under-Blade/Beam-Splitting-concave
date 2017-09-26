@@ -180,6 +180,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("all", 0, true); // calculate all
 	parser.AddRule("o", 1, true); // output file name
 	parser.AddRule("close", 0, true); // geometrical optics method
+	parser.AddRule("gr", 0, true); // output group files
 }
 
 Cone SetCone(ArgPP &parser)
@@ -315,6 +316,11 @@ int main(int argc, const char* argv[])
 		std::string dirName = (parser.Occured("o")) ? parser.GetStringValue("o")
 												   : "M";
 		Tracer tracer(tracing, dirName);
+
+		if (parser.Occured("gr"))
+		{
+			tracer.setIsOutputGroups(true);
+		}
 
 		if (parser.Occured("po"))
 		{

@@ -34,20 +34,20 @@ struct TrackGroup
 	{
 		std::string subname;
 
-		if (size <= 2)
-		{
-			for (int i = 0; i < size; ++i)
-			{
-				for (int index : tracks[i])
-				{
-					subname += std::to_string(index) + '_';
-				}
+//		if (size <= 2)
+//		{
+//			for (int i = 0; i < size; ++i)
+//			{
+//				for (int index : tracks[i])
+//				{
+//					subname += std::to_string(index) + '_';
+//				}
 
-				subname += '_' + std::to_string(groupID);
-			}
+//				subname += '_' + std::to_string(groupID);
+//			}
 
-			subname += '_';
-		}
+//			subname += '_';
+//		}
 
 		subname += "gr_" + std::to_string(groupID);
 		return subname;
@@ -167,6 +167,8 @@ public:
 
 	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
+	void setIsOutputGroups(bool value);// REF: заменить
+
 private:
 	Tracing *m_tracing;
 
@@ -189,6 +191,7 @@ private:
 
 	// REF: заменить
 	bool isCalcOther = false;
+	bool isOutputGroups = false;
 	double gNorm;
 	Arr2D Other;
 	Arr2D All;

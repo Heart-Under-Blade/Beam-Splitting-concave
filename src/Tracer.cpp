@@ -417,6 +417,11 @@ void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const stri
 	cout << m_statistics;
 }
 
+void Tracer::setIsOutputGroups(bool value)
+{
+	isOutputGroups = value;
+}
+
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
@@ -431,14 +436,24 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	vector<ofstream*> groupFiles;
 
 	string resDirName = CreateDir2(dirName + "res");
-	CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
+
+	if (isOutputGroups)
+	{
+		CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
+	}
+
 	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName, Other);
 
 	ofstream allFile_cor, otherFile_cor, diffFile_cor;
 	vector<ofstream*> groupFiles_cor;
 
 	string corDirName = CreateDir2(dirName + "cor");
-	CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor, "cor_");
+
+	if (isOutputGroups)
+	{
+		CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor, "cor_");
+	}
+
 	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor,
 					  betaRange, corDirName, Other_cor, "cor_");
 
@@ -486,11 +501,15 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			outBeams.clear();
 			OutputState(i, j, logfile);
 
-			AddResultToMatrices(groupResultM, gNorm);
+			if (isOutputGroups)
+			{
+				AddResultToMatrices(groupResultM, gNorm);
+				AddResultToMatrices_cor(groupResultM_cor, gNorm);
+			}
+
 			AddResultToMatrix(All, J, gNorm);
 			CleanJ(J);
 
-			AddResultToMatrices_cor(groupResultM_cor, gNorm);
 			AddResultToMatrix(All_cor, J_cor, gNorm);
 			CleanJ(J_cor);
 
@@ -516,20 +535,24 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		{
 			allFile << degBeta << ' ' << m_incomingEnergy << ' ';
 			matrix m = All(0, 0);
+			double ff = m[0][0];
 			allFile << m << endl;
 			All.ClearArr();
 
-			for (size_t group = 0; group < groupResultM.size(); ++group)
+			if (isOutputGroups)
 			{
-				Arr2D &mtrx = groupResultM[group];
-				matrix m1 = mtrx(0, 0);
-				ofstream &file = *(groupFiles[group]);
-				file << degBeta << ' ' << m_incomingEnergy << ' ';
-				file << m1 << endl;
-			}
+				for (size_t group = 0; group < groupResultM.size(); ++group)
+				{
+					Arr2D &mtrx = groupResultM[group];
+					matrix m1 = mtrx(0, 0);
+					ofstream &file = *(groupFiles[group]);
+					file << degBeta << ' ' << m_incomingEnergy << ' ';
+					file << m1 << endl;
+				}
 
-			groupResultM.clear();
-			AllocGroupMatrices(groupResultM, tracks.size());
+				groupResultM.clear();
+				AllocGroupMatrices(groupResultM, tracks.size());
+			}
 
 			if (isCalcOther)
 			{
@@ -551,17 +574,20 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			allFile_cor << m << endl;
 			All_cor.ClearArr();
 
-			for (size_t group = 0; group < groupResultM_cor.size(); ++group)
+			if (isOutputGroups)
 			{
-				Arr2D &mtrx = groupResultM_cor[group];
-				matrix m1 = mtrx(0, 0);
-				ofstream &file = *(groupFiles_cor[group]);
-				file << degBeta << ' ' << m_incomingEnergy << ' ';
-				file << m1 << endl;
-			}
+				for (size_t group = 0; group < groupResultM_cor.size(); ++group)
+				{
+					Arr2D &mtrx = groupResultM_cor[group];
+					matrix m1 = mtrx(0, 0);
+					ofstream &file = *(groupFiles_cor[group]);
+					file << degBeta << ' ' << m_incomingEnergy << ' ';
+					file << m1 << endl;
+				}
 
-			groupResultM_cor.clear();
-			AllocGroupMatrices(groupResultM_cor, tracks.size());
+				groupResultM_cor.clear();
+				AllocGroupMatrices(groupResultM_cor, tracks.size());
+			}
 
 			if (isCalcOther)
 			{
@@ -592,13 +618,16 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		diffFile_cor.close();
 	}
 
-	for (size_t group = 0; group < groupResultM.size(); ++group)
+	if (isOutputGroups)
 	{
-		ofstream &file = *(groupFiles[group]);
-		file.close();
+		for (size_t group = 0; group < groupResultM.size(); ++group)
+		{
+			ofstream &file = *(groupFiles[group]);
+			file.close();
 
-		ofstream &file_cor = *(groupFiles_cor[group]);
-		file_cor.close();
+			ofstream &file_cor = *(groupFiles_cor[group]);
+			file_cor.close();
+		}
 	}
 
 	long long orNumber = betaRange.number * gammaRange.number;
