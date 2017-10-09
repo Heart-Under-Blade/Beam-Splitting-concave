@@ -127,7 +127,7 @@ void ImportTracks(int facetNum)
 			ptr = strtok(NULL, " ");
 		}
 
-		long long int trackID = 0;
+		BigInteger trackID = 0;
 
 		for (int t : track)
 		{

@@ -5,6 +5,7 @@
 #include "Tracing.h"
 #include "CalcTimer.h"
 #include "Mueller.hpp"
+#include "BigInteger.hh"
 
 #define MAX_GROUP_NUM 1024
 
@@ -26,7 +27,7 @@ struct Contribution
 struct TrackGroup
 {
 	int groupID;
-	long long int arr[MAX_GROUP_NUM];
+	BigInteger arr[MAX_GROUP_NUM];
 	int size = 0;
 	std::vector<std::vector<int>> tracks;
 
@@ -57,7 +58,7 @@ struct TrackGroup
 class Tracks : public std::vector<TrackGroup>
 {
 public:
-	int FindGroup(long long int trackID) const
+	int FindGroup(const BigInteger &trackID) const
 	{
 		for (size_t i = 0; i < size(); ++i)
 		{
@@ -84,10 +85,10 @@ public:
 		int coef = facetNum + 1;
 		std::vector<int> tmp_track;
 
-		int tmpId = beam.id/coef;
+		BigInteger tmpId = beam.id/coef;
 		for (int i = 0; i <= beam.level; ++i)
 		{
-			int tmp = tmpId%coef;
+			int tmp = (tmpId%coef).toInt();
 			tmpId -= tmp;
 			tmpId /= coef;
 			tmp -= 1;

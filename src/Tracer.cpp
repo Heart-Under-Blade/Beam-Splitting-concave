@@ -487,11 +487,16 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		m_incomingEnergy = 0;
 		OutputProgress(betaRange.number, count, timer);
 		++count;
-
+#ifdef _DEBUG // DEB
+		i = 29;
+#endif
 		beta = betaRange.min + betaRange.step*i;
 
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
+#ifdef _DEBUG // DEB
+		j = 5864;
+#endif
 			gamma = gammaRange.min + gammaRange.step*j;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
@@ -535,7 +540,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		{
 			allFile << degBeta << ' ' << m_incomingEnergy << ' ';
 			matrix m = All(0, 0);
-			double ff = m[0][0];
+//			double ff = m[0][0];
 			allFile << m << endl;
 			All.ClearArr();
 

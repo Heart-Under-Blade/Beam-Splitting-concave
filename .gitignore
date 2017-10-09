@@ -44,3 +44,4 @@ tool/build-maki_particle_builder-Desktop-Release/object_script.maki_particle_bui
 tool/build-maki_particle_builder-Desktop-Release/Makefile.Release
 tool/build-maki_particle_builder-Desktop-Release/Makefile.Debug
 tool/build-maki_particle_builder-Desktop-Release/Makefile
+log.txt

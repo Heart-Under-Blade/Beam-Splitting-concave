@@ -5,6 +5,7 @@
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
 #include "float.h"
+#include "BigInteger.hh"
 
 #ifdef _TRACK_ALLOW
 //#include <vector>
@@ -54,7 +55,7 @@ public:
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
 
 #ifdef _TRACK_ALLOW
-	long long int id = 0;
+	BigInteger id = 0;
 //	std::vector<int> track;
 #endif
 

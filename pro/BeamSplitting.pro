@@ -15,6 +15,7 @@ VERSION = 1.0.0
 
 INCLUDEPATH += \
 	../src \
+	../src/bigint \
 	../src/math \
 	../src/particle \
 	../src/geometry \
@@ -89,3 +90,19 @@ SOURCES += \
     ../src/particle/BulletRosette.cpp \
     ../src/particle/Bullet.cpp
 
+
+HEADERS += \
+	../src/bigint/BigInteger.hh \
+	../src/bigint/BigIntegerAlgorithms.hh \
+	../src/bigint/BigIntegerLibrary.hh \
+	../src/bigint/BigIntegerUtils.hh \
+	../src/bigint/BigUnsigned.hh \
+	../src/bigint/BigUnsignedInABase.hh \
+	../src/bigint/NumberlikeArray.hh \
+
+SOURCES += \
+	../src/bigint/BigInteger.cc \
+	../src/bigint/BigIntegerAlgorithms.cc \
+	../src/bigint/BigIntegerUtils.cc \
+	../src/bigint/BigUnsigned.cc \
+	../src/bigint/BigUnsignedInABase.cc \
