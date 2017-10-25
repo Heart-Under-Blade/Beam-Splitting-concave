@@ -931,7 +931,7 @@ void Tracer::OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 #endif
 
 	//	out << "\nAveraged cross section = " << incomingEnergy*NRM;
-	ofstream out("out.dat", ios::out);
+	ofstream out(m_resultDirName+"_out.dat", ios::out);
 	out << m_statistics;
 	out.close();
 
