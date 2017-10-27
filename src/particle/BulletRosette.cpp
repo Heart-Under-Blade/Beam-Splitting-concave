@@ -5,6 +5,7 @@
 BulletRosette::BulletRosette()
 {
 	SetSymmetry(M_PI/2, M_PI);
+//	isAggregate = true;
 }
 
 BulletRosette::BulletRosette(const complex &refrIndex, double diameter,

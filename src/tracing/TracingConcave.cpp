@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <iostream>
 
+#include "BigIntegerLibrary.hh"
+
 //#ifdef _DEBUG // DEB
 #include "Tracer.h"
 //#endif
@@ -40,8 +42,8 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 {
 	for (int j = 0; j < polygons.size; ++j)
 	{
-		long long  inID = inBeam.id;
-		long long outID = outBeam.id;
+		BigInteger  inID = inBeam.id;
+		BigInteger outID = outBeam.id;
 
 		// set geometry of beam
 		 inBeam.SetPolygon(polygons.arr[j]);
@@ -255,20 +257,20 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
-//#ifdef _DEBUG // DEB
-//		++count;
+#ifdef _DEBUG // DEB
+		++count;
 
-//		vector<int> tr;
-//		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
-//		for (int gd : tr)
-//		{
-//			trackMapFile << gd << ' ';
-//		}
-//		trackMapFile << endl;
+		vector<int> tr;
+		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+		for (int gd : tr)
+		{
+			trackMapFile << gd << ' ';
+		}
+		trackMapFile << bigIntegerToString(beam.id) << endl;
 
-//		if (count == 3415)
-//			int fg = 0;
-//#endif
+		if (count == 52741)
+			int fg = 0;
+#endif
 		if (IsTerminalBeam(beam))
 		{
 			if (beam.location == Location::Out)

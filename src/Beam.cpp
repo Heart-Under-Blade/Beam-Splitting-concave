@@ -17,7 +17,7 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 	os << "level: " << beam.level << endl
 	   << "last facet: " << beam.lastFacetID << endl
 	   << "location: " << beam.location << endl
-	   << "id: " << beam.id << endl
+//	   << "id: " << beam.id << endl
 	   << "D: " << beam.D << endl
 	   << "direction: "
 	   << beam.direction.cx << ", "

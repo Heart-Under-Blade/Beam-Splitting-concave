@@ -17,10 +17,10 @@ Bullet::Bullet(const complex &refrIndex, double diameter, double height, double 
 	SetFacetParams();
 
 	Facet baseTop;
-	SetBases(baseTop, defaultFacets[12]);
-	SetSides(baseTop, defaultFacets[12]);
+	SetBases(baseTop, defaultFacets[7]);
+	SetSides(baseTop, defaultFacets[7]);
 	Point3f peak = Point3f(0, 0, m_height/2 + peakHeight);
-	SetPeakFacets(0, 6, baseTop.arr, peak); // top facets (triangles)
+	SetPeakFacets(8, 13, baseTop.arr, peak); // top facets (triangles)
 
 	SetDefaultNormals();
 	SetDefaultCenters();
@@ -43,17 +43,22 @@ void Bullet::SetBaseFacet(Facet &facet)
 }
 
 void Bullet::SetPeakFacets(int start, int end, const Point3f *baseFacet,
-						   const Point3f &cavityPoint)
+						   const Point3f &peakPoint)
 {
 	// base facet point indices
 	int p0 = BASE_VERTEX_NUM-1;
 	int p1 = 0;
+	defaultFacets[0].arr[0] = baseFacet[p0];
+	defaultFacets[0].arr[1] = baseFacet[p1];
+	defaultFacets[0].arr[2] = peakPoint;
+	p0 = p1;
+	++p1;
 
-	for (int i = start; i < end; ++i)
+	for (int i = start; i != end; ++i)
 	{
 		defaultFacets[i].arr[0] = baseFacet[p0];
 		defaultFacets[i].arr[1] = baseFacet[p1];
-		defaultFacets[i].arr[2] = cavityPoint;
+		defaultFacets[i].arr[2] = peakPoint;
 		p0 = p1;
 		++p1;
 	}
@@ -67,12 +72,14 @@ void Bullet::SetFacetParams()
 		facets[i].isVisibleOut = false;
 	}
 
-	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
+	defaultFacets[0].size = 3;
+
+	for (int i = 8; i < 13; ++i)
 	{
 		defaultFacets[i].size = 3;
 	}
 
-	SetSideFacetParams(6, 12);
+	SetSideFacetParams(1, 7);
 
-	defaultFacets[12].size = 6;
+	defaultFacets[7].size = 6;
 }

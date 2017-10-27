@@ -127,7 +127,7 @@ void ImportTracks(int facetNum)
 			ptr = strtok(NULL, " ");
 		}
 
-		long long int trackID = 0;
+		BigInteger trackID = 0;
 
 		for (int t : track)
 		{
@@ -180,6 +180,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("all", 0, true); // calculate all
 	parser.AddRule("o", 1, true); // output file name
 	parser.AddRule("close", 0, true); // geometrical optics method
+	parser.AddRule("gr", 0, true); // output group files
 }
 
 Cone SetCone(ArgPP &parser)
@@ -242,7 +243,7 @@ int main(int argc, const char* argv[])
 
 	bool isCloseConsole = false;
 
-	if (argc <= 1) // has command line arguments
+	if (argc <= 1) // has no command line arguments
 	{
 		cout << endl << "No arguments. Press any key to exit...";
 		getchar();
@@ -268,17 +269,17 @@ int main(int argc, const char* argv[])
 		particle = new Hexagonal(refrIndex, diameter, height);
 		break;
 	case ParticleType::Bullet:
-		sup = parser.GetDoubleValue("p", 3);
+		sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
 		particle = new Bullet(refrIndex, diameter, height, sup);
 		break;
 	case ParticleType::BulletRosette:
 		sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
 		particle = new BulletRosette(refrIndex, diameter, height, sup);
 		break;
-//	case ParticleType::TiltedHexagonal:
-//		sup = parser.argToValue<double>(vec[3]);
-//		particle = new TiltedHexagonal(r, hh, ri, sup);
-//		break;
+//		case ParticleType::TiltedHexagonal:
+//			sup = parser.argToValue<double>(vec[3]);
+//			particle = new TiltedHexagonal(r, hh, ri, sup);
+//			break;
 	case ParticleType::ConcaveHexagonal:
 		sup = parser.GetDoubleValue("p", 3);
 		particle = new ConcaveHexagonal(refrIndex, diameter, height, sup);
@@ -288,15 +289,13 @@ int main(int argc, const char* argv[])
 		particle = new HexagonalAggregate(refrIndex, diameter, height, num);
 		break;
 	case ParticleType::CertainAggregate:
-		sup = parser.GetIntValue("p", 3);
+		sup = parser.GetDoubleValue("p", 3);
 		particle = new CertainAggregate(refrIndex, sup);
 		break;
 	default:
 		assert(false && "ERROR! Incorrect type of particle.");
 		break;
 	}
-
-	particle->Output();
 
 	int reflNum = parser.GetDoubleValue("n");
 
@@ -317,6 +316,11 @@ int main(int argc, const char* argv[])
 	std::string dirName = (parser.Catched("o")) ? parser.GetStringValue("o")
 												: "M";
 	Tracer tracer(tracing, dirName);
+
+	if (parser.Catched("gr"))
+	{
+		tracer.setIsOutputGroups(true);
+	}
 
 	if (parser.Catched("po"))
 	{

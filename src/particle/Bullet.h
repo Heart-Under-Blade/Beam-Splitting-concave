@@ -11,7 +11,7 @@ public:
 private:
 	void SetBaseFacet(Facet &facet);
 	void SetPeakFacets(int start, int end, const Point3f *baseFacet,
-					   const Point3f &cavityPoint);
+					   const Point3f &peakPoint);
 
 protected:
 	void SetFacetParams() override;
