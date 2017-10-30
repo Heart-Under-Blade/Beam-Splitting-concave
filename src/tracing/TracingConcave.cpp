@@ -135,12 +135,13 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 	int resSize = 0;
 	resultBeams[resSize++] = beam;
 
+	Polygon diffFacets[MAX_POLYGON_NUM];
+
 	// cut facet projections out of beam one by one
 	for (int i = 0; i < facetIds.size; ++i)
 	{
 		int id = facetIds.arr[i];
 
-		Polygon diffFacets[MAX_POLYGON_NUM];
 		int diffSize = 0;
 
 		while (resSize != 0)
@@ -524,12 +525,17 @@ double TracingConcave::CalcMinDistanceToFacet(const Polygon &facet,
 {
 	double dist = FLT_MAX;
 	const Point3f *pol = facet.arr;
+	Point3f point;
+	Point3f dir = -beamDir;
+	double dp = DotProduct(dir, beamDir);
 
 	for (int i = 0; i < facet.size; ++i)
 	{
 		// measure dist
-		Point3f point;
-		ProjectPointToFacet(pol[i], -beamDir, beamDir, point);
+		double t = DotProduct(pol[i], beamDir);
+		t = t + beamDir.d_param;
+		t = t/dp;
+		point = pol[i] - (dir * t);
 		double newDist = sqrt(Norm(point - pol[i]));
 
 		if (newDist < dist) // choose minimum with previews
