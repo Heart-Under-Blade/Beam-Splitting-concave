@@ -12,6 +12,8 @@ public:
 	Hexagonal();
 	Hexagonal(const complex &refrIndex, double diameter, double height);
 
+	bool IsComplicated() const override;
+
 protected:
 	static const int BASE_NUM		 = 2;	///< number hexagon's of bases
 	static const int SIDE_VERTEX_NUM = 4;	///< number of vertex of the each side facet

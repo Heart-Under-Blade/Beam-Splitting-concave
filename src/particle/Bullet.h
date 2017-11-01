@@ -8,6 +8,8 @@ public:
 	Bullet();
 	Bullet(const complex &refrIndex, double diameter, double height, double peakHeight);
 
+	bool IsComplicated() const override;
+
 private:
 	void SetBaseFacet(Facet &facet);
 	void SetPeakFacets(int start, int end, const Point3f *baseFacet,

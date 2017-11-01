@@ -96,6 +96,11 @@ void Particle::Move(float dx, float dy, float dz)
 	}
 }
 
+bool Particle::IsComplicated() const
+{
+	return true;
+}
+
 void Particle::Output()
 {
 	std::ofstream M("particle.dat", std::ios::out);

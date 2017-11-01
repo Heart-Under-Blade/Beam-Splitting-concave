@@ -7,13 +7,13 @@ class CertainAggregate : public Particle
 public:
 	CertainAggregate(const complex &refrIndex, double sizeIndex);
 
-	// Particle interface
+	bool IsComplicated() const override;
+	void GetAggPartFacetIDRange(int id, int &begin, int &end) const override;
+
 protected:
 	void SetFacetParams() override;
 
 	// Particle interface
-public:
-	void GetAggPartFacetIDRange(int id, int &begin, int &end) const override;
 private:
-        void Resize(double sizeIndex);
+	void Resize(double sizeIndex);
 };

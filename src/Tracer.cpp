@@ -9,6 +9,8 @@
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 //#endif
 
+#include "TracingConvex.h"
+#include "TracingConcave.h"
 
 #define BEAM_DIR_LIM		0.9396
 #define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
@@ -16,13 +18,28 @@
 
 using namespace std;
 
-Tracer::Tracer(Tracing *tracing, const string resultFileName)
-	: m_tracing(tracing),
-	  m_incidentDir(0, 0, -1), // down direction
+Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
+	: m_incidentDir(0, 0, -1), // down direction
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultDirName(resultFileName)
 {
+	if (particle->IsComplicated())
+	{
+		m_tracing = new TracingConcave(particle, m_incidentDir, true,
+									   m_polarizationBasis, reflNum);
+	}
+	else
+	{
+		m_tracing = new TracingConvex(particle, m_incidentDir, true,
+									  m_polarizationBasis, reflNum);
+	}
+
 	m_symmetry = m_tracing->m_particle->GetSymmetry();
+}
+
+Tracer::~Tracer()
+{
+	delete m_tracing;
 }
 
 void OutputOrientationToLog(int i, int j, ostream &logfile)
