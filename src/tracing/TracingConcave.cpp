@@ -120,7 +120,8 @@ void TracingConcave::SelectVisibleFacets(const Beam &beam, IntArray &facetIDs)
 
 	Point3f dir = beam.direction;
 	dir.d_param = m_facets[beam.lastFacetID].in_normal.d_param;
-	SortFacets(dir, facetIDs);
+//	SortFacets(dir, facetIDs);
+	SortFacets_faster(dir, facetIDs);
 }
 
 void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
@@ -168,6 +169,111 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 		tmp.SetPolygon(resultBeams[i]);
 		scatteredBeams.push_back(tmp);
 	}
+}
+
+void TracingConcave::SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs)
+{
+	int vertices[MAX_VERTEX_NUM];
+
+	for (int i = 0; i < facetIDs.size; ++i)
+	{
+		const int &id = facetIDs.arr[i];
+		vertices[i] = FindClosestVertex(m_facets[id], beamDir);
+	}
+
+	int left = 0;
+	int rigth = facetIDs.size - 1;
+
+	int stack[MAX_VERTEX_NUM*2];
+	int size = 0;
+
+	stack[size++] = left;
+	stack[size++] = rigth;
+
+	while (true)
+	{
+		int id = (left + rigth)/2;
+		int i = left;
+		int j = rigth;
+
+		Point3f base = m_facets[facetIDs.arr[id]].arr[vertices[id]];
+
+		while (i <= j)
+		{
+			Point3f vecB;
+			double cosVN;
+
+			do
+			{
+				vecB = base - m_facets[facetIDs.arr[i]].arr[vertices[i]];
+				cosVN = DotProduct(vecB, beamDir);
+				++i;
+			}
+			while (cosVN > EPS_COS_90);
+			--i;
+
+			do
+			{
+				vecB = base - m_facets[facetIDs.arr[j]].arr[vertices[j]];
+				cosVN = DotProduct(vecB, beamDir);
+				--j;
+			}
+			while (cosVN < EPS_M_COS_90);
+			++j;
+
+			if (i <= j)	// exchange elems
+			{
+				float temp_d = vertices[i];
+				vertices[i] = vertices[j];
+				vertices[j] = temp_d;
+
+				int temp_v = facetIDs.arr[i];
+				facetIDs.arr[i] = facetIDs.arr[j];
+				facetIDs.arr[j] = temp_v;
+
+				++i;
+				--j;
+			}
+		}
+
+		if (i < rigth)
+		{
+			stack[size++] = i;
+			stack[size++] = rigth;
+		}
+
+		if (left < j)
+		{
+			stack[size++] = left;
+			stack[size++] = j;
+		}
+
+		if (size == 0)
+		{
+			break;
+		}
+
+		rigth = stack[--size];
+		left = stack[--size];
+	}
+}
+
+int TracingConcave::FindClosestVertex(const Polygon &facet, const Point3f &beamDir)
+{
+	int closest = 0;
+
+	for (int i = 1; i < facet.size; ++i)
+	{
+		Point3f v = facet.arr[closest] - facet.arr[i];
+		double cosVD = DotProduct(v, beamDir);
+
+		if (cosVD > EPS_COS_90)
+		{
+			closest = i;
+		}
+	}
+
+	return closest;
 }
 
 #ifdef _TRACK_ALLOW

@@ -14,6 +14,8 @@ public:
 	void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 private:
+	void SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs);
+	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir);
 	void CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
 						Polygon *resultBeams, int &resultSize);
 
