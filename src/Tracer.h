@@ -204,16 +204,25 @@ private:
 
 	bool isNan = false;
 	bool isNanOccured = false;
+
+	double m_wavelength;
+
 private:
 	void CleanJ(int size, const Cone &bsCone);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);
 	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks);
-	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, const Tracks &tracks);
-	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, double wavelength, int groupID);
-	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, double wavelength,
+	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone,
+					   const Tracks &tracks);
+	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, int groupID);
+	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 								  const Tracks &tracks);
-	void SetJnRot(Beam &beam, const Point3f &T,
-				  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
+
+	void CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
+							   const Point3d &vf, const Point3d &vr,
+							   double lng_proj0, matrixC &Jx);
+
+	void CalcJnRot(const Beam &beam, const Point3f &T,
+				   const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm = 1);
 	void AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm = 1);
 	void AddResultToMatrices(std::vector<Arr2D> &M, const Cone &bsCone,

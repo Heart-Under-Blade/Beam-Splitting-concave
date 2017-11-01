@@ -238,6 +238,7 @@ void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 						   const Tracks &tracks, double wave)
 {
+	m_wavelength = wave;
 	CalcTimer timer;
 	long long count = 0;
 
@@ -428,6 +429,7 @@ void Tracer::setIsOutputGroups(bool value)
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
+	m_wavelength = wave;
 	CalcTimer timer;
 	long long count = 0;
 
@@ -487,18 +489,12 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
 		m_incomingEnergy = 0;
-		OutputProgress(betaRange.number, count, timer);
-		++count;
-#ifdef _DEBUG // DEB
-		i = 29;
-#endif
+		OutputProgress(betaRange.number, ++count, timer);
+
 		beta = betaRange.min + betaRange.step*i;
 
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
-#ifdef _DEBUG // DEB
-		j = 5864;
-#endif
 			gamma = gammaRange.min + gammaRange.step*j;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
@@ -526,13 +522,8 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 				isNan = false;
 				CleanJ(J);
 				CleanJ(J_cor);
-//				assert(false); // DEB
 				continue;
 			}
-
-#ifdef _DEBUG // DEB
-			cout << "\r     \rj: " << j;
-#endif
 		}
 
 		m_incomingEnergy *= gNorm;
@@ -645,6 +636,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
 							  const Tracks &tracks, double wave)
 {
+	m_wavelength = wave;
 	CalcTimer timer;
 	long long count = 0;
 
@@ -1032,6 +1024,7 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
+	m_wavelength = wave;
 	Arr2D M(bsCone.phiCount+1, bsCone.thetaCount+1, 4, 4);
 	ofstream outFile(m_resultDirName, ios::out);
 	vector<Beam> outBeams;
@@ -1053,7 +1046,7 @@ void Tracer::setIsCalcOther(bool value)
 	isCalcOther = value;
 }
 
-void Tracer::SetJnRot(Beam &beam, const Point3f &T,
+void Tracer::CalcJnRot(const Beam &beam, const Point3f &T,
 					  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot)
 {
 	Point3f normal = beam.Normal();
@@ -1074,7 +1067,7 @@ void Tracer::SetJnRot(Beam &beam, const Point3f &T,
 }
 
 void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
-						   double wavelength, const Tracks &tracks)
+						   const Tracks &tracks)
 {
 	for (Beam &beam : outBeams)
 	{
@@ -1091,7 +1084,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
 		Point3f T = CrossProduct(beam.e, beam.direction);
-		T = T/Length(T); // базис выходящего пучка
+		T = T/Length(T); // basis of beam
 
 		for (int i = 0; i <= bsCone.phiCount; ++i)
 		{
@@ -1107,25 +1100,15 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 									  : Point3d(-sinF ,cosF ,0);
 				// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
 
-				matrixC Jn_rot(2, 2);
-				SetJnRot(beam, T, vf, vr, Jn_rot);
-
-				complex fn(0, 0);
-				fn = beam.DiffractionIncline(vr, wavelength);
-
-				double dp = DotProductD(vr, Point3d(center));
-				complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
-				matrixC fn_jn = beam.J * tmp;
-
-				matrixC c = fn*Jn_rot*fn_jn;
-				J[groupID].insert(i, j, c);
+				matrixC Jx(0, 0);
+				CalcMultiplyOfJmatrix(beam, T, vf, vr, lng_proj0, Jx);
+				J[groupID].insert(i, j, Jx);
 			}
 		}
 	}
 }
 
-void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
-							double wavelength, int groupID)
+void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone, int groupID)
 {
 	for (unsigned int i = 0; i < outBeams.size(); ++i)
 	{
@@ -1138,7 +1121,7 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
 		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
 		Point3f T = CrossProduct(beam.e, beam.direction);
-		T = T/Length(T); // базис выходящего пучка
+		T = T/Length(T); // basis of beam
 
 		for (int i = 0; i <= bsCone.phiCount; ++i)
 		{
@@ -1154,13 +1137,13 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
 				Point3d vf = (j == 0) ? -m_polarizationBasis
 									  : Point3d(-sinF, cosF ,0);
 				matrixC Jn_rot(2, 2);
-				SetJnRot(beam, T, vf, vr, Jn_rot);
+				CalcJnRot(beam, T, vf, vr, Jn_rot);
 
 				complex fn(0, 0);
-				fn = beam.DiffractionIncline(vr, wavelength);
+				fn = beam.DiffractionIncline(vr, m_wavelength);
 
 				double dp = DotProductD(vr, center_d);
-				complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
+				complex tmp = exp_im(M_2PI*(lng_proj0-dp)/m_wavelength);
 				matrixC fn_jn = beam.J * tmp;
 
 				matrixC c = fn*Jn_rot*fn_jn;
@@ -1170,8 +1153,8 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone,
 	}
 }
 
-void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
-									  double wavelength, const Tracks &tracks)
+
+void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks &tracks)
 {
 	Point3d vr(0, 0, 1);
 	Point3d vf = -m_polarizationBasis;
@@ -1192,38 +1175,24 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 
 		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
 
+		Point3f T = CrossProduct(beam.e, beam.direction);
+		T = T/Length(T); // basis of beam
+
 		Point3f center = beam.Center();
 		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
-		Point3f T = CrossProduct(beam.e, beam.direction);
-		T = T/Length(T); // базис выходящего пучка
+		matrixC Jx(2, 2);
+		CalcMultiplyOfJmatrix(beam, T, vf, vr, lng_proj0, Jx);
 
-		matrixC Jn_rot(2, 2);
-		SetJnRot(beam, T, vf, vr, Jn_rot);
-
-		complex fn(0, 0);
-		fn = beam.DiffractionIncline(vr, wavelength);
-
-		if (isnan(real(fn)))
-		{
-			isNanOccured = isNan = true;
-			return;
-		}
-
-		double dp = DotProductD(vr, Point3d(center));
-		complex tmp = exp_im(M_2PI*(lng_proj0-dp)/wavelength);
-		matrixC fn_jn = beam.J * tmp;
-
-		matrixC c = fn*Jn_rot*fn_jn;
 		// correction
-		matrixC c_cor = c;
+		matrixC c_cor = Jx;
 		c_cor[0][1] -= c_cor[1][0];
 		c_cor[0][1] /= 2;
 		c_cor[1][0] = -c_cor[0][1];
 
 		if (groupID < 0 && isCalcOther)
 		{
-			matrix m = Mueller(c);
+			matrix m = Mueller(Jx);
 			m *= gNorm;
 
 			Other.insert(0, 0, m);
@@ -1237,8 +1206,31 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
 		}
 		else
 		{
-			J[groupID].insert(0, 0, c);
+			J[groupID].insert(0, 0, Jx);
 			J_cor[groupID].insert(0, 0, c_cor);
 		}
 	}
+}
+
+void Tracer::CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
+								   const Point3d &vf, const Point3d &vr,
+								   double lng_proj0, matrixC &Jx)
+{
+	matrixC Jn_rot(2, 2);
+	CalcJnRot(beam, T, vf, vr, Jn_rot);
+
+	complex fn(0, 0);
+	fn = beam.DiffractionIncline(vr, m_wavelength);
+
+	if (isnan(real(fn)))
+	{
+		isNanOccured = isNan = true;
+		return;
+	}
+
+	double dp = DotProductD(vr, Point3d(beam.Center()));
+	complex tmp = exp_im(M_2PI*(lng_proj0-dp)/m_wavelength);
+	matrixC fn_jn = beam.J * tmp;
+
+	Jx = fn*Jn_rot*fn_jn;
 }
