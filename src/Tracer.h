@@ -6,12 +6,15 @@
 #include "CalcTimer.h"
 #include "Mueller.hpp"
 #include "BigInteger.hh"
+#include "MullerMatrix.h"
 
 #define MAX_GROUP_NUM 1024
 
-struct Contribution
+class TrackContribution;
+
+struct ContributionGO
 {
-	Contribution()
+	ContributionGO()
 		: scatMatrix(0, 0, 0, 0), back(4, 4), forw(4, 4)
 	{
 		scatMatrix = Arr2D(1, 180 + 1/*TODO: this is 'thetaNum',
@@ -34,22 +37,6 @@ struct TrackGroup
 	std::string CreateGroupName() const
 	{
 		std::string subname;
-
-//		if (size <= 2)
-//		{
-//			for (int i = 0; i < size; ++i)
-//			{
-//				for (int index : tracks[i])
-//				{
-//					subname += std::to_string(index) + '_';
-//				}
-
-//				subname += '_' + std::to_string(groupID);
-//			}
-
-//			subname += '_';
-//		}
-
 		subname += "gr_" + std::to_string(groupID);
 		return subname;
 	}
@@ -177,8 +164,8 @@ private:
 	Symmetry m_symmetry;
 
 	// result scattering martices
-	Contribution m_totalMtrx;
-	std::vector<Contribution> m_sepatateMatrices; // матрицы для вклада в отдельные траектории
+	ContributionGO m_totalMtrx;
+	std::vector<ContributionGO> m_sepatateMatrices; // матрицы для вклада в отдельные траектории
 
 	Point3f m_incidentDir;
 	Point3f m_polarizationBasis;
@@ -195,10 +182,11 @@ private:
 	bool isCalcOther = false;
 	bool isOutputGroups = false;
 	double gNorm;
-	Arr2D Other;
-	Arr2D All;
-	Arr2D Other_cor;
-	Arr2D All_cor;
+
+//	Arr2D Other;
+//	Arr2D All;
+//	Arr2D Other_cor;
+//	Arr2D All_cor;
 
 	std::string m_statistics;
 
@@ -214,8 +202,8 @@ private:
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone,
 					   const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, int groupID);
-	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams,
-								  const Tracks &tracks);
+	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks &tracks,
+								  TrackContribution &general, TrackContribution &corrected);
 
 	void CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
 							   const Point3d &vf, const Point3d &vr,
@@ -225,6 +213,7 @@ private:
 				   const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm = 1);
 	void AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm = 1);
+	void AddResultToMatrix(TrackContribution &contrib, double norm = 1);
 	void AddResultToMatrices(std::vector<Arr2D> &M, const Cone &bsCone,
 							 double norm = 1);
 	void AddResultToMatrices(std::vector<Arr2D> &M, double norm = 1);
@@ -233,15 +222,15 @@ private:
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
 	void OutputProgress(int betaNumber, long long count, CalcTimer &timer);
-	void ExtractPeaksGO(int EDF, double NRM, Contribution &contr);
+	void ExtractPeaksGO(int EDF, double NRM, ContributionGO &contr);
 	void WriteResultsToFileGO(double NRM, const std::string &filename,
-							  Contribution &contr);
+							  ContributionGO &contr);
 
 	double CalcNorm(long long orNum);
 	double CalcTotalScatteringEnergy();
 	void RotateMuller(const Point3f &dir, matrix &bf);
 	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
-							 Contribution &contr);
+							 ContributionGO &contr);
 	void WriteResultToSeparateFilesGO(double NRM, int EDF, const std::string &dir,
 									  const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
@@ -261,9 +250,11 @@ private:
 	void OutputToAllFile(std::ofstream &diffFile, std::ofstream &otherFile,
 						 double degBeta, std::ofstream &allFile, Arr2D &all,
 						 Arr2D &other);
+
 	void CreateResultFiles(std::ofstream &all, std::ofstream &diff, std::ofstream &other,
-						   const AngleRange &betaRange, std::string dirName, Arr2D &otherArr,
+						   const AngleRange &betaRange, std::string dirName,
 						   const std::string &prefix = "");
+
 	void CreateResultFile(std::ofstream &file, const std::string &dirName, const std::string &fileName,
 						  const AngleRange &betaRange);
 };

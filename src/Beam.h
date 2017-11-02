@@ -43,7 +43,7 @@ public:
 
 public:
 	Point3f direction;				///< direction of beam
-	JonesMatrix J;					///< Jones matrix of beam
+	Matrix2x2c J;					///< Jones matrix of beam
 	Point3f e;						///< basis of polarization plane
 
 	int lastFacetID;				///< last reflected facet

@@ -18,6 +18,27 @@
 
 using namespace std;
 
+struct TrackContribution
+{
+	MuellerMatrix all;
+	MuellerMatrix other;
+	std::vector<Matrix2x2c> jones;
+
+	TrackContribution(int size)
+	{
+		jones.resize(size);
+		ResetJones();
+	}
+
+	void ResetJones()
+	{
+		for (Matrix2x2c &j : jones)
+		{
+			j.Fill(0.f);
+		}
+	}
+};
+
 Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 	: m_incidentDir(0, 0, -1), // down direction
 	  m_polarizationBasis(0, 1, 0),
@@ -132,7 +153,7 @@ void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
 		 << '\t' << timer.Elapsed();
 }
 
-void Tracer::ExtractPeaksGO(int EDF, double NRM, Contribution &contr)
+void Tracer::ExtractPeaksGO(int EDF, double NRM, ContributionGO &contr)
 {
 	//Analytical averaging over alpha angle
 	double b[3], f[3];
@@ -193,7 +214,7 @@ void Tracer::ExtractPeaksGO(int EDF, double NRM, Contribution &contr)
 }
 
 void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
-								  Contribution &contr)
+								  ContributionGO &contr)
 {
 	string name = GetUniqueFileName(filename);
 	ofstream allFile(name, std::ios::out);
@@ -383,7 +404,7 @@ void Tracer::CreateResultFile(ofstream &file, const string &dirName, const strin
 }
 
 void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
-							   const AngleRange &betaRange, string dirName, Arr2D &otherArr,
+							   const AngleRange &betaRange, string dirName,
 							   const string &prefix)
 {
 	CreateResultFile(all, dirName, prefix + "all", betaRange);
@@ -392,7 +413,6 @@ void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
 	{
 		CreateResultFile(other, dirName, prefix + "other", betaRange);
 		CreateResultFile(diff, dirName, prefix + "difference", betaRange);
-		otherArr = Arr2D(1, 1, 4, 4);
 	}
 }
 
@@ -429,6 +449,11 @@ void Tracer::setIsOutputGroups(bool value)
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
+	int trackCount = tracks.size();
+
+	TrackContribution general(trackCount);
+	TrackContribution corrected(trackCount);
+
 	m_wavelength = wave;
 	CalcTimer timer;
 	long long count = 0;
@@ -446,7 +471,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 		CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
 	}
 
-	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName, Other);
+	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName);
 
 	ofstream allFile_cor, otherFile_cor, diffFile_cor;
 	vector<ofstream*> groupFiles_cor;
@@ -459,7 +484,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	}
 
 	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor,
-					  betaRange, corDirName, Other_cor, "cor_");
+					  betaRange, corDirName, "cor_");
 
 	allFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 	otherFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
@@ -469,17 +494,11 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 	otherFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 	diffFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 
-	AllocJ(J, 1, 1, tracks.size());
-	AllocJ(J_cor, 1, 1, tracks.size());
-
 	vector<Arr2D> groupResultM, groupResultM_cor;
-	AllocGroupMatrices(groupResultM, tracks.size());
-	AllocGroupMatrices(groupResultM_cor, tracks.size());
+	AllocGroupMatrices(groupResultM, trackCount);
+	AllocGroupMatrices(groupResultM_cor, trackCount);
 
 	vector<Beam> outBeams;
-
-	All = Arr2D(1, 1, 4, 4);
-	All_cor = Arr2D(1, 1, 4, 4);
 	gNorm = gammaRange.step/gammaRange.norm;
 
 	OutputStartTime(timer);
@@ -500,7 +519,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			m_incomingEnergy += m_tracing->GetIncomingEnergy();
 
-			HandleBeamsBackScatterPO(outBeams, tracks);
+			HandleBeamsBackScatterPO(outBeams, tracks, general, corrected);
 			outBeams.clear();
 			OutputOrientationToLog(i, j, logfile);
 
@@ -510,18 +529,13 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 				AddResultToMatrices_cor(groupResultM_cor, gNorm);
 			}
 
-			AddResultToMatrix(All, J, gNorm);
-			CleanJ(J);
-
-			AddResultToMatrix(All_cor, J_cor, gNorm);
-			CleanJ(J_cor);
+			AddResultToMatrix(general, gNorm);
+			AddResultToMatrix(corrected, gNorm);
 
 			if (isNan)
 			{
 				logfile << "------------------";
 				isNan = false;
-				CleanJ(J);
-				CleanJ(J_cor);
 				continue;
 			}
 		}
@@ -532,10 +546,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 		{
 			allFile << degBeta << ' ' << m_incomingEnergy << ' ';
-			matrix m = All(0, 0);
-//			double ff = m[0][0];
-			allFile << m << endl;
-			All.ClearArr();
+			allFile << general.all << endl;
 
 			if (isOutputGroups)
 			{
@@ -555,22 +566,21 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			if (isCalcOther)
 			{
 				otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
-				matrix m0 = Other(0, 0);
-				otherFile << m0 << endl;
-				Other.ClearArr();
+				otherFile << general.other << endl;
 
 				diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
-				matrix m00 = m - m0;
+				Matrix4x4d m00 = general.all - general.other;
 				diffFile << m00 << endl;
+
+				general.other.Reset();
 			}
 
+			general.all.Reset();
 		}
 
 		{
 			allFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
-			matrix m = All_cor(0, 0);
-			allFile_cor << m << endl;
-			All_cor.ClearArr();
+			allFile_cor << corrected.all << endl;
 
 			if (isOutputGroups)
 			{
@@ -590,14 +600,16 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			if (isCalcOther)
 			{
 				otherFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
-				matrix m0 = Other_cor(0, 0);
-				otherFile_cor << m0 << endl;
-				Other_cor.ClearArr();
+				otherFile_cor << corrected.other << endl;
 
 				diffFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
-				matrix m00 = m - m0;
+				Matrix4x4d m00 = corrected.all - corrected.other;
 				diffFile_cor << m00 << endl;
+
+				corrected.other.Reset();
 			}
+
+			corrected.all.Reset();
 		}
 	}
 
@@ -732,6 +744,18 @@ void Tracer::AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm)
 	}
 }
 
+void Tracer::AddResultToMatrix(TrackContribution &contrib, double norm)
+{
+	for (size_t q = 0; q < contrib.jones.size(); ++q)
+	{
+		MuellerMatrix m(contrib.jones[q]);
+		m *= norm;
+		contrib.all += m;
+	}
+
+	contrib.ResetJones();
+}
+
 void Tracer::AddResultToMatrices(vector<Arr2D> &M, const Cone &bsCone,
 								 double norm)
 {
@@ -816,7 +840,7 @@ void Tracer::RotateMuller(const Point3f &dir, matrix &bf)
 }
 
 void Tracer::AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
-								 Contribution &contr)
+								 ContributionGO &contr)
 {
 	const float &z = dir.cz;
 
@@ -1154,7 +1178,8 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone, int grou
 }
 
 
-void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks &tracks)
+void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks &tracks,
+									  TrackContribution &general, TrackContribution &corrected)
 {
 	Point3d vr(0, 0, 1);
 	Point3d vf = -m_polarizationBasis;
@@ -1185,29 +1210,31 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks 
 		CalcMultiplyOfJmatrix(beam, T, vf, vr, lng_proj0, Jx);
 
 		// correction
-		matrixC c_cor = Jx;
-		c_cor[0][1] -= c_cor[1][0];
-		c_cor[0][1] /= 2;
-		c_cor[1][0] = -c_cor[0][1];
+		matrixC Jx_cor = Jx;
+		Jx_cor[0][1] -= Jx_cor[1][0];
+		Jx_cor[0][1] /= 2;
+		Jx_cor[1][0] = -Jx_cor[0][1];
+
+		Matrix2x2c _Jx(Jx), _Jx_cor(Jx_cor);
 
 		if (groupID < 0 && isCalcOther)
 		{
-			matrix m = Mueller(Jx);
+			MuellerMatrix m(_Jx);
 			m *= gNorm;
 
-			Other.insert(0, 0, m);
-			All.insert(0, 0, m);
+			general.other += m;
+			general.all += m;
 
-			matrix m_cor = Mueller(c_cor);
+			MuellerMatrix m_cor(_Jx_cor);
 			m_cor *= gNorm;
 
-			Other_cor.insert(0, 0, m_cor);
-			All_cor.insert(0, 0, m_cor);
+			corrected.other += m_cor;
+			corrected.all += m_cor;
 		}
 		else
 		{
-			J[groupID].insert(0, 0, Jx);
-			J_cor[groupID].insert(0, 0, c_cor);
+			general.jones[groupID] += _Jx;
+			corrected.jones[groupID] += _Jx_cor;
 		}
 	}
 }

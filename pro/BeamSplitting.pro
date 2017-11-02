@@ -57,7 +57,9 @@ HEADERS += \
     ../src/geometry/Polygon.h \
     ../src/geometry/Facet.h \
     ../src/particle/BulletRosette.h \
-    ../src/particle/Bullet.h
+    ../src/particle/Bullet.h \
+    ../src/common/Matrix4x4.h \
+    ../src/common/MullerMatrix.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -88,7 +90,9 @@ SOURCES += \
     ../src/geometry/Polygon.cpp \
     ../src/geometry/Facet.cpp \
     ../src/particle/BulletRosette.cpp \
-    ../src/particle/Bullet.cpp
+    ../src/particle/Bullet.cpp \
+    ../src/common/Matrix4x4.cpp \
+    ../src/common/MullerMatrix.cpp
 
 
 HEADERS += \

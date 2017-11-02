@@ -9,6 +9,7 @@
 #endif
 
 #include "JonesMatrix.h"
+#include "Matrix4x4.h"
 
 /** @addtogroup Tracer Beam splitting algorithm
  * @{
@@ -28,7 +29,7 @@
 	*/
 matrix Mueller(const matrixC & in);
 
-matrix Mueller(const JonesMatrix& in);
+matrix Mueller(const Matrix2x2c& in);
 
 /**
  @brief Right multiplication of matrix \b m by <i> rotation matrix </i> with cos(f)=cs, sin(f)=sn.

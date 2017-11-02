@@ -28,7 +28,7 @@ matrix Mueller(const matrixC& in)
 	return M;
 }
 
-matrix Mueller(const JonesMatrix& in)
+matrix Mueller(const Matrix2x2c& in)
 {
 	matrix M(4,4);
 	const double a11 = norm(in.m11), a12 = norm(in.m12),
