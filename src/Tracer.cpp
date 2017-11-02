@@ -267,7 +267,7 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 
 			CleanJ(tracks.size(), bsCone);
-			HandleBeamsPO(outBeams, bsCone, wave, tracks);
+			HandleBeamsPO(outBeams, bsCone, tracks);
 
 			outBeams.clear();
 			AddResultToMatrix(M, bsCone, gNorm);
@@ -500,7 +500,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			m_incomingEnergy += m_tracing->GetIncomingEnergy();
 
-			HandleBeamsBackScatterPO(outBeams, wave, tracks);
+			HandleBeamsBackScatterPO(outBeams, tracks);
 			outBeams.clear();
 			OutputOrientationToLog(i, j, logfile);
 
@@ -667,7 +667,7 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 				m_tracing->SplitBeamByParticle(beta, gamma, tracks[groupID].tracks, outBeams);
 
 				CleanJ(tracks.size(), bsCone);
-				HandleBeamsPO2(outBeams, bsCone, wave, groupID);
+				HandleBeamsPO2(outBeams, bsCone, groupID);
 
 				outBeams.clear();
 				AddResultToMatrix(M, bsCone, gNorm);
@@ -1034,7 +1034,7 @@ void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
 	m_tracing->SplitBeamByParticle(b, g, outBeams);
 
 	CleanJ(tracks.size(), bsCone);
-	HandleBeamsPO(outBeams, bsCone, wave, tracks);
+	HandleBeamsPO(outBeams, bsCone, tracks);
 
 	outBeams.clear();
 	AddResultToMatrix(M, bsCone);
