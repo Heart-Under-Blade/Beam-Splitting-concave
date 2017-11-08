@@ -83,3 +83,9 @@ void Bullet::SetFacetParams()
 
 	defaultFacets[7].size = 6;
 }
+
+
+bool Bullet::IsComplicated() const
+{
+	return false;
+}

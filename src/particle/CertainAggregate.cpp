@@ -414,3 +414,8 @@ void CertainAggregate::GetAggPartFacetIDRange(int id, int &begin, int &end) cons
 		end = 64;
 	}
 }
+
+bool CertainAggregate::IsComplicated() const
+{
+	return true;
+}

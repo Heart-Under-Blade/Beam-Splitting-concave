@@ -3,7 +3,7 @@
 //#include "Particle.h"
 #include "Hexagonal.h"
 
-class BulletRosette : public Hexagonal
+class BulletRosette : public Particle
 {
 public:
 	BulletRosette();
