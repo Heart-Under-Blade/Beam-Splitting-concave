@@ -10,7 +10,8 @@
 
 #define MAX_GROUP_NUM 1024
 
-class TrackContribution;
+class PointContribution;
+class ContributionFiles;
 
 struct ContributionGO
 {
@@ -203,20 +204,19 @@ private:
 					   const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, int groupID);
 	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks &tracks,
-								  TrackContribution &general, TrackContribution &corrected);
+								  PointContribution &general, PointContribution &corrected);
 
 	void CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
 							   const Point3d &vf, const Point3d &vr,
 							   double lng_proj0, matrixC &Jx);
-
+	std::string GetTableHead(const AngleRange &range);
 	void CalcJnRot(const Beam &beam, const Point3f &T,
 				   const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm = 1);
 	void AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm = 1);
-	void AddResultToMatrix(TrackContribution &contrib, double norm = 1);
 	void AddResultToMatrices(std::vector<Arr2D> &M, const Cone &bsCone,
 							 double norm = 1);
-	void AddResultToMatrices(std::vector<Arr2D> &M, double norm = 1);
+	void AddResultToMatrices(std::vector<Arr2D> &M);
 	void AddResultToMatrices_cor(std::vector<Arr2D> &M, double norm = 1);
 	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
@@ -235,7 +235,7 @@ private:
 									  const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
 
-	void CreateGroupResultFiles(const AngleRange &betaRange,
+	void CreateGroupResultFiles(const std::string &tableHead,
 								const Tracks &tracks, const std::string &dirName,
 								std::vector<std::ofstream*> &groupFiles,
 								const std::string &prefix = "");
@@ -244,17 +244,11 @@ private:
 	void OutputStartTime(CalcTimer &timer);
 	void OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 						  CalcTimer &timer);
-	void OutputTableHead(const AngleRange &betaRange, std::ofstream &allFile);
 	void OutputToGroupFiles(double degBeta, std::vector<std::ofstream*> &groupFiles,
 							std::vector<Arr2D> &groupResultM, size_t size);
 	void OutputToAllFile(std::ofstream &diffFile, std::ofstream &otherFile,
 						 double degBeta, std::ofstream &allFile, Arr2D &all,
 						 Arr2D &other);
-
-	void CreateResultFiles(std::ofstream &all, std::ofstream &diff, std::ofstream &other,
-						   const AngleRange &betaRange, std::string dirName,
-						   const std::string &prefix = "");
-
-	void CreateResultFile(std::ofstream &file, const std::string &dirName, const std::string &fileName,
-						  const AngleRange &betaRange);
+	void OutputContribution(size_t groupNumber, PointContribution &contrib, std::vector<std::ofstream*> groupFiles,
+							ContributionFiles &files, double degree, std::string prefix = "");
 };

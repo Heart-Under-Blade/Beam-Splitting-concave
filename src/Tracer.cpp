@@ -1,7 +1,9 @@
 #include "Tracer.h"
 
+#include <ostream>
 #include <iostream>
 #include <iomanip>
+#include <map>
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
@@ -15,24 +17,142 @@
 #define BEAM_DIR_LIM		0.9396
 #define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
 #define BIN_SIZE			M_PI/SPHERE_RING_NUM
+#define RES_EXT ".dat"
 
 using namespace std;
 
-struct TrackContribution
+class ContributionFiles : public map<string, ofstream*>
 {
-	MuellerMatrix all;
-	MuellerMatrix other;
-	std::vector<Matrix2x2c> jones;
-
-	TrackContribution(int size)
+public:
+	ContributionFiles(const string &dir)
+		: map<string, ofstream*>()
 	{
-		jones.resize(size);
+		m_dir = dir;
+		int i = m_dir.size()-2;
+
+		while (i >= 0 && dir[i] != '\\')
+		{
+			--i;
+		}
+
+		int from = i+1;
+		int num = (m_dir.size()-from)-1;
+		m_folder = m_dir.substr(from, num);
+	}
+
+	void CreateFile(const string &subdir, const string &name)
+	{
+		string filename = m_dir + subdir + '\\' + name + "__" + m_folder + RES_EXT;
+		ofstream *file = new ofstream(filename, ios::out);
+		assert(file->is_open());
+
+		(*file) << setprecision(numeric_limits<long double>::digits10 + 1);
+		this->insert(pair<string, ofstream*>(name, file));
+	}
+
+	~ContributionFiles()
+	{
+		for (const auto &p : (*this))
+		{
+			p.second->close();
+			delete p.second;
+		}
+	}
+
+private:
+	string m_dir;
+	string m_folder;
+};
+
+class PointContribution
+{
+public:
+	PointContribution(size_t groupNumber, double normFactor)
+		: m_groupNumber(groupNumber),
+		  m_normFactor(normFactor)
+	{
+		groupJones.resize(groupNumber);
+		groupMuellers.resize(groupNumber);
 		ResetJones();
 	}
 
+	void AddToMueller(const Matrix2x2c &jones)
+	{
+		MuellerMatrix m(jones);
+		m *= m_normFactor;
+		rest += m;
+	}
+
+	void AddToGroup(const Matrix2x2c &jones, size_t groupID)
+	{
+		groupJones[groupID] += jones;
+	}
+
+	void SumGroupTotal()
+	{
+		for (size_t gr = 0; gr < m_groupNumber; ++gr)
+		{
+			MuellerMatrix m(groupJones[gr]);
+			m *= m_normFactor;
+			groupMuellers[gr] += m;
+			groupTotal += m;
+		}
+
+		ResetJones();
+	}
+
+	void SumTotal()
+	{
+		total += groupTotal;
+		total += rest;
+	}
+
+	const MuellerMatrix &GetGroupTotal() const
+	{
+		return groupTotal;
+	}
+
+	const MuellerMatrix &GetTotal() const
+	{
+		return total;
+	}
+
+	const MuellerMatrix &GetRest() const
+	{
+		return rest;
+	}
+
+	const MuellerMatrix &GetGroupMueller(size_t groupID)
+	{
+		return groupMuellers.at(groupID);
+	}
+
+	void Reset()
+	{
+		groupTotal.Reset();
+		rest.Reset();
+		total.Reset();
+
+		for (MuellerMatrix &m : groupMuellers)
+		{
+			m.Reset();
+		}
+	}
+
+private:
+	std::vector<Matrix2x2c> groupJones;
+	std::vector<MuellerMatrix> groupMuellers;
+
+	MuellerMatrix groupTotal;
+	MuellerMatrix rest;
+	MuellerMatrix total;
+
+	double m_groupNumber;
+	double m_normFactor;
+
 	void ResetJones()
 	{
-		for (Matrix2x2c &j : jones)
+		for (Matrix2x2c &j : groupJones)
 		{
 			j.Fill(0.f);
 		}
@@ -312,7 +432,7 @@ void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
 	}
 }
 
-void Tracer::CreateGroupResultFiles(const AngleRange &betaRange, const Tracks &tracks,
+void Tracer::CreateGroupResultFiles(const string &tableHead, const Tracks &tracks,
 									const string &dirName,
 									vector<ofstream*> &groupFiles,
 									const string &prefix)
@@ -322,7 +442,7 @@ void Tracer::CreateGroupResultFiles(const AngleRange &betaRange, const Tracks &t
 		string groupName = tracks[i].CreateGroupName();
 		string filename = dirName + prefix + groupName + "__" + m_resultDirName + ".dat";
 		ofstream *file = new ofstream(filename, ios::out);
-		OutputTableHead(betaRange, *file);
+		(*file) << tableHead;
 		(*file) << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 		groupFiles.push_back(file);
 	}
@@ -346,16 +466,6 @@ void Tracer::CleanJ(std::vector<Arr2DC> &j)
 	{
 		m.ClearArr();
 	}
-}
-
-void Tracer::OutputTableHead(const AngleRange &betaRange, ofstream &allFile)
-{
-	allFile << betaRange.number << ' '
-			<< RadToDeg(betaRange.max) << ' '
-			<< RadToDeg(betaRange.step) << endl;
-
-	allFile << "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44"
-			<< endl;
 }
 
 void Tracer::OutputToGroupFiles(double degBeta, std::vector<ofstream *> &groupFiles,
@@ -396,26 +506,6 @@ void Tracer::OutputToAllFile(ofstream &diffFile, ofstream &otherFile,
 	}
 }
 
-void Tracer::CreateResultFile(ofstream &file, const string &dirName, const string &fileName,
-							  const AngleRange &betaRange)
-{
-	file.open(dirName + fileName + "__" + m_resultDirName + ".dat", ios::out);
-	OutputTableHead(betaRange, file);
-}
-
-void Tracer::CreateResultFiles(ofstream &all, ofstream &diff, ofstream &other,
-							   const AngleRange &betaRange, string dirName,
-							   const string &prefix)
-{
-	CreateResultFile(all, dirName, prefix + "all", betaRange);
-
-	if (isCalcOther)
-	{
-		CreateResultFile(other, dirName, prefix + "other", betaRange);
-		CreateResultFile(diff, dirName, prefix + "difference", betaRange);
-	}
-}
-
 void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
 {
 	string startTime = ctime(&m_startTime);
@@ -446,60 +536,102 @@ void Tracer::setIsOutputGroups(bool value)
 	isOutputGroups = value;
 }
 
+void Tracer::OutputContribution(size_t groupNumber, PointContribution &contrib,
+								vector<ofstream*> groupFiles, ContributionFiles &files,
+								double degree, string prefix)
+{
+	contrib.SumTotal();
+
+	ofstream &all = *(files[prefix + "all"]);
+	all << degree << ' ' << m_incomingEnergy << ' ';
+	all << contrib.GetTotal() << endl;
+
+	if (isOutputGroups)
+	{
+		for (size_t gr = 0; gr < groupNumber; ++gr)
+		{
+			ofstream &file = *(groupFiles[gr]);
+			file << degree << ' ' << m_incomingEnergy << ' ';
+			file << contrib.GetGroupMueller(gr) << endl;
+		}
+	}
+
+	if (isCalcOther)
+	{
+		ofstream &other = *(files[prefix + "other"]);
+		other << degree << ' ' << m_incomingEnergy << ' ';
+		other << contrib.GetRest() << endl;
+
+		ofstream &diff = *(files[prefix + "difference"]);
+		diff << degree << ' ' << m_incomingEnergy << ' ';
+		diff << contrib.GetGroupTotal() << endl;
+	}
+
+	contrib.Reset();
+}
+
+string Tracer::GetTableHead(const AngleRange &range)
+{
+	return to_string(range.number) + ' '
+			+ to_string(RadToDeg(range.max)) + ' '
+			+ to_string(RadToDeg(range.step)) + '\n'
+			+ "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44"
+			+ '\n';
+}
+
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
-	int trackCount = tracks.size();
+	int groupNumber = tracks.size();
+	gNorm = gammaRange.step/gammaRange.norm;
 
-	TrackContribution general(trackCount);
-	TrackContribution corrected(trackCount);
+	PointContribution originContrib(groupNumber, gNorm);
+	PointContribution correctedContrib(groupNumber, gNorm);
 
 	m_wavelength = wave;
 	CalcTimer timer;
 	long long count = 0;
 
-	string dirName = CreateDir(m_resultDirName);
+	string dir = CreateDir(m_resultDirName);
 
-	ofstream logfile(dirName + "\\log.txt", ios::out);
-	ofstream allFile, otherFile, diffFile;
+	ofstream logfile(dir + "\\log.txt", ios::out);
 	vector<ofstream*> groupFiles;
 
-	string resDirName = CreateDir2(dirName + "res");
+	string resDir = CreateDir2(dir + "res");
+	string corDir = CreateDir2(dir + "cor");
+
+	string tableHead = GetTableHead(betaRange);
 
 	if (isOutputGroups)
 	{
-		CreateGroupResultFiles(betaRange, tracks, resDirName, groupFiles);
+		CreateGroupResultFiles(tableHead, tracks, resDir, groupFiles);
 	}
 
-	CreateResultFiles(allFile, diffFile, otherFile, betaRange, resDirName);
+	ContributionFiles files(dir);
+	files.CreateFile("res", "all");
+	files.CreateFile("res", "other");
+	files.CreateFile("res", "difference");
+	files.CreateFile("cor", "cor_all");
+	files.CreateFile("cor", "cor_other");
+	files.CreateFile("cor", "cor_difference");
 
-	ofstream allFile_cor, otherFile_cor, diffFile_cor;
+	for (const auto &p : files)
+	{
+		*(p.second) << tableHead;
+	}
+
 	vector<ofstream*> groupFiles_cor;
 
-	string corDirName = CreateDir2(dirName + "cor");
-
 	if (isOutputGroups)
 	{
-		CreateGroupResultFiles(betaRange, tracks, corDirName, groupFiles_cor, "cor_");
+		CreateGroupResultFiles(tableHead, tracks, corDir, groupFiles_cor, "cor_");
 	}
 
-	CreateResultFiles(allFile_cor, diffFile_cor, otherFile_cor,
-					  betaRange, corDirName, "cor_");
-
-	allFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-	otherFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-	diffFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-
-	allFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-	otherFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-	diffFile_cor << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-
 	vector<Arr2D> groupResultM, groupResultM_cor;
-	AllocGroupMatrices(groupResultM, trackCount);
-	AllocGroupMatrices(groupResultM_cor, trackCount);
+	AllocGroupMatrices(groupResultM, groupNumber);
+	AllocGroupMatrices(groupResultM_cor, groupNumber);
 
 	vector<Beam> outBeams;
-	gNorm = gammaRange.step/gammaRange.norm;
 
 	OutputStartTime(timer);
 
@@ -519,18 +651,9 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 			m_incomingEnergy += m_tracing->GetIncomingEnergy();
 
-			HandleBeamsBackScatterPO(outBeams, tracks, general, corrected);
+			HandleBeamsBackScatterPO(outBeams, tracks, originContrib, correctedContrib);
 			outBeams.clear();
 			OutputOrientationToLog(i, j, logfile);
-
-			if (isOutputGroups)
-			{
-				AddResultToMatrices(groupResultM, gNorm);
-				AddResultToMatrices_cor(groupResultM_cor, gNorm);
-			}
-
-			AddResultToMatrix(general, gNorm);
-			AddResultToMatrix(corrected, gNorm);
 
 			if (isNan)
 			{
@@ -544,89 +667,15 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 		double degBeta = RadToDeg(beta);
 
-		{
-			allFile << degBeta << ' ' << m_incomingEnergy << ' ';
-			allFile << general.all << endl;
+		OutputContribution(groupNumber, originContrib, groupFiles, files,
+						   degBeta);
 
-			if (isOutputGroups)
-			{
-				for (size_t group = 0; group < groupResultM.size(); ++group)
-				{
-					Arr2D &mtrx = groupResultM[group];
-					matrix m1 = mtrx(0, 0);
-					ofstream &file = *(groupFiles[group]);
-					file << degBeta << ' ' << m_incomingEnergy << ' ';
-					file << m1 << endl;
-				}
-
-				groupResultM.clear();
-				AllocGroupMatrices(groupResultM, tracks.size());
-			}
-
-			if (isCalcOther)
-			{
-				otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
-				otherFile << general.other << endl;
-
-				diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
-				Matrix4x4d m00 = general.all - general.other;
-				diffFile << m00 << endl;
-
-				general.other.Reset();
-			}
-
-			general.all.Reset();
-		}
-
-		{
-			allFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
-			allFile_cor << corrected.all << endl;
-
-			if (isOutputGroups)
-			{
-				for (size_t group = 0; group < groupResultM_cor.size(); ++group)
-				{
-					Arr2D &mtrx = groupResultM_cor[group];
-					matrix m1 = mtrx(0, 0);
-					ofstream &file = *(groupFiles_cor[group]);
-					file << degBeta << ' ' << m_incomingEnergy << ' ';
-					file << m1 << endl;
-				}
-
-				groupResultM_cor.clear();
-				AllocGroupMatrices(groupResultM_cor, tracks.size());
-			}
-
-			if (isCalcOther)
-			{
-				otherFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
-				otherFile_cor << corrected.other << endl;
-
-				diffFile_cor << degBeta << ' ' << m_incomingEnergy << ' ';
-				Matrix4x4d m00 = corrected.all - corrected.other;
-				diffFile_cor << m00 << endl;
-
-				corrected.other.Reset();
-			}
-
-			corrected.all.Reset();
-		}
+		OutputContribution(groupNumber, correctedContrib, groupFiles_cor, files,
+						   degBeta, "cor_");
 	}
 
 	EraseConsoleLine(50);
 	cout << "100%";
-
-	allFile.close();
-	allFile_cor.close();
-
-	if (isCalcOther)
-	{
-		otherFile.close();
-		diffFile.close();
-
-		otherFile_cor.close();
-		diffFile_cor.close();
-	}
 
 	if (isOutputGroups)
 	{
@@ -744,18 +793,6 @@ void Tracer::AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm)
 	}
 }
 
-void Tracer::AddResultToMatrix(TrackContribution &contrib, double norm)
-{
-	for (size_t q = 0; q < contrib.jones.size(); ++q)
-	{
-		MuellerMatrix m(contrib.jones[q]);
-		m *= norm;
-		contrib.all += m;
-	}
-
-	contrib.ResetJones();
-}
-
 void Tracer::AddResultToMatrices(vector<Arr2D> &M, const Cone &bsCone,
 								 double norm)
 {
@@ -773,12 +810,12 @@ void Tracer::AddResultToMatrices(vector<Arr2D> &M, const Cone &bsCone,
 	}
 }
 
-void Tracer::AddResultToMatrices(std::vector<Arr2D> &M, double norm)
+void Tracer::AddResultToMatrices(std::vector<Arr2D> &M)
 {
 	for (size_t q = 0; q < J.size(); ++q)
 	{
 		matrix m = Mueller(J[q](0, 0));
-		m *= norm;
+		m *= gNorm;
 		M[q].insert(0, 0, m);
 	}
 }
@@ -1179,7 +1216,8 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone, int grou
 
 
 void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks &tracks,
-									  TrackContribution &general, TrackContribution &corrected)
+									  PointContribution &originContrib,
+									  PointContribution &correctedContrib)
 {
 	Point3d vr(0, 0, 1);
 	Point3d vf = -m_polarizationBasis;
@@ -1219,24 +1257,18 @@ void Tracer::HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks 
 
 		if (groupID < 0 && isCalcOther)
 		{
-			MuellerMatrix m(_Jx);
-			m *= gNorm;
-
-			general.other += m;
-			general.all += m;
-
-			MuellerMatrix m_cor(_Jx_cor);
-			m_cor *= gNorm;
-
-			corrected.other += m_cor;
-			corrected.all += m_cor;
+			originContrib.AddToMueller(_Jx);
+			correctedContrib.AddToMueller(_Jx_cor);
 		}
 		else
 		{
-			general.jones[groupID] += _Jx;
-			corrected.jones[groupID] += _Jx_cor;
+			originContrib.AddToGroup(_Jx, groupID);
+			correctedContrib.AddToGroup(_Jx_cor, groupID);
 		}
 	}
+
+	originContrib.SumGroupTotal();
+	correctedContrib.SumGroupTotal();
 }
 
 void Tracer::CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,

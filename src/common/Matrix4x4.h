@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#define MTR_RANK 4
+#define MX_RANK 4
 
 class Matrix4x4d
 {
@@ -20,5 +20,5 @@ public:
 	friend std::ofstream& operator << (std::ofstream &out, const Matrix4x4d &m);
 
 protected:
-	double m_array[MTR_RANK][MTR_RANK];
+	double m_array[MX_RANK][MX_RANK];
 };

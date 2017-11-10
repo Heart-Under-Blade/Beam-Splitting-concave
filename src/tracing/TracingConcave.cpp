@@ -173,6 +173,11 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 
 void TracingConcave::SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs)
 {
+	if (facetIDs.size == 0)
+	{
+		return;
+	}
+
 	int vertices[MAX_VERTEX_NUM];
 
 	for (int i = 0; i < facetIDs.size; ++i)
