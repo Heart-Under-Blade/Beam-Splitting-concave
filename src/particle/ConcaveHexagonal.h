@@ -12,6 +12,8 @@ public:
 	ConcaveHexagonal(const complex &refrIndex, double diameter, double height,
 					 double cavityAngle);
 
+	bool IsComplicated() const override;
+
 private:
 	double m_cavityDept;
 
@@ -33,4 +35,5 @@ private:
 	void SetCavityFacets(int start, int end, const Point3f *baseFacet,
 						 const Point3f &cavityPoint);
 	void SetOriginCavityPoints();
+
 };

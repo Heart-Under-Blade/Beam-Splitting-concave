@@ -88,3 +88,9 @@ void ConcaveHexagonal::SetOriginCavityPoints()
 	m_defaultStateCavities.top	  = Point3f(0, 0,  m_height/2 - m_cavityDept);
 	m_defaultStateCavities.bottom = Point3f(0, 0, -m_height/2 + m_cavityDept);
 }
+
+
+bool ConcaveHexagonal::IsComplicated() const
+{
+	return true;
+}

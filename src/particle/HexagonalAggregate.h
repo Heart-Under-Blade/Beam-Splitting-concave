@@ -8,6 +8,8 @@ public:
 	HexagonalAggregate(const complex &refrIndex, double diameter, double height,
 					   int particleNumber);
 
+	bool IsComplicated() const override;
+
 protected:
 	void SetFacetParams() override;
 

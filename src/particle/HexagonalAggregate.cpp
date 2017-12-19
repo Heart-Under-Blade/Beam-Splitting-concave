@@ -125,3 +125,9 @@ void HexagonalAggregate::SetFacetParams()
 		facets[i].isVisibleIn = false;
 	}
 }
+
+
+bool HexagonalAggregate::IsComplicated() const
+{
+	return true;
+}
