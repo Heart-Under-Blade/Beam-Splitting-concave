@@ -8,6 +8,7 @@ Bullet::Bullet()
 
 Bullet::Bullet(const complex &refrIndex, double diameter, double height, double peakHeight)
 {
+	isConcave = false;
 	SetSize(diameter, height);
 
 	double size = std::max(m_height + peakHeight, m_diameter);
@@ -82,10 +83,4 @@ void Bullet::SetFacetParams()
 	SetSideFacetParams(1, 7);
 
 	defaultFacets[7].size = 6;
-}
-
-
-bool Bullet::IsComplicated() const
-{
-	return false;
 }

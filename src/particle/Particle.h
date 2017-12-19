@@ -28,12 +28,12 @@ public:
 
 	void Concate(const std::vector<Particle> &parts);
 
-	const double &GetMainSize() const;
+	const double &GetSize() const;
 	const complex &GetRefractionIndex() const;
 	const Symmetry &GetSymmetry() const;
 	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
-	virtual bool IsComplicated() const;
+	bool IsConcave() const;
 
 	void Output();
 
@@ -49,6 +49,8 @@ protected:
 	Symmetry m_symmetry;		///< angle of particle symmetry
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
+
+	bool isConcave = true;
 
 protected:
 	void Init(int facetCount, const complex &refrIndex, double size);

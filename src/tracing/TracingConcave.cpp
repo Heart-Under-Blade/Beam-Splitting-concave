@@ -25,7 +25,7 @@ TracingConcave::TracingConcave(Particle *particle, const Point3f &startBeamDir,
 							   int interReflectionNumber)
 	: Tracing(particle, startBeamDir, isOpticalPath, polarizationBasis, interReflectionNumber)
 {
-	Point3f point = m_incidentDir * m_particle->GetMainSize();
+	Point3f point = m_incidentDir * m_particle->GetSize();
 	m_incidentDir.d_param = DotProduct(point, m_incidentDir);
 }
 

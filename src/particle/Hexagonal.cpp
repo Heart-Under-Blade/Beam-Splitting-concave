@@ -6,6 +6,7 @@ Hexagonal::Hexagonal() {}
 
 Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 {
+	isConcave = false;
 	SetSize(diameter, height);
 
 	double size = std::max(m_height, m_diameter);
@@ -102,10 +103,4 @@ void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 		i1 = i2;
 		++i2;
 	}
-}
-
-
-bool Hexagonal::IsComplicated() const
-{
-	return false;
 }

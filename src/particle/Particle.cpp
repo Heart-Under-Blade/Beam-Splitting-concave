@@ -70,7 +70,7 @@ void Particle::Concate(const std::vector<Particle> &parts)
 	isAggregate = true;
 }
 
-const double &Particle::GetMainSize() const
+const double &Particle::GetSize() const
 {
 	return m_mainSize;
 }
@@ -96,9 +96,9 @@ void Particle::Move(float dx, float dy, float dz)
 	}
 }
 
-bool Particle::IsComplicated() const
+bool Particle::IsConcave() const
 {
-	return true;
+	return isConcave;
 }
 
 void Particle::Output()

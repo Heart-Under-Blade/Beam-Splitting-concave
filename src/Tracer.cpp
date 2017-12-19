@@ -164,7 +164,7 @@ Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 	  m_polarizationBasis(0, 1, 0),
 	  m_resultDirName(resultFileName)
 {
-	if (particle->IsComplicated())
+	if (particle->IsConcave())
 	{
 		m_tracing = new TracingConcave(particle, m_incidentDir, true,
 									   m_polarizationBasis, reflNum);
