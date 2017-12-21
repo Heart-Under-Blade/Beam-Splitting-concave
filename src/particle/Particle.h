@@ -19,8 +19,7 @@ class Particle
 public:
 	Particle();
 
-	// TODO: допилить
-	void SetFromFile(const char *filename);
+	void SetFromFile(const std::string &filename); // TODO: допилить
 
 	void Rotate(double beta, double gamma, double alpha);
 	void Move(float dx, float dy, float dz);
@@ -49,6 +48,7 @@ protected:
 	Symmetry m_symmetry;		///< angle of particle symmetry
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
+	bool isConcave;
 
 protected:
 	void Init(int facetCount, const complex &refrIndex, double size);
@@ -68,5 +68,6 @@ private:
 
 private:
 	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
+	void ReadSymmetry(const int bufSize, char *trash, char *buff, std::ifstream pfile, char *ptr);
 };
 

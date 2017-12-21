@@ -338,7 +338,6 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 		facets[i].isVisibleIn = false;
 		facets[i].isVisibleOut = false;
 	}
-
 }
 
 void CertainAggregate::Resize(double sizeIndex)

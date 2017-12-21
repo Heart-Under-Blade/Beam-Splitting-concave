@@ -1,12 +1,93 @@
 #include "Particle.h"
 #include <fstream>
+#include <iostream>
+#include <cstring>
+#include "global.h"
 
-Particle::Particle() {}
+Particle::Particle()
+{
+	isConcave = false;
+}
 
-void Particle::SetFromFile(const char *filename)
+void Particle::SetFromFile(const std::string &filename)
 {
 	std::ifstream pfile(filename, std::ios::in);
-	//pfile >>
+
+	if (!pfile.is_open())
+	{
+		std::cerr << "File \"" << filename << "\" is not found" << std::endl;
+		throw std::exception();
+	}
+
+	const int bufSize = 1024;
+	char *buff = (char*)malloc(sizeof(char) * bufSize);
+
+	facetNum = 0;
+	Facet *facet = &(defaultFacets[facetNum++]);
+
+	char *ptr, *trash;
+
+	pfile.getline(buff, bufSize);
+	isConcave = strtol(buff, &trash, 10);
+
+	pfile.getline(buff, bufSize);
+	isAggregate = strtol(buff, &trash, 10);
+
+	// read symmetry params
+	{
+		pfile.getline(buff, bufSize);
+
+		ptr = strtok(buff, " ");
+		m_symmetry.beta = DegToRad(strtod(ptr, &trash));
+
+		ptr = strtok(NULL, " ");
+		m_symmetry.gamma = DegToRad(strtod(ptr, &trash));
+	}
+
+	pfile.getline(buff, bufSize); // skip empty line
+
+	while (!pfile.eof()) // read vertices of facets
+	{
+		pfile.getline(buff, bufSize);
+		ptr = strtok(buff, " ");
+
+		if (strlen(buff) == 0)
+		{
+			facet = &(defaultFacets[facetNum++]);
+			continue;
+		}
+
+		int c_i = 0;
+
+		while (ptr != NULL)
+		{
+			facet->arr[facet->size].point[c_i++] = strtod(ptr, &trash);
+			ptr = strtok(NULL, " ");
+		}
+
+		++(facet->size);
+	}
+
+	// correction of number of facet
+	if (defaultFacets[facetNum-1].size == 0)
+	{
+		--facetNum;
+	}
+
+	SetDefaultNormals();
+	Reset();
+	SetDefaultCenters();
+
+	if (isAggregate)
+	{
+		for (int i = 0; i < facetNum; ++i)
+		{
+			defaultFacets[i].isVisibleIn = false;
+			defaultFacets[i].isVisibleOut = false;
+			facets[i].isVisibleIn = false;
+			facets[i].isVisibleOut = false;
+		}
+	}
 }
 
 void Particle::Init(int facetCount, const complex &refrIndex, double size)
@@ -98,7 +179,7 @@ void Particle::Move(float dx, float dy, float dz)
 
 bool Particle::IsComplicated() const
 {
-	return true;
+	return isConcave;
 }
 
 void Particle::Output()

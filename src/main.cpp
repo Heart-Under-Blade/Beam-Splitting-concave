@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <fstream>
 #include <assert.h>
@@ -137,7 +136,8 @@ void ImportTracks(int facetNum)
 void SetArgRules(ArgPP &parser)
 {
 	int zero = 0;
-	parser.AddRule("p", '+'); // particle (type, size, ...)
+	parser.AddRule("p", '+', true); // particle (type, size, ...)
+	parser.AddRule("pf", 1, true); // particle from file (filename)
 	parser.AddRule("ri", 1); // reflection index
 	parser.AddRule("n", 1); // number of internal reflection
 	parser.AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
@@ -225,48 +225,66 @@ int main(int argc, const char* argv[])
 	SetArgRules(parser);
 	parser.Parse(argc, argv);
 
-	ParticleType type = (ParticleType)parser.GetIntValue("p", 0);
-	double height = parser.GetDoubleValue("p", 1);
-	double diameter = parser.GetDoubleValue("p", 2);
-
-	double refrIndex = parser.GetDoubleValue("ri");
-	double sup;
-	int num;
-
 	// TODO: AggregateBuilder
-	switch (type)
+
+	if (parser.Catched("pf"))
 	{
-	case ParticleType::Hexagonal:
-		particle = new Hexagonal(refrIndex, diameter, height);
-		break;
-	case ParticleType::Bullet:
-		sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
-		particle = new Bullet(refrIndex, diameter, height, sup);
-		break;
-	case ParticleType::BulletRosette:
-		sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
-		particle = new BulletRosette(refrIndex, diameter, height, sup);
-		break;
+		std::string filename = parser.GetStringValue("pf");
+		particle = new Particle();
+		particle->SetFromFile(filename);
+	}
+	else if (parser.Catched("p"))
+	{
+		ParticleType type = (ParticleType)parser.GetIntValue("p", 0);
+		double height = parser.GetDoubleValue("p", 1);
+		double diameter = parser.GetDoubleValue("p", 2);
+
+		double refrIndex = parser.GetDoubleValue("ri");
+		double sup;
+		int num;
+
+		switch (type)
+		{
+		case ParticleType::Hexagonal:
+			particle = new Hexagonal(refrIndex, diameter, height);
+			break;
+		case ParticleType::Bullet:
+			sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
+			particle = new Bullet(refrIndex, diameter, height, sup);
+			break;
+		case ParticleType::BulletRosette:
+			sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
+			particle = new BulletRosette(refrIndex, diameter, height, sup);
+			break;
 //		case ParticleType::TiltedHexagonal:
 //			sup = parser.argToValue<double>(vec[3]);
 //			particle = new TiltedHexagonal(r, hh, ri, sup);
 //			break;
-	case ParticleType::ConcaveHexagonal:
-		sup = parser.GetDoubleValue("p", 3);
-		particle = new ConcaveHexagonal(refrIndex, diameter, height, sup);
-		break;
-	case ParticleType::HexagonalAggregate:
-		num = parser.GetIntValue("p", 3);
-		particle = new HexagonalAggregate(refrIndex, diameter, height, num);
-		break;
-	case ParticleType::CertainAggregate:
-		sup = parser.GetDoubleValue("p", 3);
-		particle = new CertainAggregate(refrIndex, sup);
-		break;
-	default:
-		assert(false && "ERROR! Incorrect type of particle.");
-		break;
+		case ParticleType::ConcaveHexagonal:
+			sup = parser.GetDoubleValue("p", 3);
+			particle = new ConcaveHexagonal(refrIndex, diameter, height, sup);
+			break;
+		case ParticleType::HexagonalAggregate:
+			num = parser.GetIntValue("p", 3);
+			particle = new HexagonalAggregate(refrIndex, diameter, height, num);
+			break;
+		case ParticleType::CertainAggregate:
+			sup = parser.GetDoubleValue("p", 3);
+			particle = new CertainAggregate(refrIndex, sup);
+			break;
+		default:
+			assert(false && "ERROR! Incorrect type of particle.");
+			break;
+		}
 	}
+	else
+	{
+		cout << endl << "The argument of particle is not found. Press any key to exit...";
+		getchar();
+		return 1;
+	}
+
+	particle->Output();
 
 	int reflNum = parser.GetDoubleValue("n");
 	std::string dirName = (parser.Catched("o")) ? parser.GetStringValue("o")
