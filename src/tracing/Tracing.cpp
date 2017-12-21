@@ -29,7 +29,7 @@ Tracing::Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalP
 	m_interReflectionNumber = interReflectionNumber;
 	m_incidentDir = incidentDir;
 
-	m_refrIndex = m_particle->GetRefractionIndex();
+	m_refrIndex = m_particle->GetRefractiveIndex();
 	double re = real(m_refrIndex);
 	double im = imag(m_refrIndex);
 	ri_coef_re = re*re - im*im;

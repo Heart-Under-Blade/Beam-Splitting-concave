@@ -78,7 +78,7 @@ void Particle::SetFromFile(const std::string &filename)
 	Reset();
 	SetDefaultCenters();
 
-	if (isAggregate)
+	if (isConcave || isAggregate)
 	{
 		for (int i = 0; i < facetNum; ++i)
 		{
@@ -94,7 +94,6 @@ void Particle::Init(int facetCount, const complex &refrIndex, double size)
 {
 	facetNum = facetCount;
 	m_refractiveIndex = refrIndex;
-	m_mainSize = size;
 }
 
 void Particle::RotateCenters()
@@ -151,12 +150,30 @@ void Particle::Concate(const std::vector<Particle> &parts)
 	isAggregate = true;
 }
 
-const double &Particle::GetMainSize() const
+double Particle::GetRotationRadius() const
 {
-	return m_mainSize;
+	Point3f p0(0, 0, 0);
+
+	double radius = 0;
+
+	for (int i = 0; i < facetNum; ++i)
+	{
+		for (int j = 0; j < facets[i].size; ++j)
+		{
+			Point3f v_len = facets[i].arr[j] - p0;
+			double len = Length(v_len);
+
+			if (len > radius)
+			{
+				radius = len;
+			}
+		}
+	}
+
+	return radius;
 }
 
-const complex &Particle::GetRefractionIndex() const
+const complex &Particle::GetRefractiveIndex() const
 {
 	return m_refractiveIndex;
 }
@@ -204,6 +221,10 @@ void Particle::Output()
 	M.close();
 }
 
+void Particle::SetRefractiveIndex(const complex &value)
+{
+	m_refractiveIndex = value;
+}
 
 void Particle::SetDefaultNormals()
 {

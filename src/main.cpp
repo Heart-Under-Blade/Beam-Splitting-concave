@@ -227,11 +227,14 @@ int main(int argc, const char* argv[])
 
 	// TODO: AggregateBuilder
 
+	double refrIndex = parser.GetDoubleValue("ri");
+
 	if (parser.Catched("pf"))
 	{
 		std::string filename = parser.GetStringValue("pf");
 		particle = new Particle();
 		particle->SetFromFile(filename);
+		particle->SetRefractiveIndex(complex(refrIndex));
 	}
 	else if (parser.Catched("p"))
 	{
@@ -239,7 +242,6 @@ int main(int argc, const char* argv[])
 		double height = parser.GetDoubleValue("p", 1);
 		double diameter = parser.GetDoubleValue("p", 2);
 
-		double refrIndex = parser.GetDoubleValue("ri");
 		double sup;
 		int num;
 
