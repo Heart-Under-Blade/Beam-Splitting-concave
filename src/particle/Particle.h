@@ -28,9 +28,7 @@ public:
 	void Concate(const std::vector<Particle> &parts);
 
 	const double &GetMainSize() const;
-	const complex &GetRefractiveIndex() const;
-	void SetRefractiveIndex(const complex &value);
-
+	const complex &GetRefractionIndex() const;
 	const Symmetry &GetSymmetry() const;
 	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
@@ -46,7 +44,7 @@ public:
 protected:
 	Facet defaultFacets[MAX_FACET_NUM];
 
-	double m_mainSize;			///< max size of particle (diameter or height or smth)
+	double m_mainSize;			///< max size of particle (diameter or height or smth)	
 	Symmetry m_symmetry;		///< angle of particle symmetry
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle

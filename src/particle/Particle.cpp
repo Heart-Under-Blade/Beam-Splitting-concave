@@ -156,7 +156,7 @@ const double &Particle::GetMainSize() const
 	return m_mainSize;
 }
 
-const complex &Particle::GetRefractiveIndex() const
+const complex &Particle::GetRefractionIndex() const
 {
 	return m_refractiveIndex;
 }
@@ -204,10 +204,6 @@ void Particle::Output()
 	M.close();
 }
 
-void Particle::SetRefractiveIndex(const complex &value)
-{
-	m_refractiveIndex = value;
-}
 
 void Particle::SetDefaultNormals()
 {
