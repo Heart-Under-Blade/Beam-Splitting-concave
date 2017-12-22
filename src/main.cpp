@@ -136,8 +136,7 @@ void ImportTracks(int facetNum)
 void SetArgRules(ArgPP &parser)
 {
 	int zero = 0;
-	parser.AddRule("p", '+', true); // particle (type, size, ...)
-	parser.AddRule("pf", 1, true); // particle from file (filename)
+	parser.AddRule("p", '+'); // particle (type, size, ...)
 	parser.AddRule("ri", 1); // reflection index
 	parser.AddRule("n", 1); // number of internal reflection
 	parser.AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
@@ -229,14 +228,14 @@ int main(int argc, const char* argv[])
 
 	double refrIndex = parser.GetDoubleValue("ri");
 
-	if (parser.Catched("pf"))
+	if (parser.GetArgNumber("p") == 1)
 	{
 		std::string filename = parser.GetStringValue("pf");
 		particle = new Particle();
 		particle->SetFromFile(filename);
 		particle->SetRefractiveIndex(complex(refrIndex));
 	}
-	else if (parser.Catched("p"))
+	else
 	{
 		ParticleType type = (ParticleType)parser.GetIntValue("p", 0);
 		double height = parser.GetDoubleValue("p", 1);
@@ -278,12 +277,6 @@ int main(int argc, const char* argv[])
 			assert(false && "ERROR! Incorrect type of particle.");
 			break;
 		}
-	}
-	else
-	{
-		cout << endl << "The argument of particle is not found. Press any key to exit...";
-		getchar();
-		return 1;
 	}
 
 	particle->Output();

@@ -13,6 +13,7 @@ public: // methods
 
 	ArgPP() {}
 
+	// TODO: равнозначные аргументы (либо один, либо другой)
 	// TODO: write 'throw' in method's declarations
 	void AddRule(const std::string &key, char valueNum = 0,
 				 bool isOptional = false, const std::string &dependsOn = "")
@@ -65,12 +66,6 @@ public: // methods
 		return FindArgValue(key, valueIndex);
 	}
 
-	// TODO: несколько раз вызываешь - возвращает каждый раз сдед. значение аргумента
-	int GetNextIntValue(const std::string &key) const
-	{
-		// ...
-	}
-
 	const std::string &GetProgramName() const
 	{
 		return m_programName;
@@ -80,6 +75,20 @@ public: // methods
 	{
 		auto it = m_args.find(key);
 		return it != m_args.end();
+	}
+
+	unsigned GetArgNumber(const std::string &key) const
+	{
+		unsigned num = 0;
+
+		auto it = m_args.find(key);
+
+		if (it != m_args.end())
+		{
+			num = it->second.size();
+		}
+
+		return num;
 	}
 
 	void Reset()

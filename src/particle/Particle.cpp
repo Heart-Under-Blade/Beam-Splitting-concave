@@ -68,6 +68,8 @@ void Particle::SetFromFile(const std::string &filename)
 		++(facet->size);
 	}
 
+	pfile.close();
+
 	// correction of number of facet
 	if (defaultFacets[facetNum-1].size == 0)
 	{
