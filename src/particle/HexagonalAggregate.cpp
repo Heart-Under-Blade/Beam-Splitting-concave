@@ -4,6 +4,7 @@
 HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter, double height,
 									   int particleNumber)
 {
+	isConcave = true;
 	SetSize(diameter, height);
 	Init(8*particleNumber, refrIndex, m_height*2);
 
@@ -124,10 +125,4 @@ void HexagonalAggregate::SetFacetParams()
 	{
 		facets[i].isVisibleIn = false;
 	}
-}
-
-
-bool HexagonalAggregate::IsComplicated() const
-{
-	return true;
 }

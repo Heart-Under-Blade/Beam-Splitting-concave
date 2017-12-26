@@ -12,8 +12,6 @@ public:
 	ConcaveHexagonal(const complex &refrIndex, double diameter, double height,
 					 double cavityAngle);
 
-	bool IsComplicated() const override;
-
 private:
 	double m_cavityDept;
 

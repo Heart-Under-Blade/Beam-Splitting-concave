@@ -196,7 +196,7 @@ void Particle::Move(float dx, float dy, float dz)
 	}
 }
 
-bool Particle::IsComplicated() const
+bool Particle::IsConcave() const
 {
 	return isConcave;
 }

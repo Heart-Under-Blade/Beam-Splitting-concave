@@ -40,7 +40,7 @@ public:
 	const Symmetry &GetSymmetry() const;
 	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
-	virtual bool IsComplicated() const;
+	bool IsConcave() const;
 
 	void Output();
 
@@ -56,6 +56,8 @@ protected:
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 	bool isConcave;
+
+	bool isConcave = true;
 
 protected:
 	void Init(int facetCount, const complex &refrIndex, double size);

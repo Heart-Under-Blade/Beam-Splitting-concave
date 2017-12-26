@@ -3,6 +3,7 @@
 
 CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 {
+	isConcave = true;
 	Init(64, refrIndex, sizeIndex*120);
 
 	SetSymmetry(M_PI, 2*M_PI);
@@ -412,9 +413,4 @@ void CertainAggregate::GetAggPartFacetIDRange(int id, int &begin, int &end) cons
 		begin = 56;
 		end = 64;
 	}
-}
-
-bool CertainAggregate::IsComplicated() const
-{
-	return true;
 }
