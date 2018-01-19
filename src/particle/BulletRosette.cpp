@@ -11,6 +11,9 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 							 double height, double peakHeight)
 	: BulletRosette()
 {
+	isConcave = true;
+	isAggregated = true;
+
 	double size = height*2 + diameter;
 	Init(8, refrIndex, size);
 

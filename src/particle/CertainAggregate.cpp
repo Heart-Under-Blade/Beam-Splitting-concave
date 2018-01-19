@@ -8,7 +8,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
-	isAggregate = true;
+	isAggregated = true;
 	{
 	defaultFacets[0].arr[0] = Point3f(66.11043637052107, -60.41464034745621, 18.34343028407722);
 	defaultFacets[0].arr[1] = Point3f(27.05498686460732, -84.3359628839182, 22.63786761597252);

@@ -31,7 +31,7 @@ void Particle::SetFromFile(const std::string &filename)
 	isConcave = strtol(buff, &trash, 10);
 
 	pfile.getline(buff, bufSize);
-	isAggregate = strtol(buff, &trash, 10);
+	isAggregated = strtol(buff, &trash, 10);
 
 	// read symmetry params
 	{
@@ -80,7 +80,7 @@ void Particle::SetFromFile(const std::string &filename)
 	Reset();
 	SetDefaultCenters();
 
-	if (isConcave || isAggregate)
+	if (isConcave || isAggregated)
 	{
 		for (int i = 0; i < facetNum; ++i)
 		{
@@ -149,7 +149,7 @@ void Particle::Concate(const std::vector<Particle> &parts)
 		}
 	}
 
-	isAggregate = true;
+	isAggregated = true;
 }
 
 double Particle::GetRotationRadius() const

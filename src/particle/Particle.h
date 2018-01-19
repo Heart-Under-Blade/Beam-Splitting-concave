@@ -47,7 +47,7 @@ public:
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
 	int facetNum;					///< number of facets
-	bool isAggregate = false;
+	bool isAggregated = false;
 
 protected:
 	Facet defaultFacets[MAX_FACET_NUM];
@@ -56,8 +56,6 @@ protected:
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 	bool isConcave;
-
-	bool isConcave = true;
 
 protected:
 	void Init(int facetCount, const complex &refrIndex, double size);
