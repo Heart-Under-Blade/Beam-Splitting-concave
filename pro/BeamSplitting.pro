@@ -59,7 +59,8 @@ HEADERS += \
     ../src/particle/BulletRosette.h \
     ../src/particle/Bullet.h \
     ../src/common/Matrix4x4.h \
-    ../src/common/MullerMatrix.h
+    ../src/common/MullerMatrix.h \
+    ../src/ScatteringFiles.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -92,7 +93,8 @@ SOURCES += \
     ../src/particle/BulletRosette.cpp \
     ../src/particle/Bullet.cpp \
     ../src/common/Matrix4x4.cpp \
-    ../src/common/MullerMatrix.cpp
+    ../src/common/MullerMatrix.cpp \
+    ../src/ScatteringFiles.cpp
 
 
 HEADERS += \

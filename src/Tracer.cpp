@@ -2,8 +2,6 @@
 
 #include <ostream>
 #include <iostream>
-#include <iomanip>
-#include <map>
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
@@ -13,56 +11,13 @@
 
 #include "TracingConvex.h"
 #include "TracingConcave.h"
+#include "ScatteringFiles.h"
 
 #define BEAM_DIR_LIM		0.9396
 #define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
 #define BIN_SIZE			M_PI/SPHERE_RING_NUM
-#define RES_EXT ".dat"
 
 using namespace std;
-
-class ContributionFiles : public map<string, ofstream*>
-{
-public:
-	ContributionFiles(const string &dir)
-		: map<string, ofstream*>()
-	{
-		m_dir = dir;
-		int i = m_dir.size()-2;
-
-		while (i >= 0 && dir[i] != '\\')
-		{
-			--i;
-		}
-
-		int from = i+1;
-		int num = (m_dir.size()-from)-1;
-		m_folder = m_dir.substr(from, num);
-	}
-
-	void CreateFile(const string &subdir, const string &name)
-	{
-		string filename = m_dir + subdir + '\\' + name + "__" + m_folder + RES_EXT;
-		ofstream *file = new ofstream(filename, ios::out);
-		assert(file->is_open());
-
-		(*file) << setprecision(numeric_limits<long double>::digits10 + 1);
-		this->insert(pair<string, ofstream*>(name, file));
-	}
-
-	~ContributionFiles()
-	{
-		for (const auto &p : (*this))
-		{
-			p.second->close();
-			delete p.second;
-		}
-	}
-
-private:
-	string m_dir;
-	string m_folder;
-};
 
 class PointContribution
 {
@@ -203,10 +158,10 @@ void Tracer::WriteResultToSeparateFilesGO(double NRM, int EDF, const string &dir
 	}
 }
 
-void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &tracks)
+void Tracer::TraceRandomGO(int betaNumber, int gammaNumber, const Tracks &tracks)
 {
 	CalcTimer timer;
-	string dirName = CreateDir(m_resultDirName);
+	string dirName = CreateFolder(m_resultDirName);
 
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incomingEnergy = 0;
@@ -336,7 +291,7 @@ void Tracer::ExtractPeaksGO(int EDF, double NRM, ContributionGO &contr)
 void Tracer::WriteResultsToFileGO(double NRM, const string &filename,
 								  ContributionGO &contr)
 {
-	string name = GetUniqueFileName(filename);
+	string name = CreateUniqueFileName(filename);
 	ofstream allFile(name, std::ios::out);
 
 	allFile << "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
@@ -393,7 +348,7 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 	double gammaStep = m_symmetry.gamma/gammaNumber;
 
 	int halfGammaCount = gammaNumber/2;
-	gNorm = gammaStep/m_symmetry.gamma;
+	normIndex = gammaStep/m_symmetry.gamma;
 
 	timer.Start();
 
@@ -411,7 +366,7 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 			HandleBeamsPO(outBeams, bsCone, tracks);
 
 			outBeams.clear();
-			AddResultToMatrix(M, bsCone, gNorm);
+			AddResultToMatrix(M, bsCone, normIndex);
 		}
 
 		WriteConusMatrices(outFile, M, bsCone);
@@ -432,19 +387,14 @@ void Tracer::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
 	}
 }
 
-void Tracer::CreateGroupResultFiles(const string &tableHead, const Tracks &tracks,
-									const string &dirName,
-									vector<ofstream*> &groupFiles,
+void Tracer::CreateGroupResultFiles(const Tracks &tracks, ScatteringFiles &files,
 									const string &prefix)
 {
 	for (size_t i = 0; i < tracks.size(); ++i)
 	{
 		string groupName = tracks[i].CreateGroupName();
-		string filename = dirName + prefix + groupName + "__" + m_resultDirName + ".dat";
-		ofstream *file = new ofstream(filename, ios::out);
-		(*file) << tableHead;
-		(*file) << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-		groupFiles.push_back(file);
+		string filename = prefix + groupName;
+		files.CreateGroupFile("", filename);
 	}
 }
 
@@ -537,20 +487,19 @@ void Tracer::setIsOutputGroups(bool value)
 }
 
 void Tracer::OutputContribution(size_t groupNumber, PointContribution &contrib,
-								vector<ofstream*> groupFiles, ContributionFiles &files,
-								double degree, string prefix)
+								ScatteringFiles &files, double degree, string prefix)
 {
 	contrib.SumTotal();
 
-	ofstream &all = *(files[prefix + "all"]);
-	all << degree << ' ' << m_incomingEnergy << ' ';
-	all << contrib.GetTotal() << endl;
+	ofstream *all = files.GetMainFile(prefix + "all");
+	*(all) << degree << ' ' << m_incomingEnergy << ' ';
+	*(all) << contrib.GetTotal() << endl;
 
 	if (isOutputGroups)
 	{
 		for (size_t gr = 0; gr < groupNumber; ++gr)
 		{
-			ofstream &file = *(groupFiles[gr]);
+			ofstream &file = *(files.GetGroupFile(gr));
 			file << degree << ' ' << m_incomingEnergy << ' ';
 			file << contrib.GetGroupMueller(gr) << endl;
 		}
@@ -558,11 +507,11 @@ void Tracer::OutputContribution(size_t groupNumber, PointContribution &contrib,
 
 	if (isCalcOther)
 	{
-		ofstream &other = *(files[prefix + "other"]);
+		ofstream &other = *(files.GetMainFile(prefix + "other"));
 		other << degree << ' ' << m_incomingEnergy << ' ';
 		other << contrib.GetRest() << endl;
 
-		ofstream &diff = *(files[prefix + "difference"]);
+		ofstream &diff = *(files.GetMainFile(prefix + "difference"));
 		diff << degree << ' ' << m_incomingEnergy << ' ';
 		diff << contrib.GetGroupTotal() << endl;
 	}
@@ -579,57 +528,50 @@ string Tracer::GetTableHead(const AngleRange &range)
 			+ '\n';
 }
 
+void Tracer::CreateResultFiles(ScatteringFiles &files, const Tracks &tracks,
+							const string &subdir, const string &prefix)
+{
+	files.CreateMainFile(subdir, prefix + "all");
+	files.CreateMainFile(subdir, prefix + "other");
+	files.CreateMainFile(subdir, prefix + "difference");
+
+	if (isOutputGroups)
+	{
+		CreateGroupResultFiles(tracks, files, prefix);
+	}
+}
+
 void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 									 const Tracks &tracks, double wave)
 {
-	int groupNumber = tracks.size();
-	gNorm = gammaRange.step/gammaRange.norm;
-
-	PointContribution originContrib(groupNumber, gNorm);
-	PointContribution correctedContrib(groupNumber, gNorm);
+	size_t groupNum = tracks.size();
+	normIndex = gammaRange.step/gammaRange.norm;
 
 	m_wavelength = wave;
 	CalcTimer timer;
 	long long count = 0;
 
-	string dir = CreateDir(m_resultDirName);
-
-	ofstream logfile(dir + "\\log.txt", ios::out);
-	vector<ofstream*> groupFiles;
-
-	string resDir = CreateDir2(dir + "res");
-	string corDir = CreateDir2(dir + "cor");
-
+	string dir = CreateFolder(m_resultDirName);
 	string tableHead = GetTableHead(betaRange);
 
-	if (isOutputGroups)
-	{
-		CreateGroupResultFiles(tableHead, tracks, resDir, groupFiles);
-	}
+	string fulldir = dir + m_resultDirName + '\\';
+	ofstream logfile(fulldir + "log.txt", ios::out);
 
-	ContributionFiles files(dir);
-	files.CreateFile("res", "all");
-	files.CreateFile("res", "other");
-	files.CreateFile("res", "difference");
-	files.CreateFile("cor", "cor_all");
-	files.CreateFile("cor", "cor_other");
-	files.CreateFile("cor", "cor_difference");
+	ScatteringFiles resFiles(dir, m_resultDirName, tableHead);
+	PointContribution originContrib(groupNum, normIndex);
+	CreateDir(fulldir + "res");
+	CreateResultFiles(resFiles, tracks, "res");
 
-	for (const auto &p : files)
-	{
-		*(p.second) << tableHead;
-	}
+	vector<Arr2D> groupResultM;
+	AllocGroupMatrices(groupResultM, groupNum);
 
-	vector<ofstream*> groupFiles_cor;
+	ScatteringFiles corFiles(dir, m_resultDirName, tableHead);
+	PointContribution correctedContrib(groupNum, normIndex);
+	CreateDir(fulldir + "cor");
+	CreateResultFiles(corFiles, tracks, "cor", "cor_");
 
-	if (isOutputGroups)
-	{
-		CreateGroupResultFiles(tableHead, tracks, corDir, groupFiles_cor, "cor_");
-	}
-
-	vector<Arr2D> groupResultM, groupResultM_cor;
-	AllocGroupMatrices(groupResultM, groupNumber);
-	AllocGroupMatrices(groupResultM_cor, groupNumber);
+	vector<Arr2D> groupResultM_cor;
+	AllocGroupMatrices(groupResultM_cor, groupNum);
 
 	vector<Beam> outBeams;
 
@@ -663,15 +605,12 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 			}
 		}
 
-		m_incomingEnergy *= gNorm;
+		m_incomingEnergy *= normIndex;
 
 		double degBeta = RadToDeg(beta);
 
-		OutputContribution(groupNumber, originContrib, groupFiles, files,
-						   degBeta);
-
-		OutputContribution(groupNumber, correctedContrib, groupFiles_cor, files,
-						   degBeta, "cor_");
+		OutputContribution(groupNum, originContrib, resFiles, degBeta);
+		OutputContribution(groupNum, correctedContrib, corFiles, degBeta, "cor_");
 	}
 
 	EraseConsoleLine(50);
@@ -679,12 +618,12 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 
 	if (isOutputGroups)
 	{
-		for (size_t group = 0; group < groupResultM.size(); ++group)
+		for (size_t group = 0; group < groupNum; ++group)
 		{
-			ofstream &file = *(groupFiles[group]);
+			ofstream &file = *(resFiles.GetGroupFile(group));
 			file.close();
 
-			ofstream &file_cor = *(groupFiles_cor[group]);
+			ofstream &file_cor = *(corFiles.GetGroupFile(group));
 			file_cor.close();
 		}
 	}
@@ -694,7 +633,7 @@ void Tracer::TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRan
 }
 
 //REF: объединить с предыдущим
-void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
+void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
 							  const Tracks &tracks, double wave)
 {
 	m_wavelength = wave;
@@ -711,7 +650,7 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 	double gammaNorm = m_symmetry.gamma/gammaNumber;
 
 	int halfGammaCount = gammaNumber/2;
-	gNorm = gammaNorm/m_symmetry.gamma;
+	normIndex = gammaNorm/m_symmetry.gamma;
 
 	timer.Start();
 
@@ -731,7 +670,7 @@ void Tracer::TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCon
 				HandleBeamsPO2(outBeams, bsCone, groupID);
 
 				outBeams.clear();
-				AddResultToMatrix(M, bsCone, gNorm);
+				AddResultToMatrix(M, bsCone, normIndex);
 			}
 		}
 
@@ -815,7 +754,7 @@ void Tracer::AddResultToMatrices(std::vector<Arr2D> &M)
 	for (size_t q = 0; q < J.size(); ++q)
 	{
 		matrix m = Mueller(J[q](0, 0));
-		m *= gNorm;
+		m *= normIndex;
 		M[q].insert(0, 0, m);
 	}
 }
@@ -995,7 +934,7 @@ void Tracer::OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 	cout << m_statistics;
 }
 
-void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
+void Tracer::TraceRandomGO(int betaNumber, int gammaNumber)
 {
 	int EDF = 0;
 	CalcTimer timer;
@@ -1057,7 +996,7 @@ void Tracer::TraceIntervalGO(int betaNumber, int gammaNumber)
 	OutputStatisticsGO(orNum, D_tot, NRM, timer);
 }
 
-void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
+void Tracer::TraceFixedGO(const double &beta, const double &gamma,
 							 const Tracks &tracks)
 {
 	int EDF = 0;
@@ -1082,7 +1021,7 @@ void Tracer::TraceSingleOrGO(const double &beta, const double &gamma,
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
 
-void Tracer::TraceSingleOrPO(const double &beta, const double &gamma,
+void Tracer::TraceFixedPO(const double &beta, const double &gamma,
 							 const Cone &bsCone, const Tracks &tracks, double wave)
 {
 	m_wavelength = wave;

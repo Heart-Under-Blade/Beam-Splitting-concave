@@ -303,7 +303,7 @@ int main(int argc, const char* argv[])
 
 			double beta  = parser.GetDoubleValue("fixed", 0);
 			double gamma = parser.GetDoubleValue("fixed", 1);
-			tracer.TraceSingleOrPO(beta, gamma, bsCone, trackGroups, wave);
+			tracer.TraceFixedPO(beta, gamma, bsCone, trackGroups, wave);
 		}
 		else if (parser.Catched("random")) // "random"
 		{
@@ -336,14 +336,14 @@ int main(int argc, const char* argv[])
 
 		if (parser.Catched("all"))
 		{
-			tracer.TraceIntervalGO(betaR, gammaR);
+			tracer.TraceRandomGO(betaR, gammaR);
 		}
 		else
 		{
 			ImportTracks(particle->facetNum);
 
 			tracer.setIsCalcOther(true);
-			tracer.TraceIntervalGO(betaR, gammaR, trackGroups);
+			tracer.TraceRandomGO(betaR, gammaR, trackGroups);
 		}
 		//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 	}

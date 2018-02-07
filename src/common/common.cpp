@@ -9,58 +9,55 @@ using namespace std;
 #include <windows.h>
 #endif
 
-std::string GetUniqueFileName(const std::string &filename)
+string CreateUniqueFileName(const string &filename)
 {
-	std::string name = filename + ".dat";
+	string name = filename + ".dat";
 
-	for (int i = 1; std::ifstream(name) != NULL; ++i)
+	for (int i = 1; ifstream(name) != NULL; ++i)
 	{
-		name = filename + '(' + std::to_string(i) + ')' + ".dat";
+		name = filename + '(' + to_string(i) + ')' + ".dat";
 	}
 
 	return name;
 }
 
-std::string CreateDir(const std::string &name)
+string CreateFolder(string &name)
 {
-	std::string dirName;
-
 #ifdef _WIN32
-	char dir[260] = "";
-	size_t bufferSize = MAX_PATH;
-	char cdir[MAX_PATH]; // store the current directory
+	char curDir[MAX_PATH] = ""; // current directory
+	char newDir[MAX_PATH]; // created directory
 
 	// get the current directory, and store it
-	if (!GetCurrentDirectoryA(bufferSize, cdir))
+	if (!GetCurrentDirectoryA(MAX_PATH, curDir))
 	{
 		cerr << "Error getting current directory: #" << GetLastError();
 	}
 
-	strcat(cdir, "\\");
-	strcat(cdir, name.c_str());
+	strcat(curDir, "\\");
+	strcpy(newDir, curDir);
+	strcat(newDir, name.c_str());
 
 	char dirN[MAX_PATH];
-	strcpy(dirN, cdir);
+	strcpy(dirN, newDir);
+	string num = "";
 
-	for (int i = 1; !CreateDirectoryA(cdir, NULL); ++i)
+	for (int i = 1; !CreateDirectoryA(dirN, NULL); ++i)
 	{
-		std::string dirName = dirN;
-		dirName += "(" + to_string(i) + ")";
-		strcpy(cdir, dirName.c_str());
+		num = "(" + to_string(i) + ")";
+		string dirName = newDir + num;
+		strcpy(dirN, dirName.c_str());
 	}
 
-	strcat(cdir, "\\");
-	strcat(dir, cdir);
-	dirName = dir;
+	name += num;
 #else
-	dirName = name;
+	cr_dir = name;
 #endif
-	return dirName;
+	return curDir;
 }
 
-std::string CreateDir2(const std::string &name)
+string CreateDir(const string &name)
 {
-	std::string dirName;
+	string dirName;
 #ifdef _WIN32
 	char cdir[MAX_PATH];
 	cdir[0] = '\0';
@@ -71,7 +68,7 @@ std::string CreateDir2(const std::string &name)
 
 	for (int i = 1; !CreateDirectoryA(cdir, NULL); ++i)
 	{
-		std::string dirName = dirN;
+		string dirName = dirN;
 		dirName += "(" + to_string(i) + ")";
 		strcpy(cdir, dirName.c_str());
 	}

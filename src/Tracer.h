@@ -11,7 +11,7 @@
 #define MAX_GROUP_NUM 1024
 
 class PointContribution;
-class ContributionFiles;
+class ScatteringFiles;
 
 struct ContributionGO
 {
@@ -134,10 +134,10 @@ public:
 	Tracer(Particle *particle, int reflNum, const std::string &resultFileName);
 	~Tracer();
 
-	void TraceIntervalGO(int betaNumber, int gammaNumber, const Tracks &tracks);
-	void TraceIntervalGO(int betaNumber, int gammaNumber);
-	void TraceSingleOrGO(const double &beta, const double &gamma,
-						 const Tracks &tracks);
+	void TraceRandomGO(int betaNumber, int gammaNumber, const Tracks &tracks);
+	void TraceRandomGO(int betaNumber, int gammaNumber);
+	void TraceFixedGO(const double &beta, const double &gamma,
+					  const Tracks &tracks);
 
 	void TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 					   const Tracks &tracks, double wave);
@@ -148,10 +148,10 @@ public:
 	void TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
 								 const Tracks &tracks, double wave);
 
-	void TraceIntervalPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
-						  const Tracks &tracks, double wave);
-	void TraceSingleOrPO(const double &beta, const double &gamma,
-						 const Cone &bsCone, const Tracks &tracks, double wave);
+	void TraceRandomPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
+						const Tracks &tracks, double wave);
+	void TraceFixedPO(const double &beta, const double &gamma,
+					  const Cone &bsCone, const Tracks &tracks, double wave);
 
 	void setIsCalcOther(bool value); // REF: заменить
 
@@ -182,12 +182,7 @@ private:
 	// REF: заменить
 	bool isCalcOther = false;
 	bool isOutputGroups = false;
-	double gNorm;
-
-//	Arr2D Other;
-//	Arr2D All;
-//	Arr2D Other_cor;
-//	Arr2D All_cor;
+	double normIndex;
 
 	std::string m_statistics;
 
@@ -235,10 +230,9 @@ private:
 									  const Tracks &tracks);
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
 
-	void CreateGroupResultFiles(const std::string &tableHead,
-								const Tracks &tracks, const std::string &dirName,
-								std::vector<std::ofstream*> &groupFiles,
+	void CreateGroupResultFiles(const Tracks &tracks, ScatteringFiles &files,
 								const std::string &prefix = "");
+
 	void AllocJ(std::vector<Arr2DC> &j, int m, int n, int size);
 	void CleanJ(std::vector<Arr2DC> &j);
 	void OutputStartTime(CalcTimer &timer);
@@ -249,6 +243,8 @@ private:
 	void OutputToAllFile(std::ofstream &diffFile, std::ofstream &otherFile,
 						 double degBeta, std::ofstream &allFile, Arr2D &all,
 						 Arr2D &other);
-	void OutputContribution(size_t groupNumber, PointContribution &contrib, std::vector<std::ofstream*> groupFiles,
-							ContributionFiles &files, double degree, std::string prefix = "");
+	void OutputContribution(size_t groupNumber, PointContribution &contrib,
+							ScatteringFiles &files, double degree, std::string prefix = "");
+	void CreateResultFiles(ScatteringFiles &files, const Tracks &tracks,
+						const std::string &subdir, const std::string &prefix = "");
 };
