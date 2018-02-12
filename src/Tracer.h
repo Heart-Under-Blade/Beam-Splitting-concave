@@ -90,24 +90,6 @@ public:
 	}
 };
 
-struct AngleRange
-{
-	double min;
-	double max;
-	int number;
-	double norm;
-	double step;
-
-	AngleRange(double _min, double _max, int _number)
-		: number(_number)
-	{
-		min = _min;
-		max = _max;
-		norm = max - min;
-		step = norm/number;
-	}
-};
-
 /**
  * @brief The Cone struct
  * Backscattering cone divided by cells
@@ -142,53 +124,57 @@ public:
 	void TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 					   const Tracks &tracks, double wave);
 
-	void TraceBackScatterPointPO(int betaNumber, int gammaNumber,
-								 const Tracks &tracks, double wave);
-
-	void TraceBackScatterPointPO(const AngleRange &betaRange, const AngleRange &gammaRange,
-								 const Tracks &tracks, double wave);
-
 	void TraceRandomPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
 						const Tracks &tracks, double wave);
 	void TraceFixedPO(const double &beta, const double &gamma,
 					  const Cone &bsCone, const Tracks &tracks, double wave);
 
-	void setIsCalcOther(bool value); // REF: заменить
+	void SetIsCalcOther(bool value); // REF: заменить
+	void SetIsOutputGroups(bool value);// REF: заменить
 
 	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
-	void setIsOutputGroups(bool value);// REF: заменить
+
+protected:
+	Tracing *m_tracing;
+	double m_incomingEnergy;
+	std::string m_resultDirName;
+	double normIndex;
+	double m_wavelength;
+	Point3f m_polarizationBasis;
+	Point3f m_incidentDir;
+
+	// REF: заменить
+	bool isCalcOther = false;
+
+	bool isNan = false;
+	bool isOutputGroups = false;
 
 private:
-	Tracing *m_tracing;
-
 	Symmetry m_symmetry;
 
 	// result scattering martices
 	ContributionGO m_totalMtrx;
 	std::vector<ContributionGO> m_sepatateMatrices; // матрицы для вклада в отдельные траектории
 
-	Point3f m_incidentDir;
-	Point3f m_polarizationBasis;
-	std::string m_resultDirName;
 	std::vector<Arr2DC> J; // Jones matrices
 
 	// light energy balance
-	double m_incomingEnergy;
 	double m_outcomingEnergy;
 	time_t m_startTime;
 
-	// REF: заменить
-	bool isCalcOther = false;
-	bool isOutputGroups = false;
-	double normIndex;
 
 	std::string m_statistics;
 
-	bool isNan = false;
 	bool isNanOccured = false;
 
-	double m_wavelength;
+protected:
+	void OutputStartTime(CalcTimer &timer);
+	void OutputProgress(int betaNumber, long long count, CalcTimer &timer);
+	void OutputOrientationToLog(int i, int j, std::ostream &logfile);
+	void CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
+							   const Point3d &vf, const Point3d &vr,
+							   double lng_proj0, matrixC &Jx);
 
 private:
 	void CleanJ(int size, const Cone &bsCone);
@@ -197,13 +183,7 @@ private:
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone,
 					   const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, int groupID);
-	void HandleBeamsBackScatterPO(std::vector<Beam> &outBeams, const Tracks &tracks,
-								  PointContribution &general, PointContribution &corrected);
 
-	void CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
-							   const Point3d &vf, const Point3d &vr,
-							   double lng_proj0, matrixC &Jx);
-	std::string GetTableHead(const AngleRange &range);
 	void CalcJnRot(const Beam &beam, const Point3f &T,
 				   const Point3d &vf, const Point3d &vr, matrixC &Jn_rot);
 	void AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm = 1);
@@ -214,7 +194,6 @@ private:
 	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
-	void OutputProgress(int betaNumber, long long count, CalcTimer &timer);
 	void ExtractPeaksGO(int EDF, double NRM, ContributionGO &contr);
 	void WriteResultsToFileGO(double NRM, const std::string &filename,
 							  ContributionGO &contr);
@@ -226,23 +205,11 @@ private:
 							 ContributionGO &contr);
 	void WriteResultToSeparateFilesGO(double NRM, int EDF, const std::string &dir,
 									  const Tracks &tracks);
-	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
-
-	void CreateGroupResultFiles(const Tracks &tracks, ScatteringFiles &files,
-								const std::string &prefix = "");
-
 	void AllocJ(std::vector<Arr2DC> &j, int m, int n, int size);
 	void CleanJ(std::vector<Arr2DC> &j);
-	void OutputStartTime(CalcTimer &timer);
 	void OutputStatisticsGO(int orNumber, double D_tot, double NRM,
 						  CalcTimer &timer);
-	void OutputToGroupFiles(double degBeta, std::vector<std::ofstream*> &groupFiles,
-							std::vector<Arr2D> &groupResultM, size_t size);
 	void OutputToAllFile(std::ofstream &diffFile, std::ofstream &otherFile,
 						 double degBeta, std::ofstream &allFile, Arr2D &all,
 						 Arr2D &other);
-	void OutputContribution(size_t groupNumber, PointContribution &contrib,
-							ScatteringFiles &files, double degree, std::string prefix = "");
-	void CreateResultFiles(ScatteringFiles &files, const Tracks &tracks,
-						const std::string &subdir, const std::string &prefix = "");
 };

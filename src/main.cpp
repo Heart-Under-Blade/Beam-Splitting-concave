@@ -22,6 +22,7 @@
 #include "PhysMtr.hpp"
 
 #include "Tracer.h"
+#include "TracerBackScatterPoint.h"
 #include "ArgPP.h"
 
 #ifdef _OUTPUT_NRG_CONV
@@ -288,7 +289,7 @@ int main(int argc, const char* argv[])
 
 	if (parser.Catched("gr"))
 	{
-		tracer.setIsOutputGroups(true);
+		tracer.SetIsOutputGroups(true);
 	}
 
 	if (parser.Catched("po"))
@@ -312,8 +313,9 @@ int main(int argc, const char* argv[])
 
 			if (parser.Catched("point"))
 			{
-				tracer.setIsCalcOther(true);
-				tracer.TraceBackScatterPointPO(beta, gamma, trackGroups, wave);
+				TracerBackScatterPoint tracerBSP(particle, reflNum, dirName);
+				tracerBSP.SetIsCalcOther(true);
+				tracerBSP.Trace(beta, gamma, trackGroups, wave);
 			}
 			else
 			{
@@ -342,7 +344,7 @@ int main(int argc, const char* argv[])
 		{
 			ImportTracks(particle->facetNum);
 
-			tracer.setIsCalcOther(true);
+			tracer.SetIsCalcOther(true);
 			tracer.TraceRandomGO(betaR, gammaR, trackGroups);
 		}
 		//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);

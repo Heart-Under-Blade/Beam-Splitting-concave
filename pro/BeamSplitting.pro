@@ -60,7 +60,8 @@ HEADERS += \
     ../src/particle/Bullet.h \
     ../src/common/Matrix4x4.h \
     ../src/common/MullerMatrix.h \
-    ../src/ScatteringFiles.h
+    ../src/ScatteringFiles.h \
+    ../src/TracerBackScatterPoint.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -94,7 +95,8 @@ SOURCES += \
     ../src/particle/Bullet.cpp \
     ../src/common/Matrix4x4.cpp \
     ../src/common/MullerMatrix.cpp \
-    ../src/ScatteringFiles.cpp
+    ../src/ScatteringFiles.cpp \
+    ../src/TracerBackScatterPoint.cpp
 
 
 HEADERS += \
