@@ -112,3 +112,6 @@ SOURCES += \
 	../src/bigint/BigIntegerUtils.cc \
 	../src/bigint/BigUnsigned.cc \
 	../src/bigint/BigUnsignedInABase.cc \
+
+DISTFILES += \
+    uml.qmodel

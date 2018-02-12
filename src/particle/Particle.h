@@ -58,7 +58,7 @@ protected:
 	bool isConcave;
 
 protected:
-	void Init(int facetCount, const complex &refrIndex, double size);
+	void Init(int facetCount, const complex &refrIndex);
 
 	void SetDefaultNormals();
 	void SetDefaultCenters();
@@ -75,6 +75,7 @@ private:
 
 private:
 	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
-	void ReadSymmetry(const int bufSize, char *trash, char *buff, std::ifstream pfile, char *ptr);
+	void ReadSymmetry(const int bufSize, char *trash, char *buff,
+					  std::ifstream pfile, char *ptr);
 };
 

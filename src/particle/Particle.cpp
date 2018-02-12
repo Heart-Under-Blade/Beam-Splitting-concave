@@ -92,7 +92,7 @@ void Particle::SetFromFile(const std::string &filename)
 	}
 }
 
-void Particle::Init(int facetCount, const complex &refrIndex, double size)
+void Particle::Init(int facetCount, const complex &refrIndex)
 {
 	facetNum = facetCount;
 	m_refractiveIndex = refrIndex;

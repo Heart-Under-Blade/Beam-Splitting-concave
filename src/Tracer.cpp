@@ -135,7 +135,6 @@ Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 
 Tracer::~Tracer()
 {
-	delete m_tracing;
 }
 
 void OutputOrientationToLog(int i, int j, ostream &logfile)
@@ -755,16 +754,6 @@ void Tracer::AddResultToMatrices(std::vector<Arr2D> &M)
 	{
 		matrix m = Mueller(J[q](0, 0));
 		m *= normIndex;
-		M[q].insert(0, 0, m);
-	}
-}
-// REF: merge with previous
-void Tracer::AddResultToMatrices_cor(std::vector<Arr2D> &M, double norm)
-{
-	for (size_t q = 0; q < J_cor.size(); ++q)
-	{
-		matrix m = Mueller(J_cor[q](0, 0));
-		m *= norm;
 		M[q].insert(0, 0, m);
 	}
 }

@@ -172,7 +172,6 @@ private:
 	Point3f m_polarizationBasis;
 	std::string m_resultDirName;
 	std::vector<Arr2DC> J; // Jones matrices
-	std::vector<Arr2DC> J_cor; //
 
 	// light energy balance
 	double m_incomingEnergy;
@@ -212,7 +211,6 @@ private:
 	void AddResultToMatrices(std::vector<Arr2D> &M, const Cone &bsCone,
 							 double norm = 1);
 	void AddResultToMatrices(std::vector<Arr2D> &M);
-	void AddResultToMatrices_cor(std::vector<Arr2D> &M, double norm = 1);
 	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);

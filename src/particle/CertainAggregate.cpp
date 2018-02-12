@@ -4,7 +4,7 @@
 CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 {
 	isConcave = true;
-	Init(64, refrIndex, sizeIndex*120);
+	Init(64, refrIndex);
 
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();

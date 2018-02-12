@@ -189,6 +189,7 @@ Beam & Beam::operator = (const Beam &other)
 Beam &Beam::operator =(const Polygon &other)
 {
 	Polygon::operator =(other);
+	return *this;
 }
 
 Beam &Beam::operator = (Beam &&other)

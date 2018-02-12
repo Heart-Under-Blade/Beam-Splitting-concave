@@ -481,16 +481,12 @@ bool TracingConcave::IsVisibleFacet(int facetID, const Beam &beam)
 
 void TracingConcave::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
-	int begin, end;
+	int begin = 0;
+	int end = m_particle->facetNum;
 
 	if (m_particle->isAggregated && beam.location == Location::In)
 	{
 		m_particle->GetAggPartFacetIDRange(beam.lastFacetID, begin, end);
-	}
-	else
-	{
-		begin = 0;
-		end = m_particle->facetNum;
 	}
 
 	for (int i = begin; i < end; ++i)

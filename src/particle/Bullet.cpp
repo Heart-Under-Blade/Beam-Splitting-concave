@@ -10,9 +10,7 @@ Bullet::Bullet(const complex &refrIndex, double diameter, double height, double 
 {
 	isConcave = false;
 	SetSize(diameter, height);
-
-	double size = std::max(m_height + peakHeight, m_diameter);
-	Init(13, refrIndex, size);
+	Init(13, refrIndex);
 
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();

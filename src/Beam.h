@@ -7,10 +7,6 @@
 #include "float.h"
 #include "BigInteger.hh"
 
-#ifdef _TRACK_ALLOW
-//#include <vector>
-#endif
-
 class Beam : public Polygon
 {
 public:
@@ -26,7 +22,7 @@ public:
 	void SetPolygon(const Polygon &other);
 
 	Beam & operator = (const Beam &other);
-	Beam & operator =(const Polygon &other);
+	Beam & operator = (const Polygon &other);
 	Beam & operator = (Beam &&other);
 
 	void SetTracingParams(int facetID, int level, Location location);

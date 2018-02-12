@@ -14,8 +14,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	isConcave = true;
 	isAggregated = true;
 
-	double size = height*2 + diameter;
-	Init(8, refrIndex, size);
+	Init(8, refrIndex);
 
 	std::vector<Particle> bullets;
 	double halfHeight = height/2;

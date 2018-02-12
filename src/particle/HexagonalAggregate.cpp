@@ -6,7 +6,7 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 {
 	isConcave = true;
 	SetSize(diameter, height);
-	Init(8*particleNumber, refrIndex, m_height*2);
+	Init(8*particleNumber, refrIndex);
 
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();

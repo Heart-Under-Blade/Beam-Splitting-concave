@@ -8,9 +8,7 @@ Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 {
 	isConcave = false;
 	SetSize(diameter, height);
-
-	double size = std::max(m_height, m_diameter);
-	Init(8, refrIndex, size);
+	Init(8, refrIndex);
 
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();

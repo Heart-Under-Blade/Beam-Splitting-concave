@@ -13,8 +13,7 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 	double r = diameter/2;
 	m_cavityDept = (r*sin(angleD))/cos(angleD);
 
-	double size = std::max(height, diameter);
-	Init(18, refrIndex, size);
+	Init(18, refrIndex);
 
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();
