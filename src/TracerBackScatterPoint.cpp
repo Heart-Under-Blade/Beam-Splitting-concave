@@ -271,11 +271,11 @@ void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &outBeams, const Trac
 										 PointContribution &correctedContrib)
 {
 	Point3d vr(0, 0, 1);
-	Point3d vf = -m_polarizationBasis;
+	Point3d vf = -m_incidentLight.polarizationBasis;
 
 	for (Beam &beam : outBeams)
 	{
-		if (beam.direction.cz < BEAM_DIR_LIM)
+		if (beam.light.direction.cz < BEAM_DIR_LIM)
 		{
 			continue;
 		}
@@ -287,13 +287,15 @@ void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &outBeams, const Trac
 			continue;
 		}
 
-		beam.RotateSpherical(-m_incidentDir, m_polarizationBasis);
+		beam.RotateSpherical(-m_incidentLight.direction,
+							 m_incidentLight.polarizationBasis);
 
-		Point3f T = CrossProduct(beam.e, beam.direction);
+		Point3f T = CrossProduct(beam.light.polarizationBasis,
+								 beam.light.direction);
 		T = T/Length(T); // basis of beam
 
 		Point3f center = beam.Center();
-		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
+		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.light.direction);
 
 		matrixC Jx(2, 2);
 		CalcMultiplyOfJmatrix(beam, T, vf, vr, lng_proj0, Jx);

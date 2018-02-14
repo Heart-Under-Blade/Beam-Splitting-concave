@@ -1,8 +1,8 @@
 #include "TracingConvex.h"
 
-TracingConvex::TracingConvex(Particle *particle, const Point3f &incidentBeamDir, bool isOpticalPath,
-							 const Point3f &polarizationBasis, int interReflectionNumber)
-	: Tracing(particle, incidentBeamDir, isOpticalPath, polarizationBasis, interReflectionNumber)
+TracingConvex::TracingConvex(Particle *particle, Light *incidentLight,
+							 bool isOpticalPath, int interReflectionNumber)
+	: Tracing(particle, incidentLight, isOpticalPath, interReflectionNumber)
 {
 }
 

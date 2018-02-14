@@ -6,9 +6,8 @@
 class TracingConcave : public Tracing
 {
 public:
-	TracingConcave(Particle *particle, const Point3f &startBeamDir,
-				   bool isOpticalPath, const Point3f &polarizationBasis,
-				   int interReflectionNumber);
+	TracingConcave(Particle *particle, Light *incidentLight,
+				   bool isOpticalPath, int interReflectionNumber);
 
 	void SplitBeamByParticle(double beta, double gamma, std::vector<Beam> &scaterredBeams) override;
 	void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,

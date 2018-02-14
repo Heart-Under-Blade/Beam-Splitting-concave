@@ -20,10 +20,10 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 //	   << "id: " << beam.id << endl
 	   << "D: " << beam.D << endl
 	   << "direction: "
-	   << beam.direction.cx << ", "
-	   << beam.direction.cy << ", "
-	   << beam.direction.cz << ", "
-	   << beam.direction.d_param << endl << endl;
+	   << beam.light.direction.cx << ", "
+	   << beam.light.direction.cy << ", "
+	   << beam.light.direction.cz << ", "
+	   << beam.light.direction.d_param << endl << endl;
 
 	return os;
 }
@@ -47,15 +47,14 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 Beam::Beam()
 {
 	opticalPath = 0;
-	e = Point3f(0, 1, 0);
+	light.polarizationBasis = Point3f(0, 1, 0);
 }
 
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
 	D = other.D;
-	e = other.e;
-	direction = other.direction;
+	light = other.light;
 
 	Polygon::operator =(other);
 
@@ -84,8 +83,7 @@ Beam::Beam(Beam &&other)
 {
 	opticalPath = other.opticalPath;
 	D = other.D;
-	e = other.e;
-	direction = other.direction;
+	light = other.light;
 
 	lastFacetID = other.lastFacetID;
 	level = other.level;
@@ -97,8 +95,7 @@ Beam::Beam(Beam &&other)
 
 	other.opticalPath = 0;
 	other.D = 0;
-	other.e = Point3f(0, 0, 0);
-	other.direction = Point3f(0, 0, 0);
+	other.light = Light{Point3f(0, 0, 0), Point3f(0, 0, 0)};
 
 	other.lastFacetID = 0;
 	other.level = 0;
@@ -112,7 +109,7 @@ Beam::Beam(Beam &&other)
 void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 {
 	Point3f newBasis;
-	double cs = DotProduct(dir, direction);
+	double cs = DotProduct(dir, light.direction);
 
 	if (fabs(1.0 - cs) <= DBL_EPSILON)
 	{
@@ -137,9 +134,9 @@ void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 
 void Beam::GetSpherical(double &fi, double &teta) const
 {
-	const float &x = direction.cx;
-	const float &y = direction.cy;
-	const float &z = direction.cz;
+	const float &x = light.direction.cx;
+	const float &y = light.direction.cy;
+	const float &z = light.direction.cz;
 
 	if (fabs(z + 1.0) < DBL_EPSILON) // forward
 	{
@@ -200,8 +197,7 @@ Beam &Beam::operator = (Beam &&other)
 
 		opticalPath = other.opticalPath;
 		D = other.D;
-		e = other.e;
-		direction = other.direction;
+		light = other.light;
 
 		lastFacetID = other.lastFacetID;
 		level = other.level;
@@ -214,8 +210,7 @@ Beam &Beam::operator = (Beam &&other)
 #endif
 		other.opticalPath = 0;
 		other.D = 0;
-		other.e = Point3f(0, 0, 0);
-		other.direction = Point3f(0, 0, 0);
+		other.light = Light{Point3f(0, 0, 0), Point3f(0, 0, 0)};
 
 		other.lastFacetID = 0;
 		other.level = 0;
@@ -252,7 +247,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	Point3f _n = Normal();
 
 	int begin, startIndex, endIndex;
-	bool order = (DotProduct(_n, direction) < 0);
+	bool order = (DotProduct(_n, light.direction) < 0);
 
 	if (order)
 	{
@@ -269,7 +264,8 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 
 	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
 
-	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
+	const Point3f &dir = light.direction;
+	Point3d k_k0 = -pt + Point3d(dir.cx, dir.cy, dir.cz);
 
 	Point3f cntr = Center();
 	Point3d center = Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
@@ -401,7 +397,7 @@ void Beam::RotatePlane(const Point3f &newBasis)
 void Beam::RotateJMatrix(const Point3f &newBasis)
 {
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
-	double cs = DotProduct(newBasis, e);
+	double cs = DotProduct(newBasis, light.polarizationBasis);
 
 	if (fabs(1.0 - cs) < eps)
 	{
@@ -420,12 +416,12 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 //		LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
 
 		Point3f k;
-		CrossProduct(e, newBasis, k);
+		CrossProduct(light.polarizationBasis, newBasis, k);
 		Normalize(k);
 
 		double angle = acos(cs);
 
-		Point3f r = k + direction;
+		Point3f r = k + light.direction;
 
 		if (Norm(r) <= 0.5)
 		{
@@ -443,7 +439,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 		J.m12 = b01;
 	}
 
-	e = newBasis;
+	light.polarizationBasis = newBasis;
 }
 
 void Beam::AddVertex(const Point3f &vertex)

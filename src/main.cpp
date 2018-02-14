@@ -22,6 +22,7 @@
 #include "PhysMtr.hpp"
 
 #include "Tracer.h"
+#include "TracerGO.h"
 #include "TracerBackScatterPoint.h"
 #include "ArgPP.h"
 
@@ -333,21 +334,23 @@ int main(int argc, const char* argv[])
 	}
 	else // go
 	{
-		int betaR = parser.GetIntValue("random", 0);
-		int gammaR = parser.GetIntValue("random", 1);
+		TracerGO tracerGO(particle, reflNum, dirName);
+
+		AngleRange beta = GetRange(parser, "b", particle);
+		AngleRange gamma = GetRange(parser, "g", particle);
 
 		if (parser.Catched("all"))
 		{
-			tracer.TraceRandomGO(betaR, gammaR);
+			tracerGO.TraceRandom(beta, gamma, false);
 		}
 		else
 		{
 			ImportTracks(particle->facetNum);
 
-			tracer.SetIsCalcOther(true);
-			tracer.TraceRandomGO(betaR, gammaR, trackGroups);
+			tracerGO.SetIsCalcOther(true);
+			tracerGO.SetTracks(&trackGroups);
+			tracerGO.TraceRandom(beta, gamma, true);
 		}
-		//				tracer.TraceSingleOrGO(45, -90, cellNum, trackGroups);
 	}
 
 	if (parser.Catched("close"))

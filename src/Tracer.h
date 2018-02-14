@@ -8,85 +8,24 @@
 #include "BigInteger.hh"
 #include "MullerMatrix.h"
 
-#define MAX_GROUP_NUM 1024
-
 class PointContribution;
 class ScatteringFiles;
 
-struct ContributionGO
+struct AngleRange
 {
-	ContributionGO()
-		: scatMatrix(0, 0, 0, 0), back(4, 4), forw(4, 4)
+	double min;
+	double max;
+	int number;
+	double norm;
+	double step;
+
+	AngleRange(double _min, double _max, int _number)
+		: number(_number)
 	{
-		scatMatrix = Arr2D(1, 180 + 1/*TODO: this is 'thetaNum',
-				   should i do smth with it?*/, 4, 4);
-		scatMatrix.ClearArr();
-	}
-
-	Arr2D scatMatrix;	///< Scattering matrix
-	matrix back;		///< Mueller matrix in backward direction
-	matrix forw;		///< Mueller matrix in forward direction
-};
-
-struct TrackGroup
-{
-	int groupID;
-	BigInteger arr[MAX_GROUP_NUM];
-	int size = 0;
-	std::vector<std::vector<int>> tracks;
-
-	std::string CreateGroupName() const
-	{
-		std::string subname;
-		subname += "gr_" + std::to_string(groupID);
-		return subname;
-	}
-};
-
-class Tracks : public std::vector<TrackGroup>
-{
-public:
-	int FindGroup(const BigInteger &trackID) const
-	{
-		for (size_t i = 0; i < size(); ++i)
-		{
-			for (int j = 0; j < (*this)[i].size; ++j)
-			{
-				if ((*this)[i].arr[j] == trackID)
-				{
-					return (*this)[i].groupID;
-				}
-			}
-		}
-
-		if (size() == 0)
-		{
-			return 0;
-		}
-
-		return -1;
-	}
-
-	static void RecoverTrack(const Beam &beam, int facetNum,
-							 std::vector<int> &track)
-	{
-		int coef = facetNum + 1;
-		std::vector<int> tmp_track;
-
-		BigInteger tmpId = beam.id/coef;
-		for (int i = 0; i <= beam.level; ++i)
-		{
-			int tmp = (tmpId%coef).toInt();
-			tmpId -= tmp;
-			tmpId /= coef;
-			tmp -= 1;
-			tmp_track.push_back(tmp);
-		}
-
-		for (int i = tmp_track.size()-1; i >= 0; --i)
-		{
-			track.push_back(tmp_track.at(i));
-		}
+		min = _min;
+		max = _max;
+		norm = max - min;
+		step = norm/number;
 	}
 };
 
@@ -116,8 +55,6 @@ public:
 	Tracer(Particle *particle, int reflNum, const std::string &resultFileName);
 	~Tracer();
 
-	void TraceRandomGO(int betaNumber, int gammaNumber, const Tracks &tracks);
-	void TraceRandomGO(int betaNumber, int gammaNumber);
 	void TraceFixedGO(const double &beta, const double &gamma,
 					  const Tracks &tracks);
 
@@ -137,12 +74,17 @@ public:
 
 protected:
 	Tracing *m_tracing;
+
 	double m_incomingEnergy;
+	double m_outcomingEnergy;
+
+	Light m_incidentLight;
 	std::string m_resultDirName;
 	double normIndex;
 	double m_wavelength;
-	Point3f m_polarizationBasis;
-	Point3f m_incidentDir;
+	Symmetry m_symmetry;
+	std::string m_summary;
+	time_t m_startTime;
 
 	// REF: заменить
 	bool isCalcOther = false;
@@ -151,20 +93,7 @@ protected:
 	bool isOutputGroups = false;
 
 private:
-	Symmetry m_symmetry;
-
-	// result scattering martices
-	ContributionGO m_totalMtrx;
-	std::vector<ContributionGO> m_sepatateMatrices; // матрицы для вклада в отдельные траектории
-
 	std::vector<Arr2DC> J; // Jones matrices
-
-	// light energy balance
-	double m_outcomingEnergy;
-	time_t m_startTime;
-
-
-	std::string m_statistics;
 
 	bool isNanOccured = false;
 
@@ -175,11 +104,8 @@ protected:
 	void CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
 							   const Point3d &vf, const Point3d &vr,
 							   double lng_proj0, matrixC &Jx);
-
 private:
 	void CleanJ(int size, const Cone &bsCone);
-	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta);
-	void HandleBeamsGO(std::vector<Beam> &outBeams, double beta, const Tracks &tracks);
 	void HandleBeamsPO(std::vector<Beam> &outBeams, const Cone &bsCone,
 					   const Tracks &tracks);
 	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, int groupID);
@@ -194,22 +120,11 @@ private:
 	void WriteConusMatrices(std::ofstream &outFile, const Arr2D &sum,
 						const Cone &bsCone);
 	void AddToSumMatrix(const Cone &bsCone, double norm, int q, Arr2D &M_);
-	void ExtractPeaksGO(int EDF, double NRM, ContributionGO &contr);
-	void WriteResultsToFileGO(double NRM, const std::string &filename,
-							  ContributionGO &contr);
 
-	double CalcNorm(long long orNum);
-	double CalcTotalScatteringEnergy();
-	void RotateMuller(const Point3f &dir, matrix &bf);
-	void AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
-							 ContributionGO &contr);
-	void WriteResultToSeparateFilesGO(double NRM, int EDF, const std::string &dir,
-									  const Tracks &tracks);
 	void AllocJ(std::vector<Arr2DC> &j, int m, int n, int size);
 	void CleanJ(std::vector<Arr2DC> &j);
-	void OutputStatisticsGO(int orNumber, double D_tot, double NRM,
-						  CalcTimer &timer);
 	void OutputToAllFile(std::ofstream &diffFile, std::ofstream &otherFile,
 						 double degBeta, std::ofstream &allFile, Arr2D &all,
 						 Arr2D &other);
+	void SetIncidentLight(Particle *particle);
 };

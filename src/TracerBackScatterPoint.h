@@ -2,24 +2,6 @@
 
 #include "Tracer.h"
 
-struct AngleRange
-{
-	double min;
-	double max;
-	int number;
-	double norm;
-	double step;
-
-	AngleRange(double _min, double _max, int _number)
-		: number(_number)
-	{
-		min = _min;
-		max = _max;
-		norm = max - min;
-		step = norm/number;
-	}
-};
-
 class TracerBackScatterPoint : public Tracer
 {
 public:

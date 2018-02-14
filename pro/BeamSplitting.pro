@@ -61,7 +61,9 @@ HEADERS += \
     ../src/common/Matrix4x4.h \
     ../src/common/MullerMatrix.h \
     ../src/ScatteringFiles.h \
-    ../src/TracerBackScatterPoint.h
+    ../src/TracerBackScatterPoint.h \
+    ../src/TracerGO.h \
+    ../src/Handler.h
 
 SOURCES += \
     ../src/Beam.cpp \
@@ -96,7 +98,9 @@ SOURCES += \
     ../src/common/Matrix4x4.cpp \
     ../src/common/MullerMatrix.cpp \
     ../src/ScatteringFiles.cpp \
-    ../src/TracerBackScatterPoint.cpp
+    ../src/TracerBackScatterPoint.cpp \
+    ../src/TracerGO.cpp \
+    ../src/Handler.cpp
 
 
 HEADERS += \

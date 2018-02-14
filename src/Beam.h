@@ -7,6 +7,12 @@
 #include "float.h"
 #include "BigInteger.hh"
 
+struct Light
+{
+	Point3f direction;
+	Point3f polarizationBasis;
+};
+
 class Beam : public Polygon
 {
 public:
@@ -38,9 +44,8 @@ public:
 	// REF: рассмотреть схему, где у пучка будет много полигонов
 
 public:
-	Point3f direction;				///< direction of beam
+	Light light;
 	Matrix2x2c J;					///< Jones matrix of beam
-	Point3f e;						///< basis of polarization plane
 
 	int lastFacetID;				///< last reflected facet
 	int level;						///< number of preview reflections
