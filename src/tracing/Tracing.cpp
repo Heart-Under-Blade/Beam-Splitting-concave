@@ -18,11 +18,6 @@ Tracing::Tracing(Particle *particle, Light *incidentLight, bool isOpticalPath,
 	: m_incidentLight(incidentLight),
 	  m_particle(particle)
 {
-//	LOG_ASSERT(incidentDir.cx <= NORM_CEIL
-//		   && incidentDir.cy <= NORM_CEIL
-//		   && incidentDir.cz <= NORM_CEIL
-//		   && "Direction of the start beam is not normalized.");
-
 	m_facets = m_particle->facets;
 
 	m_isOpticalPath = isOpticalPath;

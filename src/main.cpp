@@ -286,12 +286,11 @@ int main(int argc, const char* argv[])
 	int reflNum = parser.GetDoubleValue("n");
 	std::string dirName = (parser.Catched("o")) ? parser.GetStringValue("o")
 												: "M";
-	Tracer tracer(particle, reflNum, dirName);
 
-	if (parser.Catched("gr"))
-	{
-		tracer.SetIsOutputGroups(true);
-	}
+	bool isOutputGroups = parser.Catched("gr");
+
+	Tracer tracer(particle, reflNum, dirName);
+	tracer.SetIsOutputGroups(isOutputGroups);
 
 	if (parser.Catched("po"))
 	{
@@ -315,6 +314,7 @@ int main(int argc, const char* argv[])
 			if (parser.Catched("point"))
 			{
 				TracerBackScatterPoint tracerBSP(particle, reflNum, dirName);
+				tracerBSP.SetIsOutputGroups(isOutputGroups);
 				tracerBSP.SetIsCalcOther(true);
 				tracerBSP.Trace(beta, gamma, trackGroups, wave);
 			}
@@ -335,6 +335,7 @@ int main(int argc, const char* argv[])
 	else // go
 	{
 		TracerGO tracerGO(particle, reflNum, dirName);
+		tracerGO.SetIsOutputGroups(isOutputGroups);
 
 		AngleRange beta = GetRange(parser, "b", particle);
 		AngleRange gamma = GetRange(parser, "g", particle);

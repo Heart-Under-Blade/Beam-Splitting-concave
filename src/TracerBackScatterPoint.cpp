@@ -243,7 +243,8 @@ string TracerBackScatterPoint::GetTableHead(const AngleRange &range)
 }
 
 void TracerBackScatterPoint::CreateResultFiles(ScatteringFiles &files, const Tracks &tracks,
-							const string &subdir, const string &prefix)
+											   const string &subdir,
+											   const string &prefix)
 {
 	files.CreateMainFile(subdir, prefix + "all");
 	files.CreateMainFile(subdir, prefix + "other");
@@ -251,18 +252,20 @@ void TracerBackScatterPoint::CreateResultFiles(ScatteringFiles &files, const Tra
 
 	if (isOutputGroups)
 	{
-		CreateGroupResultFiles(tracks, files, prefix);
+		CreateGroupResultFiles(tracks, files, subdir, prefix);
 	}
 }
 
-void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks, ScatteringFiles &files,
-									const string &prefix)
+void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
+													ScatteringFiles &files,
+													const string &subdir,
+													const string &prefix)
 {
 	for (size_t i = 0; i < tracks.size(); ++i)
 	{
 		string groupName = tracks[i].CreateGroupName();
 		string filename = prefix + groupName;
-		files.CreateGroupFile("", filename);
+		files.CreateGroupFile(subdir, filename);
 	}
 }
 
