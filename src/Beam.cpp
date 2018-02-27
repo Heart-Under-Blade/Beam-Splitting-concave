@@ -53,6 +53,7 @@ Beam::Beam()
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
+	internalOpticalPath = other.internalOpticalPath;
 	D = other.D;
 	light = other.light;
 
@@ -82,6 +83,7 @@ Beam::Beam(Beam &&other)
 	: Polygon(other)
 {
 	opticalPath = other.opticalPath;
+	internalOpticalPath = other.internalOpticalPath;
 	D = other.D;
 	light = other.light;
 
@@ -94,6 +96,7 @@ Beam::Beam(Beam &&other)
 #endif
 
 	other.opticalPath = 0;
+	other.internalOpticalPath = 0;
 	other.D = 0;
 	other.light = Light{Point3f(0, 0, 0), Point3f(0, 0, 0)};
 
@@ -196,6 +199,7 @@ Beam &Beam::operator = (Beam &&other)
 		Polygon::operator =(other);
 
 		opticalPath = other.opticalPath;
+		internalOpticalPath = other.internalOpticalPath;
 		D = other.D;
 		light = other.light;
 
@@ -209,6 +213,7 @@ Beam &Beam::operator = (Beam &&other)
 		id = other.id;
 #endif
 		other.opticalPath = 0;
+		other.internalOpticalPath = 0;
 		other.D = 0;
 		other.light = Light{Point3f(0, 0, 0), Point3f(0, 0, 0)};
 
@@ -326,7 +331,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 			}
 			else
 			{
-				tmp = (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci;
+				tmp = (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci; // OPT: (k*Ci)
 			}
 
 			s += exp_im(k*B*bi) * tmp;
@@ -370,7 +375,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 					Ei = A*ci+B;
 
 			s += exp_im(k*A*di) * (fabs(Ei)<eps1 ? complex(-k*k*Ei*(p2.y*p2.y-p1.y*p1.y)/2.0,k*(p2.y-p1.y))
-												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);
+												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);// OPT: (k*Ei)
 			p1 = p2;
 
 			if (order)

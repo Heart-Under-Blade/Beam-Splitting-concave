@@ -202,21 +202,25 @@ void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<s
 	}
 }
 
-void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
-									  Beam &outBeam, Beam &inBeam) const
+void Tracing::CalcOpticalPath(double cosIN, const Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam) const
 {
-	double Nr = CalcNr(cosIN);
-	double coef = (incidentBeam.location == Location::Out) ? 1 : sqrt(Nr);
-	Point3f center = outBeam.Center();
+	Point3f center = inBeam.Center();
 
-	outBeam.D = DotProduct(-outBeam.light.direction, center);
+	// refractive index of external environment = 1
+	double OP = fabs(DotProduct(incidentBeam.light.direction, center) + incidentBeam.D);
 
-	double temp = DotProduct(incidentBeam.light.direction, center);
-	outBeam.opticalPath = incidentBeam.opticalPath
-			+ coef*fabs(temp + incidentBeam.D);
+	if (incidentBeam.location == Location::In)
+	{
+		OP *= sqrt(CalcReRI(cosIN));
+		inBeam.internalOpticalPath = outBeam.internalOpticalPath = OP;
+	}
 
 	inBeam.D = DotProduct(-inBeam.light.direction, center);
-	inBeam.opticalPath = outBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + inBeam.D);
+	inBeam.opticalPath = incidentBeam.opticalPath + OP;
+
+	outBeam.D = DotProduct(-outBeam.light.direction, center);
+	outBeam.opticalPath = inBeam.opticalPath;
 }
 
 bool Tracing::IsTerminalBeam(const Beam &beam)
@@ -225,7 +229,7 @@ bool Tracing::IsTerminalBeam(const Beam &beam)
 	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
 }
 
-double Tracing::CalcNr(const double &cosIN) const
+double Tracing::CalcReRI(const double &cosIN) const
 {
 	double cosIN_sqr = cosIN*cosIN;
 	const double &re = ri_coef_re;
@@ -264,6 +268,7 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 		outBeam.lastFacetID = facetID;
 		outBeam.level = incidentBeam.level + 1;
 		SetBeamID(outBeam);
+		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
 		outBeams.push_back(outBeam);
 	}
 	else /// slopping incidence
@@ -277,6 +282,7 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeam.lastFacetID = facetID;
 			outBeam.level = incidentBeam.level + 1;
 			SetBeamID(outBeam);
+			outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
 			outBeams.push_back(outBeam);
 		}
 	}
@@ -302,7 +308,7 @@ void Tracing::SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal
 
 	inBeam.light = Light{reflDir, scatteringNormal};
 
-	double Nr = CalcNr(cosIN);
+	double Nr = CalcReRI(cosIN);
 	double s = 1.0/(Nr*cosIN_sqr) - Norm(r0);
 
 	if (s > DBL_EPSILON) /// trivial incidence
@@ -332,7 +338,7 @@ void Tracing::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBea
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathInternal(cosIN, incidentBeam, inBeam, outBeam);
+		CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
 	}
 }
 
@@ -362,7 +368,7 @@ void Tracing::SetTrivialIncidenceBeamParams(double cosIN, double Nr,
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+		CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
 	}
 }
 

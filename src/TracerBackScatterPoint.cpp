@@ -106,7 +106,6 @@ TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, int reflNum,
 											   const std::string &resultFileName)
 	: Tracer(particle, reflNum, resultFileName)
 {
-
 }
 
 void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
@@ -269,14 +268,14 @@ void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
 	}
 }
 
-void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &outBeams, const Tracks &tracks,
+void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &beams, const Tracks &tracks,
 										 PointContribution &originContrib,
 										 PointContribution &correctedContrib)
 {
 	Point3d vr(0, 0, 1);
 	Point3d vf = -m_incidentLight.polarizationBasis;
 
-	for (Beam &beam : outBeams)
+	for (Beam &beam : beams)
 	{
 		if (beam.light.direction.cz < BEAM_DIR_LIM)
 		{

@@ -7,10 +7,13 @@
 
 using namespace std;
 
-HandlerGO::HandlerGO(Particle *particle, Light *incidentLight)
+HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, float wavelength)
 	: m_particle(particle),
-	  m_incidentLight(incidentLight)
+	  m_incidentLight(incidentLight),
+	  m_wavelength(wavelength),
+	  m_isAccountAbsorbtion(false)
 {
+	m_logFile.open("log1.txt", ios::out);
 }
 
 void HandlerGO::ExtractPeaks(double *b, double *f, double norm)
@@ -192,6 +195,48 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 	allFile.close();
 }
 
+Point3f HandlerGO::CalcK(const Beam &beam, vector<int> &tr)
+{	// OPT: сделать из переменных ссылки
+	Point3f k, tmp;
+	Point3f n1 = m_particle->facets[tr[0]].in_normal;
+	Point3f nq = m_particle->facets[tr[tr.size()-1]].in_normal;
+	CrossProduct(nq, n1, tmp);
+	CrossProduct(tmp, nq, k);
+
+	for (int i = tr.size()-2; i > 0; --i)
+	{
+		Point3f ni = m_particle->facets[tr[i]].in_normal;
+		k = k - ni*fabs(2*DotProduct(ni, k));
+	}
+
+	return k;
+}
+
+double HandlerGO::CalcOpticalPathAbsorption(const Beam &beam)
+{	// OPT: вынести переменные из цикла
+	double opticalPath = 0;
+
+	vector<int> tr;
+	Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+
+	Point3f k = CalcK(beam, tr);
+
+	if (Length(k) > FLT_EPSILON)
+	{
+		Point3f n1 = m_particle->facets[tr[0]].in_normal;
+
+		for (int i = 0; i < beam.size; ++i)
+		{
+			double delta = Length(beam.Center() - beam.arr[i])/Length(k);
+			opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.light.direction, n1);
+		}
+
+		opticalPath /= beam.size;
+	}
+
+	return opticalPath;
+}
+
 void HandlerGO::WriteMatricesToFile(double norm, string &filename)
 {
 }
@@ -220,8 +265,13 @@ double HandlerGO::CalcTotalScatteringEnergy(double norm)
 	return D_tot*norm;
 }
 
-HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight)
-	: HandlerGO(particle, incidentLight)
+void HandlerGO::SetAbsorbtionAccounting(bool value)
+{
+	m_isAccountAbsorbtion = value;
+}
+
+HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float wavelength)
+	: HandlerGO(particle, incidentLight, wavelength)
 {
 }
 
@@ -236,16 +286,28 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams, double angle)
 
 		double cross = BeamCrossSection(beam);
 		double area = cross*sinBeta;
-		matrix bf = Mueller(beam.J);
 
+		// absorbtion
+		if (m_isAccountAbsorbtion && beam.internalOpticalPath > DBL_EPSILON)
+		{
+			double opAbs = CalcOpticalPathAbsorption(beam);
+
+			if (opAbs > DBL_EPSILON) // BUG: must be "fabs(opAbs)"
+			{
+				double abs = exp(-(M_2PI*imag(m_particle->GetRefractiveIndex())*opAbs)/m_wavelength);
+				beam.J = beam.J * abs;
+			}
+		}
+
+		matrix bf = Mueller(beam.J);
 		AddToResultMullerGO(beam.light.direction, bf, area, m_totalContrib);
 	}
 
 	beams.clear();
 }
 
-HandlerGroupGO::HandlerGroupGO(Particle *particle, Light *incidentLight)
-	: HandlerGO(particle, incidentLight)
+HandlerGroupGO::HandlerGroupGO(Particle *particle, Light *incidentLight, float wavelength)
+	: HandlerGO(particle, incidentLight, wavelength)
 {
 }
 

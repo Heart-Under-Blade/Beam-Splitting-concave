@@ -163,6 +163,7 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 	for (int i = 0; i < resSize; ++i)
 	{
 		tmp.SetPolygon(resultBeams[i]);
+		tmp.opticalPath += fabs(FAR_ZONE_DISTANCE + tmp.D); // добираем оптический путь
 		scatteredBeams.push_back(tmp);
 	}
 }
@@ -407,6 +408,7 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 
 		if (isExternalNonEmptyBeam(beam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
+			beam.opticalPath += fabs(FAR_ZONE_DISTANCE + beam.D); // добираем оптический путь
 			scaterredBeams.push_back(beam);
 		}
 	}
@@ -443,7 +445,7 @@ void TracingConcave::SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
 
 			if (m_isOpticalPath)
 			{
-				CalcOpticalPathInternal(cosIN, incidentBeam, inBeam, outBeam);
+				CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
 			}
 		}
 	}

@@ -147,8 +147,8 @@ protected:
 
 	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
 
-	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
-								 Beam &outBeam, Beam &inBeam) const;
+	void CalcOpticalPath(double cosIN, const Beam &incidentBeam,
+								 Beam &inBeam, Beam &outBeam) const;
 
 	bool IsTerminalBeam(const Beam &beam);
 
@@ -181,7 +181,7 @@ protected:
 	void SetBeamID(Beam &beam);
 
 private:
-	double CalcNr(const double &cosIN) const;
+	double CalcReRI(const double &cosIN) const;
 
 	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal,
 									   Point3f r0, double s, const Beam &incidentBeam,

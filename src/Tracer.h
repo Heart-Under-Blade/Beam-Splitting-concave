@@ -74,6 +74,7 @@ public:
 
 protected:
 	Tracing *m_tracing;
+	Particle *m_particle;
 
 	double m_incomingEnergy;
 	double m_outcomingEnergy;
@@ -94,7 +95,6 @@ protected:
 
 private:
 	std::vector<Arr2DC> J; // Jones matrices
-
 	bool isNanOccured = false;
 
 protected:

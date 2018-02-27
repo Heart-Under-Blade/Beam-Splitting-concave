@@ -53,6 +53,7 @@ public:
 
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
+	double internalOpticalPath;		///< optical path of beam in particle only
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
 
 #ifdef _TRACK_ALLOW
