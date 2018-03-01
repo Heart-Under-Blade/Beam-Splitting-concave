@@ -39,6 +39,21 @@ void matrix::FreeMem(void)
 	this->n=mt.n; this->m=mt.m; this->AllocMem();
 	for(unsigned int i=0; i<mt.n; i++)
 		for(unsigned int j=0; j<mt.m; j++) this->ptr[i][j] = mt.ptr[i][j];
+ }
+
+std::vector<double> matrix::ToVector() const
+{
+	std::vector<double> v;
+
+	for (unsigned int i = 0; i < this->n; i++)
+	{
+		for (unsigned int j = 0; j < this->m; j++)
+		{
+			v.push_back(this->ptr[i][j]);
+		}
+	}
+
+	return v;
 }
 
 matrix matrix::operator=(const matrix& mt)

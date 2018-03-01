@@ -163,6 +163,7 @@ void ScatteringNonConvex::CatchExternalBeam(const Beam &beam, std::vector<Beam> 
 	for (int i = 0; i < resSize; ++i)
 	{
 		tmp.SetPolygon(resultBeams[i]);
+		tmp.opticalPath += fabs(FAR_ZONE_DISTANCE + tmp.D); // добираем оптический путь
 		scatteredBeams.push_back(tmp);
 	}
 }
@@ -407,6 +408,7 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 
 		if (isExternalNonEmptyBeam(beam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
+			beam.opticalPath += fabs(FAR_ZONE_DISTANCE + beam.D); // добираем оптический путь
 			scaterredBeams.push_back(beam);
 		}
 	}

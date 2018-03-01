@@ -29,7 +29,8 @@ Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 		m_scattering = new ScatteringConvex(particle, &m_incidentLight, true, reflNum);
 	}
 
-	m_symmetry = m_scattering->m_particle->GetSymmetry();
+	m_particle = m_scattering->m_particle;
+	m_symmetry = m_particle->GetSymmetry();
 }
 
 Tracer::~Tracer()

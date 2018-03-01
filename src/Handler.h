@@ -24,20 +24,26 @@ struct ContributionGO
 class HandlerGO
 {
 public:
-	HandlerGO(Particle *particle, Light *incidentLight);
+	HandlerGO(Particle *particle, Light *incidentLight, float wavelength = 0);
 
 	virtual void HandleBeams(std::vector<Beam> &beams, double angle);
 	virtual void WriteMatricesToFile(double norm, std::string &filename);
 	void SetTracks(Tracks *tracks);
 	double CalcTotalScatteringEnergy(double norm);
+	void SetAbsorbtionAccounting(bool value);
 
 protected:
 	Particle *m_particle;
 	Light *m_incidentLight;
 	Tracks *m_tracks;
 
+	bool m_isAccountAbsorbtion;
+	float m_wavelength;
+
 	ContributionGO m_totalContrib;	// result scattering martices contribution
 	std::vector<ContributionGO> m_groupContrib; // group contibution of beams
+
+	std::ofstream m_logFile;
 
 protected:
 	double BeamCrossSection(const Beam &beam) const;
@@ -48,6 +54,8 @@ protected:
 
 	void WriteToFile(ContributionGO &contrib, double norm,
 					 const std::string &filename);
+	double CalcOpticalPathAbsorption(const Beam &beam);
+	Point3f CalcK(const Beam &beam, std::vector<int> &tr);
 
 private:
 	void ExtractPeaks(double *b, double *f, double norm);
@@ -57,7 +65,7 @@ private:
 class HandlerTotalGO : public HandlerGO
 {
 public:
-	HandlerTotalGO(Particle *particle, Light *incidentLight);
+	HandlerTotalGO(Particle *particle, Light *incidentLight, float wavelength = 0);
 
 	void HandleBeams(std::vector<Beam> &beams, double angle) override;
 	void WriteMatricesToFile(double norm, std::string &filename) override;
@@ -67,7 +75,7 @@ public:
 class HandlerGroupGO : public HandlerGO
 {
 public:
-	HandlerGroupGO(Particle *particle, Light *incidentLight);
+	HandlerGroupGO(Particle *particle, Light *incidentLight, float wavelength = 0);
 
 	void HandleBeams(std::vector<Beam> &beams, double angle) override;
 	void WriteMatricesToFile(double norm, std::string &dir) override;

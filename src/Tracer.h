@@ -70,6 +70,7 @@ public:
 
 protected:
 	Scattering *m_scattering;
+	Particle *m_particle;
 
 	double m_incomingEnergy;
 	double m_outcomingEnergy;

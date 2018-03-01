@@ -205,17 +205,22 @@ void Scattering::ScatterLight(double beta, double gamma, const std::vector<std::
 void Scattering::CalcOpticalPath(double cosIN, const Beam &incidentBeam,
 								 Beam &inBeam, Beam &outBeam) const
 {
-	double RI = (incidentBeam.location == Location::Out) ? 1 : sqrt(CalcReRI(cosIN));
 	Point3f center = inBeam.Center();
 
-	inBeam.D = DotProduct(-inBeam.light.direction, center);
+	// refractive index of external environment = 1
+	double OP = fabs(DotProduct(incidentBeam.light.direction, center) + incidentBeam.D);
 
-	double temp = DotProduct(incidentBeam.light.direction, center);
-	inBeam.opticalPath = incidentBeam.opticalPath
-			+ RI*fabs(temp + incidentBeam.D);
+	if (incidentBeam.location == Location::In)
+	{
+		OP *= sqrt(CalcReRI(cosIN));
+		inBeam.internalOpticalPath = outBeam.internalOpticalPath = OP;
+	}
+
+	inBeam.D = DotProduct(-inBeam.light.direction, center);
+	inBeam.opticalPath = incidentBeam.opticalPath + OP;
 
 	outBeam.D = DotProduct(-outBeam.light.direction, center);
-	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
+	outBeam.opticalPath = inBeam.opticalPath;
 }
 
 bool Scattering::IsTerminalAct(const Beam &beam)
@@ -226,9 +231,8 @@ bool Scattering::IsTerminalAct(const Beam &beam)
 
 double Scattering::CalcReRI(const double &cosIN) const
 {
-	double cosIN_sqr = cosIN*cosIN;
 	const double &re = ri_coef_re;
-	return (re + sqrt(re*re + ri_coef_im/cosIN_sqr))/2.0;
+	return (re + sqrt(re*re + ri_coef_im/(cosIN*cosIN)))/2.0;
 }
 
 void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
@@ -263,6 +267,7 @@ void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 		outBeam.lastFacetID = facetID;
 		outBeam.level = incidentBeam.level + 1;
 		SetBeamID(outBeam);
+		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
 		outBeams.push_back(outBeam);
 	}
 	else // regular incidence
@@ -276,6 +281,7 @@ void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeam.lastFacetID = facetID;
 			outBeam.level = incidentBeam.level + 1;
 			SetBeamID(outBeam);
+			outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
 			outBeams.push_back(outBeam);
 		}
 	}

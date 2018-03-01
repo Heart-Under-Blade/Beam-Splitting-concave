@@ -139,21 +139,22 @@ void SetArgRules(ArgPP &parser)
 {
 	int zero = 0;
 	parser.AddRule("p", '+'); // particle (type, size, ...)
-	parser.AddRule("ri", 1); // reflection index
+	parser.AddRule("ri", 1); // refractive index
 	parser.AddRule("n", 1); // number of internal reflection
 	parser.AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
 	parser.AddRule("random", 2, true); // random orientarion (beta number, gamma number)
 	parser.AddRule("go", 0, true); // geometrical optics method
 	parser.AddRule("po", 0, true); // phisical optics method
-	parser.AddRule("w", 1, true, "po"); // wavelength
+	parser.AddRule("w", 1, true); // wavelength
 	parser.AddRule("b", 2, true, "po"); // beta range (begin, end)
 	parser.AddRule("g", 2, true, "po"); // gamma range (begin, end)
 	parser.AddRule("conus", 3, true, "po"); // calculate only backscatter cone (radius, phi, theta)
 	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
-	parser.AddRule("all", 0, true); // calculate all
+	parser.AddRule("all", 0, true); // calculate all trajectories
 	parser.AddRule("o", 1, true); // output file name
-	parser.AddRule("close", 0, true); // geometrical optics method
-	parser.AddRule("gr", 0, true); // output group files
+	parser.AddRule("close", 0, true); // closing of program after calculation
+	parser.AddRule("gr", 0, true); // outputing of group files
+	parser.AddRule("abs", 1, true, "w"); // accounting of absorbtion (im part of refractive index)
 }
 
 Cone SetCone(ArgPP &parser)
@@ -226,9 +227,18 @@ int main(int argc, const char* argv[])
 	SetArgRules(parser);
 	parser.Parse(argc, argv);
 
-	// TODO: AggregateBuilder
+	bool isAbs = false;
+	double riIm = 0;
 
-	double refrIndex = parser.GetDoubleValue("ri");
+	if (parser.Catched("abs"))
+	{
+		isAbs = true;
+		riIm = parser.GetDoubleValue("abs");
+	}
+
+	complex refrIndex = complex(parser.GetDoubleValue("ri"), riIm);
+
+	// TODO: AggregateBuilder
 
 	if (parser.GetArgNumber("p") == 1)
 	{
@@ -292,11 +302,11 @@ int main(int argc, const char* argv[])
 	Tracer tracer(particle, reflNum, dirName);
 	tracer.SetIsOutputGroups(isOutputGroups);
 
+	double wave = parser.GetDoubleValue("w");
+
 	if (parser.Catched("po"))
 	{
 		ImportTracks(particle->facetNum);
-
-		double wave = parser.GetDoubleValue("w");
 
 		if (parser.Catched("fixed"))
 		{
@@ -306,7 +316,7 @@ int main(int argc, const char* argv[])
 			double gamma = parser.GetDoubleValue("fixed", 1);
 			tracer.TraceFixedPO(beta, gamma, bsCone, trackGroups, wave);
 		}
-		else if (parser.Catched("random")) // "random"
+		else if (parser.Catched("random"))
 		{
 			AngleRange beta = GetRange(parser, "b", particle);
 			AngleRange gamma = GetRange(parser, "g", particle);
@@ -342,7 +352,7 @@ int main(int argc, const char* argv[])
 
 		if (parser.Catched("all"))
 		{
-			tracerGO.TraceRandom(beta, gamma, false);
+			tracerGO.TraceRandom(beta, gamma, false, isAbs, wave);
 		}
 		else
 		{
@@ -350,7 +360,7 @@ int main(int argc, const char* argv[])
 
 			tracerGO.SetIsCalcOther(true);
 			tracerGO.SetTracks(&trackGroups);
-			tracerGO.TraceRandom(beta, gamma, true);
+			tracerGO.TraceRandom(beta, gamma, true, isAbs, wave);
 		}
 	}
 
