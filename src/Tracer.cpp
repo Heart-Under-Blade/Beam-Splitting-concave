@@ -9,8 +9,8 @@
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 //#endif
 
-#include "TracingConvex.h"
-#include "TracingConcave.h"
+#include "ScatteringConvex.h"
+#include "ScatteringNonConvex.h"
 #include "ScatteringFiles.h"
 
 using namespace std;
@@ -22,14 +22,14 @@ Tracer::Tracer(Particle *particle, int reflNum, const string &resultFileName)
 
 	if (particle->IsConcave())
 	{
-		m_tracing = new TracingConcave(particle, &m_incidentLight, true, reflNum);
+		m_scattering = new ScatteringNonConvex(particle, &m_incidentLight, true, reflNum);
 	}
 	else
 	{
-		m_tracing = new TracingConvex(particle, &m_incidentLight, true, reflNum);
+		m_scattering = new ScatteringConvex(particle, &m_incidentLight, true, reflNum);
 	}
 
-	m_symmetry = m_tracing->m_particle->GetSymmetry();
+	m_symmetry = m_scattering->m_particle->GetSymmetry();
 }
 
 Tracer::~Tracer()
@@ -87,7 +87,7 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 		{
 			gamma = j*gammaStep;
 
-			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+			m_scattering->ScatterLight(beta, gamma, outBeams);
 
 			CleanJ(tracks.size(), bsCone);
 			HandleBeamsPO(outBeams, bsCone, tracks);
@@ -103,48 +103,6 @@ void Tracer::TraceRandomPO(int betaNumber, int gammaNumber, const Cone &bsCone,
 	}
 
 	outFile.close();
-}
-
-void Tracer::AllocJ(std::vector<Arr2DC> &j, int m, int n, int size)
-{
-	j.clear();
-	Arr2DC tmp(m, n, 2, 2);
-	tmp.ClearArr();
-
-	for(int i = 0; i < size; i++)
-	{
-		j.push_back(tmp);
-	}
-}
-
-void Tracer::CleanJ(std::vector<Arr2DC> &j)
-{
-	for (Arr2DC &m : j)
-	{
-		m.ClearArr();
-	}
-}
-
-void Tracer::OutputToAllFile(ofstream &diffFile, ofstream &otherFile,
-							 double degBeta, ofstream &allFile, Arr2D &all,
-							 Arr2D &other)
-{
-	allFile << degBeta << ' ' << m_incomingEnergy << ' ';
-	matrix m = all(0, 0);
-	allFile << m << endl;
-	all.ClearArr();
-
-	if (isCalcOther)
-	{
-		otherFile << degBeta << ' ' << m_incomingEnergy << ' ';
-		matrix m0 = other(0, 0);
-		otherFile << m0 << endl;
-		other.ClearArr();
-
-		diffFile << degBeta << ' ' << m_incomingEnergy << ' ';
-		matrix m00 = m - m0;
-		diffFile << m00 << endl;
-	}
 }
 
 void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
@@ -209,7 +167,7 @@ void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
 
 			for (size_t groupID = 0; groupID < tracks.size(); ++groupID)
 			{
-				m_tracing->SplitBeamByParticle(beta, gamma, tracks[groupID].tracks, outBeams);
+				m_scattering->ScatterLight(beta, gamma, tracks[groupID].tracks, outBeams);
 
 				CleanJ(tracks.size(), bsCone);
 				HandleBeamsPO2(outBeams, bsCone, groupID);
@@ -267,43 +225,6 @@ void Tracer::AddResultToMatrix(Arr2D &M, const Cone &bsCone, double norm)
 	}
 }
 
-void Tracer::AddResultToMatrix(Arr2D &M, std::vector<Arr2DC> &j, double norm)
-{
-	for (size_t q = 0; q < j.size(); ++q)
-	{
-		matrix m = Mueller(j[q](0, 0));
-		m *= norm;
-		M.insert(0, 0, m);
-	}
-}
-
-void Tracer::AddResultToMatrices(vector<Arr2D> &M, const Cone &bsCone,
-								 double norm)
-{
-	for (size_t q = 0; q < J.size(); ++q)
-	{
-		for (int t = 0; t <= bsCone.thetaCount; ++t)
-		{
-			for (int p = 0; p <= bsCone.phiCount; ++p)
-			{
-				matrix m = Mueller(J[q](0, 0));
-				m *= norm;
-				M[q].insert(p, t, m);
-			}
-		}
-	}
-}
-
-void Tracer::AddResultToMatrices(std::vector<Arr2D> &M)
-{
-	for (size_t q = 0; q < J.size(); ++q)
-	{
-		matrix m = Mueller(J[q](0, 0));
-		m *= normIndex;
-		M[q].insert(0, 0, m);
-	}
-}
-
 void Tracer::CleanJ(int size, const Cone &bsCone)
 {
 	J.clear();
@@ -332,7 +253,7 @@ void Tracer::TraceFixedPO(const double &beta, const double &gamma,
 
 	double b = DegToRad(beta);
 	double g = DegToRad(gamma);
-	m_tracing->SplitBeamByParticle(b, g, outBeams);
+	m_scattering->ScatterLight(b, g, outBeams);
 
 	CleanJ(tracks.size(), bsCone);
 	HandleBeamsPO(outBeams, bsCone, tracks);
@@ -347,8 +268,8 @@ void Tracer::SetIsCalcOther(bool value)
 	isCalcOther = value;
 }
 
-void Tracer::CalcJnRot(const Beam &beam, const Point3f &T,
-					  const Point3d &vf, const Point3d &vr, matrixC &Jn_rot)
+void Tracer::CalcJnRot(const Beam &beam, const Point3f &T, const Point3d &vf,
+					   const Point3d &vr, matrixC &Jn_rot)
 {
 	Point3f normal = beam.Normal();
 

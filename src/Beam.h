@@ -52,6 +52,7 @@ public:
 	Location location;				///< beam state towards the particle (inside or outside)
 
 	// REF: перенести в PhisBeam
+	double internalOpticalPath;
 	double opticalPath;				///< optical path of beam
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
 

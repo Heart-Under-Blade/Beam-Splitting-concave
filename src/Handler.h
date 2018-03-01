@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Beam.h"
-#include "Tracing.h"
+#include "Scattering.h"
 #include "PhysMtr.hpp"
 
 struct ContributionGO

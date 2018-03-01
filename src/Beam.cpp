@@ -53,6 +53,7 @@ Beam::Beam()
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
+	internalOpticalPath =  other.opticalPath;
 	D = other.D;
 	light = other.light;
 
@@ -196,6 +197,7 @@ Beam &Beam::operator = (Beam &&other)
 		Polygon::operator =(other);
 
 		opticalPath = other.opticalPath;
+		internalOpticalPath = other.internalOpticalPath;
 		D = other.D;
 		light = other.light;
 
@@ -208,6 +210,7 @@ Beam &Beam::operator = (Beam &&other)
 #ifdef _TRACK_ALLOW
 		id = other.id;
 #endif
+		other.internalOpticalPath = 0;
 		other.opticalPath = 0;
 		other.D = 0;
 		other.light = Light{Point3f(0, 0, 0), Point3f(0, 0, 0)};
@@ -362,6 +365,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 				{
 					++i;
 				}
+
 				continue;
 			}
 

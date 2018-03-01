@@ -157,9 +157,9 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
 			gamma = gammaRange.min + gammaRange.step*j;
-			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+			m_scattering->ScatterLight(beta, gamma, outBeams);
 
-			m_incomingEnergy += m_tracing->GetIncomingEnergy();
+			m_incomingEnergy += m_scattering->GetIncomingEnergy();
 
 			HandleBeams(outBeams, tracks, originContrib, correctedContrib);
 			outBeams.clear();

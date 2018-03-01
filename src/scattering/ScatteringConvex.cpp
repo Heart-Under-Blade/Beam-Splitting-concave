@@ -1,12 +1,12 @@
-#include "TracingConvex.h"
+#include "ScatteringConvex.h"
 
-TracingConvex::TracingConvex(Particle *particle, Light *incidentLight,
+ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
 							 bool isOpticalPath, int interReflectionNumber)
-	: Tracing(particle, incidentLight, isOpticalPath, interReflectionNumber)
+	: Scattering(particle, incidentLight, isOpticalPath, interReflectionNumber)
 {
 }
 
-void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<Beam> &outBeams)
+void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam> &outBeams)
 {
 	m_particle->Rotate(beta, gamma, 0);
 
@@ -25,7 +25,7 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 		}
 
 		Beam inBeam, outBeam;
-		TraceFirstBeam(facetID, inBeam, outBeam);
+		SplitLightIntoBeams(facetID, inBeam, outBeam);
 
 		outBeam.lastFacetID = facetID;
 		outBeam.level = 0;
@@ -41,17 +41,17 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 	TraceInternalBeams(outBeams);
 }
 
-void TracingConvex::SplitBeamByParticle(double, double, const std::vector<std::vector<int>> &/*tracks*/, std::vector<Beam> &)
+void ScatteringConvex::ScatterLight(double, double, const std::vector<std::vector<int>> &/*tracks*/, std::vector<Beam> &)
 {
 }
 
-void TracingConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
+void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 {
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
-		if (IsTerminalBeam(beam))
+		if (IsTerminalAct(beam))
 		{
 			continue;
 		}
@@ -67,7 +67,7 @@ void TracingConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 
 			try
 			{
-				TraceSecondaryBeams(beam, facetID, inBeam, outBeams);
+				SplitSecondaryBeams(beam, facetID, inBeam, outBeams);
 			}
 			catch (const std::exception &)
 			{

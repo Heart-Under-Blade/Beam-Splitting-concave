@@ -1,4 +1,4 @@
-#include "Tracing.h"
+#include "Scattering.h"
 
 #include <float.h>
 #include <assert.h>
@@ -13,7 +13,7 @@ using namespace std;
 
 #define NORM_CEIL	FLT_EPSILON + 1
 
-Tracing::Tracing(Particle *particle, Light *incidentLight, bool isOpticalPath,
+Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 				 int interReflectionNumber)
 	: m_incidentLight(incidentLight),
 	  m_particle(particle)
@@ -21,7 +21,7 @@ Tracing::Tracing(Particle *particle, Light *incidentLight, bool isOpticalPath,
 	m_facets = m_particle->facets;
 
 	m_isOpticalPath = isOpticalPath;
-	m_interReflectionNumber = interReflectionNumber;
+	m_numberOfActs = interReflectionNumber;
 
 	m_incidentDir = m_incidentLight->direction;
 	m_incidentDir.d_param = m_incidentLight->direction.d_param;
@@ -35,7 +35,7 @@ Tracing::Tracing(Particle *particle, Light *incidentLight, bool isOpticalPath,
 	ri_coef_im = 4*re*re*im;
 }
 
-void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN,
+void Scattering::SetRegularBeamParamsExternal(const Point3f &beamDir, double cosIN,
 											int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &facetNormal = m_particle->facets[facetId].in_normal;
@@ -43,7 +43,7 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 	RotatePolarisationPlane(beamDir, facetNormal, inBeam);
 
 	Point3f refrDir, reflDir;
-	DivideBeamDirection(beamDir, cosIN, -facetNormal, reflDir, refrDir);
+	SplitDirection(beamDir, cosIN, -facetNormal, reflDir, refrDir);
 
 	double cosReflN = DotProduct(facetNormal, reflDir);
 
@@ -61,7 +61,7 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 	SetBeam(inBeam, inBeam, reflDir, cosInc2/Tv0, cosInc2/Th0);
 }
 
-void Tracing::SetBeamID(Beam &beam)
+void Scattering::SetBeamID(Beam &beam)
 {
 #ifdef _TRACK_ALLOW
 	beam.id += (beam.lastFacetID + 1);
@@ -70,34 +70,34 @@ void Tracing::SetBeamID(Beam &beam)
 #endif
 }
 
-void Tracing::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
+void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
 {
 	beam.SetTracingParams(facetId, level, location);
 	PushBeamToTree(beam);
 }
 
-void Tracing::PushBeamToTree(Beam &beam, int facetId, int level)
+void Scattering::PushBeamToTree(Beam &beam, int facetId, int level)
 {
 	beam.lastFacetID = facetId;
 	beam.level = level;
 	PushBeamToTree(beam);
 }
 
-void Tracing::PushBeamToTree(Beam &beam)
+void Scattering::PushBeamToTree(Beam &beam)
 {
 	SetBeamID(beam);
 	m_beamTree[m_treeSize++] = beam;
 }
 
-void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
+void Scattering::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f dir = m_incidentLight->direction;
 	const Point3f &normal = m_facets[facetId].in_normal;
 	double cosIN = DotProduct(dir, normal);
 
-	if (cosIN < EPS_COS_00) // slopping incidence
+	if (cosIN < EPS_COS_00) // regular incidence
 	{
-		SetSloppingBeamParams_initial(dir, cosIN, facetId, inBeam, outBeam);
+		SetRegularBeamParamsExternal(dir, cosIN, facetId, inBeam, outBeam);
 	}
 	else // normal incidence
 	{
@@ -112,11 +112,11 @@ void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPath_initial(inBeam, outBeam);
+		CalcOpticalPathForLight(inBeam, outBeam);
 	}
 }
 
-void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
+void Scattering::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
 									  Beam &beam)
 {
 	Point3f newBasis;
@@ -126,7 +126,7 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 	beam.RotatePlane(newBasis);
 }
 
-void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
+void Scattering::CalcOpticalPathForLight(Beam &inBeam, Beam &outBeam)
 {
 	Point3f center = inBeam.Center();
 
@@ -137,14 +137,14 @@ void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 }
 
-void Tracing::TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam)
+void Scattering::SplitLightIntoBeams(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	SetPolygonByFacet(facetId, inBeam); // REF: try to exchange this to inBeam = m_facets[facetId]
 	SetPolygonByFacet(facetId, outBeam);
 	SetBeamOpticalParams(facetId, inBeam, outBeam);
 }
 
-void Tracing::CalcFacetEnergy(int facetID, const Polygon &lightedPolygon)
+void Scattering::CalcFacetEnergy(int facetID, const Polygon &lightedPolygon)
 {
 	const Point3f &normal = m_facets[facetID].in_normal;
 	double cosIN = DotProduct(m_incidentDir, normal);
@@ -152,7 +152,7 @@ void Tracing::CalcFacetEnergy(int facetID, const Polygon &lightedPolygon)
 }
 
 // TODO: пофиксить
-void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+void Scattering::ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 								  std::vector<Beam> &outBeams)
 {
 	m_particle->Rotate(beta, gamma, 0);
@@ -172,23 +172,23 @@ void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<s
 		std::vector<Beam> outBuff;
 		Beam incidentBeam;
 
-		/// first incident beam
+		// first incident beam
 		{
 			Beam outBeam;
-			TraceFirstBeam(facetId, incidentBeam, outBeam);
+			SplitLightIntoBeams(facetId, incidentBeam, outBeam);
 			outBuff.push_back(outBeam);
 		}
 
 		unsigned int size = tracks.at(i).size();
 
-		try /// internal beams
+		try // internal beams
 		{
 			for (unsigned int j = 1; j < size; ++j)
 			{
 				facetId = tracks.at(i).at(j);
 
 				Beam inBeam;
-				TraceSecondaryBeams(incidentBeam, facetId, inBeam, outBuff);
+				SplitSecondaryBeams(incidentBeam, facetId, inBeam, outBuff);
 
 				incidentBeam = inBeam;
 			}
@@ -202,37 +202,36 @@ void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<s
 	}
 }
 
-void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
-									  Beam &outBeam, Beam &inBeam) const
+void Scattering::CalcOpticalPath(double cosIN, const Beam &incidentBeam,
+								 Beam &inBeam, Beam &outBeam) const
 {
-	double Nr = CalcNr(cosIN);
-	double coef = (incidentBeam.location == Location::Out) ? 1 : sqrt(Nr);
-	Point3f center = outBeam.Center();
-
-	outBeam.D = DotProduct(-outBeam.light.direction, center);
-
-	double temp = DotProduct(incidentBeam.light.direction, center);
-	outBeam.opticalPath = incidentBeam.opticalPath
-			+ coef*fabs(temp + incidentBeam.D);
+	double RI = (incidentBeam.location == Location::Out) ? 1 : sqrt(CalcReRI(cosIN));
+	Point3f center = inBeam.Center();
 
 	inBeam.D = DotProduct(-inBeam.light.direction, center);
-	inBeam.opticalPath = outBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + inBeam.D);
+
+	double temp = DotProduct(incidentBeam.light.direction, center);
+	inBeam.opticalPath = incidentBeam.opticalPath
+			+ RI*fabs(temp + incidentBeam.D);
+
+	outBeam.D = DotProduct(-outBeam.light.direction, center);
+	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
 }
 
-bool Tracing::IsTerminalBeam(const Beam &beam)
+bool Scattering::IsTerminalAct(const Beam &beam)
 {
 	double j_norm = beam.J.Norm(); // OPT: move to last element of comparison
-	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
+	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_numberOfActs);
 }
 
-double Tracing::CalcNr(const double &cosIN) const
+double Scattering::CalcReRI(const double &cosIN) const
 {
 	double cosIN_sqr = cosIN*cosIN;
 	const double &re = ri_coef_re;
 	return (re + sqrt(re*re + ri_coef_im/cosIN_sqr))/2.0;
 }
 
-void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
+void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 								  Beam &inBeam, std::vector<Beam> &outBeams)
 {
 	Beam outBeam;
@@ -256,7 +255,7 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	inBeam = outBeam;
 
-	if (cosIN >= EPS_COS_00) /// normal incidence
+	if (cosIN >= EPS_COS_00) // normal incidence
 	{
 		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
 
@@ -266,10 +265,10 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 		SetBeamID(outBeam);
 		outBeams.push_back(outBeam);
 	}
-	else /// slopping incidence
+	else // regular incidence
 	{
 		bool isTrivialIncidence;
-		SetSloppingIncidenceBeamParams(cosIN, normal, incidentBeam,
+		SetRegularBeamParams(cosIN, normal, incidentBeam,
 									   inBeam, outBeam, isTrivialIncidence);
 		if (isTrivialIncidence)
 		{
@@ -282,10 +281,10 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 	}
 }
 
-void Tracing::SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal,
+void Scattering::SetRegularBeamParams(double cosIN, const Point3f &normal,
 											 Beam &incidentBeam,
 											 Beam &inBeam, Beam &outBeam,
-											 bool &isTrivialIncidence)
+											 bool &isRegular)
 {
 	const Point3f &incidentDir = incidentBeam.light.direction;
 	double cosIN_sqr = cosIN*cosIN;
@@ -302,23 +301,23 @@ void Tracing::SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal
 
 	inBeam.light = Light{reflDir, scatteringNormal};
 
-	double Nr = CalcNr(cosIN);
-	double s = 1.0/(Nr*cosIN_sqr) - Norm(r0);
+	double reRI = CalcReRI(cosIN);
+	double s = 1.0/(reRI*cosIN_sqr) - Norm(r0);
 
-	if (s > DBL_EPSILON) /// trivial incidence
+	if (s > DBL_EPSILON) // regular incidence
 	{
-		SetTrivialIncidenceBeamParams(cosIN, Nr, normal, r0, s, incidentBeam,
-									  inBeam, outBeam);
-		isTrivialIncidence = true;
+		SetRegularBeamParams(cosIN, reRI, normal, r0, s, incidentBeam,
+							 inBeam, outBeam);
+		isRegular = true;
 	}
-	else /// complete internal reflection
+	else // complete internal reflection incidence
 	{
-		SetCompleteReflectionBeamParams(cosIN, Nr, incidentBeam, inBeam);
-		isTrivialIncidence = false;
+		SetCRBeamParams(cosIN, reRI, incidentBeam, inBeam);
+		isRegular = false;
 	}
 }
 
-void Tracing::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
+void Scattering::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
 										   Beam &inBeam, Beam &outBeam)
 {
 	const Point3f &dir = incidentBeam.light.direction;
@@ -332,15 +331,14 @@ void Tracing::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBea
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathInternal(cosIN, incidentBeam, inBeam, outBeam);
+		CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
 	}
 }
 
-void Tracing::SetTrivialIncidenceBeamParams(double cosIN, double Nr,
-											const Point3f &normal,
-											Point3f r0, double s,
-											const Beam &incidentBeam,
-											Beam &inBeam, Beam &outBeam)
+void Scattering::SetRegularBeamParams(double cosIN, double reRI,
+									  const Point3f &normal, Point3f r0,
+									  double s, const Beam &incidentBeam,
+									  Beam &inBeam, Beam &outBeam)
 {
 	Point3f refrDir = r0/sqrt(s) + normal;
 	Normalize(refrDir);
@@ -362,11 +360,11 @@ void Tracing::SetTrivialIncidenceBeamParams(double cosIN, double Nr,
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+		CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
 	}
 }
 
-void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
+void Scattering::SetCRBeamParams(double cosIN, double Nr,
 											  const Beam &incidentBeam,
 											  Beam &inBeam)
 {
@@ -396,14 +394,14 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 	}
 }
 
-void Tracing::SetBeam(Beam &beam, const Beam &other, const Point3f &dir,
+void Scattering::SetBeam(Beam &beam, const Beam &other, const Point3f &dir,
 					  const complex &coef1, const complex &coef2) const
 {
 	beam.SetJonesMatrix(other, coef1, coef2);
 	beam.light = Light{dir, other.light.polarizationBasis};
 }
 
-void Tracing::Difference(const Polygon &subject, const Point3f &subjNormal,
+void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
 						 const Polygon &clip, const Point3f &clipNormal,
 						 const Point3f &clipDir,
 						 Polygon *difference, int &resultSize) const
@@ -513,7 +511,7 @@ void Tracing::Difference(const Polygon &subject, const Point3f &subjNormal,
 	}
 }
 
-bool Tracing::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
+bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 								  const Point3f &normal, __m128 *_projection) const
 {
 	__m128 _normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
@@ -546,7 +544,7 @@ bool Tracing::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
-bool Tracing::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
+bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
 {
 	__m128 _output_points[MAX_VERTEX_NUM];
 	const Point3f &normal = m_facets[facetID].in_normal;
@@ -631,7 +629,7 @@ bool Tracing::Intersect(int facetID, const Beam &beam, Polygon &intersection) co
 	return intersection.size >= MIN_VERTEX_NUM;
 }
 
-void Tracing::SetOutputPolygon(__m128 *_output_points, int outputSize,
+void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
 							   Polygon &polygon) const
 {
 	Point3f p;
@@ -661,7 +659,7 @@ void Tracing::SetOutputPolygon(__m128 *_output_points, int outputSize,
 	}
 }
 
-void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
+void Scattering::SplitDirection(const Point3f &incidentDir, double cosIN,
 								  const Point3f &normal,
 								  Point3f &reflDir, Point3f &refrDir) const
 {
@@ -687,7 +685,7 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
-void Tracing::SetPolygonByFacet(int facetId, Polygon &polygon) const
+void Scattering::SetPolygonByFacet(int facetId, Polygon &polygon) const
 {
 	const Polygon &facet = m_facets[facetId];
 	int size = facet.size;
@@ -700,7 +698,7 @@ void Tracing::SetPolygonByFacet(int facetId, Polygon &polygon) const
 	}
 }
 
-double Tracing::GetIncomingEnergy() const
+double Scattering::GetIncomingEnergy() const
 {
 	return m_incommingEnergy;
 }

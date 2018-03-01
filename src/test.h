@@ -13,7 +13,7 @@
 #include "TiltedHexagonal.h"
 #include "ConcaveHexagonal.h"
 #include "Intersection.h"
-#include "Tracing.h"
+#include "Scattering.h"
 
 void outputParticle(const Particle &particle)
 {

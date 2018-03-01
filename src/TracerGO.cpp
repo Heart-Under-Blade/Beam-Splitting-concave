@@ -31,11 +31,11 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 		for (int j = 0; j < gammaRange.number; ++j)
 		{
 			gamma = (j + 0.5)*gammaRange.step;
-			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
+			m_scattering->ScatterLight(beta, gamma, outBeams);
 			m_handler->HandleBeams(outBeams, beta);
 
 #ifdef _CHECK_ENERGY_BALANCE
-			m_incomingEnergy += m_tracing->GetIncomingEnergy()*sin(beta);
+			m_incomingEnergy += m_scattering->GetIncomingEnergy()*sin(beta);
 #endif
 //			OutputOrientationToLog(i, j, logfile);
 		}
@@ -59,7 +59,7 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma, bool isCalcTr
 	double g = DegToRad(gamma);
 
 	vector<Beam> outBeams;
-	m_tracing->SplitBeamByParticle(b, g, outBeams);
+	m_scattering->ScatterLight(b, g, outBeams);
 	m_handler->HandleBeams(outBeams, beta);
 
 //	double D_tot = CalcTotalScatteringEnergy();
@@ -115,11 +115,11 @@ void TracerGO::SetHandler(bool isCalcTracks)
 {
 	if (isCalcTracks)
 	{
-		m_handler = new HandlerGroupGO(m_tracing->m_particle, &m_incidentLight);
+		m_handler = new HandlerGroupGO(m_scattering->m_particle, &m_incidentLight);
 		m_handler->SetTracks(m_tracks);
 	}
 	else
 	{
-		m_handler = new HandlerTotalGO(m_tracing->m_particle, &m_incidentLight);
+		m_handler = new HandlerTotalGO(m_scattering->m_particle, &m_incidentLight);
 	}
 }

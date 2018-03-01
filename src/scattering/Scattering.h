@@ -93,7 +93,7 @@ public:
 	}
 };
 
-class Tracing // REF: поменять название на ~Splitter
+class Scattering // REF: поменять название на ~Splitter
 {
 public:
 	// REF: убрать в протектед потом
@@ -106,7 +106,7 @@ protected:
 	Point3f m_polarBasis;
 
 	bool m_isOpticalPath;
-	int m_interReflectionNumber;
+	int m_numberOfActs;
 
 //	std::vector<Beam> m_beamTree;
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
@@ -122,11 +122,11 @@ private:
 	complex m_refrIndex;
 
 public:
-	Tracing(Particle *particle, Light *incidentLight, bool isOpticalPath,
+	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 			int interReflectionNumber);
 
-	virtual void SplitBeamByParticle(double /*beta*/, double /*gamma*/, std::vector<Beam> &/*scaterredBeams*/) {}
-	virtual void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+	virtual void ScatterLight(double /*beta*/, double /*gamma*/, std::vector<Beam> &/*scaterredBeams*/) {}
+	virtual void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
 	double GetIncomingEnergy() const;
@@ -147,32 +147,32 @@ protected:
 
 	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
 
-	void CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
-								 Beam &outBeam, Beam &inBeam) const;
+	void CalcOpticalPath(double cosIN, const Beam &incidentBeam, Beam &inBeam,
+						 Beam &outBeam) const;
 
-	bool IsTerminalBeam(const Beam &beam);
+	bool IsTerminalAct(const Beam &beam);
 
-	void TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam);
+	void SplitLightIntoBeams(int facetId, Beam &inBeam, Beam &outBeam);
 
-	void TraceSecondaryBeams(Beam &incidentBeam, int facetID,
+	void SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 								  Beam &inBeam, std::vector<Beam> &outBeams);
 
 	void RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
 								 Beam &beam);
 
-	void SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN, int facetId,
+	void SetRegularBeamParamsExternal(const Point3f &beamDir, double cosIN, int facetId,
 									   Beam &inBeam, Beam &outBeam);
 
 	void SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam);
 
-	void SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal,
+	void SetRegularBeamParams(double cosIN, const Point3f &normal,
 										Beam &incidentBeam, Beam &inBeam, Beam &outBeam,
 										bool &isTrivialIncidence);
 
 	void CalcFacetEnergy(int facetID, const Polygon &lightedPolygon);
 
-	void CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam);
+	void CalcOpticalPathForLight(Beam &inBeam, Beam &outBeam);
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 	void PushBeamToTree(Beam &beam, int facetId, int level);
@@ -181,16 +181,16 @@ protected:
 	void SetBeamID(Beam &beam);
 
 private:
-	double CalcNr(const double &cosIN) const;
+	double CalcReRI(const double &cosIN) const;
 
-	void SetTrivialIncidenceBeamParams(double cosIN, double Nr, const Point3f &normal,
+	void SetRegularBeamParams(double cosIN, double reRI, const Point3f &normal,
 									   Point3f r0, double s, const Beam &incidentBeam,
 									   Beam &inBeam, Beam &outBeam);
 
-	void SetCompleteReflectionBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
+	void SetCRBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
 										 Beam &inBeam);
 
-	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
+	void SplitDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
 							 Point3f &reflDir, Point3f &refrDir) const;
 
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,
