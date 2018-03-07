@@ -13,7 +13,7 @@ struct Light
 	Point3f polarizationBasis;
 };
 
-class Beam : public Polygon
+class Beam : public Polygon, public Light
 {
 public:
 	Beam();
@@ -29,6 +29,7 @@ public:
 
 	Beam & operator = (const Beam &other);
 	Beam & operator = (const Polygon &other);
+	Beam & operator = (const Light &other);
 	Beam & operator = (Beam &&other);
 
 	void SetTracingParams(int facetID, int level, Location location);
@@ -44,7 +45,6 @@ public:
 	// REF: рассмотреть схему, где у пучка будет много полигонов
 
 public:
-	Light light;
 	Matrix2x2c J;					///< Jones matrix of beam
 
 	int lastFacetID;				///< last reflected facet
@@ -52,12 +52,11 @@ public:
 	Location location;				///< beam state towards the particle (inside or outside)
 
 	// REF: перенести в PhisBeam
-	double internalOpticalPath;
 	double opticalPath;				///< optical path of beam
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
 
 #ifdef _TRACK_ALLOW
-	BigInteger id = 0;
+	BigInteger trackId = 0;
 //	std::vector<int> track;
 #endif
 

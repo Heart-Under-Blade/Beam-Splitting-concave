@@ -76,7 +76,7 @@ public:
 		int coef = facetNum + 1;
 		std::vector<int> tmp_track;
 
-		BigInteger tmpId = beam.id/coef;
+		BigInteger tmpId = beam.trackId/coef;
 		for (int i = 0; i <= beam.level; ++i)
 		{
 			int tmp = (tmpId%coef).toInt();
@@ -93,7 +93,7 @@ public:
 	}
 };
 
-class Scattering // REF: поменять название на ~Splitter
+class Scattering
 {
 public:
 	// REF: убрать в протектед потом
@@ -106,7 +106,7 @@ protected:
 	Point3f m_polarBasis;
 
 	bool m_isOpticalPath;
-	int m_numberOfActs;
+	int m_nActs;
 
 //	std::vector<Beam> m_beamTree;
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
@@ -152,7 +152,7 @@ protected:
 
 	bool IsTerminalAct(const Beam &beam);
 
-	void SplitLightIntoBeams(int facetId, Beam &inBeam, Beam &outBeam);
+	void SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 								  Beam &inBeam, std::vector<Beam> &outBeams);

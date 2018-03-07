@@ -21,6 +21,7 @@
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
+#include "Handler.h"
 #include "Tracer.h"
 #include "TracerGO.h"
 #include "TracerBackScatterPoint.h"
@@ -212,11 +213,7 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 int main(int argc, const char* argv[])
 {
-	Particle *particle = nullptr;
-
-	bool isCloseConsole = false;
-
-	if (argc <= 1) // has no command line arguments
+	if (argc <= 1) // no arguments
 	{
 		cout << endl << "No arguments. Press any key to exit...";
 		getchar();
@@ -239,6 +236,8 @@ int main(int argc, const char* argv[])
 	complex refrIndex = complex(parser.GetDoubleValue("ri"), riIm);
 
 	// TODO: AggregateBuilder
+
+	Particle *particle = nullptr;
 
 	if (parser.GetArgNumber("p") == 1)
 	{
@@ -302,7 +301,7 @@ int main(int argc, const char* argv[])
 	Tracer tracer(particle, reflNum, dirName);
 	tracer.SetIsOutputGroups(isOutputGroups);
 
-	double wave = parser.GetDoubleValue("w");
+	double wave = parser.Catched("w") ? parser.GetDoubleValue("w") : 0;
 
 	if (parser.Catched("po"))
 	{
@@ -350,28 +349,30 @@ int main(int argc, const char* argv[])
 		AngleRange beta = GetRange(parser, "b", particle);
 		AngleRange gamma = GetRange(parser, "g", particle);
 
+		HandlerGO *handler;
+
 		if (parser.Catched("all"))
 		{
-			tracerGO.TraceRandom(beta, gamma, false, isAbs, wave);
+			handler = new HandlerTotalGO(particle, &tracerGO.m_incidentLight, wave);
 		}
 		else
 		{
 			ImportTracks(particle->facetNum);
 
-			tracerGO.SetIsCalcOther(true);
-			tracerGO.SetTracks(&trackGroups);
-			tracerGO.TraceRandom(beta, gamma, true, isAbs, wave);
-		}
-	}
+			handler = new HandlerTracksGO(particle, &tracerGO.m_incidentLight, wave);
+			handler->SetTracks(&trackGroups);
 
-	if (parser.Catched("close"))
-	{
-		isCloseConsole = true;
+			tracerGO.SetIsCalcOther(true);
+		}
+
+		handler->SetAbsorbtionAccounting(isAbs);
+		tracerGO.SetHandler(handler);
+		tracerGO.TraceRandom(beta, gamma);
 	}
 
 	cout << endl << "done";
 
-	if (!isCloseConsole)
+	if (!parser.Catched("close"))
 	{
 		getchar();
 	}

@@ -25,7 +25,7 @@ void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam>
 		}
 
 		Beam inBeam, outBeam;
-		SplitLightIntoBeams(facetID, inBeam, outBeam);
+		SplitLightToBeams(facetID, inBeam, outBeam);
 
 		outBeam.lastFacetID = facetID;
 		outBeam.level = 0;
@@ -75,7 +75,7 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 				continue;
 			}
 
-			inBeam.id = beam.id;
+			inBeam.trackId = beam.trackId;
 			PushBeamToTree(inBeam, facetID, beam.level+1);
 		}
 	}

@@ -72,10 +72,10 @@ public:
 };
 
 
-class HandlerGroupGO : public HandlerGO
+class HandlerTracksGO : public HandlerGO
 {
 public:
-	HandlerGroupGO(Particle *particle, Light *incidentLight, float wavelength = 0);
+	HandlerTracksGO(Particle *particle, Light *incidentLight, float wavelength = 0);
 
 	void HandleBeams(std::vector<Beam> &beams, double angle) override;
 	void WriteMatricesToFile(double norm, std::string &dir) override;

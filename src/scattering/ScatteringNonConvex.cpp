@@ -30,8 +30,8 @@ void ScatteringNonConvex::ScatterLight(double beta, double gamma,
 									   std::vector<Beam> &scaterredBeams)
 {
 	m_particle->Rotate(beta, gamma, 0);
-	SplitLightIntoBeams();
-	SplitBeams(scaterredBeams);
+	SplitLightToBeams();
+	TraceBeams(scaterredBeams);
 }
 
 void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polygons,
@@ -39,8 +39,8 @@ void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polyg
 {
 	for (int j = 0; j < polygons.size; ++j)
 	{
-		BigInteger  inID = inBeam.id;
-		BigInteger outID = outBeam.id;
+		BigInteger  inID = inBeam.trackId;
+		BigInteger outID = outBeam.trackId;
 
 		// set geometry of beam
 		 inBeam.SetPolygon(polygons.arr[j]);
@@ -55,8 +55,8 @@ void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polyg
 #ifdef _CHECK_ENERGY_BALANCE
 		CalcFacetEnergy(facetID, outBeam);
 #endif
-		inBeam.id = inID;
-		outBeam.id = outID;
+		inBeam.trackId = inID;
+		outBeam.trackId = outID;
 	}
 }
 
@@ -74,7 +74,7 @@ void ScatteringNonConvex::SplitByFacet(const IntArray &facetIDs, int facetIndex)
 	}
 }
 
-void ScatteringNonConvex::SplitLightIntoBeams()
+void ScatteringNonConvex::SplitLightToBeams()
 {
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incommingEnergy = 0;
@@ -115,7 +115,7 @@ void ScatteringNonConvex::SelectVisibleFacets(const Beam &beam, IntArray &facetI
 {
 	FindVisibleFacets(beam, facetIDs);
 
-	Point3f dir = beam.light.direction;
+	Point3f dir = beam.direction;
 	dir.d_param = m_facets[beam.lastFacetID].in_normal.d_param;
 	SortFacets_faster(dir, facetIDs);
 }
@@ -144,7 +144,7 @@ void ScatteringNonConvex::CatchExternalBeam(const Beam &beam, std::vector<Beam> 
 		while (resSize != 0)
 		{
 			Difference(resultBeams[--resSize], normal, m_facets[id],
-					normal1, -beam.light.direction, diffFacets, diffSize);
+					normal1, -beam.direction, diffFacets, diffSize);
 		}
 
 		if (diffSize == 0) // beam is totaly swallowed by facet
@@ -304,7 +304,7 @@ void ScatteringNonConvex::CutBeamByFacet(int facetID, Beam &beam, bool &isDivide
 	const Point3f &facetNormal = (loc == Location::Out) ? -beamFacet.normal[loc]
 														:  beamFacet.normal[loc];
 	Difference(beam, beamFacet.normal[loc],
-			   m_facets[facetID], facetNormal, -beam.light.direction,
+			   m_facets[facetID], facetNormal, -beam.direction,
 			   resultBeams, resultSize);
 
 	if (resultSize == 0) // beam is totaly swallowed by facet
@@ -344,13 +344,13 @@ void ScatteringNonConvex::PushBeamsToTree(const Beam &beam, int facetID, bool ha
 									 Beam &inBeam, Beam &outBeam)
 {
 #ifdef _TRACK_ALLOW
-	inBeam.id = beam.id;
+	inBeam.trackId = beam.trackId;
 #endif
 
 	if (hasOutBeam)
 	{
 #ifdef _TRACK_ALLOW
-		outBeam.id = beam.id;
+		outBeam.trackId = beam.trackId;
 #endif
 		PushBeamToTree(outBeam, facetID, beam.level+1, Location::Out);
 	}
@@ -358,7 +358,7 @@ void ScatteringNonConvex::PushBeamsToTree(const Beam &beam, int facetID, bool ha
 	PushBeamToTree(inBeam, facetID, beam.level+1, Location::In);
 }
 
-void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
+void ScatteringNonConvex::TraceBeams(std::vector<Beam> &scaterredBeams)
 {
 #ifdef _DEBUG // DEB
 	int count = 0;
@@ -375,7 +375,7 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 		{
 			trackMapFile << gd << ' ';
 		}
-		trackMapFile << bigIntegerToString(beam.id) << endl;
+		trackMapFile << bigIntegerToString(beam.trackId) << endl;
 
 		if (count == 52741)
 			int fg = 0;
@@ -418,7 +418,7 @@ void ScatteringNonConvex::SetOpticalBeamParams(int facetID, const Beam &incident
 										  Beam &inBeam, Beam &outBeam,
 										  bool &hasOutBeam)
 {
-	const Point3f &dir = incidentBeam.light.direction;
+	const Point3f &dir = incidentBeam.direction;
 	const Point3f &normal = m_facets[facetID].ex_normal;
 
 	hasOutBeam = true;
@@ -490,7 +490,7 @@ void ScatteringNonConvex::FindVisibleFacets(const Beam &beam, IntArray &facetIds
 	for (int i = begin; i < end; ++i)
 	{
 		const Point3f &facetNormal = m_facets[i].normal[!beam.location];
-		double cosFB = DotProduct(beam.light.direction, facetNormal);
+		double cosFB = DotProduct(beam.direction, facetNormal);
 
 		if (cosFB >= EPS_COS_90) // beam incidents to this facet
 		{
@@ -704,17 +704,17 @@ void ScatteringNonConvex::PushBeamsToBuffer(int facetID, const Beam &beam, bool 
 									   Beam &inBeam, Beam &outBeam,
 									   std::vector<Beam> &passed)
 {
-	inBeam.id = beam.id;
+	inBeam.trackId = beam.trackId;
 
 	if (hasOutBeam)
 	{
-		outBeam.id = beam.id;
+		outBeam.trackId = beam.trackId;
 		outBeam.SetTracingParams(facetID, beam.level+1, Location::Out);
 		SetBeamID(outBeam);
 		passed.push_back(outBeam);
 	}
 
-	outBeam.SetTracingParams(facetID, beam.level+1, Location::In);
+	outBeam.SetTracingParams(facetID, beam.level+1, Location::In); // BUG: maybe "inBeam" ?
 	SetBeamID(inBeam);
 	passed.push_back(inBeam);
 }
@@ -768,7 +768,6 @@ void ScatteringNonConvex::ScatterLight(double beta, double gamma,
 						bool hasOutBeam;
 						SetOpticalBeamParams(facetID, beam, inBeam, outBeam, hasOutBeam);
 						PushBeamsToBuffer(facetID, beam, hasOutBeam, inBeam, outBeam, buffer);
-//						CutBeamByFacet(facetID, beam, isDivided);
 					}
 				}
 			}

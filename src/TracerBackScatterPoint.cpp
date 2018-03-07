@@ -162,8 +162,10 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 			HandleBeams(outBeams, tracks, originContrib, correctedContrib);
 			outBeams.clear();
-			OutputOrientationToLog(i, j, logfile);
-
+			OutputOrientationToLog(i, j, logfile);		
+#ifdef _DEBUG // DEB
+			double d = originContrib.GetGroupTotal()(0,0);
+#endif
 			if (isNan)
 			{
 				logfile << "------------------";
@@ -277,12 +279,12 @@ void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &beams, const Tracks 
 
 	for (Beam &beam : beams)
 	{
-		if (beam.light.direction.cz < BEAM_DIR_LIM)
+		if (beam.direction.cz < BEAM_DIR_LIM)
 		{
 			continue;
 		}
 
-		int groupID = tracks.FindGroup(beam.id);
+		int groupID = tracks.FindGroup(beam.trackId);
 
 		if (groupID < 0 && !isCalcOther)
 		{
@@ -292,12 +294,11 @@ void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &beams, const Tracks 
 		beam.RotateSpherical(-m_incidentLight.direction,
 							 m_incidentLight.polarizationBasis);
 
-		Point3f T = CrossProduct(beam.light.polarizationBasis,
-								 beam.light.direction);
+		Point3f T = CrossProduct(beam.polarizationBasis, beam.direction);
 		T = T/Length(T); // basis of beam
 
 		Point3f center = beam.Center();
-		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.light.direction);
+		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
 		matrixC Jx(2, 2);
 		CalcMultiplyOfJmatrix(beam, T, vf, vr, lng_proj0, Jx);

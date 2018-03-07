@@ -68,6 +68,7 @@ public:
 
 	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
+	Light m_incidentLight;
 protected:
 	Scattering *m_scattering;
 	Particle *m_particle;
@@ -75,7 +76,6 @@ protected:
 	double m_incomingEnergy;
 	double m_outcomingEnergy;
 
-	Light m_incidentLight;
 	std::string m_resultDirName;
 	double normIndex;
 	double m_wavelength;

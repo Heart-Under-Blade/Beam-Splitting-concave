@@ -90,7 +90,7 @@ double HandlerGO::BeamCrossSection(const Beam &beam) const
 	const double eps = 1e7*DBL_EPSILON;
 
 	Point3f normal = m_particle->facets[beam.lastFacetID].ex_normal; // normal of last facet of beam
-	double cosFB = DotProduct(normal, beam.light.direction);
+	double cosFB = DotProduct(normal, beam.direction);
 	double e = fabs(cosFB);
 
 	if (e < eps)
@@ -228,7 +228,7 @@ double HandlerGO::CalcOpticalPathAbsorption(const Beam &beam)
 		for (int i = 0; i < beam.size; ++i)
 		{
 			double delta = Length(beam.Center() - beam.arr[i])/Length(k);
-			opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.light.direction, n1);
+			opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
 		}
 
 		opticalPath /= beam.size;
@@ -288,7 +288,7 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams, double angle)
 		double area = cross*sinBeta;
 
 		// absorbtion
-		if (m_isAccountAbsorbtion && beam.internalOpticalPath > DBL_EPSILON)
+		if (m_isAccountAbsorbtion)
 		{
 			double opAbs = CalcOpticalPathAbsorption(beam);
 
@@ -300,24 +300,24 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams, double angle)
 		}
 
 		matrix bf = Mueller(beam.J);
-		AddToResultMullerGO(beam.light.direction, bf, area, m_totalContrib);
+		AddToResultMullerGO(beam.direction, bf, area, m_totalContrib);
 	}
 
 	beams.clear();
 }
 
-HandlerGroupGO::HandlerGroupGO(Particle *particle, Light *incidentLight, float wavelength)
+HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float wavelength)
 	: HandlerGO(particle, incidentLight, wavelength)
 {
 }
 
-void HandlerGroupGO::HandleBeams(std::vector<Beam> &beams, double angle)
+void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams, double angle)
 {
 	double sinBeta = sin(angle);
 
 	for (Beam &beam : beams)
 	{
-		int grID = m_tracks->FindGroup(beam.id);
+		int grID = m_tracks->FindGroup(beam.trackId);
 
 		if (grID < 0)
 		{
@@ -332,16 +332,16 @@ void HandlerGroupGO::HandleBeams(std::vector<Beam> &beams, double angle)
 		matrix bf = Mueller(beam.J);
 
 		// group contribution
-		AddToResultMullerGO(beam.light.direction, bf, area, m_groupContrib[grID]);
+		AddToResultMullerGO(beam.direction, bf, area, m_groupContrib[grID]);
 
 		// total contribution
-		AddToResultMullerGO(beam.light.direction, bf, area, m_totalContrib);
+		AddToResultMullerGO(beam.direction, bf, area, m_totalContrib);
 	}
 
 	beams.clear();
 }
 
-void HandlerGroupGO::WriteMatricesToFile(double norm, string &dirName)
+void HandlerTracksGO::WriteMatricesToFile(double norm, string &dirName)
 {
 	string dir = CreateFolder(dirName);
 

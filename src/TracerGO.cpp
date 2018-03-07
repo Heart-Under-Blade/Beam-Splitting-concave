@@ -8,8 +8,7 @@ TracerGO::TracerGO(Particle *particle, int reflNum, const std::string &resultFil
 {
 }
 
-void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange,
-						   bool isCalcTracks, bool isAbs, double wavelenght)
+void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange)
 {
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incomingEnergy = 0;
@@ -18,8 +17,6 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 
 	vector<Beam> outBeams;
 	double beta, gamma;
-
-	SetHandler(isCalcTracks, isAbs, wavelenght);
 
 	CalcTimer timer;
 	OutputStartTime(timer);
@@ -51,11 +48,8 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	OutputSummary(orNum, m_outcomingEnergy, norm, timer);
 }
 
-void TracerGO::TraceFixed(const double &beta, const double &gamma,
-						  bool isCalcTracks, bool isAbs, double wavelenght)
+void TracerGO::TraceFixed(const double &beta, const double &gamma)
 {
-	SetHandler(isCalcTracks, isAbs, wavelenght);
-
 	double b = DegToRad(beta);
 	double g = DegToRad(gamma);
 
@@ -67,11 +61,6 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma,
 
 	m_handler->WriteMatricesToFile(1, m_resultDirName);
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
-}
-
-void TracerGO::SetTracks(Tracks *tracks)
-{
-	m_tracks = tracks;
 }
 
 double TracerGO::CalcNorm(long long orNum)
@@ -112,17 +101,7 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 	cout << m_summary;
 }
 
-void TracerGO::SetHandler(bool isCalcTracks, bool isAbs, double wavelength)
+void TracerGO::SetHandler(HandlerGO *handler)
 {
-	if (isCalcTracks)
-	{
-		m_handler = new HandlerGroupGO(m_particle, &m_incidentLight, wavelength);
-		m_handler->SetTracks(m_tracks);
-	}
-	else
-	{
-		m_handler = new HandlerTotalGO(m_particle, &m_incidentLight, wavelength);
-	}
-
-	m_handler->SetAbsorbtionAccounting(isAbs);
+	m_handler = handler;
 }

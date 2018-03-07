@@ -278,7 +278,7 @@ void Tracer::CalcJnRot(const Beam &beam, const Point3f &T, const Point3d &vf,
 	vt = vt/LengthD(vt);
 
 	Point3f NT = CrossProduct(normal, T);
-	Point3f NE = CrossProduct(normal, beam.light.polarizationBasis);
+	Point3f NE = CrossProduct(normal, beam.polarizationBasis);
 
 	Point3d NTd = Point3d(NT.cx, NT.cy, NT.cz);
 	Point3d NEd = Point3d(NE.cx, NE.cy, NE.cz);
@@ -294,7 +294,7 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 {
 	for (Beam &beam : outBeams)
 	{
-		int groupID = tracks.FindGroup(beam.id);
+		int groupID = tracks.FindGroup(beam.trackId);
 
 		if (groupID < 0)
 		{
@@ -305,10 +305,9 @@ void Tracer::HandleBeamsPO(vector<Beam> &outBeams, const Cone &bsCone,
 							 m_incidentLight.polarizationBasis);
 
 		Point3f center = beam.Center();
-		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.light.direction);
+		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
-		Point3f T = CrossProduct(beam.light.polarizationBasis,
-								 beam.light.direction);
+		Point3f T = CrossProduct(beam.polarizationBasis, beam.direction);
 		T = T/Length(T); // basis of beam
 
 		for (int i = 0; i <= bsCone.phiCount; ++i)
@@ -344,10 +343,9 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone, int grou
 
 		Point3f center = beam.Center();
 		Point3d center_d = Point3d(center);
-		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.light.direction);
+		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
 
-		Point3f T = CrossProduct(beam.light.polarizationBasis,
-								 beam.light.direction);
+		Point3f T = CrossProduct(beam.polarizationBasis, beam.direction);
 		T = T/Length(T); // basis of beam
 
 		for (int i = 0; i <= bsCone.phiCount; ++i)

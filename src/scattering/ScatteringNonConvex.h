@@ -41,7 +41,7 @@ private:
 	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
 							PolygonArray &resFacets);
 
-	void SplitLightIntoBeams();
+	void SplitLightToBeams();
 
 	bool isExternalNonEmptyBeam(Beam &incidentBeam);
 
@@ -67,6 +67,6 @@ private:
 	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam, Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 protected:
-	void SplitBeams(std::vector<Beam> &scaterredBeams);
+	void TraceBeams(std::vector<Beam> &scaterredBeams);
 };
 
