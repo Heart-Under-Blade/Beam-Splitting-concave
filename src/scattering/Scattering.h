@@ -166,9 +166,10 @@ protected:
 	void SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam);
 
-	void SetRegularBeamParams(double cosIN, const Point3f &normal,
-										Beam &incidentBeam, Beam &inBeam, Beam &outBeam,
-										bool &isTrivialIncidence);
+	void SetRegularIncidenceBeamParams(double cosIN, const Point3f &normal,
+									   Beam &incidentBeam,
+									   Beam &inBeam, Beam &outBeam,
+									   bool &isTrivialIncidence);
 
 	void CalcFacetEnergy(int facetID, const Polygon &lightedPolygon);
 

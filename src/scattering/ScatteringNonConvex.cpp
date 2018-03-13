@@ -799,7 +799,7 @@ void ScatteringNonConvex::TraceFirstBeamFixedFacet(int facetID, bool &isIncident
 {
 	IntArray facetIDs;
 	isIncident = false;
-// REF: replace 'wavefront' to something certain in your paper
+
 	SelectVisibleFacetsForLight(facetIDs);
 	int index = FindFacetID(facetID, facetIDs);
 

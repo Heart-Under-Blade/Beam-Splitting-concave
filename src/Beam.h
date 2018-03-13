@@ -7,8 +7,9 @@
 #include "float.h"
 #include "BigInteger.hh"
 
-struct Light
+class Light
 {
+public:
 	Point3f direction;
 	Point3f polarizationBasis;
 };
@@ -21,7 +22,7 @@ public:
 	Beam(const Polygon &other);
 	Beam(Beam &&other);
 
-	void RotateSpherical(const Point3f &dir, const Point3f &polarBasis);
+	void RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 	void RotatePlane(const Point3f& newBasis); ///< rotate Jones matrix in case of beam splitting
 
 	void AddVertex(const Point3f &vertex);

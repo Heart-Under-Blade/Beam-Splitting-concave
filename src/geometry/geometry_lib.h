@@ -185,19 +185,21 @@ struct Point3d
 	}
 };
 
+typedef Point3f Vector3f;
+typedef Point3d Vector3d;
 
 /**
  * Functions
  */
 
-float DotProduct(const Point3f &v1, const Point3f &v2);
-double DotProductD(const Point3d &v1, const Point3d &v2);
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
+float DotProduct(const Vector3f &v1, const Vector3f &v2);
+double DotProductD(const Vector3d &v1, const Vector3d &v2);
+void CrossProduct(const Vector3f &v1, const Vector3f &v2, Vector3f &res);
 Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
 
-double Norm(const Point3f &point);
-void Normalize(Point3f &v);
-double Length(const Point3f &v);
+double Norm(const Vector3f &point);
+void Normalize(Vector3f &v);
+double Length(const Vector3f &v);
 
 
 
@@ -207,15 +209,6 @@ double Length(const Point3f &v);
  * Functions
  */
 
-float DotProduct(const Point3f &v1, const Point3f &v2);
-double DotProductD(const Point3d &v1, const Point3d &v2);
-
-double Norm(const Point3f &point);
-
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
+double NormD(const Vector3d &point);
 Point3d CrossProductD(const Point3d &v1, const Point3d &v2);
-
-void Normalize(Point3f &v);
-
-double Length(const Point3f &v);
-double LengthD(const Point3d &v);
+double LengthD(const Vector3d &v);

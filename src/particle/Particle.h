@@ -19,7 +19,7 @@ class Particle
 public:
 	Particle();
 
-	void SetFromFile(const std::string &filename); // TODO: допилить
+	void SetFromFile(const std::string &filename);
 
 	void Rotate(double beta, double gamma, double alpha);
 	void Move(float dx, float dy, float dz);

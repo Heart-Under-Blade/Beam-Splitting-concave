@@ -237,7 +237,7 @@ double Scattering::CalcReRI(const double &cosIN) const
 }
 
 void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
-								  Beam &inBeam, std::vector<Beam> &outBeams)
+									 Beam &inBeam, std::vector<Beam> &outBeams)
 {
 	Beam outBeam;
 	const Point3f &incidentDir = incidentBeam.direction;
@@ -260,22 +260,11 @@ void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	inBeam = outBeam;
 
-	if (cosIN >= EPS_COS_00) // normal incidence
-	{
-		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
-
-		outBeam.trackId = incidentBeam.trackId;
-		outBeam.lastFacetID = facetID;
-		outBeam.level = incidentBeam.level + 1;
-		SetBeamID(outBeam);
-		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
-		outBeams.push_back(outBeam);
-	}
-	else // regular incidence
-	{
+	if (cosIN < EPS_COS_00)
+	{	// regular incidence
 		bool isTrivialIncidence;
-		SetRegularBeamParams(cosIN, normal, incidentBeam,
-									   inBeam, outBeam, isTrivialIncidence);
+		SetRegularIncidenceBeamParams(cosIN, normal, incidentBeam,
+									  inBeam, outBeam, isTrivialIncidence);
 		if (isTrivialIncidence)
 		{
 			outBeam.trackId = incidentBeam.trackId;
@@ -286,15 +275,26 @@ void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeams.push_back(outBeam);
 		}
 	}
+	else
+	{	// normal incidence
+		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
+
+		outBeam.trackId = incidentBeam.trackId;
+		outBeam.lastFacetID = facetID;
+		outBeam.level = incidentBeam.level + 1;
+		SetBeamID(outBeam);
+		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
+		outBeams.push_back(outBeam);
+	}
 }
 
-void Scattering::SetRegularBeamParams(double cosIN, const Point3f &normal,
-											 Beam &incidentBeam,
-											 Beam &inBeam, Beam &outBeam,
-											 bool &isRegular)
+void Scattering::SetRegularIncidenceBeamParams(double cosIN, const Point3f &normal,
+											   Beam &incidentBeam,
+											   Beam &inBeam, Beam &outBeam,
+											   bool &isRegular)
 {
 	const Point3f &incidentDir = incidentBeam.direction;
-	double cosIN_sqr = cosIN*cosIN;
+	double cos2 = cosIN*cosIN;
 
 	Point3f scatteringNormal;
 	CrossProduct(normal, incidentDir, scatteringNormal);
@@ -309,7 +309,7 @@ void Scattering::SetRegularBeamParams(double cosIN, const Point3f &normal,
 	inBeam = Light{reflDir, scatteringNormal};
 
 	double reRI = CalcReRI(cosIN);
-	double s = 1.0/(reRI*cosIN_sqr) - Norm(r0);
+	double s = 1.0/(reRI*cos2) - Norm(r0);
 
 	if (s > DBL_EPSILON) // regular incidence
 	{
@@ -667,8 +667,8 @@ void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
 }
 
 void Scattering::SplitDirection(const Point3f &incidentDir, double cosIN,
-								  const Point3f &normal,
-								  Point3f &reflDir, Point3f &refrDir) const
+								const Point3f &normal,
+								Point3f &reflDir, Point3f &refrDir) const
 {
 	Point3f tmp0 = normal + incidentDir/cosIN;
 

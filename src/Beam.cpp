@@ -47,7 +47,7 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 Beam::Beam()
 {
 	opticalPath = 0;
-	polarizationBasis = Point3f(0, 1, 0);
+	polarizationBasis = Vector3f(0, 1, 0);
 }
 
 void Beam::Copy(const Beam &other)
@@ -85,8 +85,8 @@ Beam::Beam(Beam &&other)
 
 	other.opticalPath = 0;
 	other.D = 0;
-	direction = Point3f(0, 0, 0);
-	polarizationBasis = Point3f(0, 0, 0);
+	direction = Vector3f(0, 0, 0);
+	polarizationBasis = Vector3f(0, 0, 0);
 
 	other.lastFacetID = 0;
 	other.level = 0;
@@ -97,7 +97,7 @@ Beam::Beam(Beam &&other)
 #endif
 }
 
-void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
+void Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 {
 	Point3f newBasis;
 	double cs = DotProduct(dir, direction);
@@ -116,7 +116,7 @@ void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 		{
 			double fi, teta;
 			GetSpherical(fi, teta);
-			newBasis = Point3f(-sin(fi),cos(fi), 0);
+			newBasis = Vector3f(-sin(fi), cos(fi), 0);
 		}
 	}
 
@@ -199,8 +199,8 @@ Beam &Beam::operator = (Beam &&other)
 
 		other.opticalPath = 0;
 		other.D = 0;
-		direction = Point3f(0, 0, 0);
-		polarizationBasis = Point3f(0, 0, 0);
+		direction = Vector3f(0, 0, 0);
+		polarizationBasis = Vector3f(0, 0, 0);
 
 		other.lastFacetID = 0;
 		other.level = 0;
@@ -234,7 +234,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	const double eps1 = /*1e9**/100*FLT_EPSILON;
 	const double eps2 = /*1e6**/FLT_EPSILON;
 
-	Point3f _n = Normal();
+	Vector3f _n = Normal();
 
 	int begin, startIndex, endIndex;
 	bool order = (DotProduct(_n, direction) < 0);
@@ -404,8 +404,6 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 	}
 	else
 	{
-//		LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
-
 		Point3f k;
 		CrossProduct(polarizationBasis, newBasis, k);
 		Normalize(k);
