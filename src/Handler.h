@@ -4,10 +4,10 @@
 #include "Scattering.h"
 #include "PhysMtr.hpp"
 
-struct ContributionGO
+class ContributionGO
 {
-	ContributionGO()
-		: scatMatrix(0, 0, 0, 0), back(4, 4), forw(4, 4)
+public:
+	ContributionGO() : scatMatrix(0, 0, 0, 0), back(4, 4), forw(4, 4)
 	{
 		scatMatrix = Arr2D(1, 180 + 1/*TODO: this is 'thetaNum',
 				   should i do smth with it?*/, 4, 4);
@@ -31,12 +31,14 @@ public:
 	void SetTracks(Tracks *tracks);
 	double CalcTotalScatteringEnergy(double norm);
 	void SetAbsorbtionAccounting(bool value);
+	void WriteLog(const std::string &str);
+	void SetTracing(Scattering *tracing);
 
 protected:
 	Particle *m_particle;
 	Light *m_incidentLight;
 	Tracks *m_tracks;
-
+	Scattering *m_scattering;
 	bool m_isAccountAbsorbtion;
 	float m_wavelength;
 
@@ -55,7 +57,7 @@ protected:
 	void WriteToFile(ContributionGO &contrib, double norm,
 					 const std::string &filename);
 	double CalcOpticalPathAbsorption(const Beam &beam);
-	Point3f CalcK(const Beam &beam, std::vector<int> &tr);
+	Point3f CalcK(std::vector<int> &tr);
 
 private:
 	void ExtractPeaks(double *b, double *f, double norm);
@@ -69,6 +71,9 @@ public:
 
 	void HandleBeams(std::vector<Beam> &beams, double angle) override;
 	void WriteMatricesToFile(double norm, std::string &filename) override;
+
+private:
+	double ComputeInternalOpticalPath(const Beam &b, const std::vector<int> &tr);
 };
 
 

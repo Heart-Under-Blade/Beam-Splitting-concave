@@ -433,7 +433,7 @@ void ScatteringNonConvex::SetOpticalBeamParams(int facetID, const Beam &incident
 		if (incidentBeam.location == Location::In)
 		{
 			Beam incBeam = incidentBeam;
-			SetRegularBeamParams(cosIN, normal, incBeam,
+			SetRegularIncidenceBeamParams(cosIN, normal, incBeam,
 								 inBeam, outBeam, hasOutBeam);
 		}
 		else // beam is external
@@ -533,16 +533,6 @@ void ScatteringNonConvex::CutFacetByShadows(int facetID, const IntArray &shadowF
 			resFacets.arr[resFacets.size++] = diffFacets[i];
 		}
 	}
-}
-
-void ScatteringNonConvex::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
-										 const Point3f &facetNormal, Point3f &projection)
-{
-	double t = DotProduct(point, facetNormal);
-	t = t + facetNormal.d_param;
-	double dp = DotProduct(direction, facetNormal);
-	t = t/dp;
-	projection = point - (direction * t);
 }
 
 // OPT: поменять все int и пр. параметры функций на ссылочные

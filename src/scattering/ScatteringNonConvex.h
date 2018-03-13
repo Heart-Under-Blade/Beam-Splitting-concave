@@ -24,9 +24,6 @@ private:
 	void CutFacetByShadows(int facetID, const IntArray &shadowFacetIDs, int prevFacetNum,
 						   PolygonArray &resFacets);
 
-	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
-							 const Point3f &facetNormal, Point3f &projection);
-
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);

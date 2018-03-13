@@ -8,13 +8,13 @@
 
 #ifdef _DEBUG // DEB
 #include <iostream>
-using namespace std;
 #endif
 
 #define NORM_CEIL	FLT_EPSILON + 1
 
+using namespace std;
 Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
-				 int interReflectionNumber)
+					   int interReflectionNumber)
 	: m_incidentLight(incidentLight),
 	  m_particle(particle)
 {
@@ -678,8 +678,8 @@ void Scattering::SplitDirection(const Point3f &incidentDir, double cosIN,
 	double cosI_sqr = cosIN * cosIN;
 	double tmp1 = ri_coef_re + cosI_sqr - 1.0;
 
-	tmp1 = (ri_coef_im - FLT_EPSILON < 0) ? tmp1
-										  : sqrt(tmp1*tmp1 + ri_coef_im);
+	tmp1 = (ri_coef_im < FLT_EPSILON) ? tmp1
+									  : sqrt(tmp1*tmp1 + ri_coef_im);
 
 	tmp1 = (ri_coef_re + 1.0 - cosI_sqr + tmp1)/2.0;
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
@@ -689,6 +689,36 @@ void Scattering::SplitDirection(const Point3f &incidentDir, double cosIN,
 
 	reflDir = (tmp0/tmp1) - normal;
 	Normalize(reflDir);
+}
+
+Point3f Scattering::ChangeBeamDirection(const Point3f &oldDir,
+									 const Point3f &normal, Location loc)
+{
+	Point3f newDir;
+
+	if (loc == Location::Out)
+	{
+		double cosIN = DotProduct(oldDir, -normal);
+		Point3f tmp0 = normal + oldDir/cosIN;
+		double cosIN2 = cosIN * cosIN;
+		double tmp1 = ri_coef_re + cosIN2 - 1.0;
+		tmp1 = (ri_coef_im < FLT_EPSILON) ? tmp1
+										  : sqrt(tmp1*tmp1 + ri_coef_im);
+
+		tmp1 = (ri_coef_re + 1.0 - cosIN2 + tmp1)/2.0;
+		tmp1 = (tmp1/cosIN2) - Norm(tmp0);
+		tmp1 = sqrt(tmp1);
+		newDir = (tmp0/tmp1) - normal;
+	}
+	else // reflection
+	{
+		double cosIN = DotProduct(oldDir, normal);
+		Point3f tmp = oldDir/cosIN - normal;
+		newDir = tmp - normal;
+	}
+
+	Normalize(newDir);
+	return newDir;
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
@@ -710,22 +740,45 @@ double Scattering::GetIncomingEnergy() const
 	return m_incommingEnergy;
 }
 
-//double Tracing::CrossSection(const Point3f &beamDir) const
-//{
-//	double cs = 0.0;
+double Scattering::ComputeInternalOpticalPath(const Beam &beam, const vector<int> &tr)
+{
+	double path = 0;
+	Point3f p1 = beam.arr[0];
+	Point3f p2;
+	Point3f dir = -beam.direction;
+	int last = tr.size()-1;
 
-//	for (int i = 0; i < m_particle->facetNum; ++i)
-//	{
-//		const Point3f n = m_facets[i].Normal();
-//		double csa = DotProduct(beamDir, n);
+	// first iteration
+	dir = ChangeBeamDirection(dir, m_facets[tr[last]].ex_normal, Location::Out);
+	ProjectPointToFacet(p1, dir, m_facets[tr[last-1]].in_normal, p2);
+	path += Length(p1 - p2);
+	p1 = p2;
 
-//		if (csa < EPS_COS_90)
-//		{
-//			continue;
-//		}
+	for (int i = last-2; i >= 0; --i)
+	{
+		int mask = 1;
+		mask <<= i;
+		Location loc = (beam.locations & mask) ? Location::Out : Location::In;
+		dir = ChangeBeamDirection(dir, m_facets[tr[i+1]].ex_normal, loc);
+		ProjectPointToFacet(p1, dir, m_facets[tr[i]].in_normal, p2);
 
-//		cs += m_facets[i].Area()*csa;
-//	}
+		if (loc == Location::In)
+		{	// sum internal path only
+			path += Length(p1 - p2);
+		}
 
-//	return cs;
-//}
+		p1 = p2;
+	}
+
+	return path;
+}
+
+void Scattering::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
+								  const Point3f &facetNormal, Point3f &projection)
+{
+	double t = DotProduct(point, facetNormal);
+	t = t + facetNormal.d_param;
+	double dp = DotProduct(direction, facetNormal);
+	t = t/dp;
+	projection = point - (direction * t);
+}

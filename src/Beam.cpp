@@ -46,6 +46,7 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 
 Beam::Beam()
 {
+	locations = 0;
 	opticalPath = 0;
 	polarizationBasis = Vector3f(0, 1, 0);
 }
@@ -60,6 +61,7 @@ void Beam::Copy(const Beam &other)
 	lastFacetID = other.lastFacetID;
 	level = other.level;
 	location = other.location;
+	locations = other.locations;
 
 #ifdef _TRACK_ALLOW
 	trackId = other.trackId;
@@ -91,6 +93,7 @@ Beam::Beam(Beam &&other)
 	other.lastFacetID = 0;
 	other.level = 0;
 	other.location = Location::Out;
+	other.locations = 0;
 
 #ifdef _TRACK_ALLOW
 	other.trackId = 0;
@@ -205,6 +208,7 @@ Beam &Beam::operator = (Beam &&other)
 		other.lastFacetID = 0;
 		other.level = 0;
 		other.location = Location::Out;
+		other.locations = 0;
 
 #ifdef _TRACK_ALLOW
 		other.trackId = trackId; // BUG: maybe "other.trackId = 0" ?
@@ -219,6 +223,13 @@ void Beam::SetTracingParams(int facetID, int lvl, Location loc)
 	lastFacetID = facetID;
 	level = lvl;
 	location = loc;
+
+	if (loc == Location::Out)
+	{	// write location
+		int loc = 1;
+		loc <<= lvl;
+		locations &= loc;
+	}
 }
 
 void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2)

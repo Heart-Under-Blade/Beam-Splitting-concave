@@ -195,7 +195,7 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 	allFile.close();
 }
 
-Point3f HandlerGO::CalcK(const Beam &beam, vector<int> &tr)
+Point3f HandlerGO::CalcK(vector<int> &tr)
 {	// OPT: сделать из переменных ссылки
 	Point3f k, tmp;
 	Point3f n1 = m_particle->facets[tr[0]].in_normal;
@@ -206,9 +206,10 @@ Point3f HandlerGO::CalcK(const Beam &beam, vector<int> &tr)
 	for (int i = tr.size()-2; i > 0; --i)
 	{
 		Point3f ni = m_particle->facets[tr[i]].in_normal;
-		k = k - ni*fabs(2*DotProduct(ni, k));
+		k = k - ni*2*fabs(DotProduct(ni, k));
 	}
 
+	Normalize(k);
 	return k;
 }
 
@@ -219,20 +220,17 @@ double HandlerGO::CalcOpticalPathAbsorption(const Beam &beam)
 	vector<int> tr;
 	Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
 
-	Point3f k = CalcK(beam, tr);
+	Point3f k = CalcK(tr);
 
-	if (Length(k) > FLT_EPSILON)
+	Point3f n1 = m_particle->facets[tr[0]].in_normal;
+
+	for (int i = 0; i < beam.size; ++i)
 	{
-		Point3f n1 = m_particle->facets[tr[0]].in_normal;
-
-		for (int i = 0; i < beam.size; ++i)
-		{
-			double delta = Length(beam.Center() - beam.arr[i])/Length(k);
-			opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
-		}
-
-		opticalPath /= beam.size;
+		double delta = Length(beam.Center() - beam.arr[i])/Length(k);
+		opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
 	}
+
+	opticalPath /= beam.size;
 
 	return opticalPath;
 }
@@ -270,6 +268,17 @@ void HandlerGO::SetAbsorbtionAccounting(bool value)
 	m_isAccountAbsorbtion = value;
 }
 
+void HandlerGO::WriteLog(const string &str)
+{
+	m_logFile << str;
+}
+
+void HandlerGO::SetTracing(Scattering *scattering)
+{
+	m_scattering = scattering;
+}
+
+
 HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float wavelength)
 	: HandlerGO(particle, incidentLight, wavelength)
 {
@@ -278,6 +287,7 @@ HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float w
 void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams, double angle)
 {
 	double sinBeta = sin(angle);
+	double kAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
 
 	for (Beam &beam : beams)
 	{
@@ -288,14 +298,18 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams, double angle)
 		double area = cross*sinBeta;
 
 		// absorbtion
-		if (m_isAccountAbsorbtion)
+		if (m_isAccountAbsorbtion && beam.level > 0)
 		{
-			double opAbs = CalcOpticalPathAbsorption(beam);
+			vector<int> tr;
+			Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
 
-			if (opAbs > DBL_EPSILON) // BUG: must be "fabs(opAbs)"
+//			double opAbs = CalcOpticalPathAbsorption(beam);
+			double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
+
+			if (fabs(path) > DBL_EPSILON) // REF "fabs(" - лишнее
 			{
-				double abs = exp(-(M_2PI*imag(m_particle->GetRefractiveIndex())*opAbs)/m_wavelength);
-				beam.J = beam.J * abs;
+				double abs = exp(kAbs*path);
+				beam.J *= abs;
 			}
 		}
 

@@ -36,11 +36,21 @@ matrixC Matrix2x2c::operator * (const complex &value) const
 	return rez;
 }
 
-Matrix2x2c Matrix2x2c::operator +=(const Matrix2x2c &other)
+Matrix2x2c &Matrix2x2c::operator *=(const double &value)
+{
+	m11 *= value;
+	m12 *= value;
+	m21 *= value;
+	m22 *= value;
+	return *this;
+}
+
+Matrix2x2c &Matrix2x2c::operator +=(const Matrix2x2c &other)
 {
 	m11 += other.m11;
 	m12 += other.m12;
 	m21 += other.m21;
 	m22 += other.m22;
+	return *this;
 }
 

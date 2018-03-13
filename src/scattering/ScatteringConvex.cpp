@@ -30,7 +30,6 @@ void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam>
 		outBeam.lastFacetID = facetID;
 		outBeam.level = 0;
 		SetBeamID(outBeam);
-		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
 		outBeams.push_back(outBeam);
 		PushBeamToTree(inBeam, facetID, 0);
 

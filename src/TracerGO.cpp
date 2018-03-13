@@ -34,6 +34,7 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 #ifdef _CHECK_ENERGY_BALANCE
 			m_incomingEnergy += m_scattering->GetIncomingEnergy()*sin(beta);
 #endif
+//			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
 		}
 
@@ -93,7 +94,7 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 			+ "\nEnergy passed = " + to_string(passedEnergy) + '%';
 #endif
 
-	//	out << "\nAveraged cross section = " << incomingEnergy*NRM;
+	// out << "\nAveraged cross section = " << incomingEnergy*NRM;
 	ofstream out(m_resultDirName+"_out.dat", ios::out);
 	out << m_summary;
 	out.close();
