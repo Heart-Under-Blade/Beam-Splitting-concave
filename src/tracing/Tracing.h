@@ -131,6 +131,7 @@ public:
 
 	double GetIncomingEnergy() const;
 
+	double ComputeInternalOpticalPath(const Beam &beam, const std::vector<int> &tr);
 //	double CrossSection(const Point3f &beamDir) const;
 
 protected:
@@ -193,9 +194,14 @@ private:
 	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
 							 Point3f &reflDir, Point3f &refrDir) const;
 
+	Point3f ChangeBeamDirection(const Point3f &oldDir, const Point3f &normal, Location loc);
+
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,
 						  Polygon &polygon) const;
 
 	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
+
+	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
+							 const Point3f &facetNormal, Point3f &projection);
 };

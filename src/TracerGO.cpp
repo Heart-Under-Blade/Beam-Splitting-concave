@@ -24,11 +24,11 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	CalcTimer timer;
 	OutputStartTime(timer);
 
-	for (int i = 0; i < betaRange.number; ++i)
+	for (int i = 0/*175*/; i < betaRange.number; ++i)
 	{
 		beta = (i + 0.5)*betaRange.step;
 
-		for (int j = 0; j < gammaRange.number; ++j)
+		for (int j = 0/*96*/; j < gammaRange.number; ++j)
 		{
 			gamma = (j + 0.5)*gammaRange.step;
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
@@ -37,6 +37,7 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 #ifdef _CHECK_ENERGY_BALANCE
 			m_incomingEnergy += m_tracing->GetIncomingEnergy()*sin(beta);
 #endif
+//			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
 		}
 
@@ -104,7 +105,7 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 			+ "\nEnergy passed = " + to_string(passedEnergy) + '%';
 #endif
 
-	//	out << "\nAveraged cross section = " << incomingEnergy*NRM;
+	// out << "\nAveraged cross section = " << incomingEnergy*NRM;
 	ofstream out(m_resultDirName+"_out.dat", ios::out);
 	out << m_summary;
 	out.close();
@@ -125,4 +126,5 @@ void TracerGO::SetHandler(bool isCalcTracks, bool isAbs, double wavelength)
 	}
 
 	m_handler->SetAbsorbtionAccounting(isAbs);
+	m_handler->SetTracing(m_tracing);
 }

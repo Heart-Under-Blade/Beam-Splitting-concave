@@ -535,16 +535,6 @@ void TracingConcave::CutFacetByShadows(int facetID, const IntArray &shadowFacetI
 	}
 }
 
-void TracingConcave::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
-										 const Point3f &facetNormal, Point3f &projection)
-{
-	double t = DotProduct(point, facetNormal);
-	t = t + facetNormal.d_param;
-	double dp = DotProduct(direction, facetNormal);
-	t = t/dp;
-	projection = point - (direction * t);
-}
-
 // OPT: поменять все int и пр. параметры функций на ссылочные
 
 /* TODO: придумать более надёжную сортировку по близости

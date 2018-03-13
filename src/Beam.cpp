@@ -46,6 +46,7 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 
 Beam::Beam()
 {
+	locations = 0;
 	opticalPath = 0;
 	light.polarizationBasis = Point3f(0, 1, 0);
 }
@@ -53,7 +54,6 @@ Beam::Beam()
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
-	internalOpticalPath = other.internalOpticalPath;
 	D = other.D;
 	light = other.light;
 
@@ -62,6 +62,7 @@ void Beam::Copy(const Beam &other)
 	lastFacetID = other.lastFacetID;
 	level = other.level;
 	location = other.location;
+	locations = other.locations;
 
 #ifdef _TRACK_ALLOW
 	id = other.id;
@@ -83,26 +84,26 @@ Beam::Beam(Beam &&other)
 	: Polygon(other)
 {
 	opticalPath = other.opticalPath;
-	internalOpticalPath = other.internalOpticalPath;
 	D = other.D;
 	light = other.light;
 
 	lastFacetID = other.lastFacetID;
 	level = other.level;
 	location = other.location;
+	locations = other.locations;
 
 #ifdef _TRACK_ALLOW
 	id = other.id;
 #endif
 
 	other.opticalPath = 0;
-	other.internalOpticalPath = 0;
 	other.D = 0;
 	other.light = Light{Point3f(0, 0, 0), Point3f(0, 0, 0)};
 
 	other.lastFacetID = 0;
 	other.level = 0;
 	other.location = Location::Out;
+	other.locations = 0;
 
 #ifdef _TRACK_ALLOW
 	other.id = 0;
@@ -199,13 +200,13 @@ Beam &Beam::operator = (Beam &&other)
 		Polygon::operator =(other);
 
 		opticalPath = other.opticalPath;
-		internalOpticalPath = other.internalOpticalPath;
 		D = other.D;
 		light = other.light;
 
 		lastFacetID = other.lastFacetID;
 		level = other.level;
 		location = other.location;
+		locations = other.locations;
 
 		J = other.J;
 
@@ -213,13 +214,13 @@ Beam &Beam::operator = (Beam &&other)
 		id = other.id;
 #endif
 		other.opticalPath = 0;
-		other.internalOpticalPath = 0;
 		other.D = 0;
 		other.light = Light{Point3f(0, 0, 0), Point3f(0, 0, 0)};
 
 		other.lastFacetID = 0;
 		other.level = 0;
 		other.location = Location::Out;
+		other.locations = 0;
 
 #ifdef _TRACK_ALLOW
 		other.id = id;
@@ -234,6 +235,13 @@ void Beam::SetTracingParams(int facetID, int lvl, Location loc)
 	lastFacetID = facetID;
 	level = lvl;
 	location = loc;
+
+	if (loc == Location::Out)
+	{	// write location
+		int loc = 1;
+		loc <<= lvl;
+		locations &= loc;
+	}
 }
 
 void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2)

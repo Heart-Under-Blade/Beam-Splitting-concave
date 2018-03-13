@@ -30,7 +30,6 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 		outBeam.lastFacetID = facetID;
 		outBeam.level = 0;
 		SetBeamID(outBeam);
-		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
 		outBeams.push_back(outBeam);
 		PushBeamToTree(inBeam, facetID, 0);
 

@@ -53,8 +53,9 @@ public:
 
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
-	double internalOpticalPath;		///< optical path of beam in particle only
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
+	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
+									///< "0" when beam location is "inside" and "1" if it's "outside"
 
 #ifdef _TRACK_ALLOW
 	BigInteger id = 0;
