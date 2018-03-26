@@ -9,6 +9,14 @@
 
 #define ROT_MTR_RANK 3
 
+class Angle
+{
+public:
+	double alpha;
+	double beta;
+	double gamma;
+};
+
 /**
  * @brief The Particle class
  * The base class inherited by other concrete particle classes.
@@ -48,6 +56,8 @@ public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
 	int facetNum;					///< number of facets
 	bool isAggregated = false;
+
+	Angle rotAngle;
 
 protected:
 	Facet defaultFacets[MAX_FACET_NUM];

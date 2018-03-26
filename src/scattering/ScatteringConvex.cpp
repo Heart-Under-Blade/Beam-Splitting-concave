@@ -1,8 +1,8 @@
 #include "ScatteringConvex.h"
 
 ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
-							 bool isOpticalPath, int interReflectionNumber)
-	: Scattering(particle, incidentLight, isOpticalPath, interReflectionNumber)
+								   bool isOpticalPath, int nActs)
+	: Scattering(particle, incidentLight, isOpticalPath, nActs)
 {
 }
 

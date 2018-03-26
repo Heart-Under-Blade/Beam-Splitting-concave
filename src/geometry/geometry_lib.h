@@ -202,6 +202,8 @@ void Normalize(Vector3f &v);
 double Length(const Vector3f &v);
 
 
+Point3f ProjectPointToPlane(const Point3f &point, const Vector3f &direction,
+							const Vector3f &planeNormal);
 
 // REF: try to create template class 'Array<type>'
 

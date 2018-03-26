@@ -21,8 +21,8 @@ ofstream trackMapFile("tracks_deb.dat", ios::out);
 using namespace std;
 
 ScatteringNonConvex::ScatteringNonConvex(Particle *particle, Light *incidentLight,
-										 bool isOpticalPath, int numberOfActs)
-	: Scattering(particle, incidentLight, isOpticalPath, numberOfActs)
+										 bool isOpticalPath, int nActs)
+	: Scattering(particle, incidentLight, isOpticalPath, nActs)
 {
 }
 
@@ -278,17 +278,6 @@ int ScatteringNonConvex::FindClosestVertex(const Polygon &facet, const Point3f &
 	return closest;
 }
 
-#ifdef _TRACK_ALLOW
-//void TracingConcave::AddToTrack(Beam &beam, int facetId)
-//{
-//	std::vector<int> &tr = beam.track;
-//	int size = tr.size();
-
-//	if (size == 0 || (size > 0 && facetId != tr.at(size-1)))
-//		tr.push_back(facetId);
-//}
-#endif
-
 void ScatteringNonConvex::CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
 									Polygon *resultBeams, int &resultSize)
 {
@@ -366,21 +355,8 @@ void ScatteringNonConvex::TraceBeams(std::vector<Beam> &scaterredBeams)
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
-#ifdef _DEBUG // DEB
-		++count;
 
-		vector<int> tr;
-		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
-		for (int gd : tr)
-		{
-			trackMapFile << gd << ' ';
-		}
-		trackMapFile << bigIntegerToString(beam.trackId) << endl;
-
-		if (count == 52741)
-			int fg = 0;
-#endif
-		if (IsTerminalAct(beam))
+		if (IsTerminalAct(beam)) // REF, OPT: перенести проверку во все места, где пучок закидывается в дерево, чтобы пучки заранее не закидывались в него
 		{
 			if (beam.location == Location::Out)
 			{

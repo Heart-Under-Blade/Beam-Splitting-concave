@@ -21,8 +21,6 @@
 #include "Beam.h"
 #include "PhysMtr.hpp"
 
-#include "Handler.h"
-#include "Tracer.h"
 #include "TracerGO.h"
 #include "TracerBackScatterPoint.h"
 #include "ArgPP.h"
@@ -295,12 +293,7 @@ int main(int argc, const char* argv[])
 	int reflNum = parser.GetDoubleValue("n");
 	std::string dirName = (parser.Catched("o")) ? parser.GetStringValue("o")
 												: "M";
-
 	bool isOutputGroups = parser.Catched("gr");
-
-	Tracer tracer(particle, reflNum, dirName);
-	tracer.SetIsOutputGroups(isOutputGroups);
-
 	double wave = parser.Catched("w") ? parser.GetDoubleValue("w") : 0;
 
 	if (parser.Catched("po"))
@@ -313,28 +306,55 @@ int main(int argc, const char* argv[])
 
 			double beta  = parser.GetDoubleValue("fixed", 0);
 			double gamma = parser.GetDoubleValue("fixed", 1);
-			tracer.TraceFixedPO(beta, gamma, bsCone, trackGroups, wave);
+
+			TracerPO tracer(particle, reflNum, dirName);
+
+			HandlerPO *handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
+			handler->SetTracks(&trackGroups);
+			handler->SetScatteringConus(bsCone);
+
+			tracer.SetIsOutputGroups(isOutputGroups);
+			tracer.SetIsCalcOther(true);
+			tracer.SetHandler(handler);
+			tracer.TraceFixed(beta, gamma);
 		}
 		else if (parser.Catched("random"))
 		{
 			AngleRange beta = GetRange(parser, "b", particle);
 			AngleRange gamma = GetRange(parser, "g", particle);
 
+			HandlerPO *handler;
+
 			if (parser.Catched("point"))
 			{
-				TracerBackScatterPoint tracerBSP(particle, reflNum, dirName);
-				tracerBSP.SetIsOutputGroups(isOutputGroups);
-				tracerBSP.SetIsCalcOther(true);
-				tracerBSP.Trace(beta, gamma, trackGroups, wave);
+				TracerBackScatterPoint tracer(particle, reflNum, dirName);
+
+				handler = new HandlerBackScatterPoint(particle, &tracer.m_incidentLight, wave);
+				handler->SetTracks(&trackGroups);
+
+				tracer.SetIsOutputGroups(isOutputGroups);
+				tracer.SetIsCalcOther(true);
+				tracer.SetHandler(handler);
+				tracer.Trace(beta, gamma, trackGroups, wave);
 			}
 			else
 			{
 				Cone bsCone = SetCone(parser);
 
-				tracer.TraceRandomPO(beta.number, gamma.number, bsCone,
-									 trackGroups, wave);
+				TracerPO tracer(particle, reflNum, dirName);
+
+				handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
+				handler->SetTracks(&trackGroups);
+				handler->SetScatteringConus(bsCone);
+
+				tracer.SetIsOutputGroups(isOutputGroups);
+				tracer.SetIsCalcOther(true);
+				tracer.SetHandler(handler);
+				tracer.TraceRandom(beta, gamma);
 //				tracer.TraceIntervalPO2(betaR, gammaR, bsCone, trackGroups, wave);
 			}
+
+			delete handler;
 		}
 		else
 		{
@@ -343,8 +363,8 @@ int main(int argc, const char* argv[])
 	}
 	else // go
 	{
-		TracerGO tracerGO(particle, reflNum, dirName);
-		tracerGO.SetIsOutputGroups(isOutputGroups);
+		TracerGO tracer(particle, reflNum, dirName);
+		tracer.SetIsOutputGroups(isOutputGroups);
 
 		AngleRange beta = GetRange(parser, "b", particle);
 		AngleRange gamma = GetRange(parser, "g", particle);
@@ -353,21 +373,23 @@ int main(int argc, const char* argv[])
 
 		if (parser.Catched("all"))
 		{
-			handler = new HandlerTotalGO(particle, &tracerGO.m_incidentLight, wave);
+			handler = new HandlerTotalGO(particle, &tracer.m_incidentLight, wave);
 		}
 		else
 		{
 			ImportTracks(particle->facetNum);
 
-			handler = new HandlerTracksGO(particle, &tracerGO.m_incidentLight, wave);
+			handler = new HandlerTracksGO(particle, &tracer.m_incidentLight, wave);
 			handler->SetTracks(&trackGroups);
 
-			tracerGO.SetIsCalcOther(true);
+			tracer.SetIsCalcOther(true);
 		}
 
 		handler->SetAbsorbtionAccounting(isAbs);
-		tracerGO.SetHandler(handler);
-		tracerGO.TraceRandom(beta, gamma);
+		tracer.SetHandler(handler);
+		tracer.TraceRandom(beta, gamma);
+
+		delete handler;
 	}
 
 	cout << endl << "done";

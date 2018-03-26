@@ -7,7 +7,7 @@ class ScatteringNonConvex : public Scattering
 {
 public:
 	ScatteringNonConvex(Particle *particle, Light *incidentLight,
-						bool isOpticalPath, int numberOfActs);
+						bool isOpticalPath, int nActs);
 
 	void ScatterLight(double beta, double gamma, std::vector<Beam> &scaterredBeams) override;
 	void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
@@ -45,10 +45,6 @@ private:
 	int FindFacetID(int facetID, const IntArray &arr);
 
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
-
-#ifdef _TRACK_ALLOW
-//	void AddToTrack(Beam &beam, int facetId);
-#endif
 
 	void PushBeamsToTree(const Beam &beam, int facetID, bool hasOutBeam,
 						 Beam &inBeam, Beam &outBeam);

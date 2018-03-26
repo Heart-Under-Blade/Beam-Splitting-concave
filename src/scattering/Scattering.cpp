@@ -14,14 +14,14 @@
 
 using namespace std;
 Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
-					   int interReflectionNumber)
+					   int nActs)
 	: m_incidentLight(incidentLight),
 	  m_particle(particle)
 {
 	m_facets = m_particle->facets;
 
 	m_isOpticalPath = isOpticalPath;
-	m_nActs = interReflectionNumber;
+	m_nActs = nActs;
 
 	m_incidentDir = m_incidentLight->direction;
 	m_incidentDir.d_param = m_incidentLight->direction.d_param;
@@ -678,8 +678,10 @@ void Scattering::SplitDirection(const Point3f &incidentDir, double cosIN,
 	double cosI_sqr = cosIN * cosIN;
 	double tmp1 = ri_coef_re + cosI_sqr - 1.0;
 
-	tmp1 = (ri_coef_im < FLT_EPSILON) ? tmp1
-									  : sqrt(tmp1*tmp1 + ri_coef_im);
+	if (ri_coef_im > FLT_EPSILON)
+	{
+		tmp1 = sqrt(tmp1*tmp1 + ri_coef_im);
+	}
 
 	tmp1 = (ri_coef_re + 1.0 - cosI_sqr + tmp1)/2.0;
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
@@ -691,22 +693,25 @@ void Scattering::SplitDirection(const Point3f &incidentDir, double cosIN,
 	Normalize(reflDir);
 }
 
-Point3f Scattering::ChangeBeamDirection(const Point3f &oldDir,
-									 const Point3f &normal, Location loc)
+Point3f Scattering::ChangeBeamDirection(const Vector3f &oldDir,
+										const Vector3f &normal, Location loc)
 {
 	Point3f newDir;
 
-	if (loc == Location::Out)
+	if (loc == Location::Out) // refraction
 	{
 		double cosIN = DotProduct(oldDir, -normal);
-		Point3f tmp0 = normal + oldDir/cosIN;
-		double cosIN2 = cosIN * cosIN;
-		double tmp1 = ri_coef_re + cosIN2 - 1.0;
-		tmp1 = (ri_coef_im < FLT_EPSILON) ? tmp1
-										  : sqrt(tmp1*tmp1 + ri_coef_im);
+		Vector3f tmp0 = normal + oldDir / cosIN;
+		double cos2 = cosIN * cosIN;
+		double tmp1 = ri_coef_re + cos2 - 1.0;
 
-		tmp1 = (ri_coef_re + 1.0 - cosIN2 + tmp1)/2.0;
-		tmp1 = (tmp1/cosIN2) - Norm(tmp0);
+		if (ri_coef_im > FLT_EPSILON)
+		{
+			tmp1 = sqrt(tmp1*tmp1 + ri_coef_im);
+		}
+
+		tmp1 = (ri_coef_re + 1.0 - cos2 + tmp1)/2.0;
+		tmp1 = (tmp1/cos2) - Norm(tmp0);
 		tmp1 = sqrt(tmp1);
 		newDir = (tmp0/tmp1) - normal;
 	}
@@ -740,17 +745,18 @@ double Scattering::GetIncomingEnergy() const
 	return m_incommingEnergy;
 }
 
-double Scattering::ComputeInternalOpticalPath(const Beam &beam, const vector<int> &tr)
+double Scattering::ComputeInternalOpticalPath(const Beam &beam,
+											  const vector<int> &tr)
 {
 	double path = 0;
 	Point3f p1 = beam.arr[0];
 	Point3f p2;
-	Point3f dir = -beam.direction;
+	Point3f dir = -beam.direction; // back direction
 	int last = tr.size()-1;
 
 	// first iteration
 	dir = ChangeBeamDirection(dir, m_facets[tr[last]].ex_normal, Location::Out);
-	ProjectPointToFacet(p1, dir, m_facets[tr[last-1]].in_normal, p2);
+	p2 = ProjectPointToPlane(p1, dir, m_facets[tr[last-1]].in_normal);
 	path += Length(p1 - p2);
 	p1 = p2;
 
@@ -760,7 +766,7 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam, const vector<int
 		mask <<= i;
 		Location loc = (beam.locations & mask) ? Location::Out : Location::In;
 		dir = ChangeBeamDirection(dir, m_facets[tr[i+1]].ex_normal, loc);
-		ProjectPointToFacet(p1, dir, m_facets[tr[i]].in_normal, p2);
+		p2 = ProjectPointToPlane(p1, dir, m_facets[tr[i]].in_normal);
 
 		if (loc == Location::In)
 		{	// sum internal path only
@@ -771,14 +777,4 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam, const vector<int
 	}
 
 	return path;
-}
-
-void Scattering::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
-								  const Point3f &facetNormal, Point3f &projection)
-{
-	double t = DotProduct(point, facetNormal);
-	t = t + facetNormal.d_param;
-	double dp = DotProduct(direction, facetNormal);
-	t = t/dp;
-	projection = point - (direction * t);
 }

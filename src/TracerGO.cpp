@@ -29,7 +29,8 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 		{
 			gamma = (j + 0.5)*gammaRange.step;
 			m_scattering->ScatterLight(beta, gamma, outBeams);
-			m_handler->HandleBeams(outBeams, beta);
+			m_handler->HandleBeams(outBeams);
+			outBeams.clear();
 
 #ifdef _CHECK_ENERGY_BALANCE
 			m_incomingEnergy += m_scattering->GetIncomingEnergy()*sin(beta);
@@ -43,9 +44,10 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 
 	long long orNum = gammaRange.number * betaRange.number;
 	double norm = CalcNorm(orNum);
+	m_handler->SetNormIndex(norm);
 
-	m_outcomingEnergy = m_handler->CalcTotalScatteringEnergy(norm);
-	m_handler->WriteMatricesToFile(norm, m_resultDirName);
+	m_outcomingEnergy = ((HandlerGO*)m_handler)->ComputeTotalScatteringEnergy();
+	m_handler->WriteMatricesToFile(m_resultDirName);
 	OutputSummary(orNum, m_outcomingEnergy, norm, timer);
 }
 
@@ -56,11 +58,12 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma)
 
 	vector<Beam> outBeams;
 	m_scattering->ScatterLight(b, g, outBeams);
-	m_handler->HandleBeams(outBeams, beta);
+	m_handler->HandleBeams(outBeams);
+	outBeams.clear();
 
 //	double D_tot = CalcTotalScatteringEnergy();
 
-	m_handler->WriteMatricesToFile(1, m_resultDirName);
+	m_handler->WriteMatricesToFile(m_resultDirName);
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
 
@@ -100,9 +103,4 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 	out.close();
 
 	cout << m_summary;
-}
-
-void TracerGO::SetHandler(HandlerGO *handler)
-{
-	m_handler = handler;
 }

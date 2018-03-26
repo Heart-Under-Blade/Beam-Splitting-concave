@@ -84,3 +84,13 @@ void Normalize(Vector3f &v)
 	v.cy /= lenght;
 	v.cz /= lenght;
 }
+
+Point3f ProjectPointToPlane(const Point3f &point, const Vector3f &direction,
+							const Vector3f &planeNormal)
+{
+	double tmp = DotProduct(point, planeNormal);
+	double dp  = DotProduct(direction, planeNormal);
+	tmp += planeNormal.d_param;
+	tmp /= dp;
+	return point - (direction * tmp);
+}

@@ -12,12 +12,12 @@ QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
 CONFIG(release, debug|release): {
 	DEFINES += _NDEBUG
-	TARGET = btm
+	TARGET = bsm
 }
 
 CONFIG(debug,	debug|release): {
 	DEFINES += _DEBUG
-	TARGET = btm_d
+	TARGET = bsm_d
 }
 
 INCLUDEPATH += \

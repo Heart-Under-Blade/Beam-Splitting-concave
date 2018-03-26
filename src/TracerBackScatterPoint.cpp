@@ -3,116 +3,19 @@
 #include "ScatteringFiles.h"
 #include <iostream>
 
-#define BEAM_DIR_LIM		0.9396
-
 using namespace std;
-
-class PointContribution
-{
-public:
-	PointContribution(size_t groupNumber, double normFactor)
-		: m_groupNumber(groupNumber),
-		  m_normFactor(normFactor)
-	{
-		groupJones.resize(groupNumber);
-		groupMuellers.resize(groupNumber);
-		ResetJones();
-	}
-
-	void AddToMueller(const Matrix2x2c &jones)
-	{
-		MuellerMatrix m(jones);
-		m *= m_normFactor;
-		rest += m;
-	}
-
-	void AddToGroup(const Matrix2x2c &jones, size_t groupID)
-	{
-		groupJones[groupID] += jones;
-	}
-
-	void SumGroupTotal()
-	{
-		for (size_t gr = 0; gr < m_groupNumber; ++gr)
-		{
-			MuellerMatrix m(groupJones[gr]);
-			m *= m_normFactor;
-			groupMuellers[gr] += m;
-			groupTotal += m;
-		}
-
-		ResetJones();
-	}
-
-	void SumTotal()
-	{
-		total += groupTotal;
-		total += rest;
-	}
-
-	const MuellerMatrix &GetGroupTotal() const
-	{
-		return groupTotal;
-	}
-
-	const MuellerMatrix &GetTotal() const
-	{
-		return total;
-	}
-
-	const MuellerMatrix &GetRest() const
-	{
-		return rest;
-	}
-
-	const MuellerMatrix &GetGroupMueller(size_t groupID)
-	{
-		return groupMuellers.at(groupID);
-	}
-
-	void Reset()
-	{
-		groupTotal.Reset();
-		rest.Reset();
-		total.Reset();
-
-		for (MuellerMatrix &m : groupMuellers)
-		{
-			m.Reset();
-		}
-	}
-
-private:
-	std::vector<Matrix2x2c> groupJones;
-	std::vector<MuellerMatrix> groupMuellers;
-
-	MuellerMatrix groupTotal;
-	MuellerMatrix rest;
-	MuellerMatrix total;
-
-	double m_groupNumber;
-	double m_normFactor;
-
-	void ResetJones()
-	{
-		for (Matrix2x2c &j : groupJones)
-		{
-			j.Fill(0.f);
-		}
-	}
-};
 
 TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, int reflNum,
 											   const std::string &resultFileName)
-	: Tracer(particle, reflNum, resultFileName)
+	: TracerPO(particle, reflNum, resultFileName)
 {
 }
 
 void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
 								   const Tracks &tracks, double wave)
 {
-	size_t groupNum = tracks.size();
-	normIndex = gammaRange.step/gammaRange.norm;
+	size_t nGroups = tracks.size();
+	int normIndex = gammaRange.step/gammaRange.norm;
 
 	m_wavelength = wave;
 	CalcTimer timer;
@@ -125,26 +28,29 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	ofstream logfile(fulldir + "log.txt", ios::out);
 
 	ScatteringFiles resFiles(dir, m_resultDirName, tableHead);
-	PointContribution originContrib(groupNum, normIndex);
+	PointContribution originContrib(nGroups, normIndex);
 	CreateDir(fulldir + "res");
 	CreateResultFiles(resFiles, tracks, "res");
 
 	vector<Arr2D> groupResultM;
-	AllocGroupMatrices(groupResultM, groupNum);
+	AllocGroupMatrices(groupResultM, nGroups);
 
 	ScatteringFiles corFiles(dir, m_resultDirName, tableHead);
-	PointContribution correctedContrib(groupNum, normIndex);
+	PointContribution correctedContrib(nGroups, normIndex);
 	CreateDir(fulldir + "cor");
 	CreateResultFiles(corFiles, tracks, "cor", "cor_");
 
 	vector<Arr2D> groupResultM_cor;
-	AllocGroupMatrices(groupResultM_cor, groupNum);
+	AllocGroupMatrices(groupResultM_cor, nGroups);
 
 	vector<Beam> outBeams;
 
 	OutputStartTime(timer);
 
 	double beta, gamma;
+
+	((HandlerBackScatterPoint*)m_handler)->SetContributions(&originContrib,
+															&correctedContrib);
 
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
@@ -160,7 +66,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 			m_incomingEnergy += m_scattering->GetIncomingEnergy();
 
-			HandleBeams(outBeams, tracks, originContrib, correctedContrib);
+			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
 			OutputOrientationToLog(i, j, logfile);		
 #ifdef _DEBUG // DEB
@@ -178,8 +84,8 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 		double degBeta = RadToDeg(beta);
 
-		OutputContribution(groupNum, originContrib, resFiles, degBeta);
-		OutputContribution(groupNum, correctedContrib, corFiles, degBeta, "cor_");
+		OutputContribution(nGroups, originContrib, resFiles, degBeta);
+		OutputContribution(nGroups, correctedContrib, corFiles, degBeta, "cor_");
 	}
 
 	EraseConsoleLine(50);
@@ -187,7 +93,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	if (isOutputGroups)
 	{
-		for (size_t group = 0; group < groupNum; ++group)
+		for (size_t group = 0; group < nGroups; ++group)
 		{
 			ofstream &file = *(resFiles.GetGroupFile(group));
 			file.close();
@@ -201,8 +107,10 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	OutputStatisticsPO(timer, orNumber, m_resultDirName);
 }
 
-void TracerBackScatterPoint::OutputContribution(size_t groupNumber, PointContribution &contrib,
-								ScatteringFiles &files, double degree, string prefix)
+void TracerBackScatterPoint::OutputContribution(size_t groupNumber,
+												PointContribution &contrib,
+												ScatteringFiles &files,
+												double degree, string prefix)
 {
 	contrib.SumTotal();
 
@@ -268,63 +176,6 @@ void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
 		string filename = prefix + groupName;
 		files.CreateGroupFile(subdir, filename);
 	}
-}
-
-void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &beams, const Tracks &tracks,
-										 PointContribution &originContrib,
-										 PointContribution &correctedContrib)
-{
-	Point3d vr(0, 0, 1);
-	Point3d vf = -m_incidentLight.polarizationBasis;
-
-	for (Beam &beam : beams)
-	{
-		if (beam.direction.cz < BEAM_DIR_LIM)
-		{
-			continue;
-		}
-
-		int groupID = tracks.FindGroup(beam.trackId);
-
-		if (groupID < 0 && !isCalcOther)
-		{
-			continue;
-		}
-
-		beam.RotateSpherical(-m_incidentLight.direction,
-							 m_incidentLight.polarizationBasis);
-
-		Point3f T = CrossProduct(beam.polarizationBasis, beam.direction);
-		T = T/Length(T); // basis of beam
-
-		Point3f center = beam.Center();
-		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
-
-		matrixC Jx(2, 2);
-		CalcMultiplyOfJmatrix(beam, T, vf, vr, lng_proj0, Jx);
-
-		// correction
-		matrixC Jx_cor = Jx;
-		Jx_cor[0][1] -= Jx_cor[1][0];
-		Jx_cor[0][1] /= 2;
-		Jx_cor[1][0] = -Jx_cor[0][1];
-
-		Matrix2x2c _Jx(Jx), _Jx_cor(Jx_cor);
-
-		if (groupID < 0 && isCalcOther)
-		{
-			originContrib.AddToMueller(_Jx);
-			correctedContrib.AddToMueller(_Jx_cor);
-		}
-		else
-		{
-			originContrib.AddToGroup(_Jx, groupID);
-			correctedContrib.AddToGroup(_Jx_cor, groupID);
-		}
-	}
-
-	originContrib.SumGroupTotal();
-	correctedContrib.SumGroupTotal();
 }
 
 void TracerBackScatterPoint::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)

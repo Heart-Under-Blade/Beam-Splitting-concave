@@ -108,6 +108,7 @@ void Particle::RotateCenters()
 
 void Particle::Rotate(double beta, double gamma, double alpha)
 {
+	rotAngle = Angle{alpha, beta, gamma};
 	SetRotateMatrix(beta, gamma, alpha);
 
 	// REF: слить всё в один цикл

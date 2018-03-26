@@ -123,7 +123,7 @@ private:
 
 public:
 	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
-			int interReflectionNumber);
+			   int nActs);
 
 	virtual void ScatterLight(double /*beta*/, double /*gamma*/, std::vector<Beam> &/*scaterredBeams*/) {}
 	virtual void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
@@ -195,14 +195,12 @@ private:
 	void SplitDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
 							 Point3f &reflDir, Point3f &refrDir) const;
 
-	Point3f ChangeBeamDirection(const Point3f &oldDir, const Point3f &normal, Location loc);
+	Point3f ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
+								Location loc);
 
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,
 						  Polygon &polygon) const;
 
 	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
-
-	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
-							 const Point3f &facetNormal, Point3f &projection);
 };
