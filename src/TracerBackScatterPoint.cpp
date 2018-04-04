@@ -16,6 +16,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 {
 	size_t nGroups = tracks.size();
 	int normIndex = gammaRange.step/gammaRange.norm;
+	m_handler->SetNormIndex(normIndex);
 
 	m_wavelength = wave;
 	CalcTimer timer;
@@ -28,7 +29,6 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	ofstream logfile(fulldir + "log.txt", ios::out);
 
 	ScatteringFiles resFiles(dir, m_resultDirName, tableHead);
-	PointContribution originContrib(nGroups, normIndex);
 	CreateDir(fulldir + "res");
 	CreateResultFiles(resFiles, tracks, "res");
 
@@ -36,7 +36,6 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	AllocGroupMatrices(groupResultM, nGroups);
 
 	ScatteringFiles corFiles(dir, m_resultDirName, tableHead);
-	PointContribution correctedContrib(nGroups, normIndex);
 	CreateDir(fulldir + "cor");
 	CreateResultFiles(corFiles, tracks, "cor", "cor_");
 
@@ -48,9 +47,6 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	OutputStartTime(timer);
 
 	double beta, gamma;
-
-	((HandlerBackScatterPoint*)m_handler)->SetContributions(&originContrib,
-															&correctedContrib);
 
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
@@ -69,9 +65,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
 			OutputOrientationToLog(i, j, logfile);		
-#ifdef _DEBUG // DEB
-			double d = originContrib.GetGroupTotal()(0,0);
-#endif
+
 			if (isNan)
 			{
 				logfile << "------------------";
@@ -84,8 +78,8 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 		double degBeta = RadToDeg(beta);
 
-		OutputContribution(nGroups, originContrib, resFiles, degBeta);
-		OutputContribution(nGroups, correctedContrib, corFiles, degBeta, "cor_");
+		OutputContribution(tracks, originContrib, resFiles, degBeta);
+		OutputContribution(tracks, correctedContrib, corFiles, degBeta, "cor_");
 	}
 
 	EraseConsoleLine(50);
@@ -107,7 +101,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	OutputStatisticsPO(timer, orNumber, m_resultDirName);
 }
 
-void TracerBackScatterPoint::OutputContribution(size_t groupNumber,
+void TracerBackScatterPoint::OutputContribution(const Tracks &tracks,
 												PointContribution &contrib,
 												ScatteringFiles &files,
 												double degree, string prefix)
@@ -120,7 +114,7 @@ void TracerBackScatterPoint::OutputContribution(size_t groupNumber,
 
 	if (isOutputGroups)
 	{
-		for (size_t gr = 0; gr < groupNumber; ++gr)
+		for (size_t gr = 0; gr < tracks.size(); ++gr)
 		{
 			ofstream &file = *(files.GetGroupFile(gr));
 			file << degree << ' ' << m_incomingEnergy << ' ';
@@ -128,7 +122,7 @@ void TracerBackScatterPoint::OutputContribution(size_t groupNumber,
 		}
 	}
 
-	if (isCalcOther)
+	if (!tracks.shouldComputeTracksOnly)
 	{
 		ofstream &other = *(files.GetMainFile(prefix + "other"));
 		other << degree << ' ' << m_incomingEnergy << ' ';

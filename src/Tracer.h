@@ -38,7 +38,6 @@ public:
 
 	void SetHandler(Handler *handler);
 
-	void SetIsCalcOther(bool value); // REF: заменить
 	void SetIsOutputGroups(bool value);// REF: заменить
 
 	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
@@ -59,7 +58,6 @@ protected:
 	time_t m_startTime;
 
 	// REF: заменить
-	bool isCalcOther = false;
 	bool isOutputGroups = false;
 
 protected:

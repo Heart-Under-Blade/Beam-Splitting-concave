@@ -11,7 +11,7 @@ using namespace std;
 Handler::Handler(Particle *particle, Light *incidentLight, float wavelength)
 	: m_particle(particle),
 	  m_wavelength(wavelength),
-	  m_isAccountAbsorbtion(false),
+	  m_hasAbsorbtion(false),
 	  m_incidentLight(incidentLight),
 	  m_normIndex(1)
 {
@@ -234,7 +234,7 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 	double opticalPath = 0;
 
 	vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
 	Point3f k = CalcK(tr);
 
@@ -274,7 +274,7 @@ double HandlerGO::ComputeTotalScatteringEnergy()
 
 void HandlerGO::SetAbsorbtionAccounting(bool value)
 {
-	m_isAccountAbsorbtion = value;
+	m_hasAbsorbtion = value;
 	m_cAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
 }
 
@@ -296,7 +296,7 @@ HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float w
 void Handler::ApplyAbsorbtion(Beam &beam)
 {
 	vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
 //	double opAbs = CalcOpticalPathAbsorption(beam);
 	double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
@@ -317,7 +317,7 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion
-		if (m_isAccountAbsorbtion && beam.level > 0)
+		if (m_hasAbsorbtion && beam.level > 0)
 		{
 			ApplyAbsorbtion(beam);
 		}
@@ -341,7 +341,7 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-		int groupId = m_tracks->FindGroup(beam.trackId);
+		int groupId = m_tracks->FindGroupById(beam.trackId);
 
 		if (groupId >= 0)
 		{
@@ -392,9 +392,9 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-		int groupID = m_tracks->FindGroup(beam.trackId);
+		int groupId = m_tracks->FindGroupById(beam.trackId);
 
-		if (groupID < 0)
+		if (groupId < 0)
 		{
 			continue;
 		}
@@ -403,28 +403,31 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 							 m_incidentLight->polarizationBasis);
 
 		Point3f center = beam.Center();
-		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
+		double projLenght = beam.opticalPath + DotProduct(center, beam.direction);
 
-		Point3f T = CrossProduct(beam.polarizationBasis, beam.direction);
-		T = T/Length(T); // basis of beam
+		Point3f beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
+		beamBasis = beamBasis/Length(beamBasis); // basis of beam
 
 		for (int i = 0; i <= m_conus.phiCount; ++i)
 		{
+			double p = i * m_conus.dPhi;
+			double sinP = sin(p),
+					cosP = cos(p);
+
 			for (int j = 0; j <= m_conus.thetaCount; ++j)
 			{	//
-				double f = i*m_conus.dPhi;
-				double t = j*m_conus.dTheta;
+				double t = j * m_conus.dTheta;
 
-				double sinT = sin(t), sinF = sin(f), cosF = cos(f);
+				double sinT = sin(t);
 
-				Point3d vr(sinT*cosF, sinT*sinF, cos(t));
+				Point3d vr(sinT*cosP, sinT*sinP, cos(t));
 				Point3d vf = (j == 0) ? -m_incidentLight->polarizationBasis
-									  : Point3d(-sinF ,cosF ,0);
+									  : Point3d(-sinP ,cosP ,0);
 				// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
 
-				matrixC Jx(0, 0);
-				MultiplyJones(beam, T, vf, vr, lng_proj0, Jx);
-				J[groupID].insert(i, j, Jx);
+				matrixC jones(0, 0);
+				MultiplyJones(beam, beamBasis, vf, vr, projLenght, jones);
+				J[groupId].insert(i, j, jones);
 			}
 		}
 	}
@@ -519,7 +522,7 @@ void HandlerPO::WriteMatricesToFile(string &destName)
 {
 	ofstream outFile(destName, ios::app);
 
-	outFile << to_string(m_conus.radius)	<< ' '
+	outFile << to_string(m_conus.radius) << ' '
 			<< to_string(m_conus.thetaCount) << ' '
 			<< to_string(m_conus.phiCount+1);
 
@@ -558,9 +561,9 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 			continue;
 		}
 
-		int groupId = m_tracks->FindGroup(beam.trackId);
+		int groupId = m_tracks->FindGroupById(beam.trackId);
 
-		if (groupId < 0 && !isCalcOther)
+		if (groupId < 0 && m_tracks->shouldComputeTracksOnly)
 		{
 			continue;
 		}
@@ -568,32 +571,30 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 
-		Point3f T = CrossProduct(beam.polarizationBasis, beam.direction);
-		T = T/Length(T); // basis of beam
+		Point3f beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
+		beamBasis = beamBasis/Length(beamBasis); // basis of beam
 
 		Point3f center = beam.Center();
-		double lng_proj0 = beam.opticalPath + DotProduct(center, beam.direction);
+		double projLenght = beam.opticalPath + DotProduct(center, beam.direction);
 
-		matrixC Jx(2, 2);
-		MultiplyJones(beam, T, vf, vr, lng_proj0, Jx);
+		matrixC jones(2, 2);
+		MultiplyJones(beam, beamBasis, vf, vr, projLenght, jones);
 
 		// correction
-		matrixC Jx_cor = Jx;
-		Jx_cor[0][1] -= Jx_cor[1][0];
-		Jx_cor[0][1] /= 2;
-		Jx_cor[1][0] = -Jx_cor[0][1];
+		Matrix2x2c jonesCor = jones;
+		jonesCor.m12 -= jonesCor.m21;
+		jonesCor.m12 /= 2;
+		jonesCor.m21 = -jonesCor.m12;
 
-		Matrix2x2c _Jx(Jx), _Jx_cor(Jx_cor);
-
-		if (groupId < 0 && isCalcOther)
+		if (groupId < 0 && !m_tracks->shouldComputeTracksOnly)
 		{
-			originContrib->AddToMueller(_Jx);
-			correctedContrib->AddToMueller(_Jx_cor);
+			originContrib->AddToMueller(jones);
+			correctedContrib->AddToMueller(jonesCor);
 		}
 		else
 		{
-			originContrib->AddToGroup(_Jx, groupId);
-			correctedContrib->AddToGroup(_Jx_cor, groupId);
+			originContrib->AddToGroup(jones, groupId);
+			correctedContrib->AddToGroup(jonesCor, groupId);
 		}
 	}
 
@@ -601,9 +602,10 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 	correctedContrib->SumGroupTotal();
 }
 
-void HandlerBackScatterPoint::SetContributions(PointContribution *org,
-											   PointContribution *cor)
+
+void HandlerBackScatterPoint::SetTracks(Tracks *tracks)
 {
-	originContrib = org;
-	correctedContrib = cor;
+	Handler::SetTracks(tracks);
+	originContrib = new PointContribution(tracks->size(), m_normIndex);
+	correctedContrib = new PointContribution(tracks->size(), m_normIndex);
 }

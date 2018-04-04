@@ -429,7 +429,7 @@ void ScatteringNonConvex::SetOpticalBeamParams(int facetID, const Beam &incident
 
 void ScatteringNonConvex::FindVisibleFacetsForLight(IntArray &facetIDs)
 {
-	for (int i = 0; i < m_particle->facetNum; ++i)
+	for (int i = 0; i < m_particle->nFacets; ++i)
 	{
 		double cosIN = DotProduct(m_incidentDir, m_facets[i].in_normal);
 
@@ -456,7 +456,7 @@ bool ScatteringNonConvex::IsVisibleFacet(int facetID, const Beam &beam)
 void ScatteringNonConvex::FindVisibleFacets(const Beam &beam, IntArray &facetIds)
 {
 	int begin = 0;
-	int end = m_particle->facetNum;
+	int end = m_particle->nFacets;
 
 	if (m_particle->isAggregated && beam.location == Location::In)
 	{

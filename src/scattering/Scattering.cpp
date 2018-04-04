@@ -13,6 +13,7 @@
 #define NORM_CEIL	FLT_EPSILON + 1
 
 using namespace std;
+
 Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 					   int nActs)
 	: m_incidentLight(incidentLight),
@@ -38,7 +39,7 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 void Scattering::SetRegularBeamParamsExternal(const Point3f &beamDir, double cosIN,
 											int facetId, Beam &inBeam, Beam &outBeam)
 {
-	const Point3f &facetNormal = m_particle->facets[facetId].in_normal;
+	const Point3f &facetNormal = m_facets[facetId].in_normal;
 
 	RotatePolarisationPlane(beamDir, facetNormal, inBeam);
 
@@ -65,7 +66,7 @@ void Scattering::SetBeamID(Beam &beam)
 {
 #ifdef _TRACK_ALLOW
 	beam.trackId += (beam.lastFacetID + 1);
-	beam.trackId *= (m_particle->facetNum + 1);
+	beam.trackId *= (m_particle->nFacets + 1);
 	//	AddToTrack(beam, facetId);
 #endif
 }
@@ -146,9 +147,9 @@ void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 	SetBeamOpticalParams(facetId, inBeam, outBeam);
 }
 
-void Scattering::CalcFacetEnergy(int facetID, const Polygon &lightedPolygon)
+void Scattering::CalcFacetEnergy(int facetId, const Polygon &lightedPolygon)
 {
-	const Point3f &normal = m_facets[facetID].in_normal;
+	const Point3f &normal = m_facets[facetId].in_normal;
 	double cosIN = DotProduct(m_incidentDir, normal);
 	m_incommingEnergy += lightedPolygon.Area() * cosIN;
 }
@@ -746,17 +747,17 @@ double Scattering::GetIncomingEnergy() const
 }
 
 double Scattering::ComputeInternalOpticalPath(const Beam &beam,
-											  const vector<int> &tr)
+											  const vector<int> &track)
 {
 	double path = 0;
 	Point3f p1 = beam.arr[0];
 	Point3f p2;
 	Point3f dir = -beam.direction; // back direction
-	int last = tr.size()-1;
+	int last = track.size()-1;
 
 	// first iteration
-	dir = ChangeBeamDirection(dir, m_facets[tr[last]].ex_normal, Location::Out);
-	p2 = ProjectPointToPlane(p1, dir, m_facets[tr[last-1]].in_normal);
+	dir = ChangeBeamDirection(dir, m_facets[track[last]].ex_normal, Location::Out);
+	p2 = ProjectPointToPlane(p1, dir, m_facets[track[last-1]].in_normal);
 	path += Length(p1 - p2);
 	p1 = p2;
 
@@ -765,8 +766,8 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 		int mask = 1;
 		mask <<= i;
 		Location loc = (beam.locations & mask) ? Location::Out : Location::In;
-		dir = ChangeBeamDirection(dir, m_facets[tr[i+1]].ex_normal, loc);
-		p2 = ProjectPointToPlane(p1, dir, m_facets[tr[i]].in_normal);
+		dir = ChangeBeamDirection(dir, m_facets[track[i+1]].ex_normal, loc);
+		p2 = ProjectPointToPlane(p1, dir, m_facets[track[i]].in_normal);
 
 		if (loc == Location::In)
 		{	// sum internal path only

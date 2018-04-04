@@ -152,11 +152,6 @@ void Tracer::SetHandler(Handler *handler)
 	m_handler = handler;
 }
 
-void Tracer::SetIsCalcOther(bool value)
-{
-	isCalcOther = value;
-}
-
 void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Cone &bsCone, int groupID)
 {
 //	for (unsigned int i = 0; i < outBeams.size(); ++i)

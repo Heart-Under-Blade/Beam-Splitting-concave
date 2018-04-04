@@ -81,7 +81,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	SetDefaultCenters();
 	Reset();
 
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
 		defaultFacets[i].isVisibleIn = false;
 		defaultFacets[i].isVisibleOut = false;

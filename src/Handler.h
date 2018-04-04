@@ -4,6 +4,7 @@
 #include "Scattering.h"
 #include "PhysMtr.hpp"
 #include "MullerMatrix.h"
+#include "Tracks.h"
 
 /**
  * @brief The Cone struct
@@ -29,33 +30,33 @@ struct Cone
 class PointContribution
 {
 public:
-	PointContribution(size_t groupNumber, double normFactor)
-		: m_groupNumber(groupNumber),
-		  m_normFactor(normFactor)
+	PointContribution(size_t nGroups, double normIndex)
+		: m_nGroups(nGroups),
+		  m_normIndex(normIndex)
 	{
-		groupJones.resize(groupNumber);
-		groupMuellers.resize(groupNumber);
+		groupJones.resize(nGroups);
+		groupMuellers.resize(nGroups);
 		ResetJones();
 	}
 
 	void AddToMueller(const Matrix2x2c &jones)
 	{
 		MuellerMatrix m(jones);
-		m *= m_normFactor;
+		m *= m_normIndex;
 		rest += m;
 	}
 
-	void AddToGroup(const Matrix2x2c &jones, size_t groupID)
+	void AddToGroup(const Matrix2x2c &jones, size_t groupId)
 	{
-		groupJones[groupID] += jones;
+		groupJones[groupId] += jones;
 	}
 
 	void SumGroupTotal()
 	{
-		for (size_t gr = 0; gr < m_groupNumber; ++gr)
+		for (size_t gr = 0; gr < m_nGroups; ++gr)
 		{
 			MuellerMatrix m(groupJones[gr]);
-			m *= m_normFactor;
+			m *= m_normIndex;
 			groupMuellers[gr] += m;
 			groupTotal += m;
 		}
@@ -109,8 +110,8 @@ private:
 	MuellerMatrix rest;
 	MuellerMatrix total;
 
-	double m_groupNumber;
-	double m_normFactor;
+	size_t m_nGroups;
+	double m_normIndex;
 
 	void ResetJones()
 	{
@@ -179,7 +180,7 @@ protected:
 	Tracks *m_tracks;
 	double m_cAbs;
 	float m_wavelength;
-	bool m_isAccountAbsorbtion;
+	bool m_hasAbsorbtion;
 	double m_normIndex;
 };
 
@@ -211,7 +212,6 @@ protected:
 	Cone m_conus;			// back scattering conus
 	bool isNanOccured = false;
 	bool isNan = false;
-	bool isCalcOther = true;
 };
 
 class HandlerBackScatterPoint : public HandlerPO
@@ -220,9 +220,8 @@ public:
 	HandlerBackScatterPoint(Particle *particle, Light *incidentLight, float wavelength = 0);
 
 	void HandleBeams(std::vector<Beam> &beams) override;
+	void SetTracks(Tracks *tracks) override;
 
-	void SetContributions(PointContribution *org, PointContribution *cor);
-//	void WriteMatricesToFile(std::string &destName) override;
 private:
 	PointContribution *originContrib;
 	PointContribution *correctedContrib;

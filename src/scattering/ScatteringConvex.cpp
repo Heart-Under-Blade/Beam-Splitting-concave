@@ -14,7 +14,7 @@ void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam>
 	m_treeSize = 0;
 
 	/// first extermal beam
-	for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
+	for (int facetID = 0; facetID < m_particle->nFacets; ++facetID)
 	{
 		const Point3f &extNormal = m_facets[facetID].ex_normal;
 		double cosIN = DotProduct(m_incidentDir, extNormal);
@@ -56,7 +56,7 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 			continue;
 		}
 
-		for (int facetID = 0; facetID < m_particle->facetNum; ++facetID)
+		for (int facetID = 0; facetID < m_particle->nFacets; ++facetID)
 		{
 			if (facetID == beam.lastFacetID)
 			{

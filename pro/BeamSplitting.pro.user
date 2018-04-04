@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<<<<<<< HEAD
-<!-- Written by QtCreator 4.5.1, 2018-03-12T14:53:06. -->
-=======
-<!-- Written by QtCreator 4.5.1, 2018-03-12T16:43:58. -->
->>>>>>> origin/feature/absorbtion
+<!-- Written by QtCreator 4.5.1, 2018-04-03T09:58:00. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -68,7 +64,7 @@
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{d2833c21-4cc6-43f0-99a9-1e1c3a5ac895}</value>
-   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
+   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
@@ -198,11 +194,10 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">BeamSplitting</value>
-<<<<<<< HEAD
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">BeamSplitting2</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Projects/Beam-Splitting-develop/pro/BeamSplitting.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 3 100 42.04 1 --ri 1.3116 -n 1 --random 100 200 --po -w 0.532 --point -b 178 180 -g 0 60 --gr</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 3 100 42.04 1 --ri 1.3116 0 -n 1 --random 100 200 --po -w 0.532 --point -b 178 180 -g 0 60 tr tracks2</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">BeamSplitting.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">true</value>
@@ -223,12 +218,6 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Projects/Beam-Splitting-develop/pro/BeamSplitting.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 3 100 42.04 1 --ri 1.3116 -n 3 --random 100 200 --po -w 0.532 --point -b 178 180 -g 0 60 --gr</value>
-=======
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Projects/Beam-Splitting-concave/pro/BeamSplitting.pro</value>
-    <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">false</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 1 100 69.6 0 --ri 1.274 -n 4 --random 360 720 --go --all -w 2 --abs 1.64e-3</value>
->>>>>>> origin/feature/absorbtion
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">BeamSplitting.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>
