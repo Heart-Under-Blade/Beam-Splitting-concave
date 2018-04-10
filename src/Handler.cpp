@@ -609,3 +609,39 @@ void HandlerBackScatterPoint::SetTracks(Tracks *tracks)
 	originContrib = new PointContribution(tracks->size(), m_normIndex);
 	correctedContrib = new PointContribution(tracks->size(), m_normIndex);
 }
+
+void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
+												 double angle, double energy,
+												 bool isOutputGroups,
+												 string prefix)
+{
+	PointContribution *contrib = (prefix == "") ? originContrib : correctedContrib;
+	contrib->SumTotal();
+
+	ofstream *all = files.GetMainFile(prefix + "all");
+	*(all) << angle << ' ' << energy << ' ';
+	*(all) << contrib->GetTotal() << endl;
+
+	if (isOutputGroups)
+	{
+		for (size_t gr = 0; gr < m_tracks->size(); ++gr)
+		{
+			ofstream &file = *(files.GetGroupFile(gr));
+			file << angle << ' ' << energy << ' ';
+			file << contrib->GetGroupMueller(gr) << endl;
+		}
+	}
+
+	if (!m_tracks->shouldComputeTracksOnly)
+	{
+		ofstream &other = *(files.GetMainFile(prefix + "other"));
+		other << angle << ' ' << energy << ' ';
+		other << contrib->GetRest() << endl;
+
+		ofstream &diff = *(files.GetMainFile(prefix + "difference"));
+		diff << angle << ' ' << energy << ' ';
+		diff << contrib->GetGroupTotal() << endl;
+	}
+
+	contrib->Reset();
+}

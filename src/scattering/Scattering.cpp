@@ -32,8 +32,9 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 	m_refrIndex = m_particle->GetRefractiveIndex();
 	double re = real(m_refrIndex);
 	double im = imag(m_refrIndex);
-	ri_coef_re = re*re - im*im;
-	ri_coef_im = 4*re*re*im;
+	m_cRiRe = re*re - im*im;
+	m_cRiRe2 = m_cRiRe * m_cRiRe;
+	m_cRiIm = 4*re*re*im;
 }
 
 void Scattering::SetRegularBeamParamsExternal(const Point3f &beamDir, double cosIN,
@@ -233,8 +234,7 @@ bool Scattering::IsTerminalAct(const Beam &beam)
 
 double Scattering::CalcReRI(const double &cosIN) const
 {
-	const double &re = ri_coef_re;
-	return (re + sqrt(re*re + ri_coef_im/(cosIN*cosIN)))/2.0;
+	return (m_cRiRe + sqrt(m_cRiRe2 + m_cRiIm/(cosIN*cosIN)))/2.0;
 }
 
 void Scattering::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
@@ -378,8 +378,8 @@ void Scattering::SetCRBeamParams(double cosIN, double Nr,
 {
 	const Point3f &incidentDir = incidentBeam.direction;
 
-	double cosIN_sqr = cosIN*cosIN;
-	complex tmp0 = m_refrIndex*cosIN;
+	double cosIN_sqr = cosIN * cosIN;
+	complex tmp0 = m_refrIndex * cosIN;
 	const double bf = Nr*(1.0 - cosIN_sqr) - 1.0;
 	double im = (bf > 0) ? sqrt(bf) : 0;
 
@@ -677,14 +677,14 @@ void Scattering::SplitDirection(const Point3f &incidentDir, double cosIN,
 	Normalize(refrDir);
 
 	double cosI_sqr = cosIN * cosIN;
-	double tmp1 = ri_coef_re + cosI_sqr - 1.0;
+	double tmp1 = m_cRiRe + cosI_sqr - 1.0;
 
-	if (ri_coef_im > FLT_EPSILON)
+	if (m_cRiIm > FLT_EPSILON)
 	{
-		tmp1 = sqrt(tmp1*tmp1 + ri_coef_im);
+		tmp1 = sqrt(tmp1*tmp1 + m_cRiIm);
 	}
 
-	tmp1 = (ri_coef_re + 1.0 - cosI_sqr + tmp1)/2.0;
+	tmp1 = (m_cRiRe + 1.0 - cosI_sqr + tmp1)/2.0;
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
 
 //	LOG_ASSERT(tmp1 > 0);
@@ -704,14 +704,14 @@ Point3f Scattering::ChangeBeamDirection(const Vector3f &oldDir,
 		double cosIN = DotProduct(oldDir, -normal);
 		Vector3f tmp0 = normal + oldDir / cosIN;
 		double cos2 = cosIN * cosIN;
-		double tmp1 = ri_coef_re + cos2 - 1.0;
+		double tmp1 = m_cRiRe + cos2 - 1.0;
 
-		if (ri_coef_im > FLT_EPSILON)
+		if (m_cRiIm > FLT_EPSILON)
 		{
-			tmp1 = sqrt(tmp1*tmp1 + ri_coef_im);
+			tmp1 = sqrt(tmp1*tmp1 + m_cRiIm);
 		}
 
-		tmp1 = (ri_coef_re + 1.0 - cos2 + tmp1)/2.0;
+		tmp1 = (m_cRiRe + 1.0 - cos2 + tmp1)/2.0;
 		tmp1 = (tmp1/cos2) - Norm(tmp0);
 		tmp1 = sqrt(tmp1);
 		newDir = (tmp0/tmp1) - normal;
@@ -750,27 +750,24 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 											  const vector<int> &track)
 {
 	double path = 0;
+	Point3f dir = -beam.direction; // back direction
+	Location loc = Location::Out;
+
 	Point3f p1 = beam.arr[0];
 	Point3f p2;
-	Point3f dir = -beam.direction; // back direction
-	int last = track.size()-1;
 
-	// first iteration
-	dir = ChangeBeamDirection(dir, m_facets[track[last]].ex_normal, Location::Out);
-	p2 = ProjectPointToPlane(p1, dir, m_facets[track[last-1]].in_normal);
-	path += Length(p1 - p2);
-	p1 = p2;
-
-	for (int i = last-2; i >= 0; --i)
+	for (int lvl = track.size()-1; lvl > 0; --lvl)
 	{
-		int mask = 1;
-		mask <<= i;
-		Location loc = (beam.locations & mask) ? Location::Out : Location::In;
-		dir = ChangeBeamDirection(dir, m_facets[track[i+1]].ex_normal, loc);
-		p2 = ProjectPointToPlane(p1, dir, m_facets[track[i]].in_normal);
+		Point3f &extexnalNormal = m_facets[track[lvl]].ex_normal;
+		dir = ChangeBeamDirection(dir, extexnalNormal, loc);
+
+		Point3f &intexnalNormal = m_facets[track[lvl-1]].in_normal;
+		p2 = ProjectPointToPlane(p1, dir, intexnalNormal);
+
+		loc = beam.GetLocationByLevel(lvl-1);
 
 		if (loc == Location::In)
-		{	// sum internal path only
+		{	// add internal path only
 			path += Length(p1 - p2);
 		}
 

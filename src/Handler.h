@@ -5,6 +5,7 @@
 #include "PhysMtr.hpp"
 #include "MullerMatrix.h"
 #include "Tracks.h"
+#include "ScatteringFiles.h"
 
 /**
  * @brief The Cone struct
@@ -221,6 +222,9 @@ public:
 
 	void HandleBeams(std::vector<Beam> &beams) override;
 	void SetTracks(Tracks *tracks) override;
+
+	void OutputContribution(ScatteringFiles &files, double angle, double energy,
+							bool isOutputGroups, std::string prefix = "");
 
 private:
 	PointContribution *originContrib;

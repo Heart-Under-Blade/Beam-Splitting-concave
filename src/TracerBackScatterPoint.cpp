@@ -78,8 +78,14 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 		double degBeta = RadToDeg(beta);
 
-		OutputContribution(tracks, originContrib, resFiles, degBeta);
-		OutputContribution(tracks, correctedContrib, corFiles, degBeta, "cor_");
+		// REF: remove static casts
+		static_cast<HandlerBackScatterPoint*>
+				(m_handler)->OutputContribution(resFiles, degBeta,
+												m_incomingEnergy, isOutputGroups);
+		static_cast<HandlerBackScatterPoint*>
+				(m_handler)->OutputContribution(corFiles, degBeta,
+												m_incomingEnergy, isOutputGroups,
+												"cor_");
 	}
 
 	EraseConsoleLine(50);
@@ -99,41 +105,6 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	long long orNumber = betaRange.number * gammaRange.number;
 	OutputStatisticsPO(timer, orNumber, m_resultDirName);
-}
-
-void TracerBackScatterPoint::OutputContribution(const Tracks &tracks,
-												PointContribution &contrib,
-												ScatteringFiles &files,
-												double degree, string prefix)
-{
-	contrib.SumTotal();
-
-	ofstream *all = files.GetMainFile(prefix + "all");
-	*(all) << degree << ' ' << m_incomingEnergy << ' ';
-	*(all) << contrib.GetTotal() << endl;
-
-	if (isOutputGroups)
-	{
-		for (size_t gr = 0; gr < tracks.size(); ++gr)
-		{
-			ofstream &file = *(files.GetGroupFile(gr));
-			file << degree << ' ' << m_incomingEnergy << ' ';
-			file << contrib.GetGroupMueller(gr) << endl;
-		}
-	}
-
-	if (!tracks.shouldComputeTracksOnly)
-	{
-		ofstream &other = *(files.GetMainFile(prefix + "other"));
-		other << degree << ' ' << m_incomingEnergy << ' ';
-		other << contrib.GetRest() << endl;
-
-		ofstream &diff = *(files.GetMainFile(prefix + "difference"));
-		diff << degree << ' ' << m_incomingEnergy << ' ';
-		diff << contrib.GetGroupTotal() << endl;
-	}
-
-	contrib.Reset();
 }
 
 string TracerBackScatterPoint::GetTableHead(const AngleRange &range)

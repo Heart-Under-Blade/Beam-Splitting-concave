@@ -456,3 +456,10 @@ void Beam::SetPolygon(const Polygon &other)
 		arr[i] = other.arr[i];
 	}
 }
+
+Location Beam::GetLocationByLevel(int level) const
+{
+	int mask = 1;
+	mask <<= level;
+	return (locations & mask) ? Location::Out : Location::In;
+}

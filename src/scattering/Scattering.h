@@ -53,8 +53,9 @@ protected:
 	const double LOW_ENERGY_LEVEL = 2e-12;
 
 private:
-	double ri_coef_re;
-	double ri_coef_im;
+	double m_cRiRe;
+	double m_cRiRe2;
+	double m_cRiIm;
 	complex m_refrIndex;
 
 public:

@@ -13,8 +13,6 @@ public:
 
 private:
 	std::string GetTableHead(const AngleRange &range);
-	void OutputContribution(const Tracks &tracks, PointContribution &contrib,
-							ScatteringFiles &files, double degree, std::string prefix = "");
 	void CreateResultFiles(ScatteringFiles &files, const Tracks &tracks,
 						const std::string &subdir, const std::string &prefix = "");
 	void CreateGroupResultFiles(const Tracks &tracks, ScatteringFiles &files,

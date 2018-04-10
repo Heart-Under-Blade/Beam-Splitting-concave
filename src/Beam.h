@@ -28,6 +28,8 @@ public:
 	void AddVertex(const Point3f &vertex);
 	void SetPolygon(const Polygon &other);
 
+	Location GetLocationByLevel(int level) const;
+
 	Beam & operator = (const Beam &other);
 	Beam & operator = (const Polygon &other);
 	Beam & operator = (const Light &other);
@@ -55,8 +57,6 @@ public:
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
-	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
-									///< "0" when beam location is "inside" and "1" if it's "outside"
 
 #ifdef _TRACK_ALLOW
 	BigInteger trackId = 0;
@@ -67,4 +67,9 @@ private:
 	void RotateJMatrix(const Point3f &newBasis);
 	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
+
+private:
+	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
+									///< "0" when beam location is "inside" and "1" if it's "outside"
+
 };

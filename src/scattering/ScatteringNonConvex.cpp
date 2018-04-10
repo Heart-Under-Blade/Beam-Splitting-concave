@@ -391,8 +391,8 @@ void ScatteringNonConvex::TraceBeams(std::vector<Beam> &scaterredBeams)
 }
 
 void ScatteringNonConvex::SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
-										  Beam &inBeam, Beam &outBeam,
-										  bool &hasOutBeam)
+											   Beam &inBeam, Beam &outBeam,
+											   bool &hasOutBeam)
 {
 	const Point3f &dir = incidentBeam.direction;
 	const Point3f &normal = m_facets[facetID].ex_normal;
@@ -410,7 +410,7 @@ void ScatteringNonConvex::SetOpticalBeamParams(int facetID, const Beam &incident
 		{
 			Beam incBeam = incidentBeam;
 			SetRegularIncidenceBeamParams(cosIN, normal, incBeam,
-								 inBeam, outBeam, hasOutBeam);
+										  inBeam, outBeam, hasOutBeam);
 		}
 		else // beam is external
 		{
