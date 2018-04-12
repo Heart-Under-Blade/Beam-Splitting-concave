@@ -15,10 +15,10 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 	os << Polygon(beam);
 
 	os << "level: " << beam.level << endl
-	   << "last facet: " << beam.lastFacetID << endl
+	   << "last facet: " << beam.lastFacetId << endl
 	   << "location: " << beam.location << endl
 //	   << "id: " << beam.id << endl
-	   << "D: " << beam.D << endl
+	   << "D: " << beam.frontPosition << endl
 	   << "direction: "
 	   << beam.direction.cx << ", "
 	   << beam.direction.cy << ", "
@@ -54,11 +54,11 @@ Beam::Beam()
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
-	D = other.D;
+	frontPosition = other.frontPosition;
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
 
-	lastFacetID = other.lastFacetID;
+	lastFacetId = other.lastFacetId;
 	level = other.level;
 	location = other.location;
 	locations = other.locations;
@@ -86,11 +86,11 @@ Beam::Beam(Beam &&other)
 	Copy(other);
 
 	other.opticalPath = 0;
-	other.D = 0;
+	other.frontPosition = 0;
 	direction = Vector3f(0, 0, 0);
 	polarizationBasis = Vector3f(0, 0, 0);
 
-	other.lastFacetID = 0;
+	other.lastFacetId = 0;
 	other.level = 0;
 	other.location = Location::Out;
 	other.locations = 0;
@@ -201,11 +201,11 @@ Beam &Beam::operator = (Beam &&other)
 		J = other.J;
 
 		other.opticalPath = 0;
-		other.D = 0;
+		other.frontPosition = 0;
 		direction = Vector3f(0, 0, 0);
 		polarizationBasis = Vector3f(0, 0, 0);
 
-		other.lastFacetID = 0;
+		other.lastFacetId = 0;
 		other.level = 0;
 		other.location = Location::Out;
 		other.locations = 0;
@@ -220,7 +220,7 @@ Beam &Beam::operator = (Beam &&other)
 
 void Beam::SetTracingParams(int facetID, int lvl, Location loc)
 {
-	lastFacetID = facetID;
+	lastFacetId = facetID;
 	level = lvl;
 	location = loc;
 
@@ -232,12 +232,12 @@ void Beam::SetTracingParams(int facetID, int lvl, Location loc)
 	}
 }
 
-void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2)
+void Beam::SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2)
 {
-	J.m11 = coef1 * other.J.m11;
-	J.m12 = coef1 * other.J.m12;
-	J.m21 = coef2 * other.J.m21;
-	J.m22 = coef2 * other.J.m22;
+	J.m11 = c1 * other.J.m11;
+	J.m12 = c1 * other.J.m12;
+	J.m21 = c2 * other.J.m21;
+	J.m22 = c2 * other.J.m22;
 }
 
 complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
@@ -455,6 +455,12 @@ void Beam::SetPolygon(const Polygon &other)
 	{
 		arr[i] = other.arr[i];
 	}
+}
+
+void Beam::SetLight(const Point3f &dir, const Point3f &polarBasis)
+{
+	direction = dir;
+	polarizationBasis = polarBasis;
 }
 
 Location Beam::GetLocationByLevel(int level) const

@@ -107,7 +107,7 @@ double HandlerGO::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
-	Point3f normal = m_particle->facets[beam.lastFacetID].ex_normal; // normal of last facet of beam
+	Point3f normal = m_particle->facets[beam.lastFacetId].ex_normal; // normal of last facet of beam
 	double cosFB = DotProduct(normal, beam.direction);
 	double e = fabs(cosFB);
 

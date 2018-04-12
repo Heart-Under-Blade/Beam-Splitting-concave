@@ -47,3 +47,6 @@ HEADERS += \
 	../src/common/*.h \
 	../src/scattering/*.h \
 	../src/bigint/*.hh
+
+DISTFILES += \
+    classes.qmodel

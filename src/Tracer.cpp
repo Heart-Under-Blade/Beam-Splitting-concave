@@ -11,7 +11,6 @@
 
 #include "ScatteringConvex.h"
 #include "ScatteringNonConvex.h"
-#include "ScatteringFiles.h"
 
 using namespace std;
 

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Particle.h"
 #include "global.h"
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
 #include "float.h"
 #include "BigInteger.hh"
+#include "geometry_lib.h"
+#include "Polygon.h"
 
 class Light
 {
@@ -27,6 +28,7 @@ public:
 
 	void AddVertex(const Point3f &vertex);
 	void SetPolygon(const Polygon &other);
+	void SetLight(const Point3f &dir, const Point3f &polarBasis);
 
 	Location GetLocationByLevel(int level) const;
 
@@ -37,7 +39,7 @@ public:
 
 	void SetTracingParams(int facetID, int level, Location location);
 
-	void SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2);
+	void SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2);
 
 	// REF: перенести в PhisBeam
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
@@ -50,13 +52,13 @@ public:
 public:
 	Matrix2x2c J;					///< Jones matrix of beam
 
-	int lastFacetID;				///< last reflected facet
+	int lastFacetId;				///< last reflected facet
 	int level;						///< number of preview reflections
 	Location location;				///< beam state towards the particle (inside or outside)
 
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
-	double D;						///< current position of phase front from Ax+By+Cz+D=0
+	double frontPosition;			///< current position of phase front from Ax+By+Cz+D=0
 
 #ifdef _TRACK_ALLOW
 	BigInteger trackId = 0;

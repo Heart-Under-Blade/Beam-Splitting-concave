@@ -57,7 +57,8 @@ private:
 
 	void TraceSecondaryBeamByFacet(Beam &beam, int facetID, bool &isDivided);
 
-	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam, Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
+	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
+						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 protected:
 	void TraceBeams(std::vector<Beam> &scaterredBeams);

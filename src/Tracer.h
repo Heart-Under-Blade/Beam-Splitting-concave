@@ -6,9 +6,6 @@
 #include "BigInteger.hh"
 #include "Handler.h"
 
-class PointContribution;
-class ScatteringFiles;
-
 struct AngleRange
 {
 	double min;
@@ -33,6 +30,7 @@ public:
 	Tracer(Particle *particle, int nActs, const std::string &resultFileName);
 	~Tracer();
 
+	// REF: delete?
 	void TraceRandomPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
 						const Tracks &tracks, double wave);
 

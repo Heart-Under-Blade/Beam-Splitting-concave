@@ -116,14 +116,14 @@ void ScatteringNonConvex::SelectVisibleFacets(const Beam &beam, IntArray &facetI
 	FindVisibleFacets(beam, facetIDs);
 
 	Point3f dir = beam.direction;
-	dir.d_param = m_facets[beam.lastFacetID].in_normal.d_param;
+	dir.d_param = m_facets[beam.lastFacetId].in_normal.d_param;
 	SortFacets_faster(dir, facetIDs);
 }
 
 void ScatteringNonConvex::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams)
 {
-	const Point3f &normal = m_facets[beam.lastFacetID].ex_normal;
-	const Point3f &normal1 = m_facets[beam.lastFacetID].in_normal;
+	const Point3f &normal = m_facets[beam.lastFacetId].ex_normal;
+	const Point3f &normal1 = m_facets[beam.lastFacetId].in_normal;
 
 	IntArray facetIds;
 	SelectVisibleFacets(beam, facetIds);
@@ -163,7 +163,7 @@ void ScatteringNonConvex::CatchExternalBeam(const Beam &beam, std::vector<Beam> 
 	for (int i = 0; i < resSize; ++i)
 	{
 		tmp.SetPolygon(resultBeams[i]);
-		tmp.opticalPath += fabs(FAR_ZONE_DISTANCE + tmp.D); // добираем оптический путь
+		tmp.opticalPath += fabs(FAR_ZONE_DISTANCE + tmp.frontPosition); // добираем оптический путь
 		scatteredBeams.push_back(tmp);
 	}
 }
@@ -283,7 +283,7 @@ void ScatteringNonConvex::CutBeamByFacet(int facetID, Beam &beam, bool &isDivide
 {
 	isDivided = false;
 	const Location &loc = beam.location;
-	const Facet &beamFacet = m_facets[beam.lastFacetID];
+	const Facet &beamFacet = m_facets[beam.lastFacetId];
 
 	if (loc == Location::In && beamFacet.isVisibleIn)
 	{
@@ -384,7 +384,7 @@ void ScatteringNonConvex::TraceBeams(std::vector<Beam> &scaterredBeams)
 
 		if (isExternalNonEmptyBeam(beam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
-			beam.opticalPath += fabs(FAR_ZONE_DISTANCE + beam.D); // добираем оптический путь
+			beam.opticalPath += fabs(FAR_ZONE_DISTANCE + beam.frontPosition); // добираем оптический путь
 			scaterredBeams.push_back(beam);
 		}
 	}
@@ -421,7 +421,7 @@ void ScatteringNonConvex::SetOpticalBeamParams(int facetID, const Beam &incident
 
 			if (m_isOpticalPath)
 			{
-				CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
+				ComputeOpticalParams(cosIN, incidentBeam, inBeam, outBeam);
 			}
 		}
 	}
@@ -443,10 +443,10 @@ void ScatteringNonConvex::FindVisibleFacetsForLight(IntArray &facetIDs)
 bool ScatteringNonConvex::IsVisibleFacet(int facetID, const Beam &beam)
 {
 //	int loc = !beam.location;
-	const Point3f &beamNormal = -m_facets[beam.lastFacetID].normal[!beam.location];
+	const Point3f &beamNormal = -m_facets[beam.lastFacetId].normal[!beam.location];
 
 	const Point3f &facetCenter = m_facets[facetID].center;
-	const Point3f &beamCenter = m_facets[beam.lastFacetID].center;
+	const Point3f &beamCenter = m_facets[beam.lastFacetId].center;
 	Point3f vectorFromBeamToFacet = facetCenter - beamCenter;
 
 	double cosBF = DotProduct(beamNormal, vectorFromBeamToFacet);
@@ -460,7 +460,7 @@ void ScatteringNonConvex::FindVisibleFacets(const Beam &beam, IntArray &facetIds
 
 	if (m_particle->isAggregated && beam.location == Location::In)
 	{
-		m_particle->GetAggPartFacetIDRange(beam.lastFacetID, begin, end);
+		m_particle->GetAggPartFacetIDRange(beam.lastFacetId, begin, end);
 	}
 
 	for (int i = begin; i < end; ++i)

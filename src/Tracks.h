@@ -10,7 +10,7 @@
 
 class Beam;
 
-struct TrackGroup
+class TrackGroup
 {
 	int groupID;
 	BigInteger arr[MAX_GROUP_NUM];

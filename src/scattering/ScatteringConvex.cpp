@@ -27,14 +27,14 @@ void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam>
 		Beam inBeam, outBeam;
 		SplitLightToBeams(facetID, inBeam, outBeam);
 
-		outBeam.lastFacetID = facetID;
+		outBeam.lastFacetId = facetID;
 		outBeam.level = 0;
-		SetBeamID(outBeam);
+		ComputeBeamId(outBeam);
 		outBeams.push_back(outBeam);
 		PushBeamToTree(inBeam, facetID, 0);
 
 #ifdef _CHECK_ENERGY_BALANCE
-		CalcFacetEnergy(facetID, outBeam);
+		ComputeFacetEnergy(facetID, outBeam);
 #endif
 	}
 
@@ -56,26 +56,77 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 			continue;
 		}
 
-		for (int facetID = 0; facetID < m_particle->nFacets; ++facetID)
+		for (int id = 0; id < m_particle->nFacets; ++id)
 		{
-			if (facetID == beam.lastFacetID)
+			if (id == beam.lastFacetId)
 			{
 				continue;
 			}
 
 			Beam inBeam;
+			bool isIncident = SplitSecondaryBeams(beam, id, inBeam, outBeams);
 
-			try
-			{
-				SplitSecondaryBeams(beam, facetID, inBeam, outBeams);
-			}
-			catch (const std::exception &)
+			if (!isIncident)
 			{
 				continue;
 			}
 
 			inBeam.trackId = beam.trackId;
-			PushBeamToTree(inBeam, facetID, beam.level+1);
+			PushBeamToTree(inBeam, id, beam.level+1);
 		}
 	}
+}
+
+bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
+										   Beam &inBeam, std::vector<Beam> &outBeams)
+{
+	Beam outBeam;
+	const Point3f &incidentDir = incidentBeam.direction;
+
+	// ext. normal uses in this calculating
+	const Point3f &normal = m_facets[facetID].ex_normal;
+	double cosA = DotProduct(normal, incidentDir);
+
+	if (cosA < EPS_COS_90) /// beam is not incident to this facet
+	{
+		return false;
+	}
+
+	bool isOk = Intersect(facetID, incidentBeam, outBeam);
+
+	if (!isOk)
+	{
+		return false;
+	}
+
+	inBeam = outBeam;
+
+	if (cosA < EPS_COS_00)
+	{	// regular incidence
+		bool isTrivialIncidence;
+		SetRegularIncidenceBeamParams(cosA, normal, incidentBeam,
+									  inBeam, outBeam, isTrivialIncidence);
+		if (isTrivialIncidence)
+		{
+			outBeam.trackId = incidentBeam.trackId;
+			outBeam.lastFacetId = facetID;
+			outBeam.level = incidentBeam.level + 1;
+			ComputeBeamId(outBeam);
+			outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition); // добираем оптический путь
+			outBeams.push_back(outBeam);
+		}
+	}
+	else
+	{	// normal incidence
+		SetNormalIncidenceBeamParams(cosA, incidentBeam, inBeam, outBeam);
+
+		outBeam.trackId = incidentBeam.trackId;
+		outBeam.lastFacetId = facetID;
+		outBeam.level = incidentBeam.level + 1;
+		ComputeBeamId(outBeam);
+		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition); // добираем оптический путь
+		outBeams.push_back(outBeam);
+	}
+
+	return true;
 }

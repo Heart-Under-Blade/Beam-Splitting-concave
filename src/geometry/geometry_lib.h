@@ -14,7 +14,7 @@ enum Location: bool
 	In, Out
 };
 
-struct Orientation
+class Orientation
 {
 	double beta;
 	double gamma;
@@ -23,7 +23,7 @@ struct Orientation
 
 typedef Orientation Symmetry;
 
-struct IntArray
+class IntArray
 {
 	int arr[MAX_FACET_NUM];
 	int size = 0;
@@ -35,7 +35,7 @@ struct IntArray
 };
 
 template <class T>
-struct Couple
+class Couple
 {
 	T first;
 	T last;

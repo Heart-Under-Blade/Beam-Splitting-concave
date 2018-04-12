@@ -50,13 +50,13 @@ protected:
 	double m_incommingEnergy;
 
 	const double FAR_ZONE_DISTANCE = 10000.0;
-	const double LOW_ENERGY_LEVEL = 2e-12;
+	const double EPS_BEAM_ENERGY = 2e-12;
 
 private:
 	double m_cRiRe;
 	double m_cRiRe2;
 	double m_cRiIm;
-	complex m_refrIndex;
+	complex m_ri;
 
 public:
 	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
@@ -74,9 +74,6 @@ public:
 protected:
 	void SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam);
 
-	void SetBeam(Beam &beam, const Beam &other, const Point3f &dir,
-				 const complex &coef1, const complex &coef2) const;
-
 	void Difference(const Polygon &subject, const Point3f &subjNormal,
 					const Polygon &clip, const Point3f &clipNormal,
 					const Point3f &clipDir, Polygon *difference, int &resultSize) const;
@@ -85,23 +82,20 @@ protected:
 
 	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
 
-	void CalcOpticalPath(double cosIN, const Beam &incidentBeam, Beam &inBeam,
-						 Beam &outBeam) const;
+	void ComputeOpticalParams(double cosA, const Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam) const;
 
 	bool IsTerminalAct(const Beam &beam);
 
 	void SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam);
 
-	void SplitSecondaryBeams(Beam &incidentBeam, int facetID,
-								  Beam &inBeam, std::vector<Beam> &outBeams);
-
 	void RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNormal,
 								 Beam &beam);
 
-	void SetRegularBeamParamsExternal(const Point3f &beamDir, double cosIN, int facetId,
-									   Beam &inBeam, Beam &outBeam);
+	void SetRegularBeamParamsExternal(const Point3f &beamDir, double cosA, int facetId,
+									  Beam &inBeam, Beam &outBeam);
 
-	void SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
+	void SetNormalIncidenceBeamParams(double cosA, const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam);
 
 	void SetRegularIncidenceBeamParams(double cosIN, const Point3f &normal,
@@ -109,7 +103,7 @@ protected:
 									   Beam &inBeam, Beam &outBeam,
 									   bool &isTrivialIncidence);
 
-	void CalcFacetEnergy(int facetId, const Polygon &lightedPolygon);
+	void ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon);
 
 	void CalcOpticalPathForLight(Beam &inBeam, Beam &outBeam);
 
@@ -117,20 +111,21 @@ protected:
 	void PushBeamToTree(Beam &beam, int facetId, int level);
 	void PushBeamToTree(Beam &beam);
 
-	void SetBeamID(Beam &beam);
+	void ComputeBeamId(Beam &beam);
 
 private:
-	double CalcReRI(const double &cosIN) const;
+	double ComputeReRI(const double &cosA) const;
 
-	void SetRegularBeamParams(double cosIN, double reRI, const Point3f &normal,
-									   Point3f r0, double s, const Beam &incidentBeam,
-									   Beam &inBeam, Beam &outBeam);
+	void SetRegularBeamParams(double cosA, const Point3f &normal,
+							  Point3f r0, double s, const Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam);
 
-	void SetCRBeamParams(double cosIN, double Nr, const Beam &incidentBeam,
+	void SetCRBeamParams(double cosA, double reRi, const Beam &incidentBeam,
 										 Beam &inBeam);
 
-	void SplitDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
-							 Point3f &reflDir, Point3f &refrDir) const;
+	void SplitDirection(const Point3f &incidentDir, double cosA,
+						const Point3f &normal,
+						Point3f &reflDir, Point3f &refrDir) const;
 
 	Point3f ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
 								Location loc);
@@ -140,4 +135,7 @@ private:
 
 	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
+
+	double ComputeOpticalPath(const Beam &beam, double cosA,
+							  const Point3f &facetPoint) const;
 };

@@ -23,5 +23,5 @@ public:
 
 	matrixC operator * (const complex &value) const;
 	Matrix2x2c &operator *= (const double &value);
-	Matrix2x2c &operator +=(const Matrix2x2c &other);
+	Matrix2x2c &operator += (const Matrix2x2c &other);
 };
