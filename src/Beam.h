@@ -24,6 +24,8 @@ public:
 	void RotateSpherical(const Point3f &dir, const Point3f &polarBasis);
 	void RotatePlane(const Point3f& newBasis); ///< rotate Jones matrix in case of beam splitting
 
+	Location GetLocationByLevel(int level) const;
+
 	void AddVertex(const Point3f &vertex);
 	void SetPolygon(const Polygon &other);
 
@@ -54,16 +56,23 @@ public:
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
 	double D;						///< current position of phase front from Ax+By+Cz+D=0
-	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
-									///< "0" when beam location is "inside" and "1" if it's "outside"
 
 #ifdef _TRACK_ALLOW
-	BigInteger id = 0;
+	long long id = 0;
 //	std::vector<int> track;
+#endif
+
+#ifdef _DEBUG // DEB
+	std::vector<Point3f> dirs;
+	std::vector<double> ops;
 #endif
 
 private:
 	void RotateJMatrix(const Point3f &newBasis);
 	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
+
+private:
+	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
+									///< "0" when beam location is "inside" and "1" if it's "outside"
 };

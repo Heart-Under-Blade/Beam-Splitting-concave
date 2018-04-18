@@ -14,7 +14,7 @@
 #define EPS_M_COS_90	-1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00		0.99999999998254670756866631966593		//1- cos(89.99999999)
-#define MAX_GROUP_NUM	1024
+#define MAX_GROUP_NUM	8192
 
 /**
  * @brief The BeamTree struct
@@ -34,7 +34,7 @@ struct BeamTree
 struct TrackGroup
 {
 	int groupID;
-	BigInteger arr[MAX_GROUP_NUM];
+	long long arr[MAX_GROUP_NUM];
 	int size = 0;
 	std::vector<std::vector<int>> tracks;
 
@@ -49,7 +49,7 @@ struct TrackGroup
 class Tracks : public std::vector<TrackGroup>
 {
 public:
-	int FindGroup(const BigInteger &trackID) const
+	int FindGroup(const long long &trackID) const
 	{
 		for (size_t i = 0; i < size(); ++i)
 		{
@@ -76,10 +76,11 @@ public:
 		int coef = facetNum + 1;
 		std::vector<int> tmp_track;
 
-		BigInteger tmpId = beam.id/coef;
+		auto tmpId = beam.id/coef;
+
 		for (int i = 0; i <= beam.level; ++i)
 		{
-			int tmp = (tmpId%coef).toInt();
+			int tmp = (tmpId%coef)/*.toInt()*/;
 			tmpId -= tmp;
 			tmpId /= coef;
 			tmp -= 1;
@@ -114,7 +115,7 @@ protected:
 	double m_incommingEnergy;
 
 	const double FAR_ZONE_DISTANCE = 10000.0;
-	const double LOW_ENERGY_LEVEL = 2e-12;
+	const double EPS_BEAM_ENERGY = 2e-12;
 
 private:
 	double ri_coef_re;

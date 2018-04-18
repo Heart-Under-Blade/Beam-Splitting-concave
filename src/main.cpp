@@ -62,7 +62,9 @@ void ImportTracks(int facetNum)
 	char *buff = (char*)malloc(sizeof(char) * bufSize);
 
 	TrackGroup buffGroup;
-
+#ifdef _DEBUG // DEB
+	int eee = 0;
+#endif
 	while (!trackFile.eof())
 	{
 		trackFile.getline(buff, bufSize);
@@ -100,7 +102,8 @@ void ImportTracks(int facetNum)
 			ptr = strtok(NULL, " ");
 		}
 
-		BigInteger trackID = 0;
+//		BigInteger trackID = 0;
+		long long trackID = 0;
 
 		for (int t : track)
 		{

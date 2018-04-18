@@ -64,6 +64,10 @@ void Beam::Copy(const Beam &other)
 	location = other.location;
 	locations = other.locations;
 
+#ifdef _DEBUG // DEB
+	dirs = other.dirs;
+	ops = other.ops;
+#endif
 #ifdef _TRACK_ALLOW
 	id = other.id;
 #endif
@@ -91,6 +95,10 @@ Beam::Beam(Beam &&other)
 	level = other.level;
 	location = other.location;
 	locations = other.locations;
+#ifdef _DEBUG // DEB
+	dirs = other.dirs;
+	ops = other.ops;
+#endif
 
 #ifdef _TRACK_ALLOW
 	id = other.id;
@@ -105,6 +113,10 @@ Beam::Beam(Beam &&other)
 	other.location = Location::Out;
 	other.locations = 0;
 
+#ifdef _DEBUG // DEB
+	other.dirs.clear();
+	other.ops.clear();
+#endif
 #ifdef _TRACK_ALLOW
 	other.id = 0;
 #endif
@@ -210,6 +222,10 @@ Beam &Beam::operator = (Beam &&other)
 
 		J = other.J;
 
+#ifdef _DEBUG // DEB
+	dirs = other.dirs;
+	ops = other.ops;
+#endif
 #ifdef _TRACK_ALLOW
 		id = other.id;
 #endif
@@ -222,6 +238,10 @@ Beam &Beam::operator = (Beam &&other)
 		other.location = Location::Out;
 		other.locations = 0;
 
+#ifdef _DEBUG // DEB
+	other.dirs.clear();
+	other.ops.clear();
+#endif
 #ifdef _TRACK_ALLOW
 		other.id = id;
 #endif
@@ -405,6 +425,13 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 void Beam::RotatePlane(const Point3f &newBasis)
 {
 	RotateJMatrix(newBasis);
+}
+
+Location Beam::GetLocationByLevel(int level) const
+{
+	int mask = 1;
+	mask <<= level;
+	return (locations & mask) ? Location::Out : Location::In;
 }
 
 void Beam::RotateJMatrix(const Point3f &newBasis)

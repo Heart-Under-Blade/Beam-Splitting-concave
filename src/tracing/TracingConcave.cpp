@@ -39,8 +39,8 @@ void TracingConcave::PushBeamsToTree(int facetID, const PolygonArray &polygons,
 {
 	for (int j = 0; j < polygons.size; ++j)
 	{
-		BigInteger  inID = inBeam.id;
-		BigInteger outID = outBeam.id;
+		auto inID = inBeam.id;
+		auto outID = outBeam.id;
 
 		// set geometry of beam
 		 inBeam.SetPolygon(polygons.arr[j]);
@@ -375,7 +375,8 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 		{
 			trackMapFile << gd << ' ';
 		}
-		trackMapFile << bigIntegerToString(beam.id) << endl;
+//		trackMapFile << bigIntegerToString(beam.id) << endl;
+		trackMapFile << beam.id << endl;
 
 		if (count == 52741)
 			int fg = 0;

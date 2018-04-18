@@ -31,6 +31,9 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 		for (int j = 0/*96*/; j < gammaRange.number; ++j)
 		{
 			gamma = (j + 0.5)*gammaRange.step;
+#ifdef _DEBUG // DEB
+//			beta = gamma = DegToRad(30);
+#endif
 			m_tracing->SplitBeamByParticle(beta, gamma, outBeams);
 			m_handler->HandleBeams(outBeams, beta);
 

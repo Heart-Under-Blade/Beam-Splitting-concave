@@ -1,6 +1,8 @@
 #include "Handler.h"
 #include "Mueller.hpp"
 #include <iostream>
+#include <limits>
+#include <iomanip>
 
 #define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
 #define BIN_SIZE			M_PI/SPHERE_RING_NUM
@@ -14,6 +16,7 @@ HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, float wavelength)
 	  m_isAccountAbsorbtion(false)
 {
 	m_logFile.open("log1.txt", ios::out);
+	m_logFile << setprecision(numeric_limits<long double>::digits10 + 1);
 }
 
 void HandlerGO::ExtractPeaks(double *b, double *f, double norm)
@@ -307,7 +310,7 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams, double angle)
 		double area = cross*sinBeta;
 
 		// absorbtion
-		if (m_isAccountAbsorbtion && beam.level > 0)
+		if (/*m_isAccountAbsorbtion &&*/ beam.level > 0)
 		{
 			vector<int> tr;
 			Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
@@ -319,6 +322,10 @@ if (/*beam.level > 1 && */isnan(path))
 {
 	double s = 0;
 }
+
+m_logFile << fabs(path - beam.opticalPath) << endl;
+//m_logFile << path << ';' << beam.opticalPath << endl;
+//cout << endl << endl << "path " << path << endl << "opticalPath " << beam.opticalPath;
 #endif
 			if (fabs(path) > DBL_EPSILON)
 			{
@@ -333,7 +340,7 @@ if (beam.level > 2)
 {
 	double s = bf[0][0];
 //	double f = Mueller(Jd)[0][0];
-	m_logFile << s << endl;
+//	m_logFile << s << endl;
 }
 #endif
 //		if (isinf(bf[0][0]))

@@ -19,6 +19,12 @@ double DotProductD(const Point3d &v1, const Point3d &v2)
 
 double Norm(const Point3f &p)
 {
+#ifdef _DEBUG // DEB
+
+	double pp = p.cx * p.cx;
+	pp += p.cy * p.cy;
+	pp += p.cz * p.cz;
+#endif
 	return	  p.cx * p.cx
 			+ p.cy * p.cy
 			+ p.cz * p.cz;
