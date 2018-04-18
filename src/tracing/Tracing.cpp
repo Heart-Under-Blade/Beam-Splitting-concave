@@ -139,8 +139,8 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 
 void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 {
-//	Point3f center = inBeam.Center();
-	Point3f &center = inBeam.arr[0];
+	Point3f center = inBeam.Center();
+//	Point3f &center = inBeam.arr[0];
 
 	inBeam.D = DotProduct(-inBeam.light.direction, center);
 	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, center);
@@ -221,8 +221,8 @@ void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<s
 void Tracing::CalcOpticalPath(double cosIN, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam) const
 {
-//	Point3f center = inBeam.Center();
-	Point3f &center = inBeam.arr[0];
+	Point3f center = inBeam.Center();
+//	Point3f &center = inBeam.arr[0];
 
 	// refractive index of external environment = 1
 	double OP = fabs(DotProduct(incidentBeam.light.direction, center) + incidentBeam.D);
@@ -436,7 +436,7 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 
 	if (m_isOpticalPath)
 	{
-		Point3f center = inBeam.arr[0]/*inBeam.Center()*/;
+		Point3f center = /*inBeam.arr[0]*/inBeam.Center();
 		inBeam.D = DotProductD(-inBeam.light.direction, center);
 
 		double temp = fabs(DotProductD(incidentDir, center) + incidentBeam.D);
