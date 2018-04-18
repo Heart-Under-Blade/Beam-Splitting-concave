@@ -53,7 +53,7 @@ void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polyg
 		PushBeamToTree(outBeam, facetID, 0, Location::Out);
 
 #ifdef _CHECK_ENERGY_BALANCE
-		CalcFacetEnergy(facetID, outBeam);
+		ComputeFacetEnergy(facetID, outBeam);
 #endif
 		inBeam.trackId = inID;
 		outBeam.trackId = outID;
@@ -666,6 +666,7 @@ void ScatteringNonConvex::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 		}
 	}
 }
+
 void ScatteringNonConvex::PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
 									   Beam &inBeam, Beam &outBeam,
 									   std::vector<Beam> &passed)
@@ -676,12 +677,12 @@ void ScatteringNonConvex::PushBeamsToBuffer(int facetID, const Beam &beam, bool 
 	{
 		outBeam.trackId = beam.trackId;
 		outBeam.SetTracingParams(facetID, beam.level+1, Location::Out);
-		SetBeamID(outBeam);
+		ComputeBeamId(outBeam);
 		passed.push_back(outBeam);
 	}
 
 	outBeam.SetTracingParams(facetID, beam.level+1, Location::In); // BUG: maybe "inBeam" ?
-	SetBeamID(inBeam);
+	ComputeBeamId(inBeam);
 	passed.push_back(inBeam);
 }
 

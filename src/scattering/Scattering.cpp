@@ -92,7 +92,7 @@ void Scattering::PushBeamToTree(Beam &beam)
 	m_beamTree[m_treeSize++] = beam;
 }
 
-void Scattering::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
+void Scattering::SetBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outBeam)
 {
 	const Point3f dir = m_incidentLight->direction;
 	const Point3f &normal = m_facets[facetId].in_normal;
@@ -134,10 +134,10 @@ void Scattering::RotatePolarisationPlane(const Point3f &dir,
 
 void Scattering::CalcOpticalPathForLight(Beam &inBeam, Beam &outBeam)
 {
-	inBeam.frontPosition = DotProduct(-inBeam.direction, inBeam.arr[0]);
-	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, inBeam.arr[0]);
+	inBeam.ComputeFrontPosition();
+	outBeam.ComputeFrontPosition();
 
-	outBeam.frontPosition = DotProduct(-outBeam.direction, inBeam.arr[0]);
+	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, inBeam.arr[0]);
 	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition);
 }
 
@@ -206,7 +206,7 @@ void Scattering::ScatterLight(double beta, double gamma, const std::vector<std::
 //	}
 }
 
-double Scattering::ComputeOpticalPath(const Beam &beam, double cosA,
+double Scattering::ComputeSegmentOpticalPath(const Beam &beam, double cosA,
 									  const Point3f &facetPoint) const
 {
 	double tmp = DotProduct(beam.direction, facetPoint);
@@ -214,19 +214,23 @@ double Scattering::ComputeOpticalPath(const Beam &beam, double cosA,
 
 	if (beam.location == Location::In)
 	{
-		path *= sqrt(ComputeReRI(cosA));
+		path *= sqrt(ComputeEffectiveReRi(cosA));
 	}
 
 	path += beam.opticalPath;
+	return path;
 }
 
 void Scattering::ComputeOpticalParams(double cosA, const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam) const
 {
 	Point3f &facetPoint = inBeam.arr[0];
-	double path = ComputeOpticalPath(incidentBeam, cosA, facetPoint);
+	double path = ComputeSegmentOpticalPath(incidentBeam, cosA, facetPoint);
 
 	inBeam.frontPosition = DotProduct(-inBeam.direction, facetPoint);
+	// REF: расчитывать это сразу в функции ComputeOpticalPath
+	// и убрать из класса Beam?
+
 	inBeam.opticalPath = path;
 
 	outBeam.frontPosition = DotProduct(-outBeam.direction, facetPoint);
@@ -238,7 +242,7 @@ bool Scattering::IsTerminalAct(const Beam &beam)
 	return (beam.level >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
 }
 
-double Scattering::ComputeReRI(const double &cosA) const
+double Scattering::ComputeEffectiveReRi(const double &cosA) const
 {
 	return (m_cRiRe + sqrt(m_cRiRe2 + m_cRiIm/(cosA*cosA)))/2.0;
 }
@@ -262,7 +266,7 @@ void Scattering::SetRegularIncidenceBeamParams(double cosA, const Point3f &norma
 
 	inBeam.SetLight(reflDir, scatteringNormal);
 
-	double reRI = ComputeReRI(cosA);
+	double reRI = ComputeEffectiveReRi(cosA);
 	double s = 1.0/(reRI*cosA*cosA) - Norm(r0);
 
 	if (s > DBL_EPSILON) // regular incidence
@@ -330,8 +334,6 @@ void Scattering::SetRegularBeamParams(double cosA, const Point3f &normal,
 void Scattering::SetCRBeamParams(double cosA, double reRi,
 								 const Beam &incidentBeam, Beam &inBeam)
 {
-	const Point3f &incidentDir = incidentBeam.direction;
-
 	complex tmp0 = m_ri * cosA;
 	const double bf = reRi*(1.0 - cosA*cosA) - 1.0;
 	double im = (bf > 0) ? sqrt(bf) : 0;
@@ -345,13 +347,8 @@ void Scattering::SetCRBeamParams(double cosA, double reRi,
 
 	if (m_isOpticalPath)
 	{
-		Point3f center = inBeam.Center();
-		inBeam.frontPosition = DotProduct(-center, inBeam.direction);
-
-		double temp = DotProduct(incidentDir, center);
-
-		inBeam.opticalPath = incidentBeam.opticalPath
-				+ sqrt(reRi)*fabs(temp + incidentBeam.frontPosition);
+		inBeam.ComputeFrontPosition();
+		inBeam.opticalPath = ComputeSegmentOpticalPath(incidentBeam, cosA, inBeam.arr[0]);
 	}
 }
 

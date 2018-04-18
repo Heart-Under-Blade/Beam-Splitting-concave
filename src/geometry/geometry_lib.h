@@ -16,6 +16,7 @@ enum Location: bool
 
 class Orientation
 {
+public:
 	double beta;
 	double gamma;
 	double alpha;
@@ -25,6 +26,7 @@ typedef Orientation Symmetry;
 
 class IntArray
 {
+public:
 	int arr[MAX_FACET_NUM];
 	int size = 0;
 
@@ -37,6 +39,7 @@ class IntArray
 template <class T>
 class Couple
 {
+public:
 	T first;
 	T last;
 };

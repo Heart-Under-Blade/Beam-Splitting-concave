@@ -29,6 +29,7 @@ public:
 	void AddVertex(const Point3f &vertex);
 	void SetPolygon(const Polygon &other);
 	void SetLight(const Point3f &dir, const Point3f &polarBasis);
+	void ComputeFrontPosition();
 
 	Location GetLocationByLevel(int level) const;
 

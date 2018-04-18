@@ -11,8 +11,8 @@ using namespace std;
 Handler::Handler(Particle *particle, Light *incidentLight, float wavelength)
 	: m_particle(particle),
 	  m_wavelength(wavelength),
-	  m_hasAbsorbtion(false),
 	  m_incidentLight(incidentLight),
+	  m_hasAbsorbtion(false),
 	  m_normIndex(1)
 {
 }

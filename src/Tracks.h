@@ -12,6 +12,7 @@ class Beam;
 
 class TrackGroup
 {
+public:
 	int groupID;
 	BigInteger arr[MAX_GROUP_NUM];
 	int size = 0;

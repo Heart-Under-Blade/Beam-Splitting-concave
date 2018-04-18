@@ -72,7 +72,7 @@ public:
 //	double CrossSection(const Point3f &beamDir) const;
 
 protected:
-	void SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam);
+	void SetBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outBeam);
 
 	void Difference(const Polygon &subject, const Point3f &subjNormal,
 					const Polygon &clip, const Point3f &clipNormal,
@@ -114,7 +114,7 @@ protected:
 	void ComputeBeamId(Beam &beam);
 
 private:
-	double ComputeReRI(const double &cosA) const;
+	double ComputeEffectiveReRi(const double &cosA) const;
 
 	void SetRegularBeamParams(double cosA, const Point3f &normal,
 							  Point3f r0, double s, const Beam &incidentBeam,
@@ -136,6 +136,6 @@ private:
 	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
 
-	double ComputeOpticalPath(const Beam &beam, double cosA,
+	double ComputeSegmentOpticalPath(const Beam &beam, double cosA,
 							  const Point3f &facetPoint) const;
 };

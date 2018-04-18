@@ -103,10 +103,10 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	if (cosA < EPS_COS_00)
 	{	// regular incidence
-		bool isTrivialIncidence;
+		bool isRegular;
 		SetRegularIncidenceBeamParams(cosA, normal, incidentBeam,
-									  inBeam, outBeam, isTrivialIncidence);
-		if (isTrivialIncidence)
+									  inBeam, outBeam, isRegular);
+		if (isRegular)
 		{
 			outBeam.trackId = incidentBeam.trackId;
 			outBeam.lastFacetId = facetID;

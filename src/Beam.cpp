@@ -463,6 +463,11 @@ void Beam::SetLight(const Point3f &dir, const Point3f &polarBasis)
 	polarizationBasis = polarBasis;
 }
 
+void Beam::ComputeFrontPosition()
+{
+	frontPosition = DotProduct(-direction, arr[0]);
+}
+
 Location Beam::GetLocationByLevel(int level) const
 {
 	int mask = 1;
