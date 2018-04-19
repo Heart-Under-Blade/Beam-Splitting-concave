@@ -2,7 +2,7 @@
 #include "Particle.h"
 #include "intrinsic/intrinsics.h"
 
-float DotProduct(const Point3f &v1, const Point3f &v2)
+float DotProduct(const Vector3f &v1, const Vector3f &v2)
 {
 	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
 	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
@@ -10,14 +10,14 @@ float DotProduct(const Point3f &v1, const Point3f &v2)
 	return _dp0[0];
 }
 
-double DotProductD(const Point3d &v1, const Point3d &v2)
+double DotProductD(const Vector3d &v1, const Vector3d &v2)
 {
 	return	  v1.x * v2.x
 			+ v1.y * v2.y
 			+ v1.z * v2.z;
 }
 
-double Norm(const Point3f &p)
+double Norm(const Vector3f &p)
 {
 #ifdef _DEBUG // DEB
 
@@ -30,14 +30,14 @@ double Norm(const Point3f &p)
 			+ p.cz * p.cz;
 }
 
-double NormD(const Point3d &p)
+double NormD(const Vector3d &p)
 {
 	return	  p.x * p.x
 			+ p.y * p.y
 			+ p.z * p.z;
 }
 
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
+void CrossProduct(const Vector3f &v1, const Vector3f &v2, Vector3f &res)
 {
 	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
 	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
@@ -73,20 +73,30 @@ Point3d CrossProductD(const Point3d &v1, const Point3d &v2)
 	return res;
 }
 
-double Length(const Point3f &v)
+double Length(const Vector3f &v)
 {
 	return sqrt(Norm(v));
 }
 
-double LengthD(const Point3d &v)
+double LengthD(const Vector3d &v)
 {
 	return sqrt(NormD(v));
 }
 
-void Normalize(Point3f &v)
+void Normalize(Vector3f &v)
 {
 	double lenght = sqrt(Norm(v));
 	v.cx /= lenght;
 	v.cy /= lenght;
 	v.cz /= lenght;
+}
+
+Point3f ProjectPointToPlane(const Point3f &point, const Vector3f &direction,
+							const Vector3f &planeNormal)
+{
+	double tmp = DotProduct(point, planeNormal);
+	double dp  = DotProduct(direction, planeNormal);
+	tmp += planeNormal.d_param;
+	tmp /= dp;
+	return point - (direction * tmp);
 }

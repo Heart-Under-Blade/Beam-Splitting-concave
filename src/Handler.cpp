@@ -6,14 +6,36 @@
 
 #define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
 #define BIN_SIZE			M_PI/SPHERE_RING_NUM
+#define BEAM_DIR_LIM		0.9396
 
 using namespace std;
 
-HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, float wavelength)
+Handler::Handler(Particle *particle, Light *incidentLight, float wavelength)
 	: m_particle(particle),
-	  m_incidentLight(incidentLight),
 	  m_wavelength(wavelength),
-	  m_isAccountAbsorbtion(false)
+	  m_incidentLight(incidentLight),
+	  m_hasAbsorbtion(false),
+	  m_normIndex(1)
+{
+}
+
+void Handler::HandleBeams(std::vector<Beam> &beams)
+{
+}
+
+void Handler::SetTracks(Tracks *tracks)
+{
+	if (!m_tracks)
+	{
+		std::cerr << "Tracks are not set" << std::endl;
+		throw std::exception();
+	}
+
+	m_tracks = tracks;
+}
+
+HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, float wavelength)
+	: Handler(particle, incidentLight, wavelength)
 {
 	m_logFile.open("log1.txt", ios::out);
 	m_logFile << setprecision(numeric_limits<long double>::digits10 + 1);
@@ -62,9 +84,9 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib)
 	b[1] = (contrib.back[1][1] - contrib.back[2][2])/2.0;
 	b[2] =  contrib.back[3][3];
 
-	f[0] =  contrib.forw[0][0];
-	f[1] = (contrib.forw[1][1] + contrib.forw[2][2])/2.0;
-	f[2] =  contrib.forw[3][3];
+	f[0] =  contrib.forward[0][0];
+	f[1] = (contrib.forward[1][1] + contrib.forward[2][2])/2.0;
+	f[2] =  contrib.forward[3][3];
 
 	// Extracting the forward and backward peak in a separate file if needed
 	if (EDF)
@@ -73,28 +95,24 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib)
 	}
 	else
 	{
-		contrib.scatMatrix(0,SPHERE_RING_NUM,0,0) += f[0];
-		contrib.scatMatrix(0,0,0,0) += b[0];
-		contrib.scatMatrix(0,SPHERE_RING_NUM,1,1) += f[1];
-		contrib.scatMatrix(0,0,1,1) += b[1];
-		contrib.scatMatrix(0,SPHERE_RING_NUM,2,2) += f[1];
-		contrib.scatMatrix(0,0,2,2) -= b[1];
-		contrib.scatMatrix(0,SPHERE_RING_NUM,3,3) += f[2];
-		contrib.scatMatrix(0,0,3,3) += b[2];
+		contrib.muellers(0,SPHERE_RING_NUM,0,0) += f[0];
+		contrib.muellers(0,0,0,0) += b[0];
+		contrib.muellers(0,SPHERE_RING_NUM,1,1) += f[1];
+		contrib.muellers(0,0,1,1) += b[1];
+		contrib.muellers(0,SPHERE_RING_NUM,2,2) += f[1];
+		contrib.muellers(0,0,2,2) -= b[1];
+		contrib.muellers(0,SPHERE_RING_NUM,3,3) += f[2];
+		contrib.muellers(0,0,3,3) += b[2];
 	}
-}
-
-void HandlerGO::HandleBeams(std::vector<Beam> &beams, double angle)
-{
 }
 
 double HandlerGO::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
-	Point3f normal = m_particle->facets[beam.lastFacetID].ex_normal; // normal of last facet of beam
-	double cosFB = DotProduct(normal, beam.light.direction);
-	double e = fabs(cosFB);
+	Point3f normal = m_particle->facets[beam.lastFacetId].ex_normal; // normal of last facet of beam
+	double cosA = DotProduct(normal, beam.direction);
+	double e = fabs(cosA);
 
 	if (e < eps)
 	{
@@ -102,40 +120,38 @@ double HandlerGO::BeamCrossSection(const Beam &beam) const
 	}
 
 	double area = beam.Area();
-	double n = Length(normal);
-	return (e*area)/n;
+	double len = Length(normal);
+	return (e*area)/len;
 }
 
-void HandlerGO::AddToResultMullerGO(const Point3f &dir, matrix &bf, double area,
-									ContributionGO &contr)
+void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
-	const float &z = dir.cz;
+	double cross = BeamCrossSection(beam);
+	double area = cross*m_sinAngle;
+	m *= area;
+}
 
-	// Collect the beam in array
-	if (z >= 1-DBL_EPSILON)
+matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
+{
+	matrix m = Mueller(beam.J);
+
+	if (zenAng < 180 && zenAng > 0)
 	{
-		contr.back += area*bf;
-	}
-	else if (z <= DBL_EPSILON-1)
-	{
-		contr.forw += area*bf;
-	}
-	else
-	{
-		const float &y = dir.cy;
+		const float &y = beam.direction.cy;
 
 		if (y*y > DBL_EPSILON)
 		{	// rotate the Mueller matrix of the beam to appropriate coordinate system
-			RotateMuller(dir, bf);
+			RotateMuller(beam.direction, m);
 		}
 
 #ifdef _CALC_AREA_CONTIBUTION_ONLY
 		bf = matrix(4,4);
 		bf.Identity();
 #endif
-		const unsigned int zenAng = round(acos(z)/(M_PI/SPHERE_RING_NUM));
-		contr.scatMatrix.insert(0, zenAng, area*bf);
 	}
+
+	MultiplyMueller(beam, m);
+	return m;
 }
 
 void HandlerGO::RotateMuller(const Point3f &dir, matrix &bf)
@@ -176,7 +192,7 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 				? 1-cos(BIN_SIZE/2.0)
 				: (cos((j-0.5)*BIN_SIZE)-cos((j+0.5)*BIN_SIZE));
 
-		matrix bf = contrib.scatMatrix(0, j);
+		matrix bf = contrib.muellers(0, j);
 
 		if (bf[0][0] <= DBL_EPSILON)
 		{
@@ -216,65 +232,53 @@ Point3f HandlerGO::CalcK(vector<int> &tr)
 	return k;
 }
 
-double HandlerGO::CalcOpticalPathAbsorption(const Beam &beam)
+double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 {	// OPT: вынести переменные из цикла
 	double opticalPath = 0;
 
 	vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
 	Point3f k = CalcK(tr);
 
-//	if (Length(k) > FLT_EPSILON)
-//	{
-		Point3f n1 = m_particle->facets[tr[0]].in_normal;
+	Point3f n1 = m_particle->facets[tr[0]].in_normal;
 
-		for (int i = 0; i < beam.size; ++i)
-		{
-//			double lk = Length(k);
-			double delta = Length(beam.Center() - beam.arr[i])/*/lk*/;
-			double a1 = (delta*DotProduct(k, n1));
-			double a2 = DotProduct(beam.light.direction, n1);
-			opticalPath += a1/a2;
-		}
+	for (int i = 0; i < beam.size; ++i)
+	{
+		double delta = Length(beam.Center() - beam.arr[i])/Length(k);
+		opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
+	}
 
-		opticalPath /= beam.size;
-//	}
+	opticalPath /= beam.size;
 
 	return opticalPath;
 }
 
-void HandlerGO::WriteMatricesToFile(double norm, string &filename)
+void Handler::WriteMatricesToFile(string &destName)
 {
 }
 
-void HandlerGO::SetTracks(Tracks *tracks)
+void Handler::SetNormIndex(double normIndex)
 {
-	if (!m_tracks)
-	{
-		std::cerr << "Tracks are not set" << std::endl;
-		throw std::exception();
-	}
-
-	m_tracks = tracks;
-	m_groupContrib.resize(m_tracks->size());
+	m_normIndex = normIndex;
 }
 
-double HandlerGO::CalcTotalScatteringEnergy(double norm)
+double HandlerGO::ComputeTotalScatteringEnergy()
 {
-	double D_tot = m_totalContrib.back[0][0] + m_totalContrib.forw[0][0];
+	double D_tot = m_totalContrib.back[0][0] + m_totalContrib.forward[0][0];
 
 	for (int i = 0; i <= SPHERE_RING_NUM; ++i)
 	{
-		D_tot += m_totalContrib.scatMatrix(0, i, 0, 0);
+		D_tot += m_totalContrib.muellers(0, i, 0, 0);
 	}
 
-	return D_tot*norm;
+	return D_tot * m_normIndex;
 }
 
 void HandlerGO::SetAbsorbtionAccounting(bool value)
 {
-	m_isAccountAbsorbtion = value;
+	m_hasAbsorbtion = value;
+	m_cAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
 }
 
 void HandlerGO::WriteLog(const string &str)
@@ -282,96 +286,121 @@ void HandlerGO::WriteLog(const string &str)
 	m_logFile << str;
 }
 
-void HandlerGO::SetTracing(Tracing *tracing)
+void Handler::SetScattering(Scattering *scattering)
 {
-	m_tracing = tracing;
+	m_scattering = scattering;
 }
-
 
 HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float wavelength)
 	: HandlerGO(particle, incidentLight, wavelength)
 {
 }
 
-void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams, double angle)
+void Handler::ApplyAbsorbtion(Beam &beam)
 {
-	double sinBeta = sin(angle);
+	vector<int> tr;
+	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+
+//	double opAbs = CalcOpticalPathAbsorption(beam);
+	double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
+
 #ifdef _DEBUG // DEB
-	int c = 0;
+	m_logFile << fabs(path - beam.opticalPath) << endl;
 #endif
-	double kAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
+	if (path > DBL_EPSILON)
+	{
+		double abs = exp(m_cAbs*path);
+		beam.J *= abs;
+	}
+}
+
+void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
+{
+	m_sinAngle = sin(m_particle->rotAngle.beta);
 
 	for (Beam &beam : beams)
 	{
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
-
-		double cross = BeamCrossSection(beam);
-		double area = cross*sinBeta;
-
 		// absorbtion
-		if (/*m_isAccountAbsorbtion &&*/ beam.level > 0)
+		if (m_hasAbsorbtion && beam.act > 0)
 		{
-			vector<int> tr;
-			Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
-
-//			double opAbs = CalcOpticalPathAbsorption(beam);
-			double path = m_tracing->ComputeInternalOpticalPath(beam, tr);
-#ifdef _DEBUG // DEB
-if (/*beam.level > 1 && */isnan(path))
-{
-	double s = 0;
-}
-
-m_logFile << fabs(path - beam.opticalPath) << endl;
-//m_logFile << path << ';' << beam.opticalPath << endl;
-//cout << endl << endl << "path " << path << endl << "opticalPath " << beam.opticalPath;
-#endif
-			if (fabs(path) > DBL_EPSILON)
-			{
-				double abs = exp(kAbs*path);
-				beam.J *= abs;
-			}
+			ApplyAbsorbtion(beam);
 		}
 
-		matrix bf = Mueller(beam.J);
-#ifdef _DEBUG // DEB
-if (beam.level > 2)
-{
-	double s = bf[0][0];
-//	double f = Mueller(Jd)[0][0];
-//	m_logFile << s << endl;
-}
-#endif
-//		if (isinf(bf[0][0]))
-//			int f = 0;
-		AddToResultMullerGO(beam.light.direction, bf, area, m_totalContrib);
-#ifdef _DEBUG // DEB
-//		double oo =  m_totalContrib.scatMatrix(0, 6)[0][0];
-//		m_logFile << c++ << " " << oo << endl;
-#endif
+		const float &z = beam.direction.cz;
+		int zenith = round((acos(z)*SPHERE_RING_NUM)/M_PI);
+		matrix m = ComputeMueller(zenith, beam);
+
+		m_totalContrib.AddMueller(zenith, m);
 	}
-
-// deb
-//m_logFile << m_totalContrib.scatMatrix(0, 6)[0][0] << endl;
-
-	beams.clear();
 }
 
-HandlerGroupGO::HandlerGroupGO(Particle *particle, Light *incidentLight, float wavelength)
+HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float wavelength)
 	: HandlerGO(particle, incidentLight, wavelength)
 {
 }
 
-void HandlerGroupGO::HandleBeams(std::vector<Beam> &beams, double angle)
+void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 {
-	double sinBeta = sin(angle);
+	m_sinAngle = sin(m_particle->rotAngle.beta);
 
 	for (Beam &beam : beams)
 	{
-		int grID = m_tracks->FindGroup(beam.id);
+		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
 
-		if (grID < 0)
+		if (groupId >= 0)
+		{
+			beam.RotateSpherical(-m_incidentLight->direction,
+								 m_incidentLight->polarizationBasis);
+
+			const float &z = beam.direction.cz;
+			int zenith = round((acos(z)*SPHERE_RING_NUM)/M_PI);
+			matrix m = ComputeMueller(zenith, beam);
+
+			m_totalContrib.AddMueller(zenith, m);
+			m_tracksContrib[groupId].AddMueller(zenith, m);
+		}
+	}
+}
+
+void HandlerTracksGO::WriteMatricesToFile(string &destName)
+{
+	string dir = CreateFolder(destName);
+
+	for (size_t i = 0; i < m_tracksContrib.size(); ++i)
+	{
+		if ((*m_tracks)[i].size != 0)
+		{
+			string subname = (*m_tracks)[i].CreateGroupName();
+			AverageOverAlpha(0, m_normIndex, m_tracksContrib[i]);
+			WriteToFile(m_tracksContrib[i], m_normIndex, dir + subname);
+		}
+	}
+}
+
+void HandlerTotalGO::WriteMatricesToFile(string &destName)
+{
+	destName += "_all";
+	AverageOverAlpha(0, m_normIndex, m_totalContrib);
+	WriteToFile(m_totalContrib, m_normIndex, destName);
+}
+
+HandlerPO::HandlerPO(Particle *particle, Light *incidentLight, float wavelength)
+	: Handler(particle, incidentLight, wavelength),
+	  m_conus(0.0, 0, 0)
+{
+}
+
+void HandlerPO::HandleBeams(std::vector<Beam> &beams)
+{
+	CleanJ();
+
+	for (Beam &beam : beams)
+	{
+		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
+
+		if (groupId < 0)
 		{
 			continue;
 		}
@@ -379,41 +408,248 @@ void HandlerGroupGO::HandleBeams(std::vector<Beam> &beams, double angle)
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 
-		double cross = BeamCrossSection(beam);
-		double area = cross*sinBeta;
-		matrix bf = Mueller(beam.J);
+		Point3f center = beam.Center();
+		double projLenght = beam.opticalPath + DotProduct(center, beam.direction);
 
-		// group contribution
-		AddToResultMullerGO(beam.light.direction, bf, area, m_groupContrib[grID]);
+		Point3f beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
+		beamBasis = beamBasis/Length(beamBasis); // basis of beam
 
-		// total contribution
-		AddToResultMullerGO(beam.light.direction, bf, area, m_totalContrib);
-	}
-
-	beams.clear();
-}
-
-void HandlerGroupGO::WriteMatricesToFile(double norm, string &dirName)
-{
-	string dir = CreateFolder(dirName);
-
-	for (size_t i = 0; i < m_groupContrib.size(); ++i)
-	{
-		if ((*m_tracks)[i].size != 0)
+		for (int i = 0; i <= m_conus.phiCount; ++i)
 		{
-			string subname = (*m_tracks)[i].CreateGroupName();
-			AverageOverAlpha(0, norm, m_groupContrib[i]);
-			WriteToFile(m_groupContrib[i], norm, dir + subname);
+			double p = i * m_conus.dPhi;
+			double sinP = sin(p),
+					cosP = cos(p);
+
+			for (int j = 0; j <= m_conus.thetaCount; ++j)
+			{	//
+				double t = j * m_conus.dTheta;
+
+				double sinT = sin(t);
+
+				Point3d vr(sinT*cosP, sinT*sinP, cos(t));
+				Point3d vf = (j == 0) ? -m_incidentLight->polarizationBasis
+									  : Point3d(-sinP ,cosP ,0);
+				// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
+
+				matrixC jones(0, 0);
+				MultiplyJones(beam, beamBasis, vf, vr, projLenght, jones);
+				J[groupId].insert(i, j, jones);
+			}
 		}
 	}
 
-	WriteMatricesToFile(norm, dirName);
+	AddToMueller();
+}
+
+void HandlerPO::SetScatteringConus(const Cone &conus)
+{
+	m_conus = conus;
+	M = Arr2D(m_conus.phiCount + 1, m_conus.thetaCount + 1, 4, 4);
+}
+
+void HandlerPO::AddToMueller()
+{
+	for (size_t q = 0; q < J.size(); ++q)
+	{
+		for (int t = 0; t <= m_conus.thetaCount; ++t)
+		{
+			for (int p = 0; p <= m_conus.phiCount; ++p)
+			{
+				matrix m = Mueller(J[q](p, t));
+				m *= m_normIndex;
+				M.insert(p, t, m);
+			}
+		}
+	}
+}
+
+void HandlerPO::MultiplyJones(const Beam &beam, const Point3f &T,
+							  const Point3d &vf, const Point3d &vr,
+							  double lng_proj0, matrixC &Jx)
+{
+	matrixC Jn_rot(2, 2);
+	RotateJones(beam, T, vf, vr, Jn_rot);
+
+	complex fn(0, 0);
+	fn = beam.DiffractionIncline(vr, m_wavelength);
+
+	if (isnan(real(fn)))
+	{
+		isNanOccured = isNan = true;
+		return;
+	}
+
+	double dp = DotProductD(vr, Point3d(beam.Center()));
+	complex tmp = exp_im(M_2PI*(lng_proj0-dp)/m_wavelength);
+	matrixC fn_jn = beam.J * tmp;
+
+	Jx = fn*Jn_rot*fn_jn;
+}
+
+void HandlerPO::RotateJones(const Beam &beam, const Point3f &T, const Point3d &vf,
+							const Point3d &vr, matrixC &J)
+{
+	Point3f normal = beam.Normal();
+
+	Point3d vt = CrossProductD(vf, vr);
+	vt = vt/LengthD(vt);
+
+	Point3f NT = CrossProduct(normal, T);
+	Point3f NE = CrossProduct(normal, beam.polarizationBasis);
+
+	Point3d NTd = Point3d(NT.cx, NT.cy, NT.cz);
+	Point3d NEd = Point3d(NE.cx, NE.cy, NE.cz);
+
+	J[0][0] = -DotProductD(NTd, vf);
+	J[0][1] = -DotProductD(NEd, vf);
+	J[1][0] =  DotProductD(NTd, vt);
+	J[1][1] =  DotProductD(NEd, vt);
+}
+
+void HandlerPO::CleanJ()
+{
+	J.clear();
+	Arr2DC tmp(m_conus.phiCount + 1, m_conus.thetaCount + 1, 2, 2);
+	tmp.ClearArr();
+
+	for(int q = 0; q < m_tracks->size(); q++)
+	{
+		J.push_back(tmp);
+	}
+}
+
+void HandlerGO::SetTracks(Tracks *tracks)
+{
+	Handler::SetTracks(tracks);
+	m_tracksContrib.resize(m_tracks->size());
+}
+
+void HandlerPO::WriteMatricesToFile(string &destName)
+{
+	ofstream outFile(destName, ios::app);
+
+	outFile << to_string(m_conus.radius) << ' '
+			<< to_string(m_conus.thetaCount) << ' '
+			<< to_string(m_conus.phiCount+1);
+
+	for (int t = 0; t <= m_conus.thetaCount; ++t)
+	{
+		double tt = RadToDeg(t*m_conus.dTheta);
+
+		for (int p = 0; p <= m_conus.phiCount; ++p)
+		{
+			double fi = -((double)p)*m_conus.dPhi;
+			double degPhi = RadToDeg(-fi);
+			outFile << endl << tt << " " << degPhi << " ";
+
+			matrix m = M(p, t);
+			outFile << m;
+		}
+	}
+}
+
+HandlerBackScatterPoint::HandlerBackScatterPoint(Particle *particle,
+												 Light *incidentLight,
+												 float wavelength)
+	: HandlerPO(particle, incidentLight, wavelength)
+{
+}
+
+void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
+{
+	Point3d vr(0, 0, 1);
+	Point3d vf = -m_incidentLight->polarizationBasis;
+
+	for (Beam &beam : beams)
+	{
+		if (beam.direction.cz < BEAM_DIR_LIM)
+		{
+			continue;
+		}
+
+		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
+
+		if (groupId < 0 && m_tracks->shouldComputeTracksOnly)
+		{
+			continue;
+		}
+
+		beam.RotateSpherical(-m_incidentLight->direction,
+							 m_incidentLight->polarizationBasis);
+
+		Point3f beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
+		beamBasis = beamBasis/Length(beamBasis); // basis of beam
+
+		Point3f center = beam.Center();
+		double projLenght = beam.opticalPath + DotProduct(center, beam.direction);
+
+		matrixC jones(2, 2);
+		MultiplyJones(beam, beamBasis, vf, vr, projLenght, jones);
+
+		// correction
+		Matrix2x2c jonesCor = jones;
+		jonesCor.m12 -= jonesCor.m21;
+		jonesCor.m12 /= 2;
+		jonesCor.m21 = -jonesCor.m12;
+
+		if (groupId < 0 && !m_tracks->shouldComputeTracksOnly)
+		{
+			originContrib->AddToMueller(jones);
+			correctedContrib->AddToMueller(jonesCor);
+		}
+		else
+		{
+			originContrib->AddToGroup(jones, groupId);
+			correctedContrib->AddToGroup(jonesCor, groupId);
+		}
+	}
+
+	originContrib->SumGroupTotal();
+	correctedContrib->SumGroupTotal();
 }
 
 
-void HandlerTotalGO::WriteMatricesToFile(double norm, string &filename)
+void HandlerBackScatterPoint::SetTracks(Tracks *tracks)
 {
-	filename += "_all";
-	AverageOverAlpha(0, norm, m_totalContrib);
-	WriteToFile(m_totalContrib, norm, filename);
+	Handler::SetTracks(tracks);
+	originContrib = new PointContribution(tracks->size(), m_normIndex);
+	correctedContrib = new PointContribution(tracks->size(), m_normIndex);
+}
+
+void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
+												 double angle, double energy,
+												 bool isOutputGroups,
+												 string prefix)
+{
+	PointContribution *contrib = (prefix == "") ? originContrib : correctedContrib;
+	contrib->SumTotal();
+
+	energy *= m_normIndex;
+
+	ofstream *all = files.GetMainFile(prefix + "all");
+	*(all) << angle << ' ' << energy << ' ';
+	*(all) << contrib->GetTotal() << endl;
+
+	if (isOutputGroups)
+	{
+		for (size_t gr = 0; gr < m_tracks->size(); ++gr)
+		{
+			ofstream &file = *(files.GetGroupFile(gr));
+			file << angle << ' ' << energy << ' ';
+			file << contrib->GetGroupMueller(gr) << endl;
+		}
+	}
+
+	if (!m_tracks->shouldComputeTracksOnly)
+	{
+		ofstream &other = *(files.GetMainFile(prefix + "other"));
+		other << angle << ' ' << energy << ' ';
+		other << contrib->GetRest() << endl;
+
+		ofstream &diff = *(files.GetMainFile(prefix + "difference"));
+		diff << angle << ' ' << energy << ' ';
+		diff << contrib->GetGroupTotal() << endl;
+	}
+
+	contrib->Reset();
 }

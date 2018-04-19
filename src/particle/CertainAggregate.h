@@ -7,7 +7,7 @@ class CertainAggregate : public Particle
 public:
 	CertainAggregate(const complex &refrIndex, double sizeIndex);
 
-	void GetAggPartFacetIDRange(int id, int &begin, int &end) const override;
+	void GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const override;
 
 protected:
 	void SetFacetParams() override;

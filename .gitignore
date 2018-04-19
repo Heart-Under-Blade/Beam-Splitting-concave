@@ -45,3 +45,6 @@ tool/build-maki_particle_builder-Desktop-Release/Makefile.Release
 tool/build-maki_particle_builder-Desktop-Release/Makefile.Debug
 tool/build-maki_particle_builder-Desktop-Release/Makefile
 log.txt
+bin/btm_d.exe
+doc/macke-code-src/rt-crystal/rt-crystal.prj
+doc/macke-code-src/rt-crystal/Makefile

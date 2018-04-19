@@ -10,5 +10,5 @@ public:
 	BulletRosette(const complex &refrIndex, double diameter, double height,
 				  double peakHeight);
 
-	void GetAggPartFacetIDRange(int id, int &begin, int &end) const override;
+	void GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const override;
 };

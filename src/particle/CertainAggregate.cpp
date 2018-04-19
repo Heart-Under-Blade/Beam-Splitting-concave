@@ -316,7 +316,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	Resize(sizeIndex);
 
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
 		int last = defaultFacets[i].size-1;
 
@@ -332,7 +332,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	SetDefaultCenters();
 	Reset();
 
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
 		defaultFacets[i].isVisibleIn = false;
 		defaultFacets[i].isVisibleOut = false;
@@ -343,7 +343,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 void CertainAggregate::Resize(double sizeIndex)
 {
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
 		for (int j = 0; j < defaultFacets[i].size; ++j)
 		{
@@ -356,7 +356,7 @@ void CertainAggregate::Resize(double sizeIndex)
 
 void CertainAggregate::SetFacetParams()
 {
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
 		if (i%8 == 7 || i%8 == 0 || i == 0)
 		{
@@ -370,7 +370,7 @@ void CertainAggregate::SetFacetParams()
 
 }
 
-void CertainAggregate::GetAggPartFacetIDRange(int id, int &begin, int &end) const
+void CertainAggregate::GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const
 {
 	// REF: make universal
 	if (id < 8)

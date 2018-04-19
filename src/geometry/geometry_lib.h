@@ -14,8 +14,9 @@ enum Location: bool
 	In, Out
 };
 
-struct Orientation
+class Orientation
 {
+public:
 	double beta;
 	double gamma;
 	double alpha;
@@ -23,8 +24,9 @@ struct Orientation
 
 typedef Orientation Symmetry;
 
-struct IntArray
+class IntArray
 {
+public:
 	int arr[MAX_FACET_NUM];
 	int size = 0;
 
@@ -35,8 +37,9 @@ struct IntArray
 };
 
 template <class T>
-struct Couple
+class Couple
 {
+public:
 	T first;
 	T last;
 };
@@ -185,21 +188,25 @@ struct Point3d
 	}
 };
 
+typedef Point3f Vector3f;
+typedef Point3d Vector3d;
 
 /**
  * Functions
  */
 
-float DotProduct(const Point3f &v1, const Point3f &v2);
-double DotProductD(const Point3d &v1, const Point3d &v2);
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
+float DotProduct(const Vector3f &v1, const Vector3f &v2);
+double DotProductD(const Vector3d &v1, const Vector3d &v2);
+void CrossProduct(const Vector3f &v1, const Vector3f &v2, Vector3f &res);
 Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
 
-double Norm(const Point3f &point);
-void Normalize(Point3f &v);
-double Length(const Point3f &v);
+double Norm(const Vector3f &point);
+void Normalize(Vector3f &v);
+double Length(const Vector3f &v);
 
 
+Point3f ProjectPointToPlane(const Point3f &point, const Vector3f &direction,
+							const Vector3f &planeNormal);
 
 // REF: try to create template class 'Array<type>'
 
@@ -207,15 +214,6 @@ double Length(const Point3f &v);
  * Functions
  */
 
-float DotProduct(const Point3f &v1, const Point3f &v2);
-double DotProductD(const Point3d &v1, const Point3d &v2);
-
-double Norm(const Point3f &point);
-
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
+double NormD(const Vector3d &point);
 Point3d CrossProductD(const Point3d &v1, const Point3d &v2);
-
-void Normalize(Point3f &v);
-
-double Length(const Point3f &v);
-double LengthD(const Point3d &v);
+double LengthD(const Vector3d &v);

@@ -1,0 +1,35 @@
+  Inputfile   : 
+ hexagon                                                                        
+                      
+  Date & time : 19970717
+  Elapsed time:         1878  sec.
+  Random seed :   0.0000000E+00
+  
+                 10000  out of                  10000  orientations
+                 10000  good orientations
+                600847  hits out of                1000000  incoming rays
+  
+ Incoming energy  :    600847.000000000     
+ Scattered energy :    600792.650963509     
+ Real abs. energy :    25.9238397269480     
+ Missing energy   :    28.4251967645280       =   4.730854404620139E-003 %
+ FreSnell-Error   :   3.585698353936272E-002  =   5.967739464349945E-006 %
+ Finite tot. refl.:    23.0395992452443       =   3.834520143271795E-003 %
+ Finite ray recur.:    5.34972341056599       =   8.903636717110996E-004 %
+ Still missing    :   3.587410871769414E-002  =   5.970589637244447E-006 %
+  
+ 'scanning' cross section:    14086.6185852297     
+ 'polygon ' cross section:    14092.4492463351     
+               extinction, scattering, absorption : 
+ cross sec.:    28184.8984926701          28184.2904670070       
+  0.608025663143231     
+ effic.'s :    2.00000000000000          1.99995685450751       
+  4.314549249140320E-005
+  
+ w_0    :   0.999978427253754     
+ g_rt   :   0.630802245073556     
+ g_diff (g_diff_discrete) :   0.999974255365687       0.993358582950892     
+ g_total:   0.815392232332577     
+  
+ delta forward peak :   5.043723987760805E-002
+       backward "   :   1.578936587551585E-004
