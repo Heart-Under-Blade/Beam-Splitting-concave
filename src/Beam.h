@@ -66,13 +66,11 @@ public:
 	std::vector<Point3f> dirs;
 	std::vector<double> ops;
 #endif
+	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
+									///< "0" when beam location is "inside" and "1" if it's "outside"
 
 private:
 	void RotateJMatrix(const Point3f &newBasis);
 	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
-
-private:
-	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
-									///< "0" when beam location is "inside" and "1" if it's "outside"
 };

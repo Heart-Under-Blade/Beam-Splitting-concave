@@ -216,7 +216,7 @@ Point3f HandlerGO::CalcK(vector<int> &tr)
 	return k;
 }
 
-double HandlerGO::CalcOpticalPathAbsorption(const Beam &beam)
+double HandlerGO::CalcOpticalPathAbsorbtion(const Beam &beam)
 {	// OPT: вынести переменные из цикла
 	double opticalPath = 0;
 
@@ -287,7 +287,6 @@ void HandlerGO::SetTracing(Tracing *tracing)
 	m_tracing = tracing;
 }
 
-
 HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float wavelength)
 	: HandlerGO(particle, incidentLight, wavelength)
 {
@@ -322,8 +321,8 @@ if (/*beam.level > 1 && */isnan(path))
 {
 	double s = 0;
 }
-
-m_logFile << fabs(path - beam.opticalPath) << endl;
+if (path > FLT_EPSILON)
+	m_logFile << fabs(path - beam.opticalPath) << endl;
 //m_logFile << path << ';' << beam.opticalPath << endl;
 //cout << endl << endl << "path " << path << endl << "opticalPath " << beam.opticalPath;
 #endif

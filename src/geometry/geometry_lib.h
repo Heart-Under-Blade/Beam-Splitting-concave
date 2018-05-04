@@ -134,6 +134,7 @@ struct Point3f
 
 } __attribute__ ((aligned (16)));
 
+
 struct Point3d
 {
 	double x;

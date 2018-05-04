@@ -56,7 +56,7 @@ protected:
 
 	void WriteToFile(ContributionGO &contrib, double norm,
 					 const std::string &filename);
-	double CalcOpticalPathAbsorption(const Beam &beam);
+	double CalcOpticalPathAbsorbtion(const Beam &beam);
 	Point3f CalcK(std::vector<int> &tr);
 
 private:

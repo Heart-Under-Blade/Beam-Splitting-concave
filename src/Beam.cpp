@@ -260,7 +260,7 @@ void Beam::SetTracingParams(int facetID, int lvl, Location loc)
 	{	// write location
 		int loc = 1;
 		loc <<= lvl;
-		locations &= loc;
+		locations |= loc;
 	}
 }
 

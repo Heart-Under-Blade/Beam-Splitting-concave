@@ -282,6 +282,10 @@ void TracerBackScatterPoint::HandleBeams(std::vector<Beam> &beams, const Tracks 
 			continue;
 		}
 
+#ifdef _DEBUG // DEB
+		vector<int> tr;
+		Tracks::RecoverTrack(beam, m_particle->facetNum, tr);
+#endif
 		int groupID = tracks.FindGroup(beam.id);
 
 		if (groupID < 0 && !isCalcOther)

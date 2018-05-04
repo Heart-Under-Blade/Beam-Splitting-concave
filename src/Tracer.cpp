@@ -476,8 +476,12 @@ void Tracer::CalcMultiplyOfJmatrix(const Beam &beam, const Point3f &T,
 	}
 
 	double dp = DotProductD(vr, Point3d(beam.Center()));
-	complex tmp = exp_im(M_2PI*(lng_proj0-dp)/m_wavelength);
+	double arg = M_2PI*(lng_proj0-dp)/m_wavelength;
+	complex tmp = exp_im(arg);
 	matrixC fn_jn = beam.J * tmp;
+#ifdef _DEBUG // DEB
+	Matrix2x2c mm(fn_jn);
+#endif
 
 	Jx = fn*Jn_rot*fn_jn;
 }
