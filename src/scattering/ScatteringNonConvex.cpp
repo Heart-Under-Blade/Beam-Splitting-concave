@@ -42,12 +42,16 @@ void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polyg
 		BigInteger  inID = inBeam.trackId;
 		BigInteger outID = outBeam.trackId;
 
-		// set geometry of beam
-		 inBeam.SetPolygon(polygons.arr[j]);
-		outBeam.SetPolygon(polygons.arr[j]);
+		const Polygon &pol = polygons.arr[j];
 
-		// OPT: дублирует одиночный вызов в пред. ф-ции
-		CalcOpticalPathForLight(inBeam, outBeam);
+		// set geometry of beam
+		 inBeam.SetPolygon(pol);
+		outBeam.SetPolygon(pol);
+
+		Point3f p = pol.Center();
+		double path = ComputeIncidentOpticalPath(p);// OPT: дублирует одиночный вызов в пред. ф-ции
+		inBeam.opticalPath = path;
+		outBeam.opticalPath = path;
 
 		PushBeamToTree( inBeam, facetID, 0, Location::In );
 		PushBeamToTree(outBeam, facetID, 0, Location::Out);
@@ -163,7 +167,7 @@ void ScatteringNonConvex::CatchExternalBeam(const Beam &beam, std::vector<Beam> 
 	for (int i = 0; i < resSize; ++i)
 	{
 		tmp.SetPolygon(resultBeams[i]);
-		tmp.opticalPath += fabs(FAR_ZONE_DISTANCE + tmp.frontPosition); // добираем оптический путь
+		tmp.opticalPath += ComputeScatteredOpticalPath(tmp); // добираем оптический путь
 		scatteredBeams.push_back(tmp);
 	}
 }
@@ -384,7 +388,7 @@ void ScatteringNonConvex::TraceBeams(std::vector<Beam> &scaterredBeams)
 
 		if (isExternalNonEmptyBeam(beam))
 		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
-			beam.opticalPath += fabs(FAR_ZONE_DISTANCE + beam.frontPosition); // добираем оптический путь
+			beam.opticalPath += ComputeScatteredOpticalPath(beam); // добираем оптический путь
 			scaterredBeams.push_back(beam);
 		}
 	}

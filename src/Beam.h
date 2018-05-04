@@ -31,6 +31,7 @@ public:
 	void AddVertex(const Point3f &vertex);
 	void SetPolygon(const Polygon &other);
 	void SetLight(const Point3f &dir, const Point3f &polarBasis);
+	void SetLight(const Light &other);
 	void ComputeFrontPosition();
 
 	Beam & operator = (const Beam &other);
@@ -53,22 +54,15 @@ public:
 public:
 	Matrix2x2c J;					///< Jones matrix of beam
 
-	int lastFacetId;				///< last reflected facet
+	int lastFacetId;				///< last reflected facet id
 	int act;						///< number of preview reflections
-	Location location;				///< beam state towards the particle (inside or outside)
+	Location location; // REF: заменить на 'bool isInside'			///< beam state towards the particle (inside or outside)
 
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
-	double frontPosition;			///< current position of phase front from Ax+By+Cz+D=0
 
 #ifdef _TRACK_ALLOW
 	BigInteger trackId = 0;
-//	std::vector<int> track;
-#endif
-
-#ifdef _DEBUG // DEB
-	std::vector<Point3f> dirs;
-	std::vector<double> ops;
 #endif
 
 private:

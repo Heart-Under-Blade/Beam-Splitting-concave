@@ -31,7 +31,7 @@ public:
 	~Tracer();
 
 	// REF: delete?
-	void TraceRandomPO2(int betaNumber, int gammaNumber, const Cone &bsCone,
+	void TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
 						const Tracks &tracks, double wave);
 
 	void SetHandler(Handler *handler);
@@ -64,6 +64,6 @@ protected:
 	void OutputOrientationToLog(int i, int j, std::ostream &logfile);
 
 private:
-	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Cone &bsCone, int groupID);
+	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Conus &bsCone, int groupID);
 	void SetIncidentLight(Particle *particle);
 };

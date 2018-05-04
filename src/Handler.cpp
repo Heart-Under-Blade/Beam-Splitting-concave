@@ -11,15 +11,15 @@
 using namespace std;
 
 Handler::Handler(Particle *particle, Light *incidentLight, float wavelength)
-	: m_particle(particle),
+	: m_incidentLight(incidentLight),
+	  m_particle(particle),
 	  m_wavelength(wavelength),
-	  m_incidentLight(incidentLight),
 	  m_hasAbsorbtion(false),
 	  m_normIndex(1)
 {
 }
 
-void Handler::HandleBeams(std::vector<Beam> &beams)
+void Handler::HandleBeams(std::vector<Beam> &/*beams*/)
 {
 }
 
@@ -254,7 +254,7 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 	return opticalPath;
 }
 
-void Handler::WriteMatricesToFile(string &destName)
+void Handler::WriteMatricesToFile(string &/*destName*/)
 {
 }
 
@@ -441,7 +441,7 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 	AddToMueller();
 }
 
-void HandlerPO::SetScatteringConus(const Cone &conus)
+void HandlerPO::SetScatteringConus(const Conus &conus)
 {
 	m_conus = conus;
 	M = Arr2D(m_conus.phiCount + 1, m_conus.thetaCount + 1, 4, 4);
@@ -480,8 +480,12 @@ void HandlerPO::MultiplyJones(const Beam &beam, const Point3f &T,
 	}
 
 	double dp = DotProductD(vr, Point3d(beam.Center()));
-	complex tmp = exp_im(M_2PI*(lng_proj0-dp)/m_wavelength);
+	double arg = M_2PI*(lng_proj0-dp)/m_wavelength;
+	complex tmp = exp_im(arg);
 	matrixC fn_jn = beam.J * tmp;
+#ifdef _DEBUG // DEB
+	Matrix2x2c mm(fn_jn);
+#endif
 
 	Jx = fn*Jn_rot*fn_jn;
 }
@@ -512,7 +516,7 @@ void HandlerPO::CleanJ()
 	Arr2DC tmp(m_conus.phiCount + 1, m_conus.thetaCount + 1, 2, 2);
 	tmp.ClearArr();
 
-	for(int q = 0; q < m_tracks->size(); q++)
+	for (unsigned q = 0; q < m_tracks->size(); q++)
 	{
 		J.push_back(tmp);
 	}
@@ -566,7 +570,10 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		{
 			continue;
 		}
-
+#ifdef _DEBUG // DEB
+		vector<int> tr;
+		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+#endif
 		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
 
 		if (groupId < 0 && m_tracks->shouldComputeTracksOnly)
@@ -581,6 +588,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		beamBasis = beamBasis/Length(beamBasis); // basis of beam
 
 		Point3f center = beam.Center();
+beam.opticalPath = 0.55;
 		double projLenght = beam.opticalPath + DotProduct(center, beam.direction);
 
 		matrixC jones(2, 2);
@@ -629,7 +637,7 @@ void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
 	ofstream *all = files.GetMainFile(prefix + "all");
 	*(all) << angle << ' ' << energy << ' ';
 	*(all) << contrib->GetTotal() << endl;
-
+cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
 	if (isOutputGroups)
 	{
 		for (size_t gr = 0; gr < m_tracks->size(); ++gr)

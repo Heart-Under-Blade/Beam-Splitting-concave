@@ -82,6 +82,8 @@ protected:
 
 	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
 
+	double ComputeIncidentOpticalPath(const Point3f &facetPoint);
+	double ComputeScatteredOpticalPath(const Beam &beam);
 	void ComputeOpticalParams(double cosA, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam) const;
 
@@ -105,7 +107,6 @@ protected:
 
 	void ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon);
 
-	void CalcOpticalPathForLight(Beam &inBeam, Beam &outBeam);
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 	void PushBeamToTree(Beam &beam, int facetId, int level);
@@ -116,14 +117,13 @@ protected:
 private:
 	double ComputeEffectiveReRi(const double &cosA) const;
 
-	void SetRegularBeamParams(double cosA, const Point3f &normal,
-							  Point3f r0, double s, const Beam &incidentBeam,
+	void SetRegularBeamParams(double cosA, const Point3f &normal, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam);
 
 	void SetCRBeamParams(double cosA, double reRi, const Beam &incidentBeam,
 										 Beam &inBeam);
 
-	void SplitDirection(const Point3f &incidentDir, double cosA,
+	void SplitDirection(const Point3f &dir, double cosA,
 						const Point3f &normal,
 						Point3f &reflDir, Point3f &refrDir) const;
 

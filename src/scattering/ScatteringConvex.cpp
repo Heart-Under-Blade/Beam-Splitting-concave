@@ -112,7 +112,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeam.lastFacetId = facetID;
 			outBeam.act = incidentBeam.act + 1;
 			ComputeBeamId(outBeam);
-			outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition); // добираем оптический путь
+			outBeam.opticalPath += ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
 			outBeams.push_back(outBeam);
 		}
 	}
@@ -124,7 +124,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 		outBeam.lastFacetId = facetID;
 		outBeam.act = incidentBeam.act + 1;
 		ComputeBeamId(outBeam);
-		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition); // добираем оптический путь
+		outBeam.opticalPath += ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
 		outBeams.push_back(outBeam);
 	}
 

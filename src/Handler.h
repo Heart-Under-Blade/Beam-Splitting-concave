@@ -11,9 +11,9 @@
  * @brief The Cone struct
  * Backscattering cone divided by cells
  */
-struct Cone
+struct Conus
 {
-	Cone(double radius, int phiCount, int thetaCount)
+	Conus(double radius, int phiCount, int thetaCount)
 		: radius(radius), phiCount(phiCount), thetaCount(thetaCount)
 	{
 		dPhi = M_2PI/(phiCount+1);
@@ -177,13 +177,13 @@ protected:
 
 protected:
 	Scattering *m_scattering;
-	Particle *m_particle;
 	Tracks *m_tracks;
-	double m_cAbs;
+	Particle *m_particle;
 	float m_wavelength;
 	bool m_hasAbsorbtion;
 	double m_normIndex;
 	std::ofstream m_logFile;
+	double m_cAbs;
 };
 
 
@@ -195,7 +195,7 @@ public:
 	void HandleBeams(std::vector<Beam> &beams) override;
 	void WriteMatricesToFile(std::string &destName) override;
 
-	void SetScatteringConus(const Cone &conus);
+	void SetScatteringConus(const Conus &conus);
 
 protected:
 	void MultiplyJones(const Beam &beam, const Point3f &T,
@@ -211,7 +211,7 @@ protected:
 protected:
 	std::vector<Arr2DC> J;	// Jones matrices
 	Arr2D M;				// Mueller matrices
-	Cone m_conus;			// back scattering conus
+	Conus m_conus;			// back scattering conus
 	bool isNanOccured = false;
 	bool isNan = false;
 };

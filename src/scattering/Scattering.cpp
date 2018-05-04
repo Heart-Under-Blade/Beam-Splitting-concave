@@ -16,8 +16,8 @@ using namespace std;
 
 Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 					   int nActs)
-	: m_incidentLight(incidentLight),
-	  m_particle(particle)
+	: m_particle(particle),
+	  m_incidentLight(incidentLight)
 {
 	m_facets = m_particle->facets;
 
@@ -104,19 +104,21 @@ void Scattering::SetBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outB
 	}
 	else // normal incidence
 	{
-		inBeam = (*m_incidentLight);
 		inBeam.J.m11 = 2.0/(m_ri + 1.0); // OPT: вынести
 		inBeam.J.m22 = inBeam.J.m11;
+		inBeam.SetLight(*m_incidentLight);
 
 		outBeam.J.m11 = (m_ri - 1.0)/(m_ri + 1.0);
 		outBeam.J.m22 = -outBeam.J.m11;
-		outBeam.direction = -dir;
-		outBeam.polarizationBasis = m_incidentLight->polarizationBasis;
+		outBeam.SetLight(-dir, m_incidentLight->polarizationBasis);
 	}
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathForLight(inBeam, outBeam);
+		Point3f p = inBeam.Center();
+		double path = ComputeIncidentOpticalPath(p);
+		inBeam.opticalPath = path;
+		outBeam.opticalPath = path;
 	}
 }
 
@@ -131,13 +133,14 @@ void Scattering::RotatePolarisationPlane(const Point3f &dir,
 	beam.RotatePlane(newBasis);
 }
 
-void Scattering::CalcOpticalPathForLight(Beam &inBeam, Beam &outBeam)
+double Scattering::ComputeIncidentOpticalPath(const Point3f &facetPoint)
 {
-	inBeam.ComputeFrontPosition();
-	outBeam.ComputeFrontPosition();
+	return FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, facetPoint);
+}
 
-	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, inBeam.Center());
-	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition);
+double Scattering::ComputeScatteredOpticalPath(const Beam &beam)
+{
+	return FAR_ZONE_DISTANCE + DotProduct(-beam.direction, beam.Center());
 }
 
 void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
@@ -155,8 +158,8 @@ void Scattering::ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon)
 }
 
 // TODO: пофиксить
-void Scattering::ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
-								  std::vector<Beam> &outBeams)
+void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vector<std::vector<int>> &/*tracks*/,
+								  std::vector<Beam> &/*outBeams*/)
 {
 //	m_particle->Rotate(beta, gamma, 0);
 
@@ -208,8 +211,9 @@ void Scattering::ScatterLight(double beta, double gamma, const std::vector<std::
 double Scattering::ComputeSegmentOpticalPath(const Beam &beam, double cosA,
 											 const Point3f &facetPoint) const
 {
+	double front = DotProduct(-beam.direction, beam.Center());
 	double tmp = DotProduct(beam.direction, facetPoint);
-	double path = fabs(tmp + beam.frontPosition); // refractive index of external environment = 1
+	double path = fabs(tmp + front); // refractive index of external environment = 1
 
 	if (beam.location == Location::In)
 	{
@@ -223,16 +227,8 @@ double Scattering::ComputeSegmentOpticalPath(const Beam &beam, double cosA,
 void Scattering::ComputeOpticalParams(double cosA, const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam) const
 {
-	Point3f center = inBeam.Center();
-	double path = ComputeSegmentOpticalPath(incidentBeam, cosA, center);
-
-	inBeam.frontPosition = DotProduct(-inBeam.direction, center);
-	// REF: расчитывать это сразу в функции ComputeOpticalPath
-	// и убрать из класса Beam?
-
+	double path = ComputeSegmentOpticalPath(incidentBeam, cosA, inBeam.Center());
 	inBeam.opticalPath = path;
-
-	outBeam.frontPosition = DotProduct(-outBeam.direction, center);
 	outBeam.opticalPath = path;
 }
 
@@ -270,7 +266,11 @@ void Scattering::SetRegularIncidenceBeamParams(double cosA, const Point3f &norma
 
 	if (s > DBL_EPSILON) // regular incidence
 	{
-		SetRegularBeamParams(cosA, normal, r0, s, incidentBeam,
+		Point3f refrDir = r0/sqrt(s) + normal;
+		Normalize(refrDir);
+		outBeam = Light{refrDir, inBeam.polarizationBasis};
+
+		SetRegularBeamParams(cosA, normal, incidentBeam,
 							 inBeam, outBeam);
 		isRegular = true;
 	}
@@ -302,23 +302,18 @@ void Scattering::SetNormalIncidenceBeamParams(double cosA, const Beam &incidentB
 }
 
 void Scattering::SetRegularBeamParams(double cosA, const Point3f &normal,
-									  Point3f r0, double s,
 									  const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam)
 {
-	Point3f refrDir = r0/sqrt(s) + normal;
-	Normalize(refrDir);
-
-	double cosG = DotProduct(normal, refrDir);
+	double cosG = DotProduct(normal, outBeam.direction);
 
 	complex tmp0 = m_ri * cosA;
 	complex tmp1 = m_ri * cosG;
-	complex tmp = 2.0*tmp0;
+	complex tmp = 2.0 * tmp0;
 	complex Tv0 = tmp1 + cosA;
 	complex Th0 = tmp0 + cosG;
 
 	outBeam.SetJonesMatrix(incidentBeam, tmp/Tv0, tmp/Th0);
-	outBeam = Light{refrDir, inBeam.polarizationBasis};
 
 	complex Tv = (cosA - tmp1)/Tv0;
 	complex Th = (tmp0 - cosG)/Th0;
@@ -346,7 +341,6 @@ void Scattering::SetCRBeamParams(double cosA, double reRi,
 
 	if (m_isOpticalPath)
 	{
-		inBeam.ComputeFrontPosition();
 		inBeam.opticalPath = ComputeSegmentOpticalPath(incidentBeam, cosA, inBeam.Center());
 	}
 }
@@ -609,13 +603,13 @@ void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
 	}
 }
 
-void Scattering::SplitDirection(const Point3f &incidentDir, double cosA,
+void Scattering::SplitDirection(const Point3f &dir, double cosA,
 								const Point3f &normal,
 								Point3f &reflDir, Point3f &refrDir) const
 {
-	Point3f tmp0 = normal + incidentDir/cosA;
+	Point3f tmp0 = dir/cosA + normal;
 
-	refrDir = normal + tmp0;
+	refrDir = tmp0 + normal;
 	Normalize(refrDir);
 
 	double cosA2 = cosA * cosA;
@@ -627,12 +621,11 @@ void Scattering::SplitDirection(const Point3f &incidentDir, double cosA,
 	}
 
 	tmp1 = (m_cRiRe + 1.0 - cosA2 + tmp1)/2.0;
-	tmp1 = (tmp1/cosA2) - Norm(tmp0);
+	double s = (tmp1/cosA2) - Norm(tmp0);
 
 //	LOG_ASSERT(tmp1 > 0);
-	tmp1 = sqrt(tmp1);
 
-	reflDir = (tmp0/tmp1) - normal;
+	reflDir = tmp0/sqrt(s) - normal;
 	Normalize(reflDir);
 }
 

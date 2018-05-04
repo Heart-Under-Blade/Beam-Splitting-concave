@@ -17,8 +17,6 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 	os << "level: " << beam.act << endl
 	   << "last facet: " << beam.lastFacetId << endl
 	   << "location: " << beam.location << endl
-//	   << "id: " << beam.id << endl
-	   << "D: " << beam.frontPosition << endl
 	   << "direction: "
 	   << beam.direction.cx << ", "
 	   << beam.direction.cy << ", "
@@ -54,7 +52,6 @@ Beam::Beam()
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
-	frontPosition = other.frontPosition;
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
 
@@ -63,10 +60,6 @@ void Beam::Copy(const Beam &other)
 	location = other.location;
 	locations = other.locations;
 
-#ifdef _DEBUG // DEB
-	dirs = other.dirs;
-	ops = other.ops;
-#endif
 #ifdef _TRACK_ALLOW
 	trackId = other.trackId;
 #endif
@@ -185,7 +178,6 @@ Beam &Beam::operator = (const Light &other)
 void Beam::SetDefault(Beam &other)
 {
 	other.opticalPath = 0;
-	other.frontPosition = 0;
 	direction = Vector3f(0, 0, 0);
 	polarizationBasis = Vector3f(0, 0, 0);
 
@@ -194,10 +186,6 @@ void Beam::SetDefault(Beam &other)
 	other.location = Location::Out;
 	other.locations = 0;
 
-#ifdef _DEBUG // DEB
-other.dirs.clear();
-other.ops.clear();
-#endif
 #ifdef _TRACK_ALLOW
 	other.trackId = 0;
 #endif
@@ -468,7 +456,8 @@ void Beam::SetLight(const Point3f &dir, const Point3f &polarBasis)
 	polarizationBasis = polarBasis;
 }
 
-void Beam::ComputeFrontPosition()
+void Beam::SetLight(const Light &other)
 {
-	frontPosition = DotProduct(-direction, Center());
+	direction = other.direction;
+	polarizationBasis = other.polarizationBasis;
 }
