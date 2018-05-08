@@ -118,7 +118,9 @@ void Scattering::SetBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outB
 		Point3f p = inBeam.Center();
 		double path = ComputeIncidentOpticalPath(p);
 		inBeam.opticalPath = path;
+		inBeam.ComputeFront();
 		outBeam.opticalPath = path;
+		outBeam.ComputeFront();
 	}
 }
 
@@ -140,7 +142,7 @@ double Scattering::ComputeIncidentOpticalPath(const Point3f &facetPoint)
 
 double Scattering::ComputeScatteredOpticalPath(const Beam &beam)
 {
-	return FAR_ZONE_DISTANCE + DotProduct(-beam.direction, beam.Center());
+	return FAR_ZONE_DISTANCE + beam.front;
 }
 
 void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
@@ -211,9 +213,8 @@ void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vect
 double Scattering::ComputeSegmentOpticalPath(const Beam &beam, double cosA,
 											 const Point3f &facetPoint) const
 {
-	double front = DotProduct(-beam.direction, beam.Center());
 	double tmp = DotProduct(beam.direction, facetPoint);
-	double path = fabs(tmp + front); // refractive index of external environment = 1
+	double path = fabs(tmp + beam.front); // refractive index of external environment = 1
 
 	if (beam.location == Location::In)
 	{
@@ -228,8 +229,12 @@ void Scattering::ComputeOpticalParams(double cosA, const Beam &incidentBeam,
 									  Beam &inBeam, Beam &outBeam) const
 {
 	double path = ComputeSegmentOpticalPath(incidentBeam, cosA, inBeam.Center());
+
 	inBeam.opticalPath = path;
+	inBeam.ComputeFront();
+
 	outBeam.opticalPath = path;
+	outBeam.ComputeFront();
 }
 
 bool Scattering::IsTerminalAct(const Beam &beam)
@@ -342,6 +347,7 @@ void Scattering::SetCRBeamParams(double cosA, double reRi,
 	if (m_isOpticalPath)
 	{
 		inBeam.opticalPath = ComputeSegmentOpticalPath(incidentBeam, cosA, inBeam.Center());
+		inBeam.ComputeFront();
 	}
 }
 
@@ -629,34 +635,52 @@ void Scattering::SplitDirection(const Point3f &dir, double cosA,
 	Normalize(reflDir);
 }
 
-Point3f Scattering::ChangeBeamDirection(const Vector3f &oldDir,
-										const Vector3f &normal, Location loc)
+Point3f Scattering::ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
+										Location oldLoc, Location loc)
 {
 	Point3f newDir;
 
-	if (loc == Location::Out) // refraction
+	if (oldLoc == Location::Out) // refraction
 	{
 		double cosA = DotProduct(oldDir, -normal);
-		double cosA2 = cosA * cosA;
-
 		Vector3f tmp0 = normal + oldDir/cosA;
-		double tmp1 = m_cRiRe + cosA2 - 1.0;
 
-		if (m_cRiIm > FLT_EPSILON)
+		if (oldLoc == loc)
 		{
-			tmp1 = sqrt(tmp1*tmp1 + m_cRiIm);
+			newDir = normal + tmp0;
 		}
+		else
+		{
+			double cosA2 = cosA * cosA;
+			double tmp1 = m_cRiRe + cosA2 - 1.0;
 
-		tmp1 = (m_cRiRe + 1.0 - cosA2 + tmp1)/2.0;
-		tmp1 = (tmp1/cosA2) - Norm(tmp0);
-		tmp1 = sqrt(tmp1);
-		newDir = (tmp0/tmp1) - normal;
+			if (m_cRiIm > FLT_EPSILON)
+			{
+				tmp1 = sqrt(tmp1*tmp1 + m_cRiIm);
+			}
+
+			tmp1 = (m_cRiRe + 1.0 - cosA2 + tmp1)/2.0;
+			tmp1 = (tmp1/cosA2) - Norm(tmp0);
+			tmp1 = sqrt(tmp1);
+			newDir = (tmp0/tmp1) - normal;
+		}
 	}
 	else // reflection
 	{
 		double cosA = DotProduct(oldDir, normal);
 		Point3f tmp = oldDir/cosA - normal;
-		newDir = tmp - normal;
+
+		if (oldLoc == loc)
+		{
+			newDir = tmp - normal;
+		}
+		else
+		{
+			double cosA2 = cosA * cosA;
+			double Nr = ComputeEffectiveReRi(cosA);
+			double s = 1.0/(Nr*cosA2) - Norm(tmp);
+			newDir = tmp/sqrt(s) + normal;
+		}
 	}
 
 	Normalize(newDir);
@@ -688,34 +712,45 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 	double path = 0;
 	Point3f dir = -beam.direction; // back direction
 	Location loc = Location::Out;
+	Location nextLoc;
 
 	Point3f p1 = /*beam.arr[0]*/beam.Center();
 	Point3f p2;
 
 	for (int i = track.size()-1; i > 0; --i)
 	{
+		nextLoc = beam.GetLocationByActNumber(i-1);
+
 		Point3f &exNormal = m_facets[track[i]].ex_normal;
-		dir = ChangeBeamDirection(dir, exNormal, loc);
+		dir = ChangeBeamDirection(dir, exNormal, loc, nextLoc);
 
 		Point3f &inNormal = m_facets[track[i-1]].in_normal;
 		p2 = ProjectPointToPlane(p1, dir, inNormal);
 
-		loc = beam.GetLocationByActNumber(i-1);
+		double len = Length(p2 - p1);
 
-		if (loc == Location::In)
+		if (nextLoc == Location::In)
 		{	// add internal path only
-			path += Length(p1 - p2);
+			double cosA = DotProduct(dir, exNormal);
+			double reRi = ComputeEffectiveReRi(cosA);
+			len *= sqrt(reRi);
 		}
 
+		path += len;
+
 		p1 = p2;
+		loc = nextLoc;
 	}
 
-	path *= real(m_ri);
+//	path *= real(m_ri);
 #ifdef _DEBUG // DEB
 	Point3f nFar1 = m_incidentDir;
 	Point3f nFar2 = -beam.direction;
-//	path += FAR_ZONE_DISTANCE + DotProduct(p2, nFar1) +
-//					fabs(DotProduct(beam.Center(), nFar2) + FAR_ZONE_DISTANCE);
+	path += FAR_ZONE_DISTANCE + DotProductD(p2, nFar1) +
+					fabs(DotProductD(beam.Center(), nFar2) + FAR_ZONE_DISTANCE);
+
+	if (fabs(path - beam.opticalPath) > 1)
+		int ff = 0;
 #endif
 	return path;
 }

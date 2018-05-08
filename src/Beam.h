@@ -32,14 +32,14 @@ public:
 	void SetPolygon(const Polygon &other);
 	void SetLight(const Point3f &dir, const Point3f &polarBasis);
 	void SetLight(const Light &other);
-	void ComputeFrontPosition();
+	void ComputeFront();
 
 	Beam & operator = (const Beam &other);
 	Beam & operator = (const Polygon &other);
 	Beam & operator = (const Light &other);
 	Beam & operator = (Beam &&other);
 
-	void SetTracingParams(int facetID, int act, Location location);
+	void SetTracingParams(int facetID, int actN, Location location);
 
 	void SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2);
 
@@ -60,18 +60,18 @@ public:
 
 	// REF: перенести в PhisBeam
 	double opticalPath;				///< optical path of beam
+	double front;					///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
 #ifdef _TRACK_ALLOW
-	BigInteger trackId = 0;
+//	BigInteger trackId = 0;
+	long long trackId = 0;
 #endif
+	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
+									///< "0" when beam location is "inside" and "1" if it's "outside"
 
 private:
 	void RotateJMatrix(const Point3f &newBasis);
 	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
 	void SetDefault(Beam &other);
-
-private:
-	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
-									///< "0" when beam location is "inside" and "1" if it's "outside"
 };

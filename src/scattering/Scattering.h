@@ -128,7 +128,7 @@ private:
 						Point3f &reflDir, Point3f &refrDir) const;
 
 	Point3f ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
-								Location loc);
+								Location oldLoc, Location loc);
 
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,
 						  Polygon &polygon) const;

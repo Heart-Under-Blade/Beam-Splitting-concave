@@ -72,6 +72,7 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 			}
 
 			inBeam.trackId = beam.trackId;
+			inBeam.locations = beam.locations;
 			PushBeamToTree(inBeam, id, beam.act+1, Location::In);
 		}
 	}

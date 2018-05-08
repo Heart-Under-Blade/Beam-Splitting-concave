@@ -323,7 +323,7 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion
-		if (m_hasAbsorbtion && beam.act > 0)
+		if (/*m_hasAbsorbtion &&*/ beam.act > 0)
 		{
 			ApplyAbsorbtion(beam);
 		}
@@ -588,7 +588,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		beamBasis = beamBasis/Length(beamBasis); // basis of beam
 
 		Point3f center = beam.Center();
-beam.opticalPath = 0.55;
+//beam.opticalPath = 0.55;
 		double projLenght = beam.opticalPath + DotProduct(center, beam.direction);
 
 		matrixC jones(2, 2);

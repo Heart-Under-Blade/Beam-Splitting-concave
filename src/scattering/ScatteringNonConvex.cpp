@@ -39,8 +39,8 @@ void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polyg
 {
 	for (int j = 0; j < polygons.size; ++j)
 	{
-		BigInteger  inID = inBeam.trackId;
-		BigInteger outID = outBeam.trackId;
+		auto  inID = inBeam.trackId;
+		auto outID = outBeam.trackId;
 
 		const Polygon &pol = polygons.arr[j];
 
@@ -51,7 +51,9 @@ void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polyg
 		Point3f p = pol.Center();
 		double path = ComputeIncidentOpticalPath(p);// OPT: дублирует одиночный вызов в пред. ф-ции
 		inBeam.opticalPath = path;
+		inBeam.ComputeFront();
 		outBeam.opticalPath = path;
+		outBeam.ComputeFront();
 
 		PushBeamToTree( inBeam, facetID, 0, Location::In );
 		PushBeamToTree(outBeam, facetID, 0, Location::Out);
@@ -163,11 +165,11 @@ void ScatteringNonConvex::CatchExternalBeam(const Beam &beam, std::vector<Beam> 
 	}
 
 	Beam tmp = beam;
+	tmp.opticalPath += ComputeScatteredOpticalPath(tmp); // добираем оптический путь
 
 	for (int i = 0; i < resSize; ++i)
 	{
 		tmp.SetPolygon(resultBeams[i]);
-		tmp.opticalPath += ComputeScatteredOpticalPath(tmp); // добираем оптический путь
 		scatteredBeams.push_back(tmp);
 	}
 }
@@ -338,12 +340,14 @@ void ScatteringNonConvex::PushBeamsToTree(const Beam &beam, int facetID, bool ha
 {
 #ifdef _TRACK_ALLOW
 	inBeam.trackId = beam.trackId;
+	inBeam.locations = beam.locations;
 #endif
 
 	if (hasOutBeam)
 	{
 #ifdef _TRACK_ALLOW
 		outBeam.trackId = beam.trackId;
+		outBeam.locations = beam.locations;
 #endif
 		PushBeamToTree(outBeam, facetID, beam.act+1, Location::Out);
 	}
@@ -377,6 +381,10 @@ void ScatteringNonConvex::TraceBeams(std::vector<Beam> &scaterredBeams)
 		{
 			int facetId = facetIds.arr[i];
 
+#ifdef _DEBUG // DEB
+if (facetId == 15)
+	int gg = 0;
+#endif
 			bool isDivided;
 			TraceSecondaryBeamByFacet(beam, facetId, isDivided);
 
@@ -634,6 +642,10 @@ void ScatteringNonConvex::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 	Polygon intersected;
 	bool hasIntersection = Intersect(facetID, beam, intersected);
 
+#ifdef _DEBUG // DEB
+if (beam.trackId==11780 && facetID==0)
+	int f =0;
+#endif
 	if (hasIntersection)
 	{
 		Beam inBeam, outBeam;
@@ -642,6 +654,8 @@ void ScatteringNonConvex::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 
 		bool hasOutBeam;
 		SetOpticalBeamParams(facetID, beam, inBeam, outBeam, hasOutBeam);
+		inBeam.locations = beam.locations;
+		outBeam.locations = beam.locations;
 		PushBeamsToTree(beam, facetID, hasOutBeam, inBeam, outBeam);
 
 		Polygon resultBeams[MAX_VERTEX_NUM];

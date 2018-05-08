@@ -52,6 +52,7 @@ Beam::Beam()
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
+	front = other.front;
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
 
@@ -178,8 +179,9 @@ Beam &Beam::operator = (const Light &other)
 void Beam::SetDefault(Beam &other)
 {
 	other.opticalPath = 0;
-	direction = Vector3f(0, 0, 0);
-	polarizationBasis = Vector3f(0, 0, 0);
+	other.front = 0;
+	other.direction = Vector3f(0, 0, 0);
+	other.polarizationBasis = Vector3f(0, 0, 0);
 
 	other.lastFacetId = 0;
 	other.act = 0;
@@ -204,20 +206,21 @@ Beam &Beam::operator = (Beam &&other)
 	return *this;
 }
 
-void Beam::SetTracingParams(int facetID, int lvl, Location loc)
+void Beam::SetTracingParams(int facetID, int actN, Location loc)
 {
 	lastFacetId = facetID;
-	act = lvl;
+	act = actN;
 	location = loc;
 
 	if (loc == Location::Out)
 	{	// write location
 		int loc = 1;
-		loc <<= lvl;
-		locations &= loc;
+		loc <<= act;
+		locations |= loc;
 	}
 }
 
+// REF: заменить "const Beam &other" на "const Matrix2x2c &other"
 void Beam::SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2)
 {
 	J.m11 = c1 * other.J.m11;
@@ -460,4 +463,9 @@ void Beam::SetLight(const Light &other)
 {
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
+}
+
+void Beam::ComputeFront()
+{
+	front = DotProduct(-direction, Center());
 }
