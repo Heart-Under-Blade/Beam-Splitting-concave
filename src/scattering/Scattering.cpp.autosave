@@ -95,7 +95,7 @@ void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 	if (m_isOpticalPath)
 	{
 		Point3f p = inBeam.Center();
-		double path = ComputeIncidentOpticalPath(p);
+		double path = m_splitting.ComputeIncidentOpticalPath(p);
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
 	}

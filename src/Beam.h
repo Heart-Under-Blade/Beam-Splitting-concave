@@ -32,6 +32,7 @@ public:
 	void SetPolygon(const Polygon &other);
 	void SetLight(const Point3f &dir, const Point3f &polarBasis);
 	void SetLight(const Light &other);
+	void AddOpticalPath(double path);
 	void ComputeFront();
 
 	Beam & operator = (const Beam &other);
@@ -41,7 +42,7 @@ public:
 
 	void SetTracingParams(int facetID, int actN, Location location);
 
-	void SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2);
+	void MultiplyJonesMatrix(const complex &c1, const complex &c2);
 
 	// REF: перенести в PhisBeam
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
@@ -62,10 +63,7 @@ public:
 	double opticalPath;				///< optical path of beam
 	double front;					///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
-#ifdef _TRACK_ALLOW
-//	BigInteger trackId = 0;
-	long long trackId = 0;
-#endif
+	BigInteger trackId = 0;
 	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
 									///< "0" when beam location is "inside" and "1" if it's "outside"
 

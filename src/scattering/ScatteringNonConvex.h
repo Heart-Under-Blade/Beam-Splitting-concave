@@ -32,7 +32,7 @@ private:
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIDs);
 	void SelectVisibleFacetsForLight(IntArray &facetIDs);
 
-	void SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
+	void SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
 
 	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,

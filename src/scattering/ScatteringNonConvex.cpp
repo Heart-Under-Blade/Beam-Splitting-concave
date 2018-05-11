@@ -49,11 +49,13 @@ void ScatteringNonConvex::PushBeamsToTree(int facetID, const PolygonArray &polyg
 		outBeam.SetPolygon(pol);
 
 		Point3f p = pol.Center();
-		double path = ComputeIncidentOpticalPath(p);// OPT: дублирует одиночный вызов в пред. ф-ции
-		inBeam.opticalPath = path;
-		inBeam.ComputeFront();
-		outBeam.opticalPath = path;
-		outBeam.ComputeFront();
+
+		if (m_isOpticalPath)
+		{
+			double path = ComputeIncidentOpticalPath(p);
+			inBeam.AddOpticalPath(path);
+			outBeam.AddOpticalPath(path);
+		}
 
 		PushBeamToTree( inBeam, facetID, 0, Location::In );
 		PushBeamToTree(outBeam, facetID, 0, Location::Out);
@@ -75,7 +77,7 @@ void ScatteringNonConvex::SplitByFacet(const IntArray &facetIDs, int facetIndex)
 	{
 		int id = facetIDs.arr[facetIndex];
 		Beam inBeam, outBeam;
-		SetBeamOpticalParams(id, inBeam, outBeam);
+		SetIncidentBeamOpticalParams(id, inBeam, outBeam);
 		PushBeamsToTree(id, resPolygons, inBeam, outBeam);
 	}
 }
@@ -402,38 +404,55 @@ if (facetId == 15)
 	}
 }
 
-void ScatteringNonConvex::SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
+void ScatteringNonConvex::SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
 											   Beam &inBeam, Beam &outBeam,
 											   bool &hasOutBeam)
 {
 	const Point3f &dir = incidentBeam.direction;
-	const Point3f &normal = m_facets[facetID].ex_normal;
+	const Point3f &normal = m_facets[facetId].ex_normal;
 
 	hasOutBeam = true;
-	double cosIN = DotProduct(dir, normal);
+	m_splitting.ComputeCosA(dir, normal);
 
-	if (cosIN >= EPS_COS_00) // normal incidence
+	if (m_splitting.IsNormalIncidence()) // normal incidence
 	{
-		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
+		m_splitting.ComputeNormalBeamParams(incidentBeam, inBeam, outBeam);
 	}
 	else // regular incidence
 	{
+		Beam incBeam = incidentBeam;
+
 		if (incidentBeam.location == Location::In)
 		{
-			Beam incBeam = incidentBeam;
-			SetRegularIncidenceBeamParams(cosIN, normal, incBeam,
-										  inBeam, outBeam, hasOutBeam);
+			m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
+			incBeam.direction = -incBeam.direction;
+			RotatePolarisationPlane(normal, incBeam);
+
+			if (!m_splitting.IsCompleteReflection())
+			{
+				m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
+													  inBeam, outBeam);
+				hasOutBeam = true;
+			}
+			else // complete internal reflection incidence
+			{
+				m_splitting.ComputeCRBeamParams(normal, incidentBeam, inBeam);
+				hasOutBeam = false;
+			}
 		}
 		else // beam is external
 		{
 			inBeam.J = incidentBeam.J;
-			double cosI = DotProduct(-normal, dir);
+			m_splitting.ComputeCosA(dir, -normal);
 
-			SetRegularBeamParamsExternal(dir, cosI, facetID, inBeam, outBeam);
+			SetRegularBeamParamsExternal(facetId, incBeam, inBeam, outBeam);
 
 			if (m_isOpticalPath)
 			{
-				ComputeOpticalParams(cosIN, incidentBeam, inBeam, outBeam);
+				double path = ComputeSegmentOpticalPath(incidentBeam, cosI,
+														inBeam.Center());
+				inBeam.AddOpticalPath(path);
+				outBeam.AddOpticalPath(path);
 			}
 		}
 	}
@@ -669,10 +688,6 @@ if (beam.trackId==11780 && facetID==0)
 			for (int i = 0; i < resultSize; ++i)
 			{
 				tmp = resultBeams[i];
-#ifdef _DEBUG // DEB
-				if (m_treeSize >= MAX_BEAM_REFL_NUM)
-					int f =0;
-#endif
 				assert(m_treeSize < MAX_BEAM_REFL_NUM);
 				m_beamTree[m_treeSize++] = tmp;
 			}

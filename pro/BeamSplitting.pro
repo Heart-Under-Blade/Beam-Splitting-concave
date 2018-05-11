@@ -27,6 +27,7 @@ INCLUDEPATH += \
 	../src/particle \
 	../src/geometry \
 	../src/scattering \
+    ../src/tracer \
 	../src/bigint
 
 SOURCES += \
@@ -36,7 +37,8 @@ SOURCES += \
 	../src/geometry/*.cpp \
 	../src/common/*.cpp \
 	../src/scattering/*.cpp \
-	../src/bigint/*.cc
+	../src/bigint/*.cc \
+    ../src/Splitting.cpp
 
 HEADERS += \
 	../src/*.h \
@@ -46,7 +48,8 @@ HEADERS += \
 	../src/geometry/*.h \
 	../src/common/*.h \
 	../src/scattering/*.h \
-	../src/bigint/*.hh
+	../src/bigint/*.hh \
+    ../src/Splitting.h
 
 DISTFILES += \
 	classes.qmodel

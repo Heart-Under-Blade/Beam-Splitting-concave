@@ -14,7 +14,7 @@ class TrackGroup
 {
 public:
 	int groupID;
-	long long arr[MAX_GROUP_NUM];
+	BigInteger arr[MAX_GROUP_NUM];
 	int size = 0;
 	std::vector<std::vector<int>> tracks;
 
@@ -29,7 +29,7 @@ public:
 class Tracks : public std::vector<TrackGroup>
 {
 public:
-	int FindGroupByTrackId(const long long &trackId) const;
+	int FindGroupByTrackId(const BigInteger &trackId) const;
 
 	void ImportTracks(int nFacets, const std::string &filename);
 	static void RecoverTrack(const Beam &beam, int facetNum,

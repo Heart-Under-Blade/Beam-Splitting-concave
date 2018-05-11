@@ -220,13 +220,12 @@ void Beam::SetTracingParams(int facetID, int actN, Location loc)
 	}
 }
 
-// REF: заменить "const Beam &other" на "const Matrix2x2c &other"
-void Beam::SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2)
+void Beam::MultiplyJonesMatrix(const complex &c1, const complex &c2)
 {
-	J.m11 = c1 * other.J.m11;
-	J.m12 = c1 * other.J.m12;
-	J.m21 = c2 * other.J.m21;
-	J.m22 = c2 * other.J.m22;
+	J.m11 *= c1;
+	J.m12 *= c1;
+	J.m21 *= c2;
+	J.m22 *= c2;
 }
 
 complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
@@ -463,6 +462,12 @@ void Beam::SetLight(const Light &other)
 {
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
+}
+
+void Beam::AddOpticalPath(double path)
+{
+	opticalPath += path;
+	front = DotProduct(-direction, Center());
 }
 
 void Beam::ComputeFront()

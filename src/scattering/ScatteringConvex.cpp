@@ -6,7 +6,8 @@ ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
 {
 }
 
-void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam> &outBeams)
+void ScatteringConvex::ScatterLight(double beta, double gamma,
+									std::vector<Beam> &outBeams)
 {
 	m_particle->Rotate(beta, gamma, 0);
 
@@ -86,9 +87,9 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	// ext. normal uses in this calculating
 	const Point3f &normal = m_facets[facetID].ex_normal;
-	double cosA = DotProduct(normal, incidentDir);
+	m_splitting.ComputeCosA(normal, incidentDir);
 
-	if (cosA < EPS_COS_90) /// beam is not incident to this facet
+	if (!m_splitting.IsIncident())
 	{
 		return false;
 	}
@@ -102,13 +103,16 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	inBeam = outBeam;
 
-	if (cosA < EPS_COS_00)
+	if (!m_splitting.IsNormalIncidence())
 	{	// regular incidence
-		bool isRegular;
-		SetRegularIncidenceBeamParams(cosA, normal, incidentBeam,
-									  inBeam, outBeam, isRegular);
-		if (isRegular)
+		m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
+		incidentBeam.direction = -incidentBeam.direction;
+		RotatePolarisationPlane(normal, incidentBeam);
+
+		if (!m_splitting.IsCompleteReflection())
 		{
+			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
+												  inBeam, outBeam);
 			outBeam.trackId = incidentBeam.trackId;
 			outBeam.lastFacetId = facetID;
 			outBeam.act = incidentBeam.act + 1;
@@ -116,10 +120,14 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeam.opticalPath += ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
 			outBeams.push_back(outBeam);
 		}
+		else // complete internal reflection incidence
+		{
+			m_splitting.ComputeCRBeamParams(normal, incidentBeam, inBeam);
+		}
 	}
 	else
 	{	// normal incidence
-		SetNormalIncidenceBeamParams(cosA, incidentBeam, inBeam, outBeam);
+		SetNormalIncidenceBeamParams(incidentBeam, inBeam, outBeam);
 
 		outBeam.trackId = incidentBeam.trackId;
 		outBeam.lastFacetId = facetID;
