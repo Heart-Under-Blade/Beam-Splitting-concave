@@ -13,7 +13,7 @@ public:
 	int size = 0;
 
 	Polygon();
-	Polygon(int size);
+	explicit Polygon(int size);
 	Polygon(const Polygon &other);
 	Polygon(Polygon &&other);
 

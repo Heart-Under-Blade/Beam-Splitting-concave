@@ -6,7 +6,7 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 {
 	isConcave = true;
 	SetSize(diameter, height);
-	Init(8*particleNumber, refrIndex, m_height*2);
+	Init(8*particleNumber, refrIndex);
 
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
@@ -121,7 +121,7 @@ void HexagonalAggregate::SetFacetParams()
 	facets[12].isVisibleOut = false;
 	facets[15].isVisibleOut = false;
 
-	for (int i = 0; i < facetNum; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+	for (int i = 0; i < nFacets; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
 	{
 		facets[i].isVisibleIn = false;
 	}

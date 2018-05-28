@@ -9,6 +9,14 @@
 
 #define ROT_MTR_RANK 3
 
+class Angle
+{
+public:
+	double alpha;
+	double beta;
+	double gamma;
+};
+
 /**
  * @brief The Particle class
  * The base class inherited by other concrete particle classes.
@@ -19,7 +27,7 @@ class Particle
 public:
 	Particle();
 
-	void SetFromFile(const std::string &filename); // TODO: допилить
+	void SetFromFile(const std::string &filename);
 
 	void Rotate(double beta, double gamma, double alpha);
 	void Move(float dx, float dy, float dz);
@@ -38,7 +46,7 @@ public:
 	void SetRefractiveIndex(const complex &value);
 
 	const Symmetry &GetSymmetry() const;
-	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
+	virtual void GetParticalFacetIdRangeByFacetId(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
 	bool IsConcave() const;
 
@@ -46,8 +54,10 @@ public:
 
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
-	int facetNum;					///< number of facets
+	int nFacets;					///< number of facets
 	bool isAggregated = false;
+
+	Angle rotAngle;
 
 protected:
 	Facet defaultFacets[MAX_FACET_NUM];
@@ -58,7 +68,7 @@ protected:
 	bool isConcave;
 
 protected:
-	void Init(int facetCount, const complex &refrIndex, double size);
+	void Init(int facetCount, const complex &refrIndex);
 
 	void SetDefaultNormals();
 	void SetDefaultCenters();
@@ -75,6 +85,7 @@ private:
 
 private:
 	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
-	void ReadSymmetry(const int bufSize, char *trash, char *buff, std::ifstream pfile, char *ptr);
+	void ReadSymmetry(const int bufSize, char *trash, char *buff,
+					  std::ifstream pfile, char *ptr);
 };
 

@@ -22,15 +22,15 @@ public: // methods
 		AddArgRule(key, rule);
 	}
 
-	void AddRule(const std::string &key, const std::string &longKey, char valueNum = 0,
+	void AddRule(const std::string &key, const std::string &longKey, char nValues = 0,
 				 bool isOptional = false, const std::string &dependsOn = "")
 	{
 		if (longKey.size() > 1)
 		{
-			Rule rule1(valueNum, isOptional, dependsOn, longKey);
+			Rule rule1(nValues, isOptional, dependsOn, longKey);
 			AddArgRule(key, rule1);
 
-			Rule rule2(valueNum, isOptional, dependsOn, key);
+			Rule rule2(nValues, isOptional, dependsOn, key);
 			AddArgRule(longKey, rule2);
 		}
 		else
@@ -71,7 +71,7 @@ public: // methods
 		return m_programName;
 	}
 
-	bool Catched(const std::string &key) const
+	bool IsCatched(const std::string &key) const
 	{
 		auto it = m_args.find(key);
 		return it != m_args.end();

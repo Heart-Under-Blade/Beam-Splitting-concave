@@ -8,50 +8,34 @@
 
 #ifdef _DEBUG // DEB
 #include <iostream>
-using namespace std;
+#include <iomanip>
+#include <limits>
 #endif
 
 #define NORM_CEIL	FLT_EPSILON + 1
 
-Tracing::Tracing(Particle *particle, const Point3f &incidentDir, bool isOpticalPath,
-				 const Point3f &polarizationBasis, int interReflectionNumber)
-{
-//	LOG_ASSERT(incidentDir.cx <= NORM_CEIL
-//		   && incidentDir.cy <= NORM_CEIL
-//		   && incidentDir.cz <= NORM_CEIL
-//		   && "Direction of the start beam is not normalized.");
+using namespace std;
 
-	m_particle = particle;
+Tracing::Tracing(Particle *particle, Light *incidentLight, bool isOpticalPath,
+				 int interReflectionNumber)
+	: m_incidentLight(incidentLight),
+	  m_particle(particle)
+{
 	m_facets = m_particle->facets;
 
 	m_isOpticalPath = isOpticalPath;
-	m_polarizationBasis = polarizationBasis;
 	m_interReflectionNumber = interReflectionNumber;
-	m_incidentDir = incidentDir;
+
+	m_incidentDir = m_incidentLight->direction;
+	m_incidentDir.d_param = m_incidentLight->direction.d_param;
+
+	m_polarBasis = m_incidentLight->polarizationBasis;
 
 	m_refrIndex = m_particle->GetRefractiveIndex();
 	double re = real(m_refrIndex);
 	double im = imag(m_refrIndex);
 	ri_coef_re = re*re - im*im;
 	ri_coef_im = 4*re*re*im;
-}
-
-double Tracing::BeamCrossSection(const Beam &beam) const
-{
-	const double eps = 1e7*DBL_EPSILON;
-
-	Point3f normal = m_facets[beam.lastFacetID].ex_normal; // normal of last facet of beam
-	double cosFB = DotProduct(normal, beam.direction);
-	double e = fabs(cosFB);
-
-	if (e < eps)
-	{
-		return 0;
-	}
-
-	double area = beam.Area();
-	double n = Length(normal);
-	return (e*area)/n;
 }
 
 void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN,
@@ -74,11 +58,14 @@ void Tracing::SetSloppingBeamParams_initial(const Point3f &beamDir, double cosIN
 
 	complex Tv = (Tv00 - cosReflN)/Tv0;
 	complex Th = (cosIN - Th00)/Th0;
-	SetBeam(outBeam, inBeam, refrDir, inBeam.e, Tv, Th);
+	SetBeam(outBeam, inBeam, refrDir, Tv, Th);
 
 	double cosInc2 = (2.0*cosIN);
-	SetBeam(inBeam, inBeam, reflDir, inBeam.e,
-			cosInc2/Tv0, cosInc2/Th0);
+	SetBeam(inBeam, inBeam, reflDir, cosInc2/Tv0, cosInc2/Th0);
+#ifdef _DEBUG // DEB
+	inBeam.dirs.push_back(reflDir);
+	outBeam.dirs.push_back(refrDir);
+#endif
 }
 
 void Tracing::SetBeamID(Beam &beam)
@@ -111,24 +98,27 @@ void Tracing::PushBeamToTree(Beam &beam)
 
 void Tracing::SetBeamOpticalParams(int facetId, Beam &inBeam, Beam &outBeam)
 {
+	const Point3f dir = m_incidentLight->direction;
 	const Point3f &normal = m_facets[facetId].in_normal;
-	double cosIN = DotProduct(m_incidentDir, normal);
+	double cosIN = DotProduct(dir, normal);
 
 	if (cosIN < EPS_COS_00) // slopping incidence
 	{
-		SetSloppingBeamParams_initial(m_incidentDir, cosIN, facetId, inBeam, outBeam);
+		SetSloppingBeamParams_initial(dir, cosIN, facetId, inBeam, outBeam);
 	}
 	else // normal incidence
 	{
 		inBeam.J.m11 = 2.0/(m_refrIndex + 1.0);
 		inBeam.J.m22 = inBeam.J.m11;
-		inBeam.e = m_polarizationBasis;
-		inBeam.direction = m_incidentDir;
+		inBeam.light = (*m_incidentLight);
 
 		outBeam.J.m11 = (m_refrIndex - 1.0)/(m_refrIndex + 1.0);
 		outBeam.J.m22 = -outBeam.J.m11;
-		outBeam.e = m_polarizationBasis;
-		outBeam.direction = -m_incidentDir;
+		outBeam.light = Light{-dir, m_incidentLight->polarizationBasis};
+#ifdef _DEBUG // DEB
+		inBeam.dirs.push_back(dir);
+		outBeam.dirs.push_back(-dir);
+#endif
 	}
 
 	if (m_isOpticalPath)
@@ -143,20 +133,24 @@ void Tracing::RotatePolarisationPlane(const Point3f &dir, const Point3f &facetNo
 	Point3f newBasis;
 	CrossProduct(facetNormal, -dir, newBasis);
 	Normalize(newBasis);
-	beam.e = m_polarizationBasis;
-	beam.direction = dir;
+	beam.light = Light{dir, m_incidentLight->polarizationBasis};
 	beam.RotatePlane(newBasis);
 }
 
 void Tracing::CalcOpticalPath_initial(Beam &inBeam, Beam &outBeam)
 {
 	Point3f center = inBeam.Center();
+//	Point3f &center = inBeam.arr[0];
 
-	inBeam.D = DotProduct(-inBeam.direction, center);
+	inBeam.D = DotProduct(-inBeam.light.direction, center);
 	inBeam.opticalPath = FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, center);
 
-	outBeam.D = DotProduct(-outBeam.direction, center);
-	outBeam.opticalPath = inBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + outBeam.D);
+	outBeam.D = DotProduct(-outBeam.light.direction, center);
+	outBeam.opticalPath = inBeam.opticalPath;
+#ifdef _DEBUG // DEB
+	inBeam.ops.push_back(inBeam.opticalPath);
+	outBeam.ops.push_back(inBeam.opticalPath);
+#endif
 }
 
 void Tracing::TraceFirstBeam(int facetId, Beam &inBeam, Beam &outBeam)
@@ -177,77 +171,89 @@ void Tracing::CalcFacetEnergy(int facetID, const Polygon &lightedPolygon)
 void Tracing::SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 								  std::vector<Beam> &outBeams)
 {
-	m_particle->Rotate(beta, gamma, 0);
+//	m_particle->Rotate(beta, gamma, 0);
 
-	for (unsigned int i = 0; i < tracks.size(); ++i)
-	{
-		int facetId = tracks.at(i).at(0);
-		const Point3f &extNormal = m_facets[facetId].ex_normal;
+//	for (unsigned int i = 0; i < tracks.size(); ++i)
+//	{
+//		int facetId = tracks.at(i).at(0);
+//		const Point3f &extNormal = m_facets[facetId].ex_normal;
 
-		double cosIN = DotProduct(m_incidentDir, extNormal);
+//		double cosIN = DotProduct(m_incidentDir, extNormal);
 
-		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
-		{
-			continue;
-		}
+//		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
+//		{
+//			continue;
+//		}
 
-		std::vector<Beam> outBuff;
-		Beam incidentBeam;
+//		std::vector<Beam> outBuff;
+//		Beam incidentBeam;
 
-		/// first incident beam
-		{
-			Beam outBeam;
-			TraceFirstBeam(facetId, incidentBeam, outBeam);
-			outBuff.push_back(outBeam);
-		}
+//		/// first incident beam
+//		{
+//			Beam outBeam;
+//			TraceFirstBeam(facetId, incidentBeam, outBeam);
+//			outBuff.push_back(outBeam);
+//		}
 
-		unsigned int size = tracks.at(i).size();
+//		unsigned int size = tracks.at(i).size();
 
-		try /// internal beams
-		{
-			for (unsigned int j = 1; j < size; ++j)
-			{
-				facetId = tracks.at(i).at(j);
+//		try /// internal beams
+//		{
+//			for (unsigned int j = 1; j < size; ++j)
+//			{
+//				facetId = tracks.at(i).at(j);
 
-				Beam inBeam;
-				TraceSecondaryBeams(incidentBeam, facetId, inBeam, outBuff);
+//				Beam inBeam;
+//				TraceSecondaryBeams(incidentBeam, facetId, inBeam, outBuff);
 
-				incidentBeam = inBeam;
-			}
-		}
-		catch (const std::exception &)
-		{
-			continue;
-		}
+//				incidentBeam = inBeam;
+//			}
+//		}
+//		catch (const std::exception &)
+//		{
+//			continue;
+//		}
 
-		outBeams.push_back(outBuff.back());
-	}
+//		outBeams.push_back(outBuff.back());
+//	}
 }
 
-void Tracing::CalcOpticalPathInternal(double cosIN, const Beam &incidentBeam,
-									  Beam &outBeam, Beam &inBeam) const
+void Tracing::CalcOpticalPath(double cosIN, const Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam) const
 {
-	double Nr = CalcNr(cosIN);
-	double coef = (incidentBeam.location == Location::Out) ? 1 : sqrt(Nr);
-	Point3f center = outBeam.Center();
+	Point3f center = inBeam.Center();
+//	Point3f &center = inBeam.arr[0];
 
-	outBeam.D = DotProduct(-outBeam.direction, center);
+	// refractive index of external environment = 1
+	double OP = fabs(DotProduct(incidentBeam.light.direction, center) + incidentBeam.D);
 
-	double temp = DotProduct(incidentBeam.direction, center);
-	outBeam.opticalPath = incidentBeam.opticalPath
-			+ coef*fabs(temp + incidentBeam.D);
+	if (incidentBeam.location == Location::In)
+	{
+		OP *= 1.3116/*sqrt(CalcReRI(cosIN))*/;
+//		inBeam.internalOpticalPath = outBeam.internalOpticalPath = OP;
+	}
 
-	inBeam.D = DotProduct(-inBeam.direction, center);
-	inBeam.opticalPath = outBeam.opticalPath + fabs(FAR_ZONE_DISTANCE + inBeam.D);
+	inBeam.D = DotProduct(-inBeam.light.direction, center);
+	inBeam.opticalPath = incidentBeam.opticalPath + OP;
+
+	outBeam.D = DotProduct(-outBeam.light.direction, center);
+	outBeam.opticalPath = inBeam.opticalPath;
+
+#ifdef _DEBUG // DEB
+	inBeam.ops = incidentBeam.ops;
+	inBeam.ops.push_back(OP);
+	outBeam.ops = incidentBeam.ops;
+	outBeam.ops.push_back(OP);
+#endif
 }
 
 bool Tracing::IsTerminalBeam(const Beam &beam)
 {
 	double j_norm = beam.J.Norm(); // OPT: move to last element of comparison
-	return (j_norm < LOW_ENERGY_LEVEL) || (beam.level >= m_interReflectionNumber);
+	return (j_norm < EPS_BEAM_ENERGY) || (beam.level >= m_interReflectionNumber);
 }
 
-double Tracing::CalcNr(const double &cosIN) const
+double Tracing::CalcReRI(const double &cosIN) const
 {
 	double cosIN_sqr = cosIN*cosIN;
 	const double &re = ri_coef_re;
@@ -258,7 +264,7 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 								  Beam &inBeam, std::vector<Beam> &outBeams)
 {
 	Beam outBeam;
-	const Point3f &incidentDir = incidentBeam.direction;
+	const Point3f &incidentDir = incidentBeam.light.direction;
 
 	// ext. normal uses in this calculating
 	const Point3f &normal = m_particle->facets[facetID].ex_normal;
@@ -278,6 +284,13 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	inBeam = outBeam;
 
+#ifdef _DEBUG // DEB
+
+	if (incidentBeam.lastFacetID == 0 && facetID == 5)
+		int ff =0 ;
+//	if (incidentBeam.id == 1278 && facetID == 2)
+//		int ff =0 ;
+#endif
 	if (cosIN >= EPS_COS_00) /// normal incidence
 	{
 		SetNormalIncidenceBeamParams(cosIN, incidentBeam, inBeam, outBeam);
@@ -286,6 +299,8 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 		outBeam.lastFacetID = facetID;
 		outBeam.level = incidentBeam.level + 1;
 		SetBeamID(outBeam);
+		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
+		outBeam.ops.push_back(fabs(FAR_ZONE_DISTANCE + outBeam.D));
 		outBeams.push_back(outBeam);
 	}
 	else /// slopping incidence
@@ -299,6 +314,8 @@ void Tracing::TraceSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeam.lastFacetID = facetID;
 			outBeam.level = incidentBeam.level + 1;
 			SetBeamID(outBeam);
+			outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
+			outBeam.ops.push_back(fabs(FAR_ZONE_DISTANCE + outBeam.D));
 			outBeams.push_back(outBeam);
 		}
 	}
@@ -309,7 +326,7 @@ void Tracing::SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal
 											 Beam &inBeam, Beam &outBeam,
 											 bool &isTrivialIncidence)
 {
-	const Point3f &incidentDir = incidentBeam.direction;
+	const Point3f &incidentDir = incidentBeam.light.direction;
 	double cosIN_sqr = cosIN*cosIN;
 
 	Point3f scatteringNormal;
@@ -322,10 +339,12 @@ void Tracing::SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal
 	Point3f reflDir = r0 - normal;
 	Normalize(reflDir);
 
-	inBeam.direction = reflDir;
-	inBeam.e = scatteringNormal;
-
-	double Nr = CalcNr(cosIN);
+	inBeam.light = Light{reflDir, scatteringNormal};
+#ifdef _DEBUG // DEB
+	inBeam.dirs = incidentBeam.dirs;
+	inBeam.dirs.push_back(reflDir);
+#endif
+	double Nr = CalcReRI(cosIN);
 	double s = 1.0/(Nr*cosIN_sqr) - Norm(r0);
 
 	if (s > DBL_EPSILON) /// trivial incidence
@@ -344,18 +363,23 @@ void Tracing::SetSloppingIncidenceBeamParams(double cosIN, const Point3f &normal
 void Tracing::SetNormalIncidenceBeamParams(double cosIN, const Beam &incidentBeam,
 										   Beam &inBeam, Beam &outBeam)
 {
-	const Point3f &dir = incidentBeam.direction;
+	const Point3f &dir = incidentBeam.light.direction;
 	complex temp;
 
 	temp = (2.0*m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
-	SetBeam(outBeam, incidentBeam, dir, incidentBeam.e, temp, temp);
+	SetBeam(outBeam, incidentBeam, dir, temp, temp);
 
 	temp = (1.0 - m_refrIndex)/(1.0 + m_refrIndex); // OPT: вынести целиком
-	SetBeam(inBeam, incidentBeam, -dir, incidentBeam.e, temp, -temp);
-
+	SetBeam(inBeam, incidentBeam, -dir, temp, -temp);
+#ifdef _DEBUG // DEB
+	inBeam.dirs = incidentBeam.dirs;
+	outBeam.dirs = incidentBeam.dirs;
+	inBeam.dirs.push_back(-dir);
+	outBeam.dirs.push_back(dir);
+#endif
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathInternal(cosIN, incidentBeam, inBeam, outBeam);
+		CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
 	}
 }
 
@@ -377,16 +401,18 @@ void Tracing::SetTrivialIncidenceBeamParams(double cosIN, double Nr,
 	complex Th0 = tmp0 + cosRefr;
 
 	outBeam.SetJonesMatrix(incidentBeam, tmp/Tv0, tmp/Th0);
-	outBeam.direction = refrDir;
-	outBeam.e = inBeam.e;
-
+	outBeam.light = Light{refrDir, inBeam.light.polarizationBasis};
+#ifdef _DEBUG // DEB
+	outBeam.dirs = incidentBeam.dirs;
+	outBeam.dirs.push_back(refrDir);
+#endif
 	complex Tv = (cosIN - tmp1)/Tv0;
 	complex Th = (tmp0 - cosRefr)/Th0;
 	inBeam.SetJonesMatrix(incidentBeam, Tv, Th);
 
 	if (m_isOpticalPath)
 	{
-		CalcOpticalPathInternal(Nr, incidentBeam, inBeam, outBeam);
+		CalcOpticalPath(cosIN, incidentBeam, inBeam, outBeam);
 	}
 }
 
@@ -394,7 +420,7 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 											  const Beam &incidentBeam,
 											  Beam &inBeam)
 {
-	const Point3f &incidentDir = incidentBeam.direction;
+	const Point3f &incidentDir = incidentBeam.light.direction;
 
 	double cosIN_sqr = cosIN*cosIN;
 	complex tmp0 = m_refrIndex*cosIN;
@@ -410,23 +436,32 @@ void Tracing::SetCompleteReflectionBeamParams(double cosIN, double Nr,
 
 	if (m_isOpticalPath)
 	{
-		Point3f center = inBeam.Center();
-		inBeam.D = DotProduct(-center, inBeam.direction);
+		Point3f center = /*inBeam.arr[0]*/inBeam.Center();
+		inBeam.D = DotProductD(-inBeam.light.direction, center);
 
-		double temp = DotProduct(incidentDir, center);
+		double temp = fabs(DotProductD(incidentDir, center) + incidentBeam.D);
 
-		inBeam.opticalPath = incidentBeam.opticalPath
-				+ sqrt(Nr)*fabs(temp + incidentBeam.D);
+		if (incidentBeam.location == Location::In)
+		{
+//			temp *= sqrt(Nr);
+#ifdef _DEBUG // DEB
+			temp *= 1.3116;
+#endif
+		}
+
+		inBeam.opticalPath = incidentBeam.opticalPath + temp;
+#ifdef _DEBUG // DEB
+		inBeam.ops = incidentBeam.ops;
+		inBeam.ops.push_back(temp);
+#endif
 	}
 }
 
-void Tracing::SetBeam(Beam &beam, const Beam &other,
-					  const Point3f &dir, const Point3f &e,
+void Tracing::SetBeam(Beam &beam, const Beam &other, const Point3f &dir,
 					  const complex &coef1, const complex &coef2) const
 {
 	beam.SetJonesMatrix(other, coef1, coef2);
-	beam.direction = dir;
-	beam.e = e;
+	beam.light = Light{dir, other.light.polarizationBasis};
 }
 
 void Tracing::Difference(const Polygon &subject, const Point3f &subjNormal,
@@ -577,7 +612,7 @@ bool Tracing::Intersect(int facetID, const Beam &beam, Polygon &intersection) co
 	__m128 _output_points[MAX_VERTEX_NUM];
 	const Point3f &normal = m_facets[facetID].in_normal;
 
-	bool isProjected = ProjectToFacetPlane(beam, beam.direction, normal,
+	bool isProjected = ProjectToFacetPlane(beam, beam.light.direction, normal,
 										   _output_points);
 	if (!isProjected)
 	{
@@ -699,8 +734,8 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 	double cosI_sqr = cosIN * cosIN;
 	double tmp1 = ri_coef_re + cosI_sqr - 1.0;
 
-	tmp1 = (ri_coef_im - FLT_EPSILON < 0) ? tmp1
-										  : sqrt(tmp1*tmp1 + ri_coef_im);
+	tmp1 = (ri_coef_im < FLT_EPSILON) ? tmp1
+									  : sqrt(tmp1*tmp1 + ri_coef_im);
 
 	tmp1 = (ri_coef_re + 1.0 - cosI_sqr + tmp1)/2.0;
 	tmp1 = (tmp1/cosI_sqr) - Norm(tmp0);
@@ -710,6 +745,36 @@ void Tracing::DivideBeamDirection(const Point3f &incidentDir, double cosIN,
 
 	reflDir = (tmp0/tmp1) - normal;
 	Normalize(reflDir);
+}
+
+Point3f Tracing::ChangeBeamDirection(const Point3f &oldDir,
+									 const Point3f &normal, Location loc)
+{
+	Point3f newDir;
+
+	if (loc == Location::Out)
+	{
+		double cosIN = DotProduct(oldDir, -normal);
+		Point3f tmp0 = normal + oldDir/cosIN;
+		double cosIN2 = cosIN * cosIN;
+		double tmp1 = ri_coef_re + cosIN2 - 1.0;
+		tmp1 = (ri_coef_im < FLT_EPSILON) ? tmp1
+										  : sqrt(tmp1*tmp1 + ri_coef_im);
+
+		tmp1 = (ri_coef_re + 1.0 - cosIN2 + tmp1)/2.0;
+		tmp1 = (tmp1/cosIN2) - Norm(tmp0);
+		tmp1 = sqrt(tmp1);
+		newDir = (tmp0/tmp1) - normal;
+	}
+	else // reflection
+	{
+		double cosIN = DotProduct(oldDir, normal);
+		Point3f tmp = oldDir/cosIN - normal;
+		newDir = tmp - normal;
+	}
+
+	Normalize(newDir);
+	return newDir;
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
@@ -731,22 +796,81 @@ double Tracing::GetIncomingEnergy() const
 	return m_incommingEnergy;
 }
 
-//double Tracing::CrossSection(const Point3f &beamDir) const
-//{
-//	double cs = 0.0;
+double Tracing::ComputeInternalOpticalPath(const Beam &beam, const vector<int> &tr)
+{
+#ifdef _DEBUG // DEB
+	if (beam.id == /*4194*/11529)
+		int ff = 0;
+#endif
+	Point3f endPoint = /*beam.arr[0]*/beam.Center();
+	double path = 0;
+	Point3f p1 = endPoint;
+	Point3f p2;
+	Point3f dir = -beam.light.direction;
+	int last = tr.size()-1;
 
-//	for (int i = 0; i < m_particle->facetNum; ++i)
-//	{
-//		const Point3f n = m_facets[i].Normal();
-//		double csa = DotProduct(beamDir, n);
+	// first iteration
+	dir = ChangeBeamDirection(dir, m_facets[tr[last]].ex_normal, Location::Out);
+	ProjectPointToFacet(p1, dir, m_facets[tr[last-1]].in_normal, p2);
+	double len = Length(p2 - p1);
+#ifdef _DEBUG // DEB
+	len *= 1.3116;
+#endif
 
-//		if (csa < EPS_COS_90)
-//		{
-//			continue;
-//		}
+	path += len;
+	p1 = p2;
 
-//		cs += m_facets[i].Area()*csa;
-//	}
+	for (int i = last-2; i >= 0; --i)
+	{
+		Location loc = beam.GetLocationByLevel(i);
+		dir = ChangeBeamDirection(dir, m_facets[tr[i+1]].ex_normal, loc);
+		ProjectPointToFacet(p1, dir, m_facets[tr[i]].in_normal, p2);
 
-//	return cs;
-//}
+		if (loc == Location::In)
+		{	// sum internal path only
+			len = Length(p2 - p1);
+#ifdef _DEBUG // DEB
+			len *= 1.3116;
+#endif
+			path += len;
+		}
+
+		p1 = p2;
+	}
+#ifdef _DEBUG // DEB
+//	path *= real(m_refrIndex);
+
+	// accounting of far zones
+	Point3f pFar1;
+	Point3f nFar1 = m_incidentDir;
+	nFar1.d_param = FAR_ZONE_DISTANCE;
+	ProjectPointToFacet(p1, -nFar1, nFar1, pFar1);
+
+	Point3f pFar2;
+	Point3f nFar2 = -beam.light.direction;
+	nFar2.d_param = FAR_ZONE_DISTANCE;
+	ProjectPointToFacet(endPoint, -nFar2, nFar2, pFar2);
+
+//	double dd2 = Length(p2 - pFar1) /*+ Length(endPoint - pFar2)*/;
+	double dd = FAR_ZONE_DISTANCE + DotProductD(p2, nFar1) +
+			fabs(DotProductD(endPoint, nFar2) + FAR_ZONE_DISTANCE);
+	path += dd;
+//cout << beam.opticalPath/*-dd*/ << " " << path;
+
+#endif
+#ifdef _DEBUG // DEB
+	if (fabs(path - beam.opticalPath) > 7)
+		int ff = 0;
+#endif
+	return path;
+}
+
+void Tracing::ProjectPointToFacet(const Point3f &point, const Point3f &direction,
+								  const Point3f &facetNormal, Point3f &projection)
+{
+	double t = DotProduct(point, facetNormal);
+	t = t + facetNormal.d_param;
+	double dp = DotProduct(direction, facetNormal);
+	t = t/dp;
+	projection = point - (direction * t);
+}

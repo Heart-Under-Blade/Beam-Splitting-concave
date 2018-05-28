@@ -9,6 +9,8 @@
  #include <fstream>
 #endif
 
+#include <vector>
+
 class matrix;
 class matrixC;
 
@@ -35,6 +37,8 @@ public:
 	// destroys matrix
 	virtual	~matrix() { this->FreeMem(); }
 	// methods
+	std::vector<double> ToVector() const;
+
 	matrix	operator=(const matrix &);
 	matrix	operator+(const matrix &) const;
 	matrix	operator+=(const matrix &m) { return *this = m+*this; }

@@ -13,11 +13,11 @@
 #include "TiltedHexagonal.h"
 #include "ConcaveHexagonal.h"
 #include "Intersection.h"
-#include "Tracing.h"
+#include "Scattering.h"
 
 void outputParticle(const Particle &particle)
 {
-	for (int i = 0; i < particle.facetNum; ++i)
+	for (int i = 0; i < particle.nFacets; ++i)
 	{
 		std::cout << i << ": ";
 		for (int j = 0; j < particle.facets[i].size; ++j)
@@ -35,7 +35,7 @@ void outputParticle(const Particle &particle)
 
 	std::cout << std::endl << "Normals" << std::endl << std::endl;
 
-	for (int i = 0; i < particle.facetNum; ++i)
+	for (int i = 0; i < particle.nFacets; ++i)
 	{
 		std::cout << i << ": ";
 		std::cout << "("
@@ -51,7 +51,7 @@ void toFile(const Particle &particle)
 {
 	std::ofstream M("particle.dat", std::ios::out);
 
-	for (int i = 0; i < particle.facetNum; ++i)
+	for (int i = 0; i < particle.nFacets; ++i)
 	{
 		for (int j = 0; j < particle.facets[i].size; ++j)
 		{

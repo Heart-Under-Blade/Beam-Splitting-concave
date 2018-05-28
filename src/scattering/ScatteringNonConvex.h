@@ -1,17 +1,16 @@
 #pragma once
 
-#include "Tracing.h"
+#include "Scattering.h"
 
 /** NOTE: пучки выходят со случайно ориентированным порядком вершин */
-class TracingConcave : public Tracing
+class ScatteringNonConvex : public Scattering
 {
 public:
-	TracingConcave(Particle *particle, const Point3f &startBeamDir,
-				   bool isOpticalPath, const Point3f &polarizationBasis,
-				   int interReflectionNumber);
+	ScatteringNonConvex(Particle *particle, Light *incidentLight,
+						bool isOpticalPath, int nActs);
 
-	void SplitBeamByParticle(double beta, double gamma, std::vector<Beam> &scaterredBeams) override;
-	void SplitBeamByParticle(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+	void ScatterLight(double beta, double gamma, std::vector<Beam> &scaterredBeams) override;
+	void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 private:
 	void SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs);
@@ -25,16 +24,13 @@ private:
 	void CutFacetByShadows(int facetID, const IntArray &shadowFacetIDs, int prevFacetNum,
 						   PolygonArray &resFacets);
 
-	void ProjectPointToFacet(const Point3f &point, const Point3f &direction,
-							 const Point3f &facetNormal, Point3f &projection);
-
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
-	void FindVisibleFacetsForWavefront(IntArray &facetIDs);
+	void FindVisibleFacetsForLight(IntArray &facetIDs);
 
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIDs);
-	void SelectVisibleFacetsForWavefront(IntArray &facetIDs);
+	void SelectVisibleFacetsForLight(IntArray &facetIDs);
 
 	void SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
@@ -42,17 +38,13 @@ private:
 	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
 							PolygonArray &resFacets);
 
-	void TraceFirstBeam();
+	void SplitLightToBeams();
 
 	bool isExternalNonEmptyBeam(Beam &incidentBeam);
 
 	int FindFacetID(int facetID, const IntArray &arr);
 
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
-
-#ifdef _TRACK_ALLOW
-//	void AddToTrack(Beam &beam, int facetId);
-#endif
 
 	void PushBeamsToTree(const Beam &beam, int facetID, bool hasOutBeam,
 						 Beam &inBeam, Beam &outBeam);
@@ -61,13 +53,14 @@ private:
 
 	bool IsVisibleFacet(int facetID, const Beam &beam);
 
-	void TraceByFacet(const IntArray &facetIDs, int facetIndex);
+	void SplitByFacet(const IntArray &facetIDs, int facetIndex);
 
 	void TraceSecondaryBeamByFacet(Beam &beam, int facetID, bool &isDivided);
 
-	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam, Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
+	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
+						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 protected:
-	void TraceSecondaryBeams(std::vector<Beam> &scaterredBeams);
+	void TraceBeams(std::vector<Beam> &scaterredBeams);
 };
 

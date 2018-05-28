@@ -14,11 +14,11 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 
 	os << Polygon(beam);
 
-	os << "level: " << beam.level << endl
-	   << "last facet: " << beam.lastFacetID << endl
+	os << "level: " << beam.act << endl
+	   << "last facet: " << beam.lastFacetId << endl
 	   << "location: " << beam.location << endl
 //	   << "id: " << beam.id << endl
-	   << "D: " << beam.D << endl
+	   << "D: " << beam.frontPosition << endl
 	   << "direction: "
 	   << beam.direction.cx << ", "
 	   << beam.direction.cy << ", "
@@ -46,25 +46,29 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 
 Beam::Beam()
 {
+	locations = 0;
 	opticalPath = 0;
-	e = Point3f(0, 1, 0);
+	polarizationBasis = Vector3f(0, 1, 0);
 }
 
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
-	D = other.D;
-	e = other.e;
+	frontPosition = other.frontPosition;
 	direction = other.direction;
+	polarizationBasis = other.polarizationBasis;
 
-	Polygon::operator =(other);
-
-	lastFacetID = other.lastFacetID;
-	level = other.level;
+	lastFacetId = other.lastFacetId;
+	act = other.act;
 	location = other.location;
+	locations = other.locations;
 
+#ifdef _DEBUG // DEB
+	dirs = other.dirs;
+	ops = other.ops;
+#endif
 #ifdef _TRACK_ALLOW
-	id = other.id;
+	trackId = other.trackId;
 #endif
 }
 
@@ -72,6 +76,7 @@ Beam::Beam(const Beam &other)
 	: J(other.J)
 {
 	Copy(other);
+	Polygon::operator =(other);
 }
 
 Beam::Beam(const Polygon &other)
@@ -82,34 +87,11 @@ Beam::Beam(const Polygon &other)
 Beam::Beam(Beam &&other)
 	: Polygon(other)
 {
-	opticalPath = other.opticalPath;
-	D = other.D;
-	e = other.e;
-	direction = other.direction;
-
-	lastFacetID = other.lastFacetID;
-	level = other.level;
-	location = other.location;
-
-#ifdef _TRACK_ALLOW
-	id = other.id;
-#endif
-
-	other.opticalPath = 0;
-	other.D = 0;
-	other.e = Point3f(0, 0, 0);
-	other.direction = Point3f(0, 0, 0);
-
-	other.lastFacetID = 0;
-	other.level = 0;
-	other.location = Location::Out;
-
-#ifdef _TRACK_ALLOW
-	other.id = 0;
-#endif
+	Copy(other);
+	SetDefault(other);
 }
 
-void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
+void Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 {
 	Point3f newBasis;
 	double cs = DotProduct(dir, direction);
@@ -128,7 +110,7 @@ void Beam::RotateSpherical(const Point3f &dir, const Point3f &polarBasis)
 		{
 			double fi, teta;
 			GetSpherical(fi, teta);
-			newBasis = Point3f(-sin(fi),cos(fi), 0);
+			newBasis = Vector3f(-sin(fi), cos(fi), 0);
 		}
 	}
 
@@ -175,20 +157,50 @@ void Beam::GetSpherical(double &fi, double &teta) const
 	teta = acos(z);
 }
 
-Beam & Beam::operator = (const Beam &other)
+Beam &Beam::operator = (const Beam &other)
 {
 	if (this != &other)
 	{
 		Copy(other);
+		Polygon::operator =(other);
 		J = other.J;
 	}
 
 	return *this;
 }
 
-Beam &Beam::operator =(const Polygon &other)
+Beam &Beam::operator = (const Polygon &other)
 {
 	Polygon::operator =(other);
+	return *this;
+}
+
+Beam &Beam::operator = (const Light &other)
+{
+	direction = other.direction;
+	polarizationBasis = other.polarizationBasis;
+	return *this;
+}
+
+void Beam::SetDefault(Beam &other)
+{
+	other.opticalPath = 0;
+	other.frontPosition = 0;
+	direction = Vector3f(0, 0, 0);
+	polarizationBasis = Vector3f(0, 0, 0);
+
+	other.lastFacetId = 0;
+	other.act = 0;
+	other.location = Location::Out;
+	other.locations = 0;
+
+#ifdef _DEBUG // DEB
+other.dirs.clear();
+other.ops.clear();
+#endif
+#ifdef _TRACK_ALLOW
+	other.trackId = 0;
+#endif
 }
 
 Beam &Beam::operator = (Beam &&other)
@@ -196,33 +208,9 @@ Beam &Beam::operator = (Beam &&other)
 	if (this != &other)
 	{
 		Polygon::operator =(other);
-
-		opticalPath = other.opticalPath;
-		D = other.D;
-		e = other.e;
-		direction = other.direction;
-
-		lastFacetID = other.lastFacetID;
-		level = other.level;
-		location = other.location;
-
+		Copy(other);
 		J = other.J;
-
-#ifdef _TRACK_ALLOW
-		id = other.id;
-#endif
-		other.opticalPath = 0;
-		other.D = 0;
-		other.e = Point3f(0, 0, 0);
-		other.direction = Point3f(0, 0, 0);
-
-		other.lastFacetID = 0;
-		other.level = 0;
-		other.location = Location::Out;
-
-#ifdef _TRACK_ALLOW
-		other.id = id;
-#endif
+		SetDefault(other);
 	}
 
 	return *this;
@@ -230,17 +218,24 @@ Beam &Beam::operator = (Beam &&other)
 
 void Beam::SetTracingParams(int facetID, int lvl, Location loc)
 {
-	lastFacetID = facetID;
-	level = lvl;
+	lastFacetId = facetID;
+	act = lvl;
 	location = loc;
+
+	if (loc == Location::Out)
+	{	// write location
+		int loc = 1;
+		loc <<= lvl;
+		locations &= loc;
+	}
 }
 
-void Beam::SetJonesMatrix(const Beam &other, const complex &coef1, const complex &coef2)
+void Beam::SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2)
 {
-	J.m11 = coef1 * other.J.m11;
-	J.m12 = coef1 * other.J.m12;
-	J.m21 = coef2 * other.J.m21;
-	J.m22 = coef2 * other.J.m22;
+	J.m11 = c1 * other.J.m11;
+	J.m12 = c1 * other.J.m12;
+	J.m21 = c2 * other.J.m21;
+	J.m22 = c2 * other.J.m22;
 }
 
 complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
@@ -248,7 +243,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	const double eps1 = /*1e9**/100*FLT_EPSILON;
 	const double eps2 = /*1e6**/FLT_EPSILON;
 
-	Point3f _n = Normal();
+	Vector3f _n = Normal();
 
 	int begin, startIndex, endIndex;
 	bool order = (DotProduct(_n, direction) < 0);
@@ -268,7 +263,8 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 
 	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
 
-	Point3d k_k0 = -pt + Point3d(direction.cx, direction.cy, direction.cz);
+	const Point3f &dir = direction;
+	Point3d k_k0 = -pt + Point3d(dir.cx, dir.cy, dir.cz);
 
 	Point3f cntr = Center();
 	Point3d center = Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
@@ -329,7 +325,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 			}
 			else
 			{
-				tmp = (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci;
+				tmp = (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci; // OPT: (k*Ci)
 			}
 
 			s += exp_im(k*B*bi) * tmp;
@@ -365,6 +361,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 				{
 					++i;
 				}
+
 				continue;
 			}
 
@@ -373,7 +370,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 					Ei = A*ci+B;
 
 			s += exp_im(k*A*di) * (fabs(Ei)<eps1 ? complex(-k*k*Ei*(p2.y*p2.y-p1.y*p1.y)/2.0,k*(p2.y-p1.y))
-												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);
+												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);// OPT: (k*Ei)
 			p1 = p2;
 
 			if (order)
@@ -397,10 +394,17 @@ void Beam::RotatePlane(const Point3f &newBasis)
 	RotateJMatrix(newBasis);
 }
 
+Location Beam::GetLocationByActNumber(int level) const
+{
+	int mask = 1;
+	mask <<= level;
+	return (locations & mask) ? Location::Out : Location::In;
+}
+
 void Beam::RotateJMatrix(const Point3f &newBasis)
 {
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
-	double cs = DotProduct(newBasis, e);
+	double cs = DotProduct(newBasis, polarizationBasis);
 
 	if (fabs(1.0 - cs) < eps)
 	{
@@ -416,10 +420,8 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 	}
 	else
 	{
-//		LOG_ASSERT(fabs(cs) <= 1.0+DBL_EPSILON);
-
 		Point3f k;
-		CrossProduct(e, newBasis, k);
+		CrossProduct(polarizationBasis, newBasis, k);
 		Normalize(k);
 
 		double angle = acos(cs);
@@ -442,7 +444,7 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 		J.m12 = b01;
 	}
 
-	e = newBasis;
+	polarizationBasis = newBasis;
 }
 
 void Beam::AddVertex(const Point3f &vertex)
@@ -458,4 +460,15 @@ void Beam::SetPolygon(const Polygon &other)
 	{
 		arr[i] = other.arr[i];
 	}
+}
+
+void Beam::SetLight(const Point3f &dir, const Point3f &polarBasis)
+{
+	direction = dir;
+	polarizationBasis = polarBasis;
+}
+
+void Beam::ComputeFrontPosition()
+{
+	frontPosition = DotProduct(-direction, Center());
 }
