@@ -5,8 +5,7 @@
 #define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00		0.99999999998254670756866631966593		//1 - cos(89.99999999)
 
-Splitting::Splitting(bool isOpticalPath, Light *incidentLight)
-	: m_incidentLight(incidentLight)
+Splitting::Splitting(bool isOpticalPath)
 {
 	m_isOpticalPath = isOpticalPath;
 }
@@ -72,6 +71,7 @@ void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentB
 	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
+		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
 	}
 }
@@ -109,7 +109,8 @@ void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
 	}
 
 	tmp = (m_cRiRe + 1.0 - cosA2 + tmp)/2.0;
-	tmp = (tmp/cosA2) - Norm(r);
+	tmp = (tmp/cosA2);
+	tmp -= Norm(r);
 	tmp = sqrt(tmp);
 	dir = (r/tmp) - normal;
 	Normalize(dir);
@@ -150,6 +151,7 @@ void Splitting::ComputeRegularBeamsParams(const Point3f &normal,
 	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
+		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
 	}
@@ -176,6 +178,7 @@ void Splitting::ComputeNormalBeamParams(const Beam &incidentBeam,
 	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
+		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
 	}
@@ -184,13 +187,14 @@ void Splitting::ComputeNormalBeamParams(const Beam &incidentBeam,
 void Splitting::ComputeNormalBeamParamsExternal(const Light &incidentLight,
 												Beam &inBeam, Beam &outBeam)
 {
+	inBeam.SetLight(incidentLight);
+	outBeam.SetLight(-incidentLight.direction, incidentLight.polarizationBasis);
+
 	inBeam.J.m11 = 2.0/(m_ri + 1.0); // OPT: вынести
 	inBeam.J.m22 = inBeam.J.m11;
-	inBeam.SetLight(incidentLight);
 
 	outBeam.J.m11 = (m_ri - 1.0)/(m_ri + 1.0);
 	outBeam.J.m22 = -outBeam.J.m11;
-	outBeam.SetLight(-incidentLight.direction, incidentLight.polarizationBasis);
 }
 
 void Splitting::ComputeRegularBeamParamsExternal(const Point3f &facetNormal,
@@ -230,9 +234,10 @@ void Splitting::ComputeRegularBeamParamsExternal(const Point3f &facetNormal,
 	inBeam.MultiplyJonesMatrix(cos2A/Tv0, cos2A/Th0);
 }
 
-double Splitting::ComputeIncidentOpticalPath(const Point3f &facetPoint)
+double Splitting::ComputeIncidentOpticalPath(const Point3f &direction,
+											 const Point3f &facetPoint)
 {
-	return FAR_ZONE_DISTANCE + DotProduct(m_incidentLight->direction, facetPoint);
+	return FAR_ZONE_DISTANCE + DotProduct(direction, facetPoint);
 }
 
 double Splitting::ComputeScatteredOpticalPath(const Beam &beam)
@@ -258,7 +263,7 @@ Point3f Splitting::ChangeBeamDirection(const Vector3f &oldDir,
 		}
 		else
 		{
-			ComputeInternalRefractiveDirection(normal, r, newDir);
+			ComputeInternalRefractiveDirection(r, normal, newDir);
 		}
 	}
 	else // reflection

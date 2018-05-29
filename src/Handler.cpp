@@ -334,6 +334,11 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 
 		m_totalContrib.AddMueller(zenith, m);
 	}
+#ifdef _DEBUG // DEB
+	double dd = m_totalContrib.muellers(0,0,0,0);
+	m_logFile << dd;
+	int ddd = 0;
+#endif
 }
 
 HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float wavelength)
@@ -637,7 +642,7 @@ void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
 	ofstream *all = files.GetMainFile(prefix + "all");
 	*(all) << angle << ' ' << energy << ' ';
 	*(all) << contrib->GetTotal() << endl;
-cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
+//cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
 	if (isOutputGroups)
 	{
 		for (size_t gr = 0; gr < m_tracks->size(); ++gr)

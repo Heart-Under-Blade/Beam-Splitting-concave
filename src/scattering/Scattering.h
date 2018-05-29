@@ -37,6 +37,7 @@ public:
 protected:
 	Facet *m_facets;
 	Splitting m_splitting;
+	Light *m_incidentLight;
 
 	Point3f m_incidentDir;
 	Point3f m_polarBasis;
@@ -76,7 +77,8 @@ protected:
 
 	void SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam);
 
-	void RotatePolarisationPlane(const Point3f &facetNormal, Beam &beam);
+	void ComputePolarisationParams(const Vector3f &dir,
+								   const Point3f &facetNormal, Beam &beam);
 
 	void ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon);
 

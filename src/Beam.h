@@ -43,6 +43,7 @@ public:
 	void SetTracingParams(int facetID, int actN, Location location);
 
 	void MultiplyJonesMatrix(const complex &c1, const complex &c2);
+	void RotateJMatrix(const Point3f &newBasis);
 
 	// REF: перенести в PhisBeam
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
@@ -68,7 +69,6 @@ public:
 									///< "0" when beam location is "inside" and "1" if it's "outside"
 
 private:
-	void RotateJMatrix(const Point3f &newBasis);
 	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
 	void SetDefault(Beam &other);

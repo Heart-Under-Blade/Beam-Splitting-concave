@@ -379,11 +379,6 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	return one*wavelength*s/SQR(M_2PI);
 }
 
-void Beam::RotatePlane(const Point3f &newBasis)
-{
-	RotateJMatrix(newBasis);
-}
-
 Location Beam::GetLocationByActNumber(int level) const
 {
 	int mask = 1;
@@ -433,8 +428,6 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 		J.m11 = b00;
 		J.m12 = b01;
 	}
-
-	polarizationBasis = newBasis;
 }
 
 void Beam::AddVertex(const Point3f &vertex)

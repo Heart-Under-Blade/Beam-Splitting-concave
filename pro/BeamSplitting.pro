@@ -37,8 +37,7 @@ SOURCES += \
 	../src/geometry/*.cpp \
 	../src/common/*.cpp \
 	../src/scattering/*.cpp \
-	../src/bigint/*.cc \
-    ../src/Splitting.cpp
+    ../src/bigint/*.cc
 
 HEADERS += \
 	../src/*.h \
@@ -48,8 +47,7 @@ HEADERS += \
 	../src/geometry/*.h \
 	../src/common/*.h \
 	../src/scattering/*.h \
-	../src/bigint/*.hh \
-    ../src/Splitting.h
+    ../src/bigint/*.hh
 
 DISTFILES += \
 	classes.qmodel

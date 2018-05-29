@@ -5,9 +5,10 @@
 class Splitting
 {
 public:
-	Splitting(bool isOpticalPath, Light *incidentLight);
+	Splitting(bool isOpticalPath);
 	void ComputeRiParams(const complex &ri);
 
+	void ComputeCosA(const Point3f &normal, const Point3f &incidentDir);
 	void ComputeSplittingParams(const Point3f &dir, const Point3f &normal);
 
 	bool IsCompleteReflection();
@@ -16,16 +17,14 @@ public:
 
 	double ComputeEffectiveReRi() const;
 
-	double ComputeIncidentOpticalPath(const Point3f &facetPoint);
+	double ComputeIncidentOpticalPath(const Point3f &direction,
+									  const Point3f &facetPoint);
 	double ComputeScatteredOpticalPath(const Beam &beam);
 	double ComputeSegmentOpticalPath(const Beam &beam,
 									 const Point3f &facetPoint) const;
 
 	void ComputeCRBeamParams(const Point3f &normal, const Beam &incidentBeam,
 							 Beam &inBeam);
-
-	void ComputeCosA(const Point3f &normal, const Point3f &incidentDir);
-
 
 	void ComputeNormalBeamParams(const Beam &incidentBeam,
 								 Beam &inBeam, Beam &outBeam);
@@ -47,14 +46,14 @@ private:
 	double s;
 	double cosA;
 	bool m_isOpticalPath;
-	Light *m_incidentLight;
-
-	const double FAR_ZONE_DISTANCE = 10000.0;
 
 	complex m_ri;	//  refractive index
 	double m_cRiRe;
 	double m_cRiRe2;
 	double m_cRiIm;
+
+public:
+	const double FAR_ZONE_DISTANCE = 10000.0; ///< distance from the center of coordinate system to the "far zone"
 
 private:
 	void ComputeCRJonesParams(complex &cv, complex &ch);

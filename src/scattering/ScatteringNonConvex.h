@@ -42,7 +42,7 @@ private:
 
 	bool isExternalNonEmptyBeam(Beam &incidentBeam);
 
-	int FindFacetID(int facetID, const IntArray &arr);
+	int FindFacetId(int facetId, const IntArray &arr);
 
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
 
@@ -61,6 +61,6 @@ private:
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 protected:
-	void TraceBeams(std::vector<Beam> &scaterredBeams);
+	void SplitBeams(std::vector<Beam> &scaterredBeams);
 };
 
