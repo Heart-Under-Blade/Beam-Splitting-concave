@@ -81,7 +81,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	SetDefaultCenters();
 	Reset();
 
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
 		defaultFacets[i].isVisibleIn = false;
 		defaultFacets[i].isVisibleOut = false;
@@ -90,7 +90,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	}
 }
 
-void BulletRosette::GetAggPartFacetIDRange(int id, int &begin, int &end) const
+void BulletRosette::GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const
 {
 	int patN = id/13;
 	begin = patN*13;

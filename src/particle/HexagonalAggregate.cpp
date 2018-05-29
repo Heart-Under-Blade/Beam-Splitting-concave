@@ -121,7 +121,7 @@ void HexagonalAggregate::SetFacetParams()
 	facets[12].isVisibleOut = false;
 	facets[15].isVisibleOut = false;
 
-	for (int i = 0; i < facetNum; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+	for (int i = 0; i < nFacets; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
 	{
 		facets[i].isVisibleIn = false;
 	}

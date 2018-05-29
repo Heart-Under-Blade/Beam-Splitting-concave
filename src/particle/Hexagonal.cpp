@@ -29,11 +29,11 @@ void Hexagonal::SetSize(double diameter, double height)
 
 void Hexagonal::SetFacetParams()
 {
-	SetSideFacetParams(1, facetNum-1);
+	SetSideFacetParams(1, nFacets-1);
 
 	// base facet number
 	defaultFacets[0].size = BASE_VERTEX_NUM;
-	defaultFacets[facetNum-1].size = BASE_VERTEX_NUM;
+	defaultFacets[nFacets-1].size = BASE_VERTEX_NUM;
 }
 
 void Hexagonal::SetSideFacetParams(int first, int last)

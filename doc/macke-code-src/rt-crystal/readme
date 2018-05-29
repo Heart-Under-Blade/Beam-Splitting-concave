@@ -1,0 +1,37 @@
+Programs (Fortran90) for Ray-Tracing at polyhedral particles: 
+
+CONTENTS:
+
+rt.f90: RayTracing Program, see header for references and full 
+        explanation of in- and output files.
+ 
+colpla.f90: Program to construct ice crystal coordinate files
+             for hexagonal cylinders
+Hex.Points: Source file required for 'colpla.f90'
+
+br.f90 : constructs crystal coordinates for bullet rosettes
+ssb.Points: Source file required for 'br.f90'
+
+3dirfrac.f90: constructs crystal coordinates for 3d Koch-fractals
+tetraeder: Source file required for '3dirfrac.f90'
+
+example: Directory containing results of an example-run. Input file 
+         is 'hexagon'
+
+
+
+REFERENCES:
+
+  author = 	 "Macke, A.",
+  title = 	 "Scattering of Light by Polyhedral Ice Crystals",
+  journal =	 "Appl. Opt.",
+  year =	 1993,
+  volume =	 32,
+  pages =	 "2780-2788"
+
+  author = 	 "Macke, A. and Mueller, J. and Raschke, E.",
+  title = 	 "Single scattering properties of atmospheric ice crystals",
+  journal =	 "J. Atmos. Sci."
+  year =	 1996,
+  volume =	 53,
+  pages =	 "2813-2825"

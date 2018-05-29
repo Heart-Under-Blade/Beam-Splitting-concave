@@ -65,7 +65,7 @@ void Bullet::SetPeakFacets(int start, int end, const Point3f *baseFacet,
 
 void Bullet::SetFacetParams()
 {
-	for (int i = 0; i < facetNum; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
 		facets[i].isVisibleIn = false;
 		facets[i].isVisibleOut = false;
