@@ -14,7 +14,7 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 
 	os << Polygon(beam);
 
-	os << "level: " << beam.act << endl
+	os << "level: " << beam.nActs << endl
 	   << "last facet: " << beam.lastFacetId << endl
 	   << "location: " << beam.location << endl
 	   << "direction: "
@@ -57,12 +57,12 @@ void Beam::Copy(const Beam &other)
 	polarizationBasis = other.polarizationBasis;
 
 	lastFacetId = other.lastFacetId;
-	act = other.act;
+	nActs = other.nActs;
 	location = other.location;
 	locations = other.locations;
 
 #ifdef _TRACK_ALLOW
-	trackId = other.trackId;
+	id = other.id;
 #endif
 }
 
@@ -184,12 +184,12 @@ void Beam::SetDefault(Beam &other)
 	other.polarizationBasis = Vector3f(0, 0, 0);
 
 	other.lastFacetId = 0;
-	other.act = 0;
+	other.nActs = 0;
 	other.location = Location::Out;
 	other.locations = 0;
 
 #ifdef _TRACK_ALLOW
-	other.trackId = 0;
+	other.id = 0;
 #endif
 }
 
@@ -209,13 +209,13 @@ Beam &Beam::operator = (Beam &&other)
 void Beam::SetTracingParams(int facetID, int actN, Location loc)
 {
 	lastFacetId = facetID;
-	act = actN;
+	nActs = actN;
 	location = loc;
 
 	if (loc == Location::Out)
 	{	// write location
 		int loc = 1;
-		loc <<= act;
+		loc <<= nActs;
 		locations |= loc;
 	}
 }
@@ -379,60 +379,46 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	return one*wavelength*s/SQR(M_2PI);
 }
 
-Location Beam::GetLocationByActNumber(int level) const
-{
-	int mask = 1;
-	mask <<= level;
-	return (locations & mask) ? Location::Out : Location::In;
-}
-
-void Beam::RotateJMatrix(const Point3f &newBasis)
+void Beam::RotateJMatrix(const Vector3f &newBasis)
 {
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
 	double cs = DotProduct(newBasis, polarizationBasis);
 
-	if (fabs(1.0 - cs) < eps)
+	if (fabs(1.0 - cs) >= eps)
 	{
-		return;
-	}
-
-	if (fabs(1.0 + cs) < eps)
-	{
-		J.m11 = -J.m11;
-		J.m12 = -J.m12;
-		J.m21 = -J.m21;
-		J.m22 = -J.m22;
-	}
-	else
-	{
-		Point3f k;
-		CrossProduct(polarizationBasis, newBasis, k);
-		Normalize(k);
-
-		double angle = acos(cs);
-
-		Point3f r = k + direction;
-
-		if (Norm(r) <= 0.5)
+		if (fabs(1.0 + cs) < eps)
 		{
-			angle = -angle;
+			J.m11 = -J.m11;
+			J.m12 = -J.m12;
+			J.m21 = -J.m21;
+			J.m22 = -J.m22;
 		}
+		else
+		{
+			Point3f k;
+			CrossProduct(polarizationBasis, newBasis, k);
+			Normalize(k);
 
-		double sn = sin(angle); // the rotation of matrix "m"
+			double angle = acos(cs);
 
-		complex b00 = J.m11*cs + J.m21*sn; // first row of the result
-		complex b01 = J.m12*cs + J.m22*sn;
+			Point3f r = k + direction;
 
-		J.m21 = J.m21*cs - J.m11*sn;
-		J.m22 = J.m22*cs - J.m12*sn;
-		J.m11 = b00;
-		J.m12 = b01;
+			if (Norm(r) <= 0.5)
+			{
+				angle = -angle;
+			}
+
+			double sn = sin(angle); // the rotation of matrix "m"
+
+			complex b00 = J.m11*cs + J.m21*sn; // first row of the result
+			complex b01 = J.m12*cs + J.m22*sn;
+
+			J.m21 = J.m21*cs - J.m11*sn;
+			J.m22 = J.m22*cs - J.m12*sn;
+			J.m11 = b00;
+			J.m12 = b01;
+		}
 	}
-}
-
-void Beam::AddVertex(const Point3f &vertex)
-{
-	arr[size++] = vertex;
 }
 
 void Beam::SetPolygon(const Polygon &other)
@@ -445,7 +431,7 @@ void Beam::SetPolygon(const Polygon &other)
 	}
 }
 
-void Beam::SetLight(const Point3f &dir, const Point3f &polarBasis)
+void Beam::SetLight(const Vector3f &dir, const Vector3f &polarBasis)
 {
 	direction = dir;
 	polarizationBasis = polarBasis;
@@ -463,7 +449,8 @@ void Beam::AddOpticalPath(double path)
 	front = DotProduct(-direction, Center());
 }
 
-void Beam::ComputeFront()
+void Beam::CopyTrack(const Track &other)
 {
-	front = DotProduct(-direction, Center());
+	id = other.id;
+	locations = other.locations;
 }

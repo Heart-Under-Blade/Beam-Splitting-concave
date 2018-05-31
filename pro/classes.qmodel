@@ -1492,9 +1492,47 @@
                       </DAssociation>
                      </instance>
                     </item>
+                    <item>
+                     <instance type="DClass">
+                      <DClass>
+                       <base-DObject>
+                        <DObject>
+                         <base-DElement>
+                          <DElement>
+                           <uid>{4fd6a57e-449f-42e1-8dc2-ae8df04c2395}</uid>
+                          </DElement>
+                         </base-DElement>
+                         <object>{bedf58a9-8933-428a-ac80-c08e88bd4648}</object>
+                         <name>Track</name>
+                         <pos>x:210;y:285</pos>
+                         <rect>x:-40;y:-30;w:80;h:60</rect>
+                         <visual-role>0</visual-role>
+                        </DObject>
+                       </base-DObject>
+                      </DClass>
+                     </instance>
+                    </item>
+                    <item>
+                     <instance type="DInheritance">
+                      <DInheritance>
+                       <base-DRelation>
+                        <DRelation>
+                         <base-DElement>
+                          <DElement>
+                           <uid>{1b0c6bca-68e9-44f9-9352-fd7d631e8d8f}</uid>
+                          </DElement>
+                         </base-DElement>
+                         <object>{68704f77-cd7c-4c1b-8210-0a138f3d87e0}</object>
+                         <a>{5cdfbd11-73f7-4cbc-b9f4-bf0f662862a5}</a>
+                         <b>{4fd6a57e-449f-42e1-8dc2-ae8df04c2395}</b>
+                        </DRelation>
+                       </base-DRelation>
+                      </DInheritance>
+                     </instance>
+                    </item>
                    </qlist>
                   </elements>
-                  <last-modified>1525946309876</last-modified>
+                  <last-modified>1527666842488</last-modified>
                   <toolbarid>Classes</toolbarid>
                  </MDiagram>
                 </base-MDiagram>
@@ -3088,6 +3126,28 @@
                         </target>
                        </handle>
                       </item>
+                      <item>
+                       <handle>
+                        <uid>{68704f77-cd7c-4c1b-8210-0a138f3d87e0}</uid>
+                        <target>
+                         <instance type="MInheritance">
+                          <MInheritance>
+                           <base-MRelation>
+                            <MRelation>
+                             <base-MElement>
+                              <MElement>
+                               <uid>{68704f77-cd7c-4c1b-8210-0a138f3d87e0}</uid>
+                              </MElement>
+                             </base-MElement>
+                             <a>{6bd23f6e-ea29-44c4-9f2a-c1b34de2c225}</a>
+                             <b>{bedf58a9-8933-428a-ac80-c08e88bd4648}</b>
+                            </MRelation>
+                           </base-MRelation>
+                          </MInheritance>
+                         </instance>
+                        </target>
+                       </handle>
+                      </item>
                      </qlist>
                     </handles>
                    </handles>
@@ -3883,6 +3943,27 @@
                     </handles>
                    </handles>
                   </relations>
+                 </MObject>
+                </base-MObject>
+               </MClass>
+              </instance>
+             </target>
+            </handle>
+           </item>
+           <item>
+            <handle>
+             <uid>{bedf58a9-8933-428a-ac80-c08e88bd4648}</uid>
+             <target>
+              <instance type="MClass">
+               <MClass>
+                <base-MObject>
+                 <MObject>
+                  <base-MElement>
+                   <MElement>
+                    <uid>{bedf58a9-8933-428a-ac80-c08e88bd4648}</uid>
+                   </MElement>
+                  </base-MElement>
+                  <name>Track</name>
                  </MObject>
                 </base-MObject>
                </MClass>

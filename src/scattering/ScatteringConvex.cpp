@@ -29,8 +29,8 @@ void ScatteringConvex::ScatterLight(double beta, double gamma,
 		SplitLightToBeams(facetID, inBeam, outBeam);
 
 		outBeam.lastFacetId = facetID;
-		outBeam.act = 0;
-		ComputeBeamId(outBeam);
+		outBeam.nActs = 0;
+		outBeam.id = RecomputeTrackId(outBeam.id, outBeam.lastFacetId);
 		outBeams.push_back(outBeam);
 		PushBeamToTree(inBeam, facetID, 0, Location::In);
 
@@ -72,9 +72,9 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 				continue;
 			}
 
-			inBeam.trackId = beam.trackId;
+			inBeam.id = beam.id;
 			inBeam.locations = beam.locations;
-			PushBeamToTree(inBeam, id, beam.act+1, Location::In);
+			PushBeamToTree(inBeam, id, beam.nActs+1, Location::In);
 		}
 	}
 }
@@ -113,10 +113,10 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 		{
 			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
 												  inBeam, outBeam);
-			outBeam.trackId = incidentBeam.trackId;
+			outBeam.id = incidentBeam.id;
 			outBeam.lastFacetId = facetID;
-			outBeam.act = incidentBeam.act + 1;
-			ComputeBeamId(outBeam);
+			outBeam.nActs = incidentBeam.nActs + 1;
+			outBeam.id = RecomputeTrackId(outBeam.id, outBeam.lastFacetId);
 			outBeam.opticalPath += m_splitting.ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
 			outBeams.push_back(outBeam);
 		}
@@ -129,10 +129,10 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 	{	// normal incidence
 		m_splitting.ComputeNormalBeamParams(incidentBeam, inBeam, outBeam);
 
-		outBeam.trackId = incidentBeam.trackId;
+		outBeam.id = incidentBeam.id;
 		outBeam.lastFacetId = facetID;
-		outBeam.act = incidentBeam.act + 1;
-		ComputeBeamId(outBeam);
+		outBeam.nActs = incidentBeam.nActs + 1;
+		outBeam.id = RecomputeTrackId(outBeam.id, outBeam.lastFacetId);
 		outBeam.opticalPath += m_splitting.ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
 		outBeams.push_back(outBeam);
 	}

@@ -28,7 +28,7 @@ class IntArray
 {
 public:
 	int arr[MAX_FACET_NUM];
-	int size = 0;
+	size_t size = 0;
 
 	void Add(int elem)
 	{
@@ -136,6 +136,7 @@ struct Point3f
 	}
 
 } __attribute__ ((aligned (16)));
+
 
 struct Point3d
 {

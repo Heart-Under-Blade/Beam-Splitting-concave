@@ -67,7 +67,7 @@ protected:
 
 	void Difference(const Polygon &subject, const Point3f &subjNormal,
 					const Polygon &clip, const Point3f &clipNormal,
-					const Point3f &clipDir, Polygon *difference, int &resultSize) const;
+					const Point3f &clipDir, PolygonArray &difference) const;
 
 	bool Intersect(int facetId, const Beam& beam, Polygon &intersection) const;
 
@@ -87,7 +87,7 @@ protected:
 	void PushBeamToTree(Beam &beam, int facetId, int level);
 	void PushBeamToTree(Beam &beam);
 
-	void ComputeBeamId(Beam &beam);
+	BigInteger RecomputeTrackId(const BigInteger &oldId, int facetId);
 
 private:
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,

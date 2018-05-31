@@ -31,10 +31,9 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 	m_splitting.ComputeRiParams(m_particle->GetRefractiveIndex());
 }
 
-void Scattering::ComputeBeamId(Beam &beam)
+BigInteger Scattering::RecomputeTrackId(const BigInteger &oldId, int facetId)
 {
-	beam.trackId += (beam.lastFacetId + 1);
-	beam.trackId *= (m_particle->nFacets + 1);
+	return (oldId + (facetId + 1)) * (m_particle->nFacets + 1);
 }
 
 void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
@@ -46,13 +45,13 @@ void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location loc
 void Scattering::PushBeamToTree(Beam &beam, int facetId, int level)
 {
 	beam.lastFacetId = facetId;
-	beam.act = level;
+	beam.nActs = level;
 	PushBeamToTree(beam);
 }
 
 void Scattering::PushBeamToTree(Beam &beam)
 {
-	ComputeBeamId(beam);
+	beam.id = RecomputeTrackId(beam.id, beam.lastFacetId);
 	m_beamTree[m_treeSize++] = beam;
 }
 
@@ -165,20 +164,19 @@ void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vect
 
 bool Scattering::IsTerminalAct(const Beam &beam)
 {
-	return (beam.act >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
+	return (beam.nActs >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
 }
 
 void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
 						 const Polygon &clip, const Point3f &clipNormal,
-						 const Point3f &clipDir,
-						 Polygon *difference, int &resultSize) const
+						 const Point3f &clipDir, PolygonArray &difference) const
 {
 	__m128 _clip[MAX_VERTEX_NUM];
 	bool isProjected = ProjectToFacetPlane(clip, clipDir, subjNormal, _clip);
 
 	if (!isProjected)
 	{
-		difference[resultSize++] = subject;
+		difference.Push(subject);
 		return;
 	}
 
@@ -272,7 +270,7 @@ void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
 
 			if (resPolygon.size >= MIN_VERTEX_NUM)
 			{
-				difference[resultSize++] = resPolygon;
+				difference.Push(resPolygon);
 			}
 		}
 	}

@@ -15,14 +15,11 @@ public:
 private:
 	void SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs);
 	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir);
-	void CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
-						Polygon *resultBeams, int &resultSize);
+	void CutBeamByFacet(int facetID, Beam &beam,
+						PolygonArray &result);
 
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
-
-	void CutFacetByShadows(int facetID, const IntArray &shadowFacetIDs, int prevFacetNum,
-						   PolygonArray &resFacets);
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
@@ -32,22 +29,20 @@ private:
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIDs);
 	void SelectVisibleFacetsForLight(IntArray &facetIDs);
 
-	void SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
-							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
+	bool SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam);
 
-	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
+	void IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
 							PolygonArray &resFacets);
 
 	void SplitLightToBeams();
 
-	bool isExternalNonEmptyBeam(Beam &incidentBeam);
+	bool IsOutgoingBeam(Beam &incidentBeam);
 
 	int FindFacetId(int facetId, const IntArray &arr);
 
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
 
-	void PushBeamsToTree(const Beam &beam, int facetID, bool hasOutBeam,
-						 Beam &inBeam, Beam &outBeam);
 	void PushBeamsToTree(int facetID, const PolygonArray &polygons,
 						 Beam &inBeam, Beam &outBeam);
 
@@ -55,12 +50,21 @@ private:
 
 	void SplitByFacet(const IntArray &facetIDs, int facetIndex);
 
-	void TraceSecondaryBeamByFacet(Beam &beam, int facetID, bool &isDivided);
+	void TraceSecondaryBeamByFacet(Beam &beam, int facetId, bool &isDivided);
 
 	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
+	void CutPolygonByFacets(const Polygon &pol,
+							const IntArray &facetIds, size_t size,
+							const Vector3f &polNormal, const Vector3f &clipNormal,
+							const Vector3f &dir,
+							PolygonArray &pols);
+
 protected:
 	void SplitBeams(std::vector<Beam> &scaterredBeams);
+
+private:
+	PolygonArray m_polygonBuffer;
 };
 

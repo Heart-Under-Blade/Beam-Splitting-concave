@@ -118,9 +118,9 @@ void Tracks::RecoverTrack(const Beam &beam, int facetNum,
 	int coef = facetNum + 1;
 	std::vector<int> tmp_track;
 
-	auto tmpId = beam.trackId/coef;
+	auto tmpId = beam.id/coef;
 
-	for (int i = 0; i <= beam.act; ++i)
+	for (int i = 0; i <= beam.nActs; ++i)
 	{
 		int tmp = (tmpId%coef).toInt();
 		tmpId -= tmp;
