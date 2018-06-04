@@ -206,9 +206,9 @@ Beam &Beam::operator = (Beam &&other)
 	return *this;
 }
 
-void Beam::SetTracingParams(int facetID, int actN, Location loc)
+void Beam::SetTracingParams(int facetId, int actN, Location loc)
 {
-	lastFacetId = facetID;
+	lastFacetId = facetId;
 	nActs = actN;
 	location = loc;
 

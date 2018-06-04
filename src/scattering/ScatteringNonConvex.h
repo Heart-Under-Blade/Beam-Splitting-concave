@@ -15,7 +15,7 @@ public:
 private:
 	void SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs);
 	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir);
-	void CutBeamByFacet(int facetID, Beam &beam,
+	void CutBeamByFacet(const Facet &facet, Beam &beam,
 						PolygonArray &result);
 
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
@@ -29,7 +29,7 @@ private:
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIDs);
 	void SelectVisibleFacetsForLight(IntArray &facetIDs);
 
-	bool SetOpticalBeamParams(int facetId, const Beam &incidentBeam,
+	bool SetOpticalBeamParams(const Facet &facet, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam);
 
 	void IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
@@ -43,7 +43,7 @@ private:
 
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
 
-	void PushBeamsToTree(int facetID, const PolygonArray &polygons,
+	void PushBeamsToTree(int facetId, const PolygonArray &polygons,
 						 Beam &inBeam, Beam &outBeam);
 
 	bool IsVisibleFacet(int facetID, const Beam &beam);
@@ -61,6 +61,8 @@ private:
 							const Vector3f &dir,
 							PolygonArray &pols);
 
+	void PushBeamPartsToTree(const Beam &beam,
+							 const PolygonArray &parts);
 protected:
 	void SplitBeams(std::vector<Beam> &scaterredBeams);
 

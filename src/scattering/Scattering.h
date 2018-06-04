@@ -84,8 +84,6 @@ protected:
 
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
-	void PushBeamToTree(Beam &beam, int facetId, int level);
-	void PushBeamToTree(Beam &beam);
 
 	BigInteger RecomputeTrackId(const BigInteger &oldId, int facetId);
 

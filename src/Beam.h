@@ -51,7 +51,7 @@ public:
 	Beam & operator = (const Light &other);
 	Beam & operator = (Beam &&other);
 
-	void SetTracingParams(int facetID, int actN, Location location);
+	void SetTracingParams(int facetId, int actN, Location location);
 
 	void MultiplyJonesMatrix(const complex &c1, const complex &c2);
 	void RotateJMatrix(const Vector3f &newBasis);

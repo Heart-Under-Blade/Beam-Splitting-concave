@@ -39,19 +39,6 @@ BigInteger Scattering::RecomputeTrackId(const BigInteger &oldId, int facetId)
 void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
 {
 	beam.SetTracingParams(facetId, level, location);
-	PushBeamToTree(beam);
-}
-
-void Scattering::PushBeamToTree(Beam &beam, int facetId, int level)
-{
-	beam.lastFacetId = facetId;
-	beam.nActs = level;
-	PushBeamToTree(beam);
-}
-
-void Scattering::PushBeamToTree(Beam &beam)
-{
-	beam.id = RecomputeTrackId(beam.id, beam.lastFacetId);
 	m_beamTree[m_treeSize++] = beam;
 }
 
@@ -66,7 +53,8 @@ void Scattering::SetIncidentBeamOpticalParams(unsigned facetId,
 		Beam fakeIncidentBeam;
 		fakeIncidentBeam.SetLight(*m_incidentLight);
 		const Point3f &facetNormal = m_facets[facetId].in_normal;
-		ComputePolarisationParams(-fakeIncidentBeam.direction, facetNormal, fakeIncidentBeam);
+		ComputePolarisationParams(-fakeIncidentBeam.direction, facetNormal,
+								  fakeIncidentBeam);
 		m_splitting.ComputeRegularBeamParamsExternal(facetNormal,
 													 fakeIncidentBeam,
 													 inBeam, outBeam);
