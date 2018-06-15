@@ -19,7 +19,7 @@ public:
 
 	double ComputeIncidentOpticalPath(const Point3f &direction,
 									  const Point3f &facetPoint);
-	double ComputeScatteredOpticalPath(const Beam &beam);
+	double ComputeOutgoingOpticalPath(const Beam &beam);
 	double ComputeSegmentOpticalPath(const Beam &beam,
 									 const Point3f &facetPoint) const;
 

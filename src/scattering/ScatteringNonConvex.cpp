@@ -43,7 +43,7 @@ void ScatteringNonConvex::PushBeamsToTree(int facetId, const PolygonArray &polyg
 	inBeam.id = id;
 	outBeam.id = id;
 
-	for (int j = 0; j < polygons.size; ++j)
+	for (unsigned j = 0; j < polygons.size; ++j)
 	{
 		Beam in = inBeam;
 		Beam out = outBeam;
@@ -159,33 +159,33 @@ void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
 				pols.Push(m_polygonBuffer.arr[i]);
 			}
 		}
-		else // beam has layed on the facet totaly
+		else // beam has layed on the facet totally
 		{
 			break;
 		}
 	}
 }
 
-void ScatteringNonConvex::CatchExternalBeam(const Beam &beam,
-											std::vector<Beam> &scatteredBeams)
+void ScatteringNonConvex::CutExternalBeam(const Beam &beam,
+										  std::vector<Beam> &scaterredBeams)
 {
-	const Point3f &normal = m_facets[beam.lastFacetId].ex_normal;
-	const Point3f &normal1 = m_facets[beam.lastFacetId].in_normal;
+	const Point3f &n1 = m_facets[beam.lastFacetId].ex_normal;
+	const Point3f &n2 = m_facets[beam.lastFacetId].in_normal;
 
 	IntArray facetIds;
 	SelectVisibleFacets(beam, facetIds);
 
 	PolygonArray resultBeams;
-	CutPolygonByFacets(beam, facetIds, facetIds.size, normal, normal1,
+	CutPolygonByFacets(beam, facetIds, facetIds.size, n1, n2,
 					   -beam.direction, resultBeams);
 
 	Beam tmp = beam;
-	tmp.opticalPath += m_splitting.ComputeScatteredOpticalPath(tmp); // добираем оптический путь
+	tmp.opticalPath += m_splitting.ComputeOutgoingOpticalPath(tmp); // добираем оптический путь
 
 	for (unsigned i = 0; i < resultBeams.size; ++i)
 	{
 		tmp.SetPolygon(resultBeams.arr[i]);
-		scatteredBeams.push_back(tmp);
+		scaterredBeams.push_back(tmp);
 	}
 }
 
@@ -285,7 +285,7 @@ int ScatteringNonConvex::FindClosestVertex(const Polygon &facet, const Point3f &
 {
 	int closest = 0;
 
-	for (int i = 1; i < facet.size; ++i)
+	for (unsigned i = 1; i < facet.size; ++i)
 	{
 		Point3f v = facet.arr[closest] - facet.arr[i];
 		double cosVD = DotProduct(v, beamDir);
@@ -353,35 +353,34 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
-		if (IsTerminalAct(beam)) // REF, OPT: перенести проверку во все места, где пучок закидывается в дерево, чтобы пучки заранее не закидывались в него
+		if (!IsTerminalAct(beam)) // REF, OPT: перенести проверку во все места, где пучок закидывается в дерево, чтобы пучки заранее не закидывались в него
 		{
-			if (beam.location == Location::Out)
+			IntArray facetIds;
+			SelectVisibleFacets(beam, facetIds);
+
+			bool isDivided = false;
+
+			for (unsigned i = 0; (i < facetIds.size) && !isDivided; ++i)// OPT: move this loop to SplitBeamByFacet
 			{
-				CatchExternalBeam(beam, scaterredBeams);
+				int facetId = facetIds.arr[i];
+				Polygon intersection;
+				Intersect(facetId, beam, intersection);
+
+				if (intersection.size >= MIN_VERTEX_NUM)
+				{
+					isDivided = SplitBeamByFacet(intersection, facetId, beam);
+				}
 			}
 
-			continue;
-		}
-
-		IntArray facetIds;
-		SelectVisibleFacets(beam, facetIds);
-
-		for (int i = 0; i < facetIds.size; ++i)// OPT: move this loop to TraceSecondaryBeamByFacet
-		{
-			int facetId = facetIds.arr[i];
-			bool isDivided;
-			TraceSecondaryBeamByFacet(beam, facetId, isDivided);
-
-			if (isDivided)
-			{
-				break;
+			if (IsOutgoingBeam(beam))
+			{	// посылаем обрезанный всеми гранями внешний пучок на сферу
+				beam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
+				scaterredBeams.push_back(beam);
 			}
 		}
-
-		if (IsOutgoingBeam(beam))
-		{	// посылаем обрезанный всеми гранями внешний пучок на сферу
-			beam.opticalPath += m_splitting.ComputeScatteredOpticalPath(beam); // добираем оптический путь
-			scaterredBeams.push_back(beam);
+		else if (beam.location == Location::Out)
+		{
+			CutExternalBeam(beam, scaterredBeams);
 		}
 	}
 }
@@ -409,16 +408,16 @@ bool ScatteringNonConvex::SetOpticalBeamParams(const Facet &facet, const Beam &i
 			ComputePolarisationParams(incBeam.direction, normal, incBeam);
 //			incBeam.direction = -incBeam.direction;
 
-			if (!m_splitting.IsCompleteReflection())
+			hasOutBeam = !m_splitting.IsCompleteReflection();
+
+			if (hasOutBeam)
 			{
 				m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
 													  inBeam, outBeam);
-				hasOutBeam = true;
 			}
 			else // complete internal reflection incidence
 			{
 				m_splitting.ComputeCRBeamParams(normal, incidentBeam, inBeam);
-				hasOutBeam = false;
 			}
 		}
 		else // beam is external
@@ -614,7 +613,7 @@ void ScatteringNonConvex::PushBeamPartsToTree(const Beam &beam,
 {
 	Beam tmp = beam; // OPT: try to replace 'tmp' to 'beam'
 
-	for (int i = 0; i < parts.size; ++i)
+	for (unsigned i = 0; i < parts.size; ++i)
 	{
 		tmp = parts.arr[i];
 		assert(m_treeSize < MAX_BEAM_REFL_NUM);
@@ -622,55 +621,56 @@ void ScatteringNonConvex::PushBeamPartsToTree(const Beam &beam,
 	}
 }
 
-void ScatteringNonConvex::TraceSecondaryBeamByFacet(Beam &beam, int facetId,
-													bool &isDivided)
+void ScatteringNonConvex::PushBeamToTree(Beam &beam, const Beam &oldBeam,
+										 const BigInteger &newId, int facetId,
+										 Location loc)
 {
-	isDivided = false;
-	Polygon intersection;
-	bool isIntersected = Intersect(facetId, beam, intersection);
+	beam.id = newId;
+	beam.locations = oldBeam.locations;
+	Scattering::PushBeamToTree(beam, facetId, oldBeam.nActs+1, loc);
+}
 
+bool ScatteringNonConvex::SplitBeamByFacet(const Polygon &intersection,
+										   int facetId, Beam &beam)
+{
 #ifdef _DEBUG // DEB
 if (beam.lastFacetId==0 && facetId==6)
 //if (beam.trackId.toLong()==9633 && facetID==0)
 	int f =0;
 #endif
-	if (isIntersected)
+	Facet &facet = m_facets[facetId];
+
+	Beam inBeam, outBeam;
+	inBeam.SetPolygon(intersection);
+	outBeam.SetPolygon(intersection);
+
+	bool hasOutBeam = SetOpticalBeamParams(facet, beam, inBeam, outBeam);
+
+	auto newId = RecomputeTrackId(beam.id, facetId);
+
+	if (hasOutBeam)
 	{
-		Facet &facet = m_facets[facetId];
-
-		Beam inBeam, outBeam;
-		inBeam.SetPolygon(intersection);
-		outBeam.SetPolygon(intersection);
-
-		bool hasOutBeam = SetOpticalBeamParams(facet, beam, inBeam, outBeam);
-
-		auto newId = RecomputeTrackId(beam.id, facetId);
-
-		if (hasOutBeam)
-		{
-			outBeam.id = newId;
-			outBeam.locations = beam.locations;
-			PushBeamToTree(outBeam, facetId, beam.nActs+1, Location::Out);
-		}
-
-		inBeam.id = newId;
-		inBeam.locations = beam.locations;
-		PushBeamToTree(inBeam, facetId, beam.nActs+1, Location::In);
-
-		m_polygonBuffer.Clear();
-		CutBeamByFacet(facet, beam, m_polygonBuffer);
-
-		if (m_polygonBuffer.size > CLIP_RESULT_SINGLE)
-		{	// beam had divided by facet
-			PushBeamPartsToTree(beam, m_polygonBuffer);
-			isDivided = true;
-			beam.size = 0;
-		}
-		else if (m_polygonBuffer.size == CLIP_RESULT_SINGLE)
-		{
-			beam = m_polygonBuffer.arr[0];
-		}
+		PushBeamToTree(outBeam, beam, newId, facetId, Location::Out);
 	}
+
+	PushBeamToTree(inBeam, beam, newId, facetId, Location::In);
+
+	m_polygonBuffer.Clear();
+	CutBeamByFacet(facet, beam, m_polygonBuffer);
+
+	bool isDivided = m_polygonBuffer.size > CLIP_RESULT_SINGLE;
+
+	if (isDivided)
+	{	// beam had divided by facet
+		PushBeamPartsToTree(beam, m_polygonBuffer);
+		beam.size = 0;
+	}
+	else if (m_polygonBuffer.size == CLIP_RESULT_SINGLE)
+	{
+		beam = m_polygonBuffer.arr[0];
+	}
+
+	return isDivided;
 }
 
 void ScatteringNonConvex::PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
@@ -696,74 +696,74 @@ void ScatteringNonConvex::ScatterLight(double beta, double gamma,
 										 const std::vector<std::vector<int>> &tracks,
 										 std::vector<Beam> &scaterredBeams)
 {
-	m_particle->Rotate(beta, gamma, 0);
+//	m_particle->Rotate(beta, gamma, 0);
 
-	for (const std::vector<int> &track : tracks)
-	{
-		int facetID = track.at(0);
+//	for (const std::vector<int> &track : tracks)
+//	{
+//		int facetID = track.at(0);
 
-		bool isIncident;
-		TraceFirstBeamFixedFacet(facetID, isIncident);
+//		bool isIncident;
+//		TraceFirstBeamFixedFacet(facetID, isIncident);
 
-		if (!isIncident)
-		{
-			continue;
-		}
+//		if (!isIncident)
+//		{
+//			continue;
+//		}
 
-		for (size_t i = 1; i < track.size(); ++i)
-		{
-			int facetID = track.at(i);
+//		for (size_t i = 1; i < track.size(); ++i)
+//		{
+//			int facetID = track.at(i);
 
-			std::vector<Beam> buffer; // для прошедших пучков (не дублированных)
+//			std::vector<Beam> buffer; // для прошедших пучков (не дублированных)
 
-			while (m_treeSize != 0)
-			{
-				Beam beam = m_beamTree[--m_treeSize];
+//			while (m_treeSize != 0)
+//			{
+//				Beam beam = m_beamTree[--m_treeSize];
 
-				IntArray facetIDs;
-				SelectVisibleFacets(beam, facetIDs);
-				int index = FindFacetId(facetID, facetIDs);
+//				IntArray facetIDs;
+//				SelectVisibleFacets(beam, facetIDs);
+//				int index = FindFacetId(facetID, facetIDs);
 
-				if (index != -1)
-				{
-					bool isDivided;
-					TraceSecondaryBeamByFacet(beam, facetID, isDivided);
+//				if (index != -1)
+//				{
+//					bool isDivided;
+//					SplitBeamByFacet(beam, facetID, isDivided);
 
-					Polygon intersected;
-					bool hasIntersection = Intersect(facetID, beam, intersected);
+//					Polygon intersected;
+//					Intersect(facetID, beam, intersected);
 
-					if (hasIntersection)
-					{
-						Beam inBeam, outBeam;
-						inBeam.SetPolygon(intersected);
-						outBeam.SetPolygon(intersected);
+//					if (intersected.size >= MIN_VERTEX_NUM)
+//					{
+//						Beam inBeam, outBeam;
+//						inBeam.SetPolygon(intersected);
+//						outBeam.SetPolygon(intersected);
 
-						Facet &facet = m_facets[facetID];
-						bool hasOutBeam = SetOpticalBeamParams(facet, beam,
-															   inBeam, outBeam);
-						PushBeamsToBuffer(facetID, beam, hasOutBeam,
-										  inBeam, outBeam, buffer);
-					}
-				}
-			}
+//						Facet &facet = m_facets[facetID];
+//						bool hasOutBeam = SetOpticalBeamParams(facet, beam,
+//															   inBeam, outBeam);
+//						PushBeamsToBuffer(facetID, beam, hasOutBeam,
+//										  inBeam, outBeam, buffer);
+//					}
+//				}
+//			}
 
-			if (buffer.empty())
-			{
-				break;
-			}
+//			if (buffer.empty())
+//			{
+//				break;
+//			}
 
-			for (const Beam &b : buffer)
-			{	// добавляем прошедшие пучки
-				assert(m_treeSize < MAX_BEAM_REFL_NUM);
-				m_beamTree[m_treeSize++] = b;
-			}
-		}
+//			for (const Beam &b : buffer)
+//			{	// добавляем прошедшие пучки
+//				assert(m_treeSize < MAX_BEAM_REFL_NUM);
+//				m_beamTree[m_treeSize++] = b;
+//			}
+//		}
 
-		while (m_treeSize != 0)
-		{
-			scaterredBeams.push_back(m_beamTree[--m_treeSize]);
-		}
-	}
+//		while (m_treeSize != 0)
+//		{
+//			scaterredBeams.push_back(m_beamTree[--m_treeSize]);
+//		}
+//	}
 }
 
 void ScatteringNonConvex::TraceFirstBeamFixedFacet(int facetID, bool &isIncident)

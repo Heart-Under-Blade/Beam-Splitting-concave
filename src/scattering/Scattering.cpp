@@ -67,7 +67,7 @@ void Scattering::SetIncidentBeamOpticalParams(unsigned facetId,
 }
 
 void Scattering::ComputePolarisationParams(const Vector3f &dir,
-										   const Point3f &facetNormal, Beam &beam)
+										   const Vector3f &facetNormal, Beam &beam)
 {
 	Point3f newBasis = CrossProduct(facetNormal, dir);
 	Normalize(newBasis);
@@ -155,9 +155,9 @@ bool Scattering::IsTerminalAct(const Beam &beam)
 	return (beam.nActs >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
 }
 
-void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
-						 const Polygon &clip, const Point3f &clipNormal,
-						 const Point3f &clipDir, PolygonArray &difference) const
+void Scattering::Difference(const Polygon &subject, const Vector3f &subjNormal,
+						 const Polygon &clip, const Vector3f &clipNormal,
+						 const Vector3f &clipDir, PolygonArray &difference) const
 {
 	__m128 _clip[MAX_VERTEX_NUM];
 	bool isProjected = ProjectToFacetPlane(clip, clipDir, subjNormal, _clip);
@@ -264,7 +264,7 @@ void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
 	}
 }
 
-bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
+bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Vector3f &dir,
 								  const Point3f &normal, __m128 *_projection) const
 {
 	__m128 _normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
@@ -297,7 +297,7 @@ bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
-bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
+void Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
 {
 	__m128 _output_points[MAX_VERTEX_NUM];
 	const Point3f &normal = m_facets[facetID].in_normal;
@@ -306,7 +306,7 @@ bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection)
 										   _output_points);
 	if (!isProjected)
 	{
-		return false;
+		return;
 	}
 
 	__m128 _normal_to_facet = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
@@ -379,7 +379,6 @@ bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection)
 	}
 
 	SetOutputPolygon(_output_ptr, outputSize, intersection);
-	return intersection.size >= MIN_VERTEX_NUM;
 }
 
 void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,

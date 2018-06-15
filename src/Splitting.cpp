@@ -240,7 +240,7 @@ double Splitting::ComputeIncidentOpticalPath(const Point3f &direction,
 	return FAR_ZONE_DISTANCE + DotProduct(direction, facetPoint);
 }
 
-double Splitting::ComputeScatteredOpticalPath(const Beam &beam)
+double Splitting::ComputeOutgoingOpticalPath(const Beam &beam)
 {
 	return FAR_ZONE_DISTANCE + beam.front;
 }

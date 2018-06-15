@@ -39,8 +39,8 @@ protected:
 	Splitting m_splitting;
 	Light *m_incidentLight;
 
-	Point3f m_incidentDir;
-	Point3f m_polarBasis;
+	Vector3f m_incidentDir;
+	Vector3f m_polarBasis;
 	int m_nActs;
 
 	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
@@ -65,11 +65,11 @@ public:
 protected:
 	void SetIncidentBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outBeam);
 
-	void Difference(const Polygon &subject, const Point3f &subjNormal,
-					const Polygon &clip, const Point3f &clipNormal,
-					const Point3f &clipDir, PolygonArray &difference) const;
+	void Difference(const Polygon &subject, const Vector3f &subjNormal,
+					const Polygon &clip, const Vector3f &clipNormal,
+					const Vector3f &clipDir, PolygonArray &difference) const;
 
-	bool Intersect(int facetId, const Beam& beam, Polygon &intersection) const;
+	void Intersect(int facetId, const Beam& beam, Polygon &intersection) const;
 
 	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
 
@@ -78,7 +78,7 @@ protected:
 	void SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam);
 
 	void ComputePolarisationParams(const Vector3f &dir,
-								   const Point3f &facetNormal, Beam &beam);
+								   const Vector3f &facetNormal, Beam &beam);
 
 	void ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon);
 
@@ -91,7 +91,7 @@ private:
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,
 						  Polygon &polygon) const;
 
-	bool ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
+	bool ProjectToFacetPlane(const Polygon &polygon, const Vector3f &dir,
 							 const Point3f &normal, __m128 *_projection) const;
 
 };

@@ -21,7 +21,7 @@ private:
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
 
-	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
+	void CutExternalBeam(const Beam &beam, std::vector<Beam> &scaterredBeams);
 
 	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
 	void FindVisibleFacetsForLight(IntArray &facetIDs);
@@ -50,7 +50,8 @@ private:
 
 	void SplitByFacet(const IntArray &facetIDs, int facetIndex);
 
-	void TraceSecondaryBeamByFacet(Beam &beam, int facetId, bool &isDivided);
+	bool SplitBeamByFacet(const Polygon &intersection, int facetId,
+						  Beam &beam);
 
 	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
@@ -63,6 +64,10 @@ private:
 
 	void PushBeamPartsToTree(const Beam &beam,
 							 const PolygonArray &parts);
+	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
+						const BigInteger &newId, int facetId,
+						Location loc);
+
 protected:
 	void SplitBeams(std::vector<Beam> &scaterredBeams);
 
