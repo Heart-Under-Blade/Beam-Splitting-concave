@@ -323,7 +323,7 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion
-		if (/*m_hasAbsorbtion &&*/ beam.nActs > 0)
+		if (m_hasAbsorbtion && beam.nActs > 0)
 		{
 			ApplyAbsorbtion(beam);
 		}

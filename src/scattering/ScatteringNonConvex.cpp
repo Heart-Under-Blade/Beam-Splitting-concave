@@ -97,7 +97,7 @@ void ScatteringNonConvex::SplitLightToBeams()
 void ScatteringNonConvex::SelectVisibleFacetsForLight(IntArray &facetIDs)
 {
 	FindVisibleFacetsForLight(facetIDs);
-	SortFacets(m_incidentDir, facetIDs);
+	SortFacets_faster(m_incidentDir, facetIDs);
 }
 
 void ScatteringNonConvex::IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
