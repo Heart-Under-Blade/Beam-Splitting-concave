@@ -746,9 +746,10 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 #ifdef _DEBUG // DEB
 	Point3f nFar1 = m_incidentDir;
 	Point3f nFar2 = -beam.direction;
-	path += FAR_ZONE_DISTANCE + DotProductD(p2, nFar1) +
+	double dd = FAR_ZONE_DISTANCE + DotProductD(p2, nFar1) +
 					fabs(DotProductD(beam.Center(), nFar2) + FAR_ZONE_DISTANCE);
 
+	path += dd;
 	if (fabs(path - beam.opticalPath) > 1)
 		int ff = 0;
 #endif
