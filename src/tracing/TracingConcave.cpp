@@ -65,6 +65,10 @@ void TracingConcave::TraceByFacet(const IntArray &facetIDs, int facetIndex)
 	PolygonArray resPolygons;
 	IntersectWithFacet(facetIDs, facetIndex, resPolygons);
 
+#ifdef _DEBUG // DEB
+	if (facetIDs.arr[facetIndex] == 74)
+		int ff = 0;
+#endif
 	if (resPolygons.size != 0)
 	{
 		int id = facetIDs.arr[facetIndex];
@@ -159,11 +163,11 @@ void TracingConcave::CatchExternalBeam(const Beam &beam, std::vector<Beam> &scat
 	}
 
 	Beam tmp = beam;
+	tmp.opticalPath += fabs(FAR_ZONE_DISTANCE + tmp.D); // добираем оптический путь
 
 	for (int i = 0; i < resSize; ++i)
 	{
 		tmp.SetPolygon(resultBeams[i]);
-		tmp.opticalPath += fabs(FAR_ZONE_DISTANCE + tmp.D); // добираем оптический путь
 		scatteredBeams.push_back(tmp);
 	}
 }
@@ -345,11 +349,13 @@ void TracingConcave::PushBeamsToTree(const Beam &beam, int facetID, bool hasOutB
 {
 #ifdef _TRACK_ALLOW
 	inBeam.id = beam.id;
+	inBeam.locations = beam.locations;
 #endif
 
 	if (hasOutBeam)
 	{
 #ifdef _TRACK_ALLOW
+		outBeam.locations = beam.locations;
 		outBeam.id = beam.id;
 #endif
 		PushBeamToTree(outBeam, facetID, beam.level+1, Location::Out);
@@ -380,6 +386,10 @@ void TracingConcave::TraceSecondaryBeams(std::vector<Beam> &scaterredBeams)
 
 		if (count == 52741)
 			int fg = 0;
+#endif
+#ifdef _DEBUG // DEB
+	if (beam.lastFacetID == 74 && beam.level == 0)
+		int ff = 0;
 #endif
 		if (IsTerminalBeam(beam))
 		{
@@ -440,6 +450,10 @@ void TracingConcave::SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
 		else // beam is external
 		{
 			inBeam.J = incidentBeam.J;
+#ifdef _DEBUG // DEB
+			inBeam.dirs = incidentBeam.dirs;
+			outBeam.dirs = incidentBeam.dirs;
+#endif
 			double cosI = DotProduct(-normal, dir);
 
 			SetSloppingBeamParams_initial(dir, cosI, facetID, inBeam, outBeam);
@@ -654,7 +668,10 @@ void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 	isDivided = false;
 	Polygon intersected;
 	bool hasIntersection = Intersect(facetID, beam, intersected);
-
+#ifdef _DEBUG // DEB
+	if (beam.lastFacetID == 8 && facetID == 65)
+		int ff =0 ;
+#endif
 	if (hasIntersection)
 	{
 		Beam inBeam, outBeam;
@@ -663,6 +680,8 @@ void TracingConcave::TraceSecondaryBeamByFacet(Beam &beam, int facetID,
 
 		bool hasOutBeam;
 		SetOpticalBeamParams(facetID, beam, inBeam, outBeam, hasOutBeam);
+		inBeam.locations = beam.locations;
+		outBeam.locations = beam.locations;
 		PushBeamsToTree(beam, facetID, hasOutBeam, inBeam, outBeam);
 
 		Polygon resultBeams[MAX_VERTEX_NUM];

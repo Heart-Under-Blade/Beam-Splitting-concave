@@ -195,7 +195,8 @@ private:
 	void DivideBeamDirection(const Point3f &incidentDir, double cosIN, const Point3f &normal,
 							 Point3f &reflDir, Point3f &refrDir) const;
 
-	Point3f ChangeBeamDirection(const Point3f &oldDir, const Point3f &normal, Location loc);
+	Point3f ChangeBeamDirection(const Point3f &oldDir, const Point3f &normal,
+								Location oldLoc, Location newLoc);
 
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,
 						  Polygon &polygon) const;

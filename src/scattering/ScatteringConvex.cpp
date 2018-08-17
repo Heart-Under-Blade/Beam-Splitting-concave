@@ -17,10 +17,10 @@ void ScatteringConvex::ScatterLight(double beta, double gamma,
 	/// first extermal beam
 	for (int facetID = 0; facetID < m_particle->nFacets; ++facetID)
 	{
-		const Point3f &extNormal = m_facets[facetID].ex_normal;
-		double cosIN = DotProduct(m_incidentDir, extNormal);
+		const Point3f &inNormal = m_facets[facetID].in_normal;
+		m_splitting.ComputeCosA(m_incidentDir, inNormal);
 
-		if (cosIN >= EPS_M_COS_90) /// beam is not incident to this facet
+		if (!m_splitting.IsIncident()) /// beam is not incident to this facet
 		{
 			continue;
 		}
@@ -28,10 +28,14 @@ void ScatteringConvex::ScatterLight(double beta, double gamma,
 		Beam inBeam, outBeam;
 		SplitLightToBeams(facetID, inBeam, outBeam);
 
+		auto newId = RecomputeTrackId(0, facetID);
+
+		outBeam.id = newId;
 		outBeam.lastFacetId = facetID;
-		outBeam.act = 0;
-		ComputeBeamId(outBeam);
+		outBeam.nActs = 0;
 		outBeams.push_back(outBeam);
+
+		inBeam.id = newId;
 		PushBeamToTree(inBeam, facetID, 0, Location::In);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -72,9 +76,9 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 				continue;
 			}
 
-			inBeam.trackId = beam.trackId;
+			inBeam.id = RecomputeTrackId(beam.id, id);
 			inBeam.locations = beam.locations;
-			PushBeamToTree(inBeam, id, beam.act+1, Location::In);
+			PushBeamToTree(inBeam, id, beam.nActs+1, Location::In);
 		}
 	}
 }
@@ -94,9 +98,9 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 		return false;
 	}
 
-	bool isOk = Intersect(facetID, incidentBeam, outBeam);
+	Intersect(facetID, incidentBeam, outBeam);
 
-	if (!isOk)
+	if (outBeam.size < MIN_VERTEX_NUM)
 	{
 		return false;
 	}
@@ -107,17 +111,15 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 	{	// regular incidence
 		m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
 		incidentBeam.direction = -incidentBeam.direction;
-		RotatePolarisationPlane(normal, incidentBeam);
+		ComputePolarisationParams(-incidentBeam.direction, normal, incidentBeam);
 
 		if (!m_splitting.IsCompleteReflection())
 		{
 			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
 												  inBeam, outBeam);
-			outBeam.trackId = incidentBeam.trackId;
-			outBeam.lastFacetId = facetID;
-			outBeam.act = incidentBeam.act + 1;
-			ComputeBeamId(outBeam);
-			outBeam.opticalPath += ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
+			outBeam.nActs = incidentBeam.nActs + 1;
+			outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
+			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
 			outBeams.push_back(outBeam);
 		}
 		else // complete internal reflection incidence
@@ -127,13 +129,11 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 	}
 	else
 	{	// normal incidence
-		SetNormalIncidenceBeamParams(incidentBeam, inBeam, outBeam);
+		m_splitting.ComputeNormalBeamParams(incidentBeam, inBeam, outBeam);
 
-		outBeam.trackId = incidentBeam.trackId;
-		outBeam.lastFacetId = facetID;
-		outBeam.act = incidentBeam.act + 1;
-		ComputeBeamId(outBeam);
-		outBeam.opticalPath += ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
+		outBeam.nActs = incidentBeam.nActs + 1;
+		outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
+		outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
 		outBeams.push_back(outBeam);
 	}
 

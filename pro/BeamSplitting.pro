@@ -5,19 +5,19 @@ CONFIG -= app_bundle
 
 DESTDIR = ../bin
 
-VERSION = 1.0.0
+VERSION = 1.2.0
 
 QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
 CONFIG(release, debug|release): {
 	DEFINES += _NDEBUG
-	TARGET = bsm
+    TARGET = mbs
 }
 
 CONFIG(debug,	debug|release): {
 	DEFINES += _DEBUG
-	TARGET = bsm_d
+    TARGET = mbs_d
 }
 
 INCLUDEPATH += \
@@ -37,8 +37,7 @@ SOURCES += \
 	../src/geometry/*.cpp \
 	../src/common/*.cpp \
 	../src/scattering/*.cpp \
-	../src/bigint/*.cc \
-    ../src/Splitting.cpp
+    ../src/bigint/*.cc
 
 HEADERS += \
 	../src/*.h \
@@ -48,8 +47,8 @@ HEADERS += \
 	../src/geometry/*.h \
 	../src/common/*.h \
 	../src/scattering/*.h \
-	../src/bigint/*.hh \
-    ../src/Splitting.h
+    ../src/bigint/*.hh
 
 DISTFILES += \
-	classes.qmodel
+	classes.qmodel \
+    sequence.qmodel

@@ -9,7 +9,8 @@
 #define MAX_GROUP_NUM	4096
 
 class Beam;
-
+/// REF OPT TODO: сохранять треки вместе в id в виде массива интов,
+/// чтобы не конвертировать, а просто искать их по id
 class TrackGroup
 {
 public:
