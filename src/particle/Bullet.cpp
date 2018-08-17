@@ -71,14 +71,14 @@ void Bullet::SetFacetParams()
 		facets[i].isVisibleOut = false;
 	}
 
-	defaultFacets[0].size = 3;
+	defaultFacets[0].nVertices = 3;
 
 	for (int i = 8; i < 13; ++i)
 	{
-		defaultFacets[i].size = 3;
+		defaultFacets[i].nVertices = 3;
 	}
 
 	SetSideFacetParams(1, 7);
 
-	defaultFacets[7].size = 6;
+	defaultFacets[7].nVertices = BASE_VERTEX_NUM;
 }

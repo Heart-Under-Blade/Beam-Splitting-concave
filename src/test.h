@@ -10,7 +10,7 @@
 
 #include "Hexagonal.h"
 #include "HexagonalAggregate.h"
-#include "TiltedHexagonal.h"
+#include "DistortedHexagonal.h"
 #include "ConcaveHexagonal.h"
 #include "Intersection.h"
 #include "Scattering.h"
@@ -20,7 +20,7 @@ void outputParticle(const Particle &particle)
 	for (int i = 0; i < particle.nFacets; ++i)
 	{
 		std::cout << i << ": ";
-		for (int j = 0; j < particle.facets[i].size; ++j)
+		for (int j = 0; j < particle.facets[i].nVertices; ++j)
 		{
 			Point3f p = particle.facets[i].arr[j];
 			std::cout << "("
@@ -53,7 +53,7 @@ void toFile(const Particle &particle)
 
 	for (int i = 0; i < particle.nFacets; ++i)
 	{
-		for (int j = 0; j < particle.facets[i].size; ++j)
+		for (int j = 0; j < particle.facets[i].nVertices; ++j)
 		{
 			Point3f p = particle.facets[i].arr[j];
 			M << p.point[0] << ' '

@@ -243,13 +243,13 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 
 	Point3f n1 = m_particle->facets[tr[0]].in_normal;
 
-	for (int i = 0; i < beam.size; ++i)
+	for (int i = 0; i < beam.nVertices; ++i)
 	{
 		double delta = Length(beam.Center() - beam.arr[i])/Length(k);
 		opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
 	}
 
-	opticalPath /= beam.size;
+	opticalPath /= beam.nVertices;
 
 	return opticalPath;
 }
@@ -566,10 +566,10 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-		if (beam.direction.cz < BEAM_DIR_LIM)
-		{
-			continue;
-		}
+//		if (beam.direction.cz < BEAM_DIR_LIM)
+//		{
+//			continue;
+//		}
 #ifdef _DEBUG // DEB
 		vector<int> tr;
 		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);

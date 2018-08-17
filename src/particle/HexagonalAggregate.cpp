@@ -106,11 +106,11 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 void HexagonalAggregate::SetFacetParams()
 {
-	defaultFacets[0].size = BASE_VERTEX_NUM;
-	defaultFacets[7].size = BASE_VERTEX_NUM;
+	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
+	defaultFacets[7].nVertices = BASE_VERTEX_NUM;
 
-	defaultFacets[8].size = BASE_VERTEX_NUM;
-	defaultFacets[15].size = BASE_VERTEX_NUM;
+	defaultFacets[8].nVertices = BASE_VERTEX_NUM;
+	defaultFacets[15].nVertices = BASE_VERTEX_NUM;
 
 	facets[1].isVisibleOut = false;
 	facets[2].isVisibleOut = false;

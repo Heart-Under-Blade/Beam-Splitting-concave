@@ -242,14 +242,14 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	if (order)
 	{
 		begin = 0;
-		startIndex = size-1;
+		startIndex = nVertices-1;
 		endIndex = -1;
 	}
 	else
 	{
-		begin = size-1;
+		begin = nVertices-1;
 		startIndex = 0;
-		endIndex = size;
+		endIndex = nVertices;
 	}
 
 	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
@@ -440,14 +440,14 @@ void Beam::RotateJMatrix(const Point3f &newBasis)
 
 void Beam::AddVertex(const Point3f &vertex)
 {
-	arr[size++] = vertex;
+	arr[nVertices++] = vertex;
 }
 
 void Beam::SetPolygon(const Polygon &other)
 {
-	size = other.size;
+	nVertices = other.nVertices;
 
-	for (int i = 0; i < other.size; ++i)
+	for (int i = 0; i < other.nVertices; ++i)
 	{
 		arr[i] = other.arr[i];
 	}

@@ -22,6 +22,7 @@
 #include "ArgPP.h"
 #include "Tracks.h"
 #include "Handler.h"
+#include "DistortedHexagonal.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -38,7 +39,7 @@ enum class ParticleType : int
 	Bullet = 2,
 	BulletRosette = 3,
 	ConcaveHexagonal = 10,
-	TiltedHexagonal = 11,
+	DistortedHexagonal = 11,
 	HexagonalAggregate = 12,
 	CertainAggregate = 999
 };
@@ -172,10 +173,10 @@ int main(int argc, const char* argv[])
 			sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
 			particle = new BulletRosette(refrIndex, diameter, height, sup);
 			break;
-//		case ParticleType::TiltedHexagonal:
-//			sup = parser.argToValue<double>(vec[3]);
-//			particle = new TiltedHexagonal(r, hh, ri, sup);
-//			break;
+		case ParticleType::DistortedHexagonal:
+			sup = args.GetDoubleValue("p", 3);
+			particle = new DistortedHexagonal(refrIndex, diameter, height, sup);
+			break;
 		case ParticleType::ConcaveHexagonal:
 			sup = args.GetDoubleValue("p", 3);
 			particle = new ConcaveHexagonal(refrIndex, diameter, height, sup);

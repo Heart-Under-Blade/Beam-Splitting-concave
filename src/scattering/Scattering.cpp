@@ -367,27 +367,27 @@ void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
 
 	__m128 _clip_normal = _mm_setr_ps(clipNormal.cx, clipNormal.cy, clipNormal.cz, 0.0);
 
-	int clipSize = clip.size;
+	int clipSize = clip.nVertices;
 	__m128 _diff_pol[MAX_VERTEX_NUM];
 
 	__m128 _subject[MAX_VERTEX_NUM];
 	__m128 _buffer[MAX_VERTEX_NUM];
 
-	for (int i = 0; i < subject.size; ++i)
+	for (int i = 0; i < subject.nVertices; ++i)
 	{
 		_subject[i] = _mm_load_ps(subject.arr[i].point);
 	}
 
 	__m128 *_subj = _buffer;
 	__m128 *_buff = _subject;
-	int bufSize = subject.size;
+	int bufSize = subject.nVertices;
 
 	__m128 _first_p, _second_p;
 	bool isInFirst, isInSecond;
 
 	__m128 _p2 = _clip[clipSize-1];
 
-	for (int i = 0; i < clip.size; ++i)
+	for (int i = 0; i < clip.nVertices; ++i)
 	{
 		int difSize = 0;
 
@@ -453,7 +453,7 @@ void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
 			Polygon resPolygon;
 			SetOutputPolygon(_diff_pol, difSize, resPolygon);
 
-			if (resPolygon.size >= MIN_VERTEX_NUM)
+			if (resPolygon.nVertices >= MIN_VERTEX_NUM)
 			{
 				difference[resultSize++] = resPolygon;
 			}
@@ -478,7 +478,7 @@ bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 		return false; /// beam is parallel to facet
 	}
 
-	for (int i = 0; i < polygon.size; ++i)
+	for (int i = 0; i < polygon.nVertices; ++i)
 	{
 		const Point3f &p = polygon.arr[i];
 		__m128 _point = _mm_setr_ps(p.cx, p.cy, p.cz, 0.0);
@@ -508,13 +508,13 @@ bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection)
 
 	__m128 _normal_to_facet = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
 	__m128 *_output_ptr = _output_points;
-	int outputSize = beam.size;
+	int outputSize = beam.nVertices;
 
 	__m128 _buffer[MAX_VERTEX_NUM];
 	__m128 *_buffer_ptr = _buffer;
 	int bufferSize;
 
-	int facetSize = m_particle->facets[facetID].size;
+	int facetSize = m_particle->facets[facetID].nVertices;
 
 	__m128 _p1, _p2; // vertices of facet
 	__m128 _s_point, _e_point;	// points of projection
@@ -576,7 +576,7 @@ bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection)
 	}
 
 	SetOutputPolygon(_output_ptr, outputSize, intersection);
-	return intersection.size >= MIN_VERTEX_NUM;
+	return intersection.nVertices >= MIN_VERTEX_NUM;
 }
 
 void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
@@ -602,7 +602,7 @@ void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
 			p.cx = _output_points[i][0];
 			p.cy = _output_points[i][1];
 			p.cz = _output_points[i][2];
-			polygon.arr[polygon.size++] = p;
+			polygon.arr[polygon.nVertices++] = p;
 		}
 
 		p0 = _output_points[i];
@@ -691,8 +691,8 @@ Point3f Scattering::ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &
 void Scattering::SetPolygonByFacet(int facetId, Polygon &polygon) const
 {
 	const Polygon &facet = m_facets[facetId];
-	int size = facet.size;
-	polygon.size = size;
+	int size = facet.nVertices;
+	polygon.nVertices = size;
 	--size;
 
 	for (int i = 0; i <= size; ++i)

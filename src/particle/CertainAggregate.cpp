@@ -318,9 +318,9 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	for (int i = 0; i < nFacets; ++i)
 	{
-		int last = defaultFacets[i].size-1;
+		int last = defaultFacets[i].nVertices-1;
 
-		for (int j = 0; j < defaultFacets[i].size/2; ++j)
+		for (int j = 0; j < defaultFacets[i].nVertices/2; ++j)
 		{
 			Point3f buf = defaultFacets[i].arr[j];
 			defaultFacets[i].arr[j] = defaultFacets[i].arr[last-j];
@@ -345,7 +345,7 @@ void CertainAggregate::Resize(double sizeIndex)
 {
 	for (int i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < defaultFacets[i].size; ++j)
+		for (int j = 0; j < defaultFacets[i].nVertices; ++j)
 		{
 			defaultFacets[i].arr[j].cx *= sizeIndex;
 			defaultFacets[i].arr[j].cy *= sizeIndex;
@@ -360,11 +360,11 @@ void CertainAggregate::SetFacetParams()
 	{
 		if (i%8 == 7 || i%8 == 0 || i == 0)
 		{
-			defaultFacets[i].size = 6;
+			defaultFacets[i].nVertices = 6;
 		}
 		else
 		{
-			defaultFacets[i].size = 4;
+			defaultFacets[i].nVertices = 4;
 		}
 	}
 

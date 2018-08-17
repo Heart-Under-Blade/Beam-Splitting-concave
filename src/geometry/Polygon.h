@@ -10,10 +10,10 @@ class Polygon
 {
 public:
 	Point3f arr[MAX_VERTEX_NUM];
-	int size = 0;
+	int nVertices = 0;
 
 	Polygon();
-	explicit Polygon(int size);
+	explicit Polygon(int nVertices);
 	Polygon(const Polygon &other);
 	Polygon(Polygon &&other);
 

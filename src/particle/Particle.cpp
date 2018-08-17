@@ -61,17 +61,17 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
-			facet->arr[facet->size].point[c_i++] = strtod(ptr, &trash);
+			facet->arr[facet->nVertices].point[c_i++] = strtod(ptr, &trash);
 			ptr = strtok(NULL, " ");
 		}
 
-		++(facet->size);
+		++(facet->nVertices);
 	}
 
 	pfile.close();
 
 	// correction of number of facet
-	if (defaultFacets[nFacets-1].size == 0)
+	if (defaultFacets[nFacets-1].nVertices == 0)
 	{
 		--nFacets;
 	}
@@ -114,7 +114,7 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 	// REF: слить всё в один цикл
 	for (int i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (int j = 0; j < facets[i].nVertices; ++j)
 		{
 			RotatePoint(defaultFacets[i].arr[j], facets[i].arr[j]);
 		}
@@ -128,7 +128,7 @@ void Particle::Fix()
 {
 	for (int i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (int j = 0; j < facets[i].nVertices; ++j)
 		{
 			defaultFacets[i].arr[j] = facets[i].arr[j];
 		}
@@ -161,7 +161,7 @@ double Particle::GetRotationRadius() const
 
 	for (int i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (int j = 0; j < facets[i].nVertices; ++j)
 		{
 			Point3f v_len = facets[i].arr[j] - p0;
 			double len = Length(v_len);
@@ -190,7 +190,7 @@ void Particle::Move(float dx, float dy, float dz)
 {
 	for (int i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < defaultFacets[i].size; ++j)
+		for (int j = 0; j < defaultFacets[i].nVertices; ++j)
 		{
 			facets[i].arr[j] = defaultFacets[i].arr[j] + Point3f(dx, dy, dz);
 		}
@@ -208,7 +208,7 @@ void Particle::Output()
 
 	for (int i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (int j = 0; j < facets[i].nVertices; ++j)
 		{
 			Point3f p = facets[i].arr[j];
 			M << p.point[0] << ' '
