@@ -244,6 +244,7 @@ int main(int argc, const char* argv[])
 				double normIndex = gamma.step/gamma.norm;
 				handler->SetNormIndex(normIndex);
 				handler->SetTracks(&trackGroups);
+				handler->SetAbsorbtionAccounting(isAbs);
 
 				tracer.SetIsOutputGroups(isOutputGroups);
 				tracer.SetHandler(handler);
@@ -258,6 +259,7 @@ int main(int argc, const char* argv[])
 				handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 				handler->SetTracks(&trackGroups);
 				handler->SetScatteringConus(bsCone);
+				handler->SetAbsorbtionAccounting(isAbs);
 
 				tracer.SetIsOutputGroups(isOutputGroups);
 				tracer.SetHandler(handler);

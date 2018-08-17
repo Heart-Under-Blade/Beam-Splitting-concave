@@ -168,6 +168,7 @@ public:
 	void SetScattering(Scattering *scattering);
 	virtual void WriteMatricesToFile(std::string &destName);
 
+	void SetAbsorbtionAccounting(bool value);
 	void SetNormIndex(double normIndex);
 
 	Light *m_incidentLight;
@@ -241,7 +242,6 @@ public:
 	void SetTracks(Tracks *tracks) override;
 
 	double ComputeTotalScatteringEnergy();
-	void SetAbsorbtionAccounting(bool value);
 	void WriteLog(const std::string &str);
 
 	void MultiplyMueller(const Beam &beam, matrix &m);

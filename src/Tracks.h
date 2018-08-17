@@ -6,7 +6,7 @@
 
 #include "BigInteger.hh"
 
-#define MAX_GROUP_NUM	1024
+#define MAX_GROUP_NUM	4096
 
 class Beam;
 

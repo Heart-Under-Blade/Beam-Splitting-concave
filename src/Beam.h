@@ -63,7 +63,19 @@ public:
 	double opticalPath;				///< optical path of beam
 	double front;					///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
+<<<<<<< HEAD
 	BigInteger trackId = 0;
+=======
+#ifdef _DEBUG // DEB
+	std::vector<Point3f> dirs;
+	std::vector<double> ops;
+#endif
+
+#ifdef _TRACK_ALLOW
+//	BigInteger trackId = 0;
+	long long trackId = 0;
+#endif
+>>>>>>> feature/particle/distorted
 	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
 									///< "0" when beam location is "inside" and "1" if it's "outside"
 

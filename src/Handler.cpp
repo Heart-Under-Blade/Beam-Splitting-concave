@@ -275,7 +275,7 @@ double HandlerGO::ComputeTotalScatteringEnergy()
 	return D_tot * m_normIndex;
 }
 
-void HandlerGO::SetAbsorbtionAccounting(bool value)
+void Handler::SetAbsorbtionAccounting(bool value)
 {
 	m_hasAbsorbtion = value;
 	m_cAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
@@ -305,7 +305,12 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 	double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
 
 #ifdef _DEBUG // DEB
-	m_logFile << fabs(path - beam.opticalPath) << endl;
+	double ddd = fabs(path - beam.opticalPath);
+	m_logFile << ddd << " ";
+	for (int t : tr) m_logFile << t << " ";
+	m_logFile << endl;
+	if (fabs(path - beam.opticalPath) >= 10e-4)
+		int ggg = 0;
 #endif
 	if (path > DBL_EPSILON)
 	{
@@ -318,12 +323,13 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 {
 	m_sinAngle = sin(m_particle->rotAngle.beta);
 
-	for (Beam &beam : beams)
+	for (int i = 0; i < beams.size(); ++i)
 	{
+		Beam &beam = beams[i];
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion
-		if (/*m_hasAbsorbtion &&*/ beam.act > 0)
+		if (m_hasAbsorbtion && beam.act > 0)
 		{
 			ApplyAbsorbtion(beam);
 		}
@@ -564,13 +570,17 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 	Point3d vr(0, 0, 1);
 	Point3d vf = -m_incidentLight->polarizationBasis;
 
+#ifdef _DEBUG // DEB
+	int c = 0;
+#endif
 	for (Beam &beam : beams)
 	{
-		if (beam.direction.cz < BEAM_DIR_LIM)
-		{
-			continue;
-		}
+//		if (beam.direction.cz < BEAM_DIR_LIM)
+//		{
+//			continue;
+//		}
 #ifdef _DEBUG // DEB
+		++c;
 		vector<int> tr;
 		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 #endif
@@ -583,6 +593,11 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
+
+		if (m_hasAbsorbtion && beam.act > 0)
+		{
+			ApplyAbsorbtion(beam);
+		}
 
 		Point3f beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
 		beamBasis = beamBasis/Length(beamBasis); // basis of beam
