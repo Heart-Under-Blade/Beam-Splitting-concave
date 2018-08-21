@@ -128,11 +128,23 @@ void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
 	double cross = BeamCrossSection(beam);
 	double area = cross*m_sinAngle;
+#ifdef _DEBUG // DEB
+//	vector<int> track;
+	double ddd = m[0][0];
+//	Tracks::RecoverTrack(beam, 8, track);
+#endif
+//	double dd = ddd + 1;
+//	double d = ddd + 2;
 	m *= area;
 }
 
 matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 {
+#ifdef _DEBUG // DEB
+	vector<int> track;
+//	double ddd = m[0][0];
+	Tracks::RecoverTrack(beam, 8, track);
+#endif
 	matrix m = Mueller(beam.J);
 
 	if (zenAng < 180 && zenAng > 0)
@@ -360,6 +372,15 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 
 			m_totalContrib.AddMueller(zenith, m);
 			m_tracksContrib[groupId].AddMueller(zenith, m);
+
+			if (zenith == 180)
+			{
+				m_tracksContrib[groupId].back += m;
+			}
+			else if (zenith == 0)
+			{
+				m_tracksContrib[groupId].forward += m;
+			}
 		}
 	}
 }
@@ -373,16 +394,20 @@ void HandlerTracksGO::WriteMatricesToFile(string &destName)
 		if ((*m_tracks)[i].size != 0)
 		{
 			string subname = (*m_tracks)[i].CreateGroupName();
-			AverageOverAlpha(0, m_normIndex, m_tracksContrib[i]);
+			AverageOverAlpha(true, m_normIndex, m_tracksContrib[i]);
 			WriteToFile(m_tracksContrib[i], m_normIndex, dir + subname);
 		}
 	}
+
+	destName += "_all";
+	AverageOverAlpha(true, m_normIndex, m_totalContrib);
+	WriteToFile(m_totalContrib, m_normIndex, destName);
 }
 
 void HandlerTotalGO::WriteMatricesToFile(string &destName)
 {
 	destName += "_all";
-	AverageOverAlpha(0, m_normIndex, m_totalContrib);
+	AverageOverAlpha(true, m_normIndex, m_totalContrib);
 	WriteToFile(m_totalContrib, m_normIndex, destName);
 }
 
