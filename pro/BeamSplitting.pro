@@ -11,7 +11,6 @@ QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
 CONFIG(release, debug|release): {
-	DEFINES += _NDEBUG
     TARGET = mbs
 }
 

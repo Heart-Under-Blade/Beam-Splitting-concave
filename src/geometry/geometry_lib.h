@@ -203,8 +203,8 @@ Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
 
 double Norm(const Vector3f &point);
 void Normalize(Vector3f &v);
+Vector3d NormalizeD(const Vector3d &v);
 double Length(const Vector3f &v);
-
 
 Point3f ProjectPointToPlane(const Point3f &point, const Vector3f &direction,
 							const Vector3f &planeNormal);

@@ -64,8 +64,9 @@ private:
 
 	void PushBeamPartsToTree(const Beam &beam,
 							 const PolygonArray &parts);
+	template<class T>
 	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
-						const BigInteger &newId, int facetId,
+						const T &newId, int facetId,
 						Location loc);
 
 protected:

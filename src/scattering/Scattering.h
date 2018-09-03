@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Tracks.h"
 #include "Beam.h"
 #include "Particle.h"
 #include "Intersection.h"
@@ -85,7 +86,8 @@ protected:
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
 
-	BigInteger RecomputeTrackId(const BigInteger &oldId, int facetId);
+
+	IdType RecomputeTrackId(const IdType &oldId, int facetId);
 
 private:
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,

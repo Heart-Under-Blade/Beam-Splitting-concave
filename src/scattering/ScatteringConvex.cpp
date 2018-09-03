@@ -106,12 +106,11 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 	}
 
 	inBeam = outBeam;
+	m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
 
 	if (!m_splitting.IsNormalIncidence())
 	{	// regular incidence
-		m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
-		incidentBeam.direction = -incidentBeam.direction;
-		ComputePolarisationParams(-incidentBeam.direction, normal, incidentBeam);
+		ComputePolarisationParams(incidentBeam.direction, normal, incidentBeam);
 
 		if (!m_splitting.IsCompleteReflection())
 		{
@@ -120,6 +119,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeam.nActs = incidentBeam.nActs + 1;
 			outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
 			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
+			outBeam.lastFacetId = facetID;
 			outBeams.push_back(outBeam);
 		}
 		else // complete internal reflection incidence
@@ -133,7 +133,9 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 		outBeam.nActs = incidentBeam.nActs + 1;
 		outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
-		outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
+		double path = m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
+		outBeam.opticalPath += path;
+		outBeam.lastFacetId = facetID;
 		outBeams.push_back(outBeam);
 	}
 
