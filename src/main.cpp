@@ -224,6 +224,7 @@ int main(int argc, const char* argv[])
 			HandlerPO *handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 			handler->SetTracks(&trackGroups);
 			handler->SetScatteringConus(bsCone);
+			handler->SetAbsorbtionAccounting(isAbs);
 
 			tracer.SetIsOutputGroups(isOutputGroups);
 			tracer.SetHandler(handler);

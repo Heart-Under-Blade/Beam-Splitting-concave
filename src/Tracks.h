@@ -8,13 +8,20 @@
 
 #define MAX_GROUP_NUM	4096
 
-class Beam;
+#ifdef _DEBUG // DEB
+typedef long long IdType;
+#else
+typedef BigInteger IdType;
+#endif
 
+class Beam;
+/// REF OPT TODO: сохранять треки вместе в id в виде массива интов,
+/// чтобы не конвертировать, а просто искать их по id
 class TrackGroup
 {
 public:
 	int groupID;
-	long long arr[MAX_GROUP_NUM];
+	IdType arr[MAX_GROUP_NUM];
 	int size = 0;
 	std::vector<std::vector<int>> tracks;
 
@@ -29,7 +36,7 @@ public:
 class Tracks : public std::vector<TrackGroup>
 {
 public:
-	int FindGroupByTrackId(const long long &trackId) const;
+	int FindGroupByTrackId(const IdType &trackId) const;
 
 	void ImportTracks(int nFacets, const std::string &filename);
 	static void RecoverTrack(const Beam &beam, int facetNum,

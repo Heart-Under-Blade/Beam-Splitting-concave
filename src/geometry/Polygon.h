@@ -10,7 +10,7 @@ class Polygon
 {
 public:
 	Point3f arr[MAX_VERTEX_NUM];
-	int size = 0;
+	size_t size = 0;
 
 	Polygon();
 	explicit Polygon(int size);
@@ -26,8 +26,24 @@ public:
 	Point3f Normal() const;
 };
 
-struct PolygonArray
+class PolygonArray
 {
+public:
 	Polygon arr[MAX_POLYGON_NUM];
-	int size = 0;
+	size_t size = 0;
+
+	void Push(const Polygon &p)
+	{
+		arr[size++] = p;
+	}
+
+	Polygon &Pop()
+	{
+		return arr[--size];
+	}
+
+	void Clear()
+	{
+		size = 0;
+	}
 };

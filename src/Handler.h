@@ -157,7 +157,6 @@ public:
 	matrix forward;		///< Mueller matrix in forward direction
 };
 
-
 class Handler
 {
 public:
@@ -167,6 +166,7 @@ public:
 	virtual void SetTracks(Tracks *tracks);
 	void SetScattering(Scattering *scattering);
 	virtual void WriteMatricesToFile(std::string &destName);
+	void SetAbsorbtionAccounting(bool value);
 
 	void SetAbsorbtionAccounting(bool value);
 	void SetNormIndex(double normIndex);
@@ -179,6 +179,7 @@ protected:
 protected:
 	Scattering *m_scattering;
 	Tracks *m_tracks;
+
 	Particle *m_particle;
 	float m_wavelength;
 	bool m_hasAbsorbtion;
@@ -199,15 +200,17 @@ public:
 	void SetScatteringConus(const Conus &conus);
 
 protected:
-	void MultiplyJones(const Beam &beam, const Point3f &T,
-					   const Point3d &vf, const Point3d &vr,
-					   double lng_proj0, matrixC &Jx);
+	void ApplyDiffraction(const Beam &beam, const Point3f &beamBasis,
+						  const Vector3d &vf, const Vector3d &vr,
+						  const matrixC &fnJones, matrixC &jones);
 
-	void RotateJones(const Beam &beam, const Point3f &T, const Point3d &vf,
-					 const Point3d &vr, matrixC &J);
+	void RotateJones(const Beam &beam, const Vector3f &T,
+					 const Vector3d &vf, const Vector3d &vr, matrixC &J);
 
 	void CleanJ();
 	void AddToMueller();
+	matrixC ComputeFnJones(const Matrix2x2c &jones, const Point3d &center,
+						   const Vector3d &vr, double projLenght);
 
 protected:
 	std::vector<Arr2DC> J;	// Jones matrices
@@ -260,6 +263,7 @@ protected:
 
 	void WriteToFile(ContributionGO &contrib, double norm,
 					 const std::string &filename);
+
 	double ComputeOpticalPathAbsorption(const Beam &beam);
 	Point3f CalcK(std::vector<int> &tr);
 

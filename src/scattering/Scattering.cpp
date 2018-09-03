@@ -17,139 +17,82 @@ using namespace std;
 Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 					   int nActs)
 	: m_particle(particle),
-	  m_incidentLight(incidentLight)
+	  m_splitting(isOpticalPath),
+	  m_incidentLight(incidentLight),
+	  m_nActs(nActs)
 {
 	m_facets = m_particle->facets;
-
-	m_isOpticalPath = isOpticalPath;
-	m_nActs = nActs;
 
 	m_incidentDir = m_incidentLight->direction;
 	m_incidentDir.d_param = m_incidentLight->direction.d_param;
 
 	m_polarBasis = m_incidentLight->polarizationBasis;
 
-	m_ri = m_particle->GetRefractiveIndex();
-	double re = real(m_ri);
-	double im = imag(m_ri);
-	m_cRiRe = re*re - im*im;
-	m_cRiRe2 = m_cRiRe * m_cRiRe;
-	m_cRiIm = 4*re*re*im;
+	m_splitting.ComputeRiParams(m_particle->GetRefractiveIndex());
 }
 
-void Scattering::SetRegularBeamParamsExternal(const Point3f &beamDir, double cosA,
-											  int facetId, Beam &inBeam, Beam &outBeam)
+IdType Scattering::Scattering::RecomputeTrackId(const IdType &oldId, int facetId)
 {
-	const Point3f &facetNormal = m_facets[facetId].in_normal;
-
-	RotatePolarisationPlane(beamDir, facetNormal, inBeam);
-
-	Point3f refrDir, reflDir;
-	SplitDirection(beamDir, cosA, -facetNormal, reflDir, refrDir);
-
-	double cosB = DotProduct(facetNormal, reflDir);
-
-	complex Tv00 = m_ri * cosA;
-	complex Th00 = m_ri * cosB;
-
-	complex Tv0 = Tv00 + cosB;
-	complex Th0 = Th00 + cosA;
-
-	complex Tv = (Tv00 - cosB)/Tv0;
-	complex Th = (cosA - Th00)/Th0;
-
-	outBeam.SetJonesMatrix(inBeam, Tv, Th);
-	outBeam.SetLight(refrDir, inBeam.polarizationBasis);
-
-	double cosA2 = 2.0*cosA;
-
-	inBeam.SetJonesMatrix(inBeam, cosA2/Tv0, cosA2/Th0);
-	inBeam.direction = reflDir;
-}
-
-void Scattering::ComputeBeamId(Beam &beam)
-{
-	beam.trackId += (beam.lastFacetId + 1);
-	beam.trackId *= (m_particle->nFacets + 1);
+	return (oldId + (facetId + 1)) * (m_particle->nFacets + 1);
 }
 
 void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
 {
 	beam.SetTracingParams(facetId, level, location);
-	PushBeamToTree(beam);
-}
-
-void Scattering::PushBeamToTree(Beam &beam, int facetId, int level)
-{
-	beam.lastFacetId = facetId;
-	beam.act = level;
-	PushBeamToTree(beam);
-}
-
-void Scattering::PushBeamToTree(Beam &beam)
-{
-	ComputeBeamId(beam);
+#ifdef _DEBUG // DEB
+	beam.dirs.push_back(beam.direction);
+#endif
 	m_beamTree[m_treeSize++] = beam;
 }
 
-void Scattering::SetBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outBeam)
+void Scattering::SetIncidentBeamOpticalParams(unsigned facetId,
+											  Beam &inBeam, Beam &outBeam)
 {
-	const Point3f dir = m_incidentLight->direction;
 	const Point3f &normal = m_facets[facetId].in_normal;
-	double cosA = DotProduct(dir, normal);
+	m_splitting.ComputeCosA(m_incidentDir, normal);
 
-	if (cosA < EPS_COS_00) // regular incidence
+	if (!m_splitting.IsNormalIncidence()) // regular incidence
 	{
-		SetRegularBeamParamsExternal(dir, cosA, facetId, inBeam, outBeam);
+		Beam fakeIncidentBeam;
+		fakeIncidentBeam.SetLight(*m_incidentLight);
+		const Point3f &facetNormal = m_facets[facetId].in_normal;
+		ComputePolarisationParams(-fakeIncidentBeam.direction, facetNormal,
+								  fakeIncidentBeam);
+		m_splitting.ComputeRegularBeamParamsExternal(facetNormal,
+													 fakeIncidentBeam,
+													 inBeam, outBeam);
 	}
 	else // normal incidence
 	{
-		inBeam.J.m11 = 2.0/(m_ri + 1.0); // OPT: вынести
-		inBeam.J.m22 = inBeam.J.m11;
-		inBeam.SetLight(*m_incidentLight);
-
-		outBeam.J.m11 = (m_ri - 1.0)/(m_ri + 1.0);
-		outBeam.J.m22 = -outBeam.J.m11;
-		outBeam.SetLight(-dir, m_incidentLight->polarizationBasis);
-	}
-
-	if (m_isOpticalPath)
-	{
-		Point3f p = inBeam.Center();
-		double path = ComputeIncidentOpticalPath(p);
-		inBeam.opticalPath = path;
-		inBeam.ComputeFront();
-		outBeam.opticalPath = path;
-		outBeam.ComputeFront();
+		m_splitting.ComputeNormalBeamParamsExternal(*m_incidentLight,
+													inBeam, outBeam);
 	}
 }
 
-void Scattering::RotatePolarisationPlane(const Point3f &dir,
-										 const Point3f &facetNormal, Beam &beam)
+void Scattering::ComputePolarisationParams(const Vector3f &dir,
+										   const Vector3f &facetNormal, Beam &beam)
 {
-	Point3f newBasis;
-	CrossProduct(facetNormal, -dir, newBasis);
+	Point3f newBasis = CrossProduct(facetNormal, dir);
 	Normalize(newBasis);
-	beam.direction = dir;
-	beam.polarizationBasis = m_incidentLight->polarizationBasis;
-	beam.RotatePlane(newBasis);
-}
-
-double Scattering::ComputeIncidentOpticalPath(const Point3f &facetPoint)
-{
-	return FAR_ZONE_DISTANCE + DotProduct(m_incidentDir, facetPoint);
-}
-
-double Scattering::ComputeScatteredOpticalPath(const Beam &beam)
-{
-	return FAR_ZONE_DISTANCE + beam.front;
+	beam.RotateJMatrix(newBasis);
+	beam.polarizationBasis = newBasis;
 }
 
 void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 {
 	SetPolygonByFacet(facetId, inBeam); // REF: try to exchange this to inBeam = m_facets[facetId]
 	SetPolygonByFacet(facetId, outBeam);
-	SetBeamOpticalParams(facetId, inBeam, outBeam);
+	SetIncidentBeamOpticalParams(facetId, inBeam, outBeam);
+
+//	if (m_isOpticalPath)
+	{
+		Point3f p = inBeam.Center();
+		double path = m_splitting.ComputeIncidentOpticalPath(m_incidentDir, p);
+		inBeam.opticalPath = 0;
+		outBeam.opticalPath = 0;
+		inBeam.AddOpticalPath(path);
+		outBeam.AddOpticalPath(path);
+	}
 }
 
 void Scattering::ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon)
@@ -210,158 +153,21 @@ void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vect
 //	}
 }
 
-double Scattering::ComputeSegmentOpticalPath(const Beam &beam, double cosA,
-											 const Point3f &facetPoint) const
-{
-	double tmp = DotProduct(beam.direction, facetPoint);
-	double path = fabs(tmp + beam.front); // refractive index of external environment = 1
-
-	if (beam.location == Location::In)
-	{
-		path *= sqrt(ComputeEffectiveReRi(cosA));
-	}
-
-	path += beam.opticalPath;
-	return path;
-}
-
-void Scattering::ComputeOpticalParams(double cosA, const Beam &incidentBeam,
-									  Beam &inBeam, Beam &outBeam) const
-{
-	double path = ComputeSegmentOpticalPath(incidentBeam, cosA, inBeam.Center());
-
-	inBeam.opticalPath = path;
-	inBeam.ComputeFront();
-
-	outBeam.opticalPath = path;
-	outBeam.ComputeFront();
-}
-
 bool Scattering::IsTerminalAct(const Beam &beam)
 {
-	return (beam.act >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
+	return (beam.nActs >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
 }
 
-double Scattering::ComputeEffectiveReRi(const double &cosA) const
-{
-	return (m_cRiRe + sqrt(m_cRiRe2 + m_cRiIm/(cosA*cosA)))/2.0;
-}
-
-void Scattering::SetRegularIncidenceBeamParams(double cosA, const Point3f &normal,
-											   Beam &incidentBeam,
-											   Beam &inBeam, Beam &outBeam,
-											   bool &isRegular)
-{
-	const Point3f &dir = incidentBeam.direction;
-
-	Point3f scatteringNormal;
-	CrossProduct(normal, dir, scatteringNormal);
-	Normalize(scatteringNormal);
-	incidentBeam.RotatePlane(scatteringNormal);
-
-	Point3f r0 = dir/cosA - normal;
-
-	Point3f reflDir = r0 - normal;
-	Normalize(reflDir);
-
-	inBeam.SetLight(reflDir, scatteringNormal);
-
-	double reRi = ComputeEffectiveReRi(cosA);
-	double s = 1.0/(reRi*cosA*cosA) - Norm(r0);
-
-	if (s > DBL_EPSILON) // regular incidence
-	{
-		Point3f refrDir = r0/sqrt(s) + normal;
-		Normalize(refrDir);
-		outBeam = Light{refrDir, inBeam.polarizationBasis};
-
-		SetRegularBeamParams(cosA, normal, incidentBeam,
-							 inBeam, outBeam);
-		isRegular = true;
-	}
-	else // complete internal reflection incidence
-	{
-		SetCRBeamParams(cosA, reRi, incidentBeam, inBeam);
-		isRegular = false;
-	}
-}
-
-void Scattering::SetNormalIncidenceBeamParams(double cosA, const Beam &incidentBeam,
-											  Beam &inBeam, Beam &outBeam)
-{
-	const Point3f &dir = incidentBeam.direction;
-	complex temp;
-
-	temp = (2.0 * m_ri)/(1.0 + m_ri); // OPT: вынести целиком
-	outBeam.SetJonesMatrix(incidentBeam, temp, temp);
-	outBeam.SetLight(dir, incidentBeam.polarizationBasis);
-
-	temp = (1.0 - m_ri)/(1.0 + m_ri); // OPT: вынести целиком
-	inBeam.SetJonesMatrix(incidentBeam, temp, -temp);
-	inBeam.SetLight(-dir, incidentBeam.polarizationBasis);
-
-	if (m_isOpticalPath)
-	{
-		ComputeOpticalParams(cosA, incidentBeam, inBeam, outBeam);
-	}
-}
-
-void Scattering::SetRegularBeamParams(double cosA, const Point3f &normal,
-									  const Beam &incidentBeam,
-									  Beam &inBeam, Beam &outBeam)
-{
-	double cosG = DotProduct(normal, outBeam.direction);
-
-	complex tmp0 = m_ri * cosA;
-	complex tmp1 = m_ri * cosG;
-	complex tmp = 2.0 * tmp0;
-	complex Tv0 = tmp1 + cosA;
-	complex Th0 = tmp0 + cosG;
-
-	outBeam.SetJonesMatrix(incidentBeam, tmp/Tv0, tmp/Th0);
-
-	complex Tv = (cosA - tmp1)/Tv0;
-	complex Th = (tmp0 - cosG)/Th0;
-	inBeam.SetJonesMatrix(incidentBeam, Tv, Th);
-
-	if (m_isOpticalPath)
-	{
-		ComputeOpticalParams(cosA, incidentBeam, inBeam, outBeam);
-	}
-}
-
-void Scattering::SetCRBeamParams(double cosA, double reRi,
-								 const Beam &incidentBeam, Beam &inBeam)
-{
-	const double bf = reRi*(1.0 - cosA*cosA) - 1.0;
-	double im = (bf > 0) ? sqrt(bf) : 0;
-
-	const complex sq(0, im);
-	complex tmp0 = m_ri * cosA;
-	complex tmp1 = m_ri * sq;
-	complex Rv = (cosA - tmp1)/(tmp1 + cosA);
-	complex Rh = (tmp0 - sq)/(tmp0 + sq);
-
-	inBeam.SetJonesMatrix(incidentBeam, Rv, Rh);
-
-	if (m_isOpticalPath)
-	{
-		inBeam.opticalPath = ComputeSegmentOpticalPath(incidentBeam, cosA, inBeam.Center());
-		inBeam.ComputeFront();
-	}
-}
-
-void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
-						 const Polygon &clip, const Point3f &clipNormal,
-						 const Point3f &clipDir,
-						 Polygon *difference, int &resultSize) const
+void Scattering::Difference(const Polygon &subject, const Vector3f &subjNormal,
+						 const Polygon &clip, const Vector3f &clipNormal,
+						 const Vector3f &clipDir, PolygonArray &difference) const
 {
 	__m128 _clip[MAX_VERTEX_NUM];
 	bool isProjected = ProjectToFacetPlane(clip, clipDir, subjNormal, _clip);
 
 	if (!isProjected)
 	{
-		difference[resultSize++] = subject;
+		difference.Push(subject);
 		return;
 	}
 
@@ -455,13 +261,13 @@ void Scattering::Difference(const Polygon &subject, const Point3f &subjNormal,
 
 			if (resPolygon.size >= MIN_VERTEX_NUM)
 			{
-				difference[resultSize++] = resPolygon;
+				difference.Push(resPolygon);
 			}
 		}
 	}
 }
 
-bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
+bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Vector3f &dir,
 								  const Point3f &normal, __m128 *_projection) const
 {
 	__m128 _normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
@@ -494,16 +300,20 @@ bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Point3f &dir,
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
-bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
+void Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
 {
 	__m128 _output_points[MAX_VERTEX_NUM];
+	// REF: перенести в случай невыпуклых частиц
 	const Point3f &normal = m_facets[facetID].in_normal;
 
-	bool isProjected = ProjectToFacetPlane(beam, beam.direction, normal,
+	const Point3f &normal1 = (beam.location == Location::In) ? m_facets[facetID].in_normal
+															: m_facets[facetID].ex_normal;
+
+	bool isProjected = ProjectToFacetPlane(beam, beam.direction, normal1,
 										   _output_points);
 	if (!isProjected)
 	{
-		return false;
+		return;
 	}
 
 	__m128 _normal_to_facet = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
@@ -576,7 +386,6 @@ bool Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection)
 	}
 
 	SetOutputPolygon(_output_ptr, outputSize, intersection);
-	return intersection.size >= MIN_VERTEX_NUM;
 }
 
 void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
@@ -609,84 +418,6 @@ void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
 	}
 }
 
-void Scattering::SplitDirection(const Point3f &dir, double cosA,
-								const Point3f &normal,
-								Point3f &reflDir, Point3f &refrDir) const
-{
-	Point3f tmp0 = dir/cosA + normal;
-
-	refrDir = tmp0 + normal;
-	Normalize(refrDir);
-
-	double cosA2 = cosA * cosA;
-	double tmp1 = m_cRiRe + cosA2 - 1.0;
-
-	if (m_cRiIm > FLT_EPSILON)
-	{
-		tmp1 = sqrt(tmp1*tmp1 + m_cRiIm);
-	}
-
-	tmp1 = (m_cRiRe + 1.0 - cosA2 + tmp1)/2.0;
-	double s = (tmp1/cosA2) - Norm(tmp0);
-
-//	LOG_ASSERT(tmp1 > 0);
-
-	reflDir = tmp0/sqrt(s) - normal;
-	Normalize(reflDir);
-}
-
-Point3f Scattering::ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
-										Location oldLoc, Location loc)
-{
-	Point3f newDir;
-
-	if (oldLoc == Location::Out) // refraction
-	{
-		double cosA = DotProduct(oldDir, -normal);
-		Vector3f tmp0 = normal + oldDir/cosA;
-
-		if (oldLoc == loc)
-		{
-			newDir = normal + tmp0;
-		}
-		else
-		{
-			double cosA2 = cosA * cosA;
-			double tmp1 = m_cRiRe + cosA2 - 1.0;
-
-			if (m_cRiIm > FLT_EPSILON)
-			{
-				tmp1 = sqrt(tmp1*tmp1 + m_cRiIm);
-			}
-
-			tmp1 = (m_cRiRe + 1.0 - cosA2 + tmp1)/2.0;
-			tmp1 = (tmp1/cosA2) - Norm(tmp0);
-			tmp1 = sqrt(tmp1);
-			newDir = (tmp0/tmp1) - normal;
-		}
-	}
-	else // reflection
-	{
-		double cosA = DotProduct(oldDir, normal);
-		Point3f tmp = oldDir/cosA - normal;
-
-		if (oldLoc == loc)
-		{
-			newDir = tmp - normal;
-		}
-		else
-		{
-			double cosA2 = cosA * cosA;
-			double Nr = ComputeEffectiveReRi(cosA);
-			double s = 1.0/(Nr*cosA2) - Norm(tmp);
-			newDir = tmp/sqrt(s) + normal;
-		}
-	}
-
-	Normalize(newDir);
-	return newDir;
-}
-
 /** NOTE: Result beams are ordered in inverse direction */
 void Scattering::SetPolygonByFacet(int facetId, Polygon &polygon) const
 {
@@ -709,6 +440,7 @@ double Scattering::GetIncedentEnergy() const
 double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 											  const vector<int> &track)
 {
+	double path1 = 0;
 	double path = 0;
 	Point3f dir = -beam.direction; // back direction
 	Location loc = Location::Out;
@@ -722,34 +454,41 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 		nextLoc = beam.GetLocationByActNumber(i-1);
 
 		Point3f &exNormal = m_facets[track[i]].ex_normal;
-		dir = ChangeBeamDirection(dir, exNormal, loc, nextLoc);
+		dir = m_splitting.ChangeBeamDirection(dir, exNormal, loc, nextLoc);
 
 		Point3f &inNormal = m_facets[track[i-1]].in_normal;
 		p2 = ProjectPointToPlane(p1, dir, inNormal);
-
 		double len = Length(p2 - p1);
 
 		if (nextLoc == Location::In)
 		{	// add internal path only
-			double cosA = DotProduct(dir, exNormal);
-			double reRi = ComputeEffectiveReRi(cosA);
+			m_splitting.ComputeCosA(dir, exNormal);
+			double reRi = m_splitting.ComputeEffectiveReRi();
 			len *= sqrt(reRi);
 		}
 
+#ifdef _DEBUG // DEB
+		Point3f dddd = inNormal;
+		dddd.d_param = -dddd.d_param;
+		Point3f p22 = ProjectPointToPlane(p1, dir, dddd);
+		double len1 = Length(p1 - p22);
+		len1 *= sqrt(real(m_splitting.GetRi()));
+		path1 += len1;
+#endif
 		path += len;
 
 		p1 = p2;
 		loc = nextLoc;
 	}
 
-//	path *= real(m_ri);
 #ifdef _DEBUG // DEB
+//	path *= real(m_splitting.GetRi());
 	Point3f nFar1 = m_incidentDir;
 	Point3f nFar2 = -beam.direction;
-	double dd = FAR_ZONE_DISTANCE + DotProductD(p2, nFar1) +
-					fabs(DotProductD(beam.Center(), nFar2) + FAR_ZONE_DISTANCE);
-
-	path += dd;
+	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
+	double dd2 = fabs(DotProductD(beam.Center(), nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+	path += dd1;
+	path += dd2;
 	if (fabs(path - beam.opticalPath) > 1)
 		int ff = 0;
 #endif

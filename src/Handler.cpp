@@ -302,13 +302,21 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
 //	double opAbs = CalcOpticalPathAbsorption(beam);
+#ifdef _DEBUG // DEB
+	if (beam.id == 407490777/*415047647*/)
+		int fff = 0;
+#endif
 	double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
 
 #ifdef _DEBUG // DEB
 	double ddd = fabs(path - beam.opticalPath);
+<<<<<<< HEAD
 	m_logFile << ddd << " ";
 	for (int t : tr) m_logFile << t << " ";
 	m_logFile << endl;
+=======
+	m_logFile << ddd << endl;
+>>>>>>> develop
 	if (fabs(path - beam.opticalPath) >= 10e-4)
 		int ggg = 0;
 #endif
@@ -329,7 +337,11 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion
+<<<<<<< HEAD
 		if (m_hasAbsorbtion && beam.act > 0)
+=======
+		if (m_hasAbsorbtion && beam.nActs > 0)
+>>>>>>> develop
 		{
 			ApplyAbsorbtion(beam);
 		}
@@ -340,6 +352,11 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 
 		m_totalContrib.AddMueller(zenith, m);
 	}
+#ifdef _DEBUG // DEB
+	double dd = m_totalContrib.muellers(0,0,0,0);
+	m_logFile << dd;
+	int ddd = 0;
+#endif
 }
 
 HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float wavelength)
@@ -353,7 +370,7 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
+		int groupId = m_tracks->FindGroupByTrackId(beam.id);
 
 		if (groupId >= 0)
 		{
@@ -404,7 +421,7 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
+		int groupId = m_tracks->FindGroupByTrackId(beam.id);
 
 		if (groupId < 0)
 		{
@@ -429,7 +446,6 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 			for (int j = 0; j <= m_conus.thetaCount; ++j)
 			{	//
 				double t = j * m_conus.dTheta;
-
 				double sinT = sin(t);
 
 				Point3d vr(sinT*cosP, sinT*sinP, cos(t));
@@ -438,7 +454,8 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 				// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
 
 				matrixC jones(0, 0);
-				MultiplyJones(beam, beamBasis, vf, vr, projLenght, jones);
+				matrixC fnJones = ComputeFnJones(beam.J, center, vr, projLenght);
+				ApplyDiffraction(beam, beamBasis, vf, vr, fnJones, jones);
 				J[groupId].insert(i, j, jones);
 			}
 		}
@@ -469,51 +486,73 @@ void HandlerPO::AddToMueller()
 	}
 }
 
-void HandlerPO::MultiplyJones(const Beam &beam, const Point3f &T,
-							  const Point3d &vf, const Point3d &vr,
-							  double lng_proj0, matrixC &Jx)
+matrixC HandlerPO::ComputeFnJones(const Matrix2x2c &jones, const Point3d &center,
+								  const Vector3d &vr, double projLenght)
 {
-	matrixC Jn_rot(2, 2);
-	RotateJones(beam, T, vf, vr, Jn_rot);
+	double dp = DotProductD(vr, center);
+	double arg = M_2PI*(projLenght-dp)/m_wavelength;
+	return jones * exp_im(arg);
+}
 
-	complex fn(0, 0);
-	fn = beam.DiffractionIncline(vr, m_wavelength);
+void HandlerPO::ApplyDiffraction(const Beam &beam, const Point3f &beamBasis,
+								 const Vector3d &vf, const Vector3d &vr,
+								 const matrixC &fnJones, matrixC &jones)
+{
+	matrixC jones_rot(2, 2);
+	RotateJones(beam, beamBasis, vf, vr, jones_rot);
 
-	if (isnan(real(fn)))
+	complex fresnel = beam.DiffractionIncline(vr, m_wavelength);
+
+#ifdef _DEBUG // DEB
+	if (isnan(real(fresnel)))
 	{
 		isNanOccured = isNan = true;
 		return;
 	}
-
-	double dp = DotProductD(vr, Point3d(beam.Center()));
-	double arg = M_2PI*(lng_proj0-dp)/m_wavelength;
-	complex tmp = exp_im(arg);
-	matrixC fn_jn = beam.J * tmp;
-#ifdef _DEBUG // DEB
-	Matrix2x2c mm(fn_jn);
 #endif
 
-	Jx = fn*Jn_rot*fn_jn;
+	jones = fresnel*jones_rot*fnJones;
+#ifdef _DEBUG // DEB
+	Matrix2x2c mm(fnJones);
+	Matrix2x2c jr(jones_rot);
+	Matrix2x2c jo(jones);
+	int ffff = 0;
+#endif
 }
 
-void HandlerPO::RotateJones(const Beam &beam, const Point3f &T, const Point3d &vf,
-							const Point3d &vr, matrixC &J)
+void HandlerPO::RotateJones(const Beam &beam, const Vector3f &T,
+							const Vector3d &vf, const Vector3d &vr, matrixC &J)
 {
-	Point3f normal = beam.Normal();
+	Vector3f normal = beam.Normal();
 
-	Point3d vt = CrossProductD(vf, vr);
+	Vector3d vt = CrossProductD(vf, vr);
 	vt = vt/LengthD(vt);
 
-	Point3f NT = CrossProduct(normal, T);
-	Point3f NE = CrossProduct(normal, beam.polarizationBasis);
+	Vector3f NT = CrossProduct(normal, T);
+	Vector3f NE = CrossProduct(normal, beam.polarizationBasis);
 
-	Point3d NTd = Point3d(NT.cx, NT.cy, NT.cz);
-	Point3d NEd = Point3d(NE.cx, NE.cy, NE.cz);
+	Vector3d NTd = Vector3d(NT.cx, NT.cy, NT.cz);
+	Vector3d NPd = Vector3d(NE.cx, NE.cy, NE.cz);
 
-	J[0][0] = -DotProductD(NTd, vf);
-	J[0][1] = -DotProductD(NEd, vf);
-	J[1][0] =  DotProductD(NTd, vt);
-	J[1][1] =  DotProductD(NEd, vt);
+//	J[0][0] = -DotProductD(NTd, vf);
+//	J[0][1] = -DotProductD(NEd, vf);
+//	J[1][0] =  DotProductD(NTd, vt);
+//	J[1][1] =  DotProductD(NEd, vt);
+	Point3f DT = CrossProduct(beam.direction, T);
+	Point3f DP = CrossProduct(beam.direction, beam.polarizationBasis);
+
+	Point3d DTd = Point3d(DT.cx, DT.cy, DT.cz);
+	Point3d DPd = Point3d(DP.cx, DP.cy, DP.cz);
+
+	Point3d nd = Point3d(normal.cx, normal.cy, normal.cz);
+
+	Point3d cpT = CrossProductD(vr, NTd) - CrossProductD(vr, CrossProductD(vr, CrossProductD(nd, DTd)));
+	Point3d cpP = CrossProductD(vr, NPd) - CrossProductD(vr, CrossProductD(vr, CrossProductD(nd, DPd)));
+
+	J[0][0] = DotProductD(cpT, vt)/2.0;
+	J[0][1] = DotProductD(cpP, vt)/2.0;
+	J[1][0] = DotProductD(cpT, vf)/2.0;
+	J[1][1] = DotProductD(cpP, vf)/2.0;
 }
 
 void HandlerPO::CleanJ()
@@ -584,30 +623,31 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		vector<int> tr;
 		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 #endif
-		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
+		int groupId = m_tracks->FindGroupByTrackId(beam.id);
 
 		if (groupId < 0 && m_tracks->shouldComputeTracksOnly)
 		{
 			continue;
 		}
 
-		beam.RotateSpherical(-m_incidentLight->direction,
+		beam.polarizationBasis = beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 
-		if (m_hasAbsorbtion && beam.act > 0)
+		// absorbtion
+		if (m_hasAbsorbtion && beam.nActs > 0)
 		{
 			ApplyAbsorbtion(beam);
 		}
 
 		Point3f beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
-		beamBasis = beamBasis/Length(beamBasis); // basis of beam
+		beamBasis = beamBasis/Length(beamBasis);
 
 		Point3f center = beam.Center();
-//beam.opticalPath = 0.55;
 		double projLenght = beam.opticalPath + DotProduct(center, beam.direction);
 
 		matrixC jones(2, 2);
-		MultiplyJones(beam, beamBasis, vf, vr, projLenght, jones);
+		matrixC fnJones = ComputeFnJones(beam.J, center, vr, projLenght);
+		ApplyDiffraction(beam, beamBasis, vf, vr, fnJones, jones);
 
 		// correction
 		Matrix2x2c jonesCor = jones;
@@ -652,7 +692,7 @@ void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
 	ofstream *all = files.GetMainFile(prefix + "all");
 	*(all) << angle << ' ' << energy << ' ';
 	*(all) << contrib->GetTotal() << endl;
-cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
+//cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
 	if (isOutputGroups)
 	{
 		for (size_t gr = 0; gr < m_tracks->size(); ++gr)

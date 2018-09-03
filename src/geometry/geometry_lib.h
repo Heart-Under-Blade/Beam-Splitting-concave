@@ -28,7 +28,7 @@ class IntArray
 {
 public:
 	int arr[MAX_FACET_NUM];
-	int size = 0;
+	size_t size = 0;
 
 	void Add(int elem)
 	{
@@ -137,6 +137,7 @@ struct Point3f
 
 } __attribute__ ((aligned (16)));
 
+
 struct Point3d
 {
 	double x;
@@ -202,8 +203,8 @@ Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
 
 double Norm(const Vector3f &point);
 void Normalize(Vector3f &v);
+Vector3d NormalizeD(const Vector3d &v);
 double Length(const Vector3f &v);
-
 
 Point3f ProjectPointToPlane(const Point3f &point, const Vector3f &direction,
 							const Vector3f &planeNormal);

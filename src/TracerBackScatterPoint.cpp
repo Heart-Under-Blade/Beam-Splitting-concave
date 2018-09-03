@@ -57,10 +57,13 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 		{
 			gamma = gammaRange.min + gammaRange.step*j;
 #ifdef _DEBUG // DEB
-			beta = 179.34; gamma = 37;
+			beta = DegToRad(179.34); gamma = DegToRad(37);
 #endif
 			m_scattering->ScatterLight(beta, gamma, outBeams);
 
+#ifdef _DEBUG // DEB
+			m_particle->Output();
+#endif
 			m_incomingEnergy += m_scattering->GetIncedentEnergy();
 
 			m_handler->HandleBeams(outBeams);
