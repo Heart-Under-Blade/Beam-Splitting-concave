@@ -44,8 +44,24 @@ bool Splitting::IsIncident()
 
 double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &facetPoint) const
 {
-	double tmp = DotProduct(beam.direction, facetPoint);
-	double path = fabs(tmp + beam.front); // refractive index of external environment = 1
+	double tmp = DotProductD(beam.direction, facetPoint);
+#ifdef _DEBUG // DEB
+//	if (tmp + beam.front < 0)
+//		int fff = 0;
+	Point3f dd = beam.Center();
+	Point3f pd = beam.Center() + (beam.direction * 10);
+#endif
+
+	double path = fabs(tmp + beam.front); // refractive index of external media = 1
+
+	/* ПРоверка на нахождения плоскости за пучком
+	 * REF: вынести в случай невыпуклых частиц, т.к. характерно только для них */
+	double cosB = DotProductD(NormalizeD(facetPoint - beam.Center()), beam.direction);
+
+	if (cosB < 0)
+	{
+		path = -path;
+	}
 
 	if (beam.location == Location::In)
 	{
@@ -54,6 +70,8 @@ double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &fac
 
 	return path;
 }
+
+// REF: создать отдельные классы RegularSplitting, CRSplitting, NormalSplitting
 
 void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentBeam,
 									Beam &inBeam)
@@ -71,6 +89,10 @@ void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentB
 	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
+#ifdef _DEBUG // DEB
+		inBeam.ops = incidentBeam.ops;
+		inBeam.ops.push_back(path);
+#endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
 	}
@@ -151,6 +173,12 @@ void Splitting::ComputeRegularBeamsParams(const Point3f &normal,
 	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
+#ifdef _DEBUG // DEB
+		inBeam.ops = incidentBeam.ops;
+		outBeam.ops = incidentBeam.ops;
+		inBeam.ops.push_back(path);
+		outBeam.ops.push_back(path);
+#endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
@@ -179,6 +207,12 @@ void Splitting::ComputeNormalBeamParams(const Beam &incidentBeam,
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 		path += incidentBeam.opticalPath;
+#ifdef _DEBUG // DEB
+		inBeam.ops = incidentBeam.ops;
+		inBeam.ops.push_back(path);
+		outBeam.ops = incidentBeam.ops;
+		outBeam.ops.push_back(path);
+#endif
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
 	}
@@ -284,6 +318,11 @@ Point3f Splitting::ChangeBeamDirection(const Vector3f &oldDir,
 	}
 
 	return newDir;
+}
+
+complex Splitting::GetRi() const
+{
+	return m_ri;
 }
 
 double Splitting::ComputeEffectiveReRi() const

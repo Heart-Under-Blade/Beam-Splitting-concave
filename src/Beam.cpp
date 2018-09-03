@@ -60,7 +60,11 @@ void Beam::Copy(const Beam &other)
 	nActs = other.nActs;
 	location = other.location;
 	locations = other.locations;
-
+#ifdef _DEBUG // DEB
+	pols = other.pols;
+	ops = other.ops;
+	dirs = other.dirs;
+#endif
 #ifdef _TRACK_ALLOW
 	id = other.id;
 #endif
@@ -85,9 +89,9 @@ Beam::Beam(Beam &&other)
 	SetDefault(other);
 }
 
-void Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
+Vector3f Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 {
-	Point3f newBasis;
+	Vector3f newBasis;
 	double cs = DotProduct(dir, direction);
 
 	if (fabs(1.0 - cs) <= DBL_EPSILON)
@@ -109,6 +113,7 @@ void Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 	}
 
 	RotateJMatrix(newBasis);
+	return newBasis;
 }
 
 void Beam::GetSpherical(double &fi, double &teta) const
@@ -236,7 +241,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	Vector3f _n = Normal();
 
 	int begin, startIndex, endIndex;
-	bool order = (DotProduct(_n, direction) < 0);
+	bool order = !(DotProduct(_n, direction) < 0);
 
 	if (order)
 	{

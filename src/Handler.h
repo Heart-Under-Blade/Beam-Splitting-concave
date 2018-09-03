@@ -157,7 +157,6 @@ public:
 	matrix forward;		///< Mueller matrix in forward direction
 };
 
-
 class Handler
 {
 public:
@@ -167,6 +166,7 @@ public:
 	virtual void SetTracks(Tracks *tracks);
 	void SetScattering(Scattering *scattering);
 	virtual void WriteMatricesToFile(std::string &destName);
+	void SetAbsorbtionAccounting(bool value);
 
 	void SetNormIndex(double normIndex);
 
@@ -178,6 +178,7 @@ protected:
 protected:
 	Scattering *m_scattering;
 	Tracks *m_tracks;
+
 	Particle *m_particle;
 	float m_wavelength;
 	bool m_hasAbsorbtion;
@@ -243,7 +244,6 @@ public:
 	void SetTracks(Tracks *tracks) override;
 
 	double ComputeTotalScatteringEnergy();
-	void SetAbsorbtionAccounting(bool value);
 	void WriteLog(const std::string &str);
 
 	void MultiplyMueller(const Beam &beam, matrix &m);

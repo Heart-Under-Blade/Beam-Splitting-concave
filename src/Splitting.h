@@ -44,7 +44,7 @@ private:
 	Point3f r;
 	double reRiEff;
 	double s;
-	double cosA;
+//	double cosA;
 	bool m_isOpticalPath;
 
 	complex m_ri;	//  refractive index
@@ -53,7 +53,10 @@ private:
 	double m_cRiIm;
 
 public:
+	double cosA;
 	const double FAR_ZONE_DISTANCE = 10000.0; ///< distance from the center of coordinate system to the "far zone"
+
+	complex GetRi() const;
 
 private:
 	void ComputeCRJonesParams(complex &cv, complex &ch);

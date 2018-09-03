@@ -31,7 +31,7 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 	m_splitting.ComputeRiParams(m_particle->GetRefractiveIndex());
 }
 
-BigInteger Scattering::RecomputeTrackId(const BigInteger &oldId, int facetId)
+IdType Scattering::Scattering::RecomputeTrackId(const IdType &oldId, int facetId)
 {
 	return (oldId + (facetId + 1)) * (m_particle->nFacets + 1);
 }
@@ -39,6 +39,9 @@ BigInteger Scattering::RecomputeTrackId(const BigInteger &oldId, int facetId)
 void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
 {
 	beam.SetTracingParams(facetId, level, location);
+#ifdef _DEBUG // DEB
+	beam.dirs.push_back(beam.direction);
+#endif
 	m_beamTree[m_treeSize++] = beam;
 }
 
@@ -300,9 +303,13 @@ bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Vector3f &dir
 void Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
 {
 	__m128 _output_points[MAX_VERTEX_NUM];
+	// REF: перенести в случай невыпуклых частиц
 	const Point3f &normal = m_facets[facetID].in_normal;
 
-	bool isProjected = ProjectToFacetPlane(beam, beam.direction, normal,
+	const Point3f &normal1 = (beam.location == Location::In) ? m_facets[facetID].in_normal
+															: m_facets[facetID].ex_normal;
+
+	bool isProjected = ProjectToFacetPlane(beam, beam.direction, normal1,
 										   _output_points);
 	if (!isProjected)
 	{
@@ -433,6 +440,7 @@ double Scattering::GetIncedentEnergy() const
 double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 											  const vector<int> &track)
 {
+	double path1 = 0;
 	double path = 0;
 	Point3f dir = -beam.direction; // back direction
 	Location loc = Location::Out;
@@ -450,7 +458,6 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 
 		Point3f &inNormal = m_facets[track[i-1]].in_normal;
 		p2 = ProjectPointToPlane(p1, dir, inNormal);
-
 		double len = Length(p2 - p1);
 
 		if (nextLoc == Location::In)
@@ -460,6 +467,14 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 			len *= sqrt(reRi);
 		}
 
+#ifdef _DEBUG // DEB
+		Point3f dddd = inNormal;
+		dddd.d_param = -dddd.d_param;
+		Point3f p22 = ProjectPointToPlane(p1, dir, dddd);
+		double len1 = Length(p1 - p22);
+		len1 *= sqrt(real(m_splitting.GetRi()));
+		path1 += len1;
+#endif
 		path += len;
 
 		p1 = p2;
@@ -467,11 +482,13 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 	}
 
 #ifdef _DEBUG // DEB
+//	path *= real(m_splitting.GetRi());
 	Point3f nFar1 = m_incidentDir;
 	Point3f nFar2 = -beam.direction;
-	double dd = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1) +
-					fabs(DotProductD(beam.Center(), nFar2) + m_splitting.FAR_ZONE_DISTANCE);
-	path += dd;
+	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
+	double dd2 = fabs(DotProductD(beam.Center(), nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+	path += dd1;
+	path += dd2;
 	if (fabs(path - beam.opticalPath) > 1)
 		int ff = 0;
 #endif
