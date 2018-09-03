@@ -58,6 +58,10 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 
 		for (int id = 0; id < m_particle->nFacets; ++id)
 		{
+#ifdef _DEBUG // DEB
+		if (beam.trackId == 5418 && beam.lastFacetId == 7 && id == 5)
+			int ff = 4;
+#endif
 			if (id == beam.lastFacetId)
 			{
 				continue;
@@ -125,7 +129,8 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 		outBeam.lastFacetId = facetID;
 		outBeam.act = incidentBeam.act + 1;
 		ComputeBeamId(outBeam);
-		outBeam.opticalPath += ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
+		double path = ComputeScatteredOpticalPath(outBeam); // добираем оптический путь
+		outBeam.opticalPath += path;
 		outBeams.push_back(outBeam);
 	}
 

@@ -237,7 +237,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	Vector3f _n = Normal();
 
 	int begin, startIndex, endIndex;
-	bool order = (DotProduct(_n, direction) < 0);
+	bool order = !(DotProduct(_n, direction) < 0);
 
 	if (order)
 	{

@@ -106,7 +106,7 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib)
 	}
 }
 
-double HandlerGO::BeamCrossSection(const Beam &beam) const
+double Handler::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
@@ -488,6 +488,11 @@ void HandlerPO::AddToMueller()
 	}
 }
 
+void HandlerPO::setCon20(bool value)
+{
+	con20 = value;
+}
+
 void HandlerPO::MultiplyJones(const Beam &beam, const Point3f &T,
 							  const Point3d &vf, const Point3d &vr,
 							  double lng_proj0, matrixC &Jx)
@@ -497,7 +502,9 @@ void HandlerPO::MultiplyJones(const Beam &beam, const Point3f &T,
 
 	complex fn(0, 0);
 	fn = beam.DiffractionIncline(vr, m_wavelength);
-
+#ifdef _DEBUG // DEB
+//	fn = -fn;
+#endif
 	if (isnan(real(fn)))
 	{
 		isNanOccured = isNan = true;
@@ -508,11 +515,14 @@ void HandlerPO::MultiplyJones(const Beam &beam, const Point3f &T,
 	double arg = M_2PI*(lng_proj0-dp)/m_wavelength;
 	complex tmp = exp_im(arg);
 	matrixC fn_jn = beam.J * tmp;
+	Jx = fn*Jn_rot*fn_jn/*tmp*/;
 #ifdef _DEBUG // DEB
 	Matrix2x2c mm(fn_jn);
+	Matrix2x2c jr(Jn_rot);
+	Matrix2x2c jo(Jx);
+	int ffff = 0;
 #endif
 
-	Jx = fn*Jn_rot*fn_jn;
 }
 
 void HandlerPO::RotateJones(const Beam &beam, const Point3f &T, const Point3d &vf,
@@ -527,12 +537,27 @@ void HandlerPO::RotateJones(const Beam &beam, const Point3f &T, const Point3d &v
 	Point3f NE = CrossProduct(normal, beam.polarizationBasis);
 
 	Point3d NTd = Point3d(NT.cx, NT.cy, NT.cz);
-	Point3d NEd = Point3d(NE.cx, NE.cy, NE.cz);
+	Point3d NPd = Point3d(NE.cx, NE.cy, NE.cz);
 
-	J[0][0] = -DotProductD(NTd, vf);
-	J[0][1] = -DotProductD(NEd, vf);
-	J[1][0] =  DotProductD(NTd, vt);
-	J[1][1] =  DotProductD(NEd, vt);
+//	J[0][0] = -DotProductD(NTd, vf);
+//	J[0][1] = -DotProductD(NEd, vf);
+//	J[1][0] =  DotProductD(NTd, vt);
+//	J[1][1] =  DotProductD(NEd, vt);
+	Point3f DT = CrossProduct(beam.direction, T);
+	Point3f DP = CrossProduct(beam.direction, beam.polarizationBasis);
+
+	Point3d DTd = Point3d(DT.cx, DT.cy, DT.cz);
+	Point3d DPd = Point3d(DP.cx, DP.cy, DP.cz);
+
+	Point3d nd = Point3d(normal.cx, normal.cy, normal.cz);
+
+	Point3d cpT = CrossProductD(vr, NTd) - CrossProductD(vr, CrossProductD(vr, CrossProductD(nd, DTd)));
+	Point3d cpP = CrossProductD(vr, NPd) - CrossProductD(vr, CrossProductD(vr, CrossProductD(nd, DPd)));
+
+	J[0][0] = DotProductD(cpT, vt)/2.0;
+	J[0][1] = DotProductD(cpP, vt)/2.0;
+	J[1][0] = DotProductD(cpT, vf)/2.0;
+	J[1][1] = DotProductD(cpP, vf)/2.0;
 }
 
 void HandlerPO::CleanJ()
@@ -591,14 +616,14 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-//		if (beam.direction.cz < BEAM_DIR_LIM)
-//		{
-//			continue;
-//		}
 #ifdef _DEBUG // DEB
 		vector<int> tr;
 		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 #endif
+		if (con20 && beam.direction.cz < BEAM_DIR_LIM)
+		{
+			continue;
+		}
 		int groupId = m_tracks->FindGroupByTrackId(beam.trackId);
 
 		if (groupId < 0 && m_tracks->shouldComputeTracksOnly)
@@ -606,6 +631,13 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 			continue;
 		}
 
+#ifdef _DEBUG // DEB
+		double cross = BeamCrossSection(beam);
+//		double area = cross*m_sinAngle;
+	//	vector<int> track;
+//		double ddd = m[0][0];
+		int zenith = round((acos(beam.direction.cz)*SPHERE_RING_NUM)/M_PI);
+#endif
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 
@@ -621,6 +653,10 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 
 		// correction
 		Matrix2x2c jonesCor = jones;
+
+#ifdef _DEBUG // DEB
+//		correctedContrib->AddToMueller(jonesCor);
+#endif
 		jonesCor.m12 -= jonesCor.m21;
 		jonesCor.m12 /= 2;
 		jonesCor.m21 = -jonesCor.m12;
@@ -662,7 +698,7 @@ void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
 	ofstream *all = files.GetMainFile(prefix + "all");
 	*(all) << angle << ' ' << energy << ' ';
 	*(all) << contrib->GetTotal() << endl;
-cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
+//cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
 	if (isOutputGroups)
 	{
 		for (size_t gr = 0; gr < m_tracks->size(); ++gr)

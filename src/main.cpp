@@ -60,7 +60,9 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("b", 2, true); // beta range (begin, end)
 	parser.AddRule("g", 2, true); // gamma range (begin, end)
 	parser.AddRule("conus", 3, true, "po"); // calculate only backscatter cone (radius, phi, theta)
-	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
+	parser.AddRule("point", zero, true, "po"); // calculate only backscatter poin
+	parser.AddRule("con20", zero, true, "po");
+	parser.AddRule("gr", zero, true);
 	parser.AddRule("tr", 1, true); // file with trajectories
 	parser.AddRule("all", 0, true); // calculate all trajectories
 	parser.AddRule("abs", zero, true, "w"); // accounting of absorbtion
@@ -245,6 +247,11 @@ int main(int argc, const char* argv[])
 				double normIndex = gamma.step/gamma.norm;
 				handler->SetNormIndex(normIndex);
 				handler->SetTracks(&trackGroups);
+
+				if (args.IsCatched("con20"))
+				{
+					handler->setCon20(false);
+				}
 
 				tracer.SetIsOutputGroups(isOutputGroups);
 				tracer.SetHandler(handler);

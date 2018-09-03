@@ -174,6 +174,7 @@ public:
 
 protected:
 	void ApplyAbsorbtion(Beam &beam);
+	double BeamCrossSection(const Beam &beam) const;
 
 protected:
 	Scattering *m_scattering;
@@ -197,6 +198,8 @@ public:
 
 	void SetScatteringConus(const Conus &conus);
 
+	void setCon20(bool value);
+
 protected:
 	void MultiplyJones(const Beam &beam, const Point3f &T,
 					   const Point3d &vf, const Point3d &vr,
@@ -214,6 +217,7 @@ protected:
 	Conus m_conus;			// back scattering conus
 	bool isNanOccured = false;
 	bool isNan = false;
+	bool con20 = true;
 };
 
 class HandlerBackScatterPoint : public HandlerPO
@@ -253,7 +257,6 @@ protected:
 	double m_sinAngle;
 
 protected:
-	double BeamCrossSection(const Beam &beam) const;
 	matrix ComputeMueller(int zenAng, Beam &beam);
 	void RotateMuller(const Point3f &dir, matrix &bf);
 	void AverageOverAlpha(int EDF, double norm, ContributionGO &contrib);
