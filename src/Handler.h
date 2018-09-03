@@ -167,8 +167,6 @@ public:
 	void SetScattering(Scattering *scattering);
 	virtual void WriteMatricesToFile(std::string &destName);
 	void SetAbsorbtionAccounting(bool value);
-
-	void SetAbsorbtionAccounting(bool value);
 	void SetNormIndex(double normIndex);
 
 	Light *m_incidentLight;

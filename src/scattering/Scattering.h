@@ -29,6 +29,14 @@ struct BeamTree
 //	}
 };
 
+struct OpticalPath
+{
+	double internal = 0;
+	double external = 0;
+
+	double GetTotal() { return internal + external; }
+};
+
 class Scattering
 {
 public:
@@ -60,7 +68,7 @@ public:
 
 	double GetIncedentEnergy() const;
 
-	double ComputeInternalOpticalPath(const Beam &beam, const std::vector<int> &track);
+	OpticalPath ComputeOpticalPath(const Beam &beam);
 //	double CrossSection(const Point3f &beamDir) const;
 
 protected:
