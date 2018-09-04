@@ -437,11 +437,13 @@ double Scattering::GetIncedentEnergy() const
 	return m_incidentEnergy;
 }
 
-double Scattering::ComputeInternalOpticalPath(const Beam &beam,
-											  const vector<int> &track)
+OpticalPath Scattering::ComputeOpticalPath(const Beam &beam)
 {
-	double path1 = 0;
-	double path = 0;
+	OpticalPath path;
+
+	vector<int> track;
+	Tracks::RecoverTrack(beam, m_particle->nFacets, track);
+
 	Point3f dir = -beam.direction; // back direction
 	Location loc = Location::Out;
 	Location nextLoc;
@@ -449,6 +451,7 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 	Point3f p1 = /*beam.arr[0]*/beam.Center();
 	Point3f p2;
 
+	// back tracing
 	for (int i = track.size()-1; i > 0; --i)
 	{
 		nextLoc = beam.GetLocationByActNumber(i-1);
@@ -465,17 +468,12 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 			m_splitting.ComputeCosA(dir, exNormal);
 			double reRi = m_splitting.ComputeEffectiveReRi();
 			len *= sqrt(reRi);
+			path.internal += len;
 		}
-
-#ifdef _DEBUG // DEB
-		Point3f dddd = inNormal;
-		dddd.d_param = -dddd.d_param;
-		Point3f p22 = ProjectPointToPlane(p1, dir, dddd);
-		double len1 = Length(p1 - p22);
-		len1 *= sqrt(real(m_splitting.GetRi()));
-		path1 += len1;
-#endif
-		path += len;
+		else
+		{
+			path.external += len;
+		}
 
 		p1 = p2;
 		loc = nextLoc;
@@ -487,10 +485,12 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 	Point3f nFar2 = -beam.direction;
 	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
 	double dd2 = fabs(DotProductD(beam.Center(), nFar2) + m_splitting.FAR_ZONE_DISTANCE);
-	path += dd1;
-	path += dd2;
-	if (fabs(path - beam.opticalPath) > 1)
-		int ff = 0;
+
+	path.external += dd1;
+	path.external += dd2;
+
+//	if (fabs(path.GetTotal() - beam.opticalPath) > 1)
+//		int ff = 0;
 #endif
 	return path;
 }

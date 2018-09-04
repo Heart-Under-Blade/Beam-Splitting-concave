@@ -298,25 +298,16 @@ HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float w
 
 void Handler::ApplyAbsorbtion(Beam &beam)
 {
-	vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
-
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-#ifdef _DEBUG // DEB
-	if (beam.id == 407490777/*415047647*/)
-		int fff = 0;
-#endif
-	double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
+	OpticalPath path = m_scattering->ComputeOpticalPath(beam);
 
 #ifdef _DEBUG // DEB
-	double ddd = fabs(path - beam.opticalPath);
-	m_logFile << ddd << endl;
-	if (fabs(path - beam.opticalPath) >= 10e-4)
+	if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
 		int ggg = 0;
 #endif
-	if (path > DBL_EPSILON)
+	if (path.internal > DBL_EPSILON)
 	{
-		double abs = exp(m_cAbs*path);
+		double abs = exp(m_cAbs*path.internal);
 		beam.J *= abs;
 	}
 }
@@ -608,8 +599,6 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 			continue;
 		}
 #ifdef _DEBUG // DEB
-		if (c == 174)
-			int gfgdgd = 0;
 		++c;
 		vector<int> tr;
 		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
