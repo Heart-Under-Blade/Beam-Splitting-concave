@@ -466,9 +466,11 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 
 		if (nextLoc == Location::In)
 		{	// add internal path only
+#ifdef _DEBUG // DEB
 			m_splitting.ComputeCosA(dir, exNormal);
 			double reRi = m_splitting.ComputeEffectiveReRi();
 			len *= sqrt(reRi);
+#endif
 			path.internal += len;
 		}
 		else

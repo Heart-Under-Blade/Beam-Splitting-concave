@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.7.0, 2018-09-03T16:19:44. -->
+<!-- Written by QtCreator 4.7.0, 2018-09-05T15:36:01. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -367,7 +367,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">checking abs</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Projects/Beam-Splitting-develop/pro/BeamSplitting.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 1 100 69.6 15 --ri 1.2893 3.5365e-4 -n 5 --random 180 120 --go -w 1.6 --all --abs</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-p 1 100 69.6 15 --ri 1.2893 3.5365e-4 -n 5 --random 1800 600 --go -w 1.6 --all --abs</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">BeamSplitting.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">true</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>
