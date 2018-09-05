@@ -17,10 +17,10 @@ int Tracks::FindGroupByTrackId(const long long &trackId) const
 		}
 	}
 
-	if (size() == 0)
-	{
-		return 0;
-	}
+//	if (size() == 0)
+//	{
+//		return 0;
+//	}
 
 	return -1;
 }
