@@ -437,7 +437,8 @@ double Scattering::GetIncedentEnergy() const
 	return m_incidentEnergy;
 }
 
-OpticalPath Scattering::ComputeOpticalPath(const Beam &beam)
+OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
+										   const Point3f &startPoint)
 {
 	OpticalPath path;
 
@@ -448,7 +449,7 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam)
 	Location loc = Location::Out;
 	Location nextLoc;
 
-	Point3f p1 = /*beam.arr[0]*/beam.Center();
+	Point3f p1 = startPoint;
 	Point3f p2;
 
 	// back tracing

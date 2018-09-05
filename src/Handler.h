@@ -173,6 +173,7 @@ public:
 
 protected:
 	void ApplyAbsorbtion(Beam &beam);
+	void OutputPaths(const Beam &beam, const OpticalPath &path);
 
 protected:
 	Scattering *m_scattering;
@@ -183,7 +184,9 @@ protected:
 	bool m_hasAbsorbtion;
 	double m_normIndex;
 	std::ofstream m_logFile;
+	std::ofstream m_absLogFile;
 	double m_cAbs;
+	long long count = 0;
 };
 
 

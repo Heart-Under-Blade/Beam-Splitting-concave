@@ -31,7 +31,9 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 //			beta = 0.47123889803846897; gamma = 0.52359877559829882;
 #endif
 			m_scattering->ScatterLight(beta, gamma, outBeams);
-//			m_particle->Output();
+#ifdef _DEBUG // DEB
+			m_particle->Output();
+#endif
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
 

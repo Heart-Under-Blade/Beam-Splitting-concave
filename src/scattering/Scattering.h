@@ -68,7 +68,7 @@ public:
 
 	double GetIncedentEnergy() const;
 
-	OpticalPath ComputeOpticalPath(const Beam &beam);
+	OpticalPath ComputeOpticalPath(const Beam &beam, const Point3f &startPoint);
 //	double CrossSection(const Point3f &beamDir) const;
 
 protected:

@@ -41,6 +41,7 @@ public:
 	void ImportTracks(int nFacets, const std::string &filename);
 	static void RecoverTrack(const Beam &beam, int facetNum,
 							 std::vector<int> &track);
+	static std::string TrackToStr(const std::vector<int> &track);
 
 	bool shouldComputeTracksOnly;
 };

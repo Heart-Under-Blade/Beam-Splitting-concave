@@ -138,3 +138,15 @@ void Tracks::RecoverTrack(const Beam &beam, int facetNum,
 		track.push_back(tmp_track.at(i));
 	}
 }
+
+std::string Tracks::TrackToStr(const std::vector<int> &track)
+{
+	std::string str;
+
+	for (int p : track)
+	{
+		str += std::to_string(p) + ' ';
+	}
+
+	return str;
+}

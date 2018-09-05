@@ -3,6 +3,8 @@
 #include <iostream>
 #include <limits>
 #include <iomanip>
+#include <algorithm>
+#include <string>
 
 #define SPHERE_RING_NUM		180		// number of rings no the scattering sphere
 #define BIN_SIZE			M_PI/SPHERE_RING_NUM
@@ -279,6 +281,17 @@ void Handler::SetAbsorbtionAccounting(bool value)
 {
 	m_hasAbsorbtion = value;
 	m_cAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
+
+	m_absLogFile.open("abslog1.txt", ios::out);
+	m_absLogFile << setprecision(10);
+	m_absLogFile << "No" << ' '
+				 << "CtrPath" << ' '
+				 << "AvgPath" << ' '
+				 << "Max-Min" << ' '
+				 << "Nact" << ' '
+				 << "Npt" << ' '
+				 << "Tr" << ' '
+				 << endl;
 }
 
 void HandlerGO::WriteLog(const string &str)
@@ -296,17 +309,51 @@ HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float w
 {
 }
 
+void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
+{
+	vector<int> track;
+	Tracks::RecoverTrack(beam, m_particle->nFacets, track);
+
+	vector<double> ps;
+	double sum = 0;
+
+	for (size_t i = 0; i < beam.size; ++i)
+	{
+		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.arr[i]);
+		ps.push_back(p0.internal);
+		sum += p0.internal;
+	}
+
+	double maxPath = *std::max_element(ps.begin(), ps.end());
+	double minPath = *std::min_element(ps.begin(), ps.end());
+	double delta = fabs(path.internal - sum/ps.size());
+
+	if (delta >= 10e-4)
+	{
+		m_absLogFile << ++count << ' '
+					 << path.internal << ' '
+					 << sum/ps.size() << ' '
+					 << maxPath - minPath << ' '
+					 << beam.nActs << ' '
+					 << beam.size << ' '
+					 << Tracks::TrackToStr(track)
+					 << endl;
+	}
+}
+
 void Handler::ApplyAbsorbtion(Beam &beam)
 {
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-	OpticalPath path = m_scattering->ComputeOpticalPath(beam);
+	OpticalPath path = m_scattering->ComputeOpticalPath(beam, beam.Center());
 
-#ifdef _DEBUG // DEB
-	if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
-		int ggg = 0;
-#endif
 	if (path.internal > DBL_EPSILON)
 	{
+//		OutputPaths(beam, path);
+
+#ifdef _DEBUG // DEB
+		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
+			int ggg = 0;
+#endif
 		double abs = exp(m_cAbs*path.internal);
 		beam.J *= abs;
 	}
@@ -316,7 +363,7 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 {
 	m_sinAngle = sin(m_particle->rotAngle.beta);
 
-	for (int i = 0; i < beams.size(); ++i)
+	for (size_t i = 0; i < beams.size(); ++i)
 	{
 		Beam &beam = beams[i];
 		beam.RotateSpherical(-m_incidentLight->direction,
