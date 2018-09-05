@@ -90,8 +90,8 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.IsCatched("b"))
 		{
-			min = DegToRad(parser.GetDoubleValue(key, 0));
-			max = DegToRad(parser.GetDoubleValue(key, 1));
+			min = Angle::DegToRad(parser.GetDoubleValue(key, 0));
+			max = Angle::DegToRad(parser.GetDoubleValue(key, 1));
 		}
 		else
 		{
@@ -105,8 +105,8 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.IsCatched("g"))
 		{
-			min = DegToRad(parser.GetDoubleValue(key, 0));
-			max = DegToRad(parser.GetDoubleValue(key, 1));
+			min = Angle::DegToRad(parser.GetDoubleValue(key, 0));
+			max = Angle::DegToRad(parser.GetDoubleValue(key, 1));
 		}
 		else
 		{
@@ -168,11 +168,11 @@ int main(int argc, const char* argv[])
 			particle = new Hexagonal(refrIndex, diameter, height);
 			break;
 		case ParticleType::Bullet:
-			sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
+			sup = (diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
 			particle = new Bullet(refrIndex, diameter, height, sup);
 			break;
 		case ParticleType::BulletRosette:
-			sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
+			sup = (diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
 			particle = new BulletRosette(refrIndex, diameter, height, sup);
 			break;
 		case ParticleType::DistortedHexagonal:

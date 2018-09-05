@@ -15,28 +15,30 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	m_outcomingEnergy = 0;
 #endif
 	vector<Beam> outBeams;
-	double beta, gamma;
+	Angle angle;
 
 	CalcTimer timer;
 	OutputStartTime(timer);
 
 	for (int i = 0; i < betaRange.number; ++i)
 	{
-		beta = (i + 0.5)*betaRange.step;
+		angle.beta = (i + 0.5)*betaRange.step;
 
 		for (int j = 0; j < gammaRange.number; ++j)
 		{
-			gamma = (j + 0.5)*gammaRange.step;
+			angle.gamma = (j + 0.5)*gammaRange.step;
 #ifdef _DEBUG // DEB
-//			beta = 0.47123889803846897; gamma = 0.52359877559829882;
+//			angle.beta = Angle::DegToRad(179.34);
+//			angle.gamma = Angle::DegToRad(37);#endif
 #endif
-			m_scattering->ScatterLight(beta, gamma, outBeams);
+			m_scattering->RotateParticle(angle);
+			m_scattering->ScatterLight(outBeams);
 //			m_particle->Output();
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
 
 #ifdef _CHECK_ENERGY_BALANCE
-			m_incomingEnergy += m_scattering->GetIncedentEnergy()*sin(beta);
+			m_incomingEnergy += m_scattering->GetIncedentEnergy()*sin(angle.beta);
 #endif
 //			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
@@ -56,11 +58,13 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 
 void TracerGO::TraceFixed(const double &beta, const double &gamma)
 {
-	double b = DegToRad(beta);
-	double g = DegToRad(gamma);
+	Angle angle;;
+	angle.beta = Angle::DegToRad(beta);
+	angle.gamma = Angle::DegToRad(gamma);
 
 	vector<Beam> outBeams;
-	m_scattering->ScatterLight(b, g, outBeams);
+	m_scattering->RotateParticle(angle);
+	m_scattering->ScatterLight(outBeams);
 //	m_particle->Output();
 	m_handler->HandleBeams(outBeams);
 	outBeams.clear();

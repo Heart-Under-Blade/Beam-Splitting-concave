@@ -15,6 +15,39 @@ public:
 	double alpha;
 	double beta;
 	double gamma;
+
+	Angle() {}
+	Angle(double a, double b, double g)
+	{
+		alpha = a;
+		beta = b;
+		gamma = g;
+	}
+
+	void ToRadian()
+	{
+		alpha = DegToRad(alpha);
+		beta = DegToRad(beta);
+		gamma = DegToRad(gamma);
+	}
+
+	void ToDegree()
+	{
+		alpha = RadToDeg(alpha);
+		beta = RadToDeg(beta);
+		gamma = RadToDeg(gamma);
+	}
+
+	static double DegToRad(double deg)
+	{
+		return (deg*M_PI)/180;
+	}
+
+	static double RadToDeg(double rad)
+	{
+		return (rad*180)/M_PI;
+	}
+
 };
 
 /**
@@ -29,7 +62,7 @@ public:
 
 	void SetFromFile(const std::string &filename);
 
-	void Rotate(double beta, double gamma, double alpha);
+	void Rotate(const Angle &angle);
 	void Move(float dx, float dy, float dz);
 	void Fix();
 
@@ -81,7 +114,7 @@ private:
 	void RotateNormals();
 	void RotatePoint(const Point3f &point, Point3f &result);
 	void RotateCenters();
-	void SetRotateMatrix(double beta, double gamma, double alpha);
+	void SetRotateMatrix();
 
 private:
 	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices

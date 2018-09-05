@@ -6,11 +6,8 @@ ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
 {
 }
 
-void ScatteringConvex::ScatterLight(double beta, double gamma,
-									std::vector<Beam> &outBeams)
+void ScatteringConvex::ScatterLight(std::vector<Beam> &outBeams)
 {
-	m_particle->Rotate(beta, gamma, 0);
-
 	m_incidentEnergy = 0;
 	m_treeSize = 0;
 
@@ -46,7 +43,8 @@ void ScatteringConvex::ScatterLight(double beta, double gamma,
 	TraceInternalBeams(outBeams);
 }
 
-void ScatteringConvex::ScatterLight(double, double, const std::vector<std::vector<int>> &/*tracks*/, std::vector<Beam> &)
+void ScatteringConvex::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
+									std::vector<Beam> &)
 {
 }
 

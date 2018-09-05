@@ -26,10 +26,8 @@ ScatteringNonConvex::ScatteringNonConvex(Particle *particle, Light *incidentLigh
 {
 }
 
-void ScatteringNonConvex::ScatterLight(double beta, double gamma,
-									   std::vector<Beam> &scaterredBeams)
+void ScatteringNonConvex::ScatterLight(std::vector<Beam> &scaterredBeams)
 {
-	m_particle->Rotate(beta, gamma, 0);
 	SplitLightToBeams();
 	SplitBeams(scaterredBeams);
 }
@@ -734,8 +732,7 @@ void ScatteringNonConvex::PushBeamsToBuffer(int facetID, const Beam &beam, bool 
 	passed.push_back(inBeam);
 }
 
-void ScatteringNonConvex::ScatterLight(double beta, double gamma,
-									   const std::vector<std::vector<int>> &tracks,
+void ScatteringNonConvex::ScatterLight(const std::vector<std::vector<int>> &tracks,
 									   std::vector<Beam> &scaterredBeams)
 {
 //	m_particle->Rotate(beta, gamma, 0);

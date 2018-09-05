@@ -593,12 +593,12 @@ void HandlerPO::WriteMatricesToFile(string &destName)
 
 	for (int t = 0; t <= m_conus.thetaCount; ++t)
 	{
-		double tt = RadToDeg(t*m_conus.dTheta);
+		double tt = Angle::RadToDeg(t*m_conus.dTheta);
 
 		for (int p = 0; p <= m_conus.phiCount; ++p)
 		{
 			double fi = -((double)p)*m_conus.dPhi;
-			double degPhi = RadToDeg(-fi);
+			double degPhi = Angle::RadToDeg(-fi);
 			outFile << endl << tt << " " << degPhi << " ";
 
 			matrix m = M(p, t);

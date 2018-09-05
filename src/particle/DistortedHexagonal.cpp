@@ -31,8 +31,8 @@ DistortedHexagonal::DistortedHexagonal(const complex &refrIndex, double diameter
 
 void DistortedHexagonal::DistortBases(double angle)
 {
-	double tilt = DegToRad(15);
-	double tanA = tan(DegToRad(angle));
+    double tilt = Angle::DegToRad(15);
+    double tanA = tan(Angle::DegToRad(angle));
 	double k = m_diameter/2 * tanA;
 
 	double h[6];

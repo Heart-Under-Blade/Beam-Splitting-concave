@@ -12,8 +12,6 @@
 
 void EraseConsoleLine(int lenght);
 
-double DegToRad(double deg);
-double RadToDeg(double rad);
 std::string CreateFolder(std::string &name); // returned path to folder and created folder name
 std::string CreateDir(const std::string &name);
 std::string CreateUniqueFileName(const std::string &filename);

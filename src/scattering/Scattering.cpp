@@ -103,7 +103,7 @@ void Scattering::ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon)
 }
 
 // TODO: пофиксить
-void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vector<std::vector<int>> &/*tracks*/,
+void Scattering::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
 								  std::vector<Beam> &/*outBeams*/)
 {
 //	m_particle->Rotate(beta, gamma, 0);
@@ -150,7 +150,12 @@ void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vect
 //		}
 
 //		outBeams.push_back(outBuff.back());
-//	}
+	//	}
+}
+
+void Scattering::RotateParticle(const Angle &angle)
+{
+	m_particle->Rotate(angle);
 }
 
 bool Scattering::IsTerminalAct(const Beam &beam)

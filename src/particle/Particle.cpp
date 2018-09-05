@@ -38,10 +38,10 @@ void Particle::SetFromFile(const std::string &filename)
 		pfile.getline(buff, bufSize);
 
 		ptr = strtok(buff, " ");
-		m_symmetry.beta = DegToRad(strtod(ptr, &trash));
+		m_symmetry.beta = Angle::DegToRad(strtod(ptr, &trash));
 
 		ptr = strtok(NULL, " ");
-		m_symmetry.gamma = DegToRad(strtod(ptr, &trash));
+		m_symmetry.gamma = Angle::DegToRad(strtod(ptr, &trash));
 	}
 
 	pfile.getline(buff, bufSize); // skip empty line
@@ -106,10 +106,10 @@ void Particle::RotateCenters()
 	}
 }
 
-void Particle::Rotate(double beta, double gamma, double alpha)
+void Particle::Rotate(const Angle &angle)
 {
-	rotAngle = Angle{alpha, beta, gamma};
-	SetRotateMatrix(beta, gamma, alpha);
+	rotAngle = angle;
+	SetRotateMatrix();
 
 	// REF: слить всё в один цикл
 	for (size_t i = 0; i < nFacets; ++i)
@@ -253,14 +253,14 @@ void Particle::SetDefaultCenters()
 	}
 }
 
-void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
+void Particle::SetRotateMatrix()
 {
 	double cosA, cosB, cosG,
 			sinA, sinB, sinG;
 
-	sincos(alpha, &sinA, &cosA);
-	sincos(beta,  &sinB, &cosB);
-	sincos(gamma, &sinG, &cosG);
+	sincos(rotAngle.alpha, &sinA, &cosA);
+	sincos(rotAngle.beta,  &sinB, &cosB);
+	sincos(rotAngle.gamma, &sinG, &cosG);
 
 	double cosAcosB = cosA*cosB;
 	double sinAcosG = sinA*cosG;

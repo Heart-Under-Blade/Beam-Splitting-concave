@@ -44,22 +44,24 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	OutputStartTime(timer);
 
-	double beta, gamma;
+	Angle angle;
 
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
 		m_incomingEnergy = 0;
 		OutputProgress(betaRange.number, ++count, timer);
 
-		beta = betaRange.min + betaRange.step*i;
+		angle.beta = betaRange.min + betaRange.step*i;
 
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
-			gamma = gammaRange.min + gammaRange.step*j;
+			angle.gamma = gammaRange.min + gammaRange.step*j;
 #ifdef _DEBUG // DEB
-			beta = DegToRad(179.34); gamma = DegToRad(37);
+//			angle.beta = Angle::DegToRad(179.34);
+//			angle.gamma = Angle::DegToRad(37);
 #endif
-			m_scattering->ScatterLight(beta, gamma, outBeams);
+			m_scattering->RotateParticle(angle);
+			m_scattering->ScatterLight(outBeams);
 #ifdef _DEBUG // DEB
 			m_particle->Output();
 #endif
@@ -77,7 +79,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 			}
 		}
 
-		double degBeta = RadToDeg(beta);
+		double degBeta = Angle::RadToDeg(angle.beta);
 
 		// REF: remove static casts
 		static_cast<HandlerBackScatterPoint*>
@@ -111,8 +113,8 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 string TracerBackScatterPoint::GetTableHead(const AngleRange &range)
 {
 	return to_string(range.number) + ' '
-			+ to_string(RadToDeg(range.max)) + ' '
-			+ to_string(RadToDeg(range.step)) + '\n'
+			+ to_string(Angle::RadToDeg(range.max)) + ' '
+			+ to_string(Angle::RadToDeg(range.step)) + '\n'
 			+ "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44"
 			+ '\n';
 }

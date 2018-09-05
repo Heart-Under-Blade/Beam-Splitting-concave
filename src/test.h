@@ -114,20 +114,20 @@ void testHexagonRotate()
 //	outputParticle(*hex);
 //}
 
-void testHexagonalAggregateBuild()
-{
-	Particle *hex = new HexagonalAggregate(1.31, 40, 80, 2);
-	toFile(*hex);
-}
+//void testHexagonalAggregateBuild()
+//{
+//	Particle *hex = new HexagonalAggregate(1.31, 40, 80, 2);
+//	toFile(*hex);
+//}
 
-void testHexagonalAggregateRot(double b, double g)
-{
-	Particle *hex = new HexagonalAggregate(1.31, 40, 80, 2);
-	double beta = (b*M_PI)/180;
-	double gamma = (g*M_PI)/180;
-	hex->Rotate(beta, gamma, 0);
-	toFile(*hex);
-}
+//void testHexagonalAggregateRot(double b, double g)
+//{
+//	Particle *hex = new HexagonalAggregate(1.31, 40, 80, 2);
+//	double beta = (b*M_PI)/180;
+//	double gamma = (g*M_PI)/180;
+//	hex->Rotate(beta, gamma, 0);
+//	toFile(*hex);
+//}
 //void testCompareParticles()
 //{
 //	Particle *hex1 = new TiltedHexagonal(40, 100, 1.31, 0);

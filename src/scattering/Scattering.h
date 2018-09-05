@@ -62,9 +62,10 @@ public:
 	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 			   int nActs);
 
-	virtual void ScatterLight(double /*beta*/, double /*gamma*/, std::vector<Beam> &/*scaterredBeams*/) {}
-	virtual void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
-									 std::vector<Beam> &scaterredBeams);
+	virtual void ScatterLight(std::vector<Beam> &scaterredBeams) = 0;
+	virtual void ScatterLight(const std::vector<std::vector<int>> &tracks,
+							  std::vector<Beam> &scaterredBeams) = 0;
+	void RotateParticle(const Angle &angle);
 
 	double GetIncedentEnergy() const;
 

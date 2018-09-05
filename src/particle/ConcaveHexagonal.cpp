@@ -9,7 +9,7 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 	isConcave = true;
 	SetSize(diameter, height);
 
-	double angleD = DegToRad(cavityAngle);
+	double angleD = Angle::DegToRad(cavityAngle);
 	double r = diameter/2;
 	m_cavityDept = (r*sin(angleD))/cos(angleD);
 

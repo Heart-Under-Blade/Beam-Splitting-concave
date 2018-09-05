@@ -30,7 +30,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 		Bullet b(refrIndex, diameter, height, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(DegToRad(90), 0, 0);
+		b.Rotate(Angle(0, Angle::DegToRad(90), 0));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -39,7 +39,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 		Bullet b(refrIndex, diameter, height, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(DegToRad(180), 0, 0);
+		b.Rotate(Angle(0, Angle::DegToRad(180), 0));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -48,7 +48,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 		Bullet b(refrIndex, diameter, height, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(DegToRad(270), 0, 0);
+		b.Rotate(Angle(0, Angle::DegToRad(270), 0));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -57,9 +57,9 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 		Bullet b(refrIndex, diameter, height, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(DegToRad(90), 0, 0);
+		b.Rotate(Angle(0, Angle::DegToRad(90), 0));
 		b.Fix();
-		b.Rotate(0, 0, DegToRad(90));
+		b.Rotate(Angle(Angle::DegToRad(90), 0, 0));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -68,9 +68,9 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 		Bullet b(refrIndex, diameter, height, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(DegToRad(90), 0, 0);
+		b.Rotate(Angle(0, Angle::DegToRad(90), 0));
 		b.Fix();
-		b.Rotate(0, 0, DegToRad(270));
+		b.Rotate(Angle(Angle::DegToRad(270), 0, 0));
 		b.Fix();
 		bullets.push_back(b);
 	}
