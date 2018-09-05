@@ -32,8 +32,10 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 //			angle.gamma = Angle::DegToRad(37);#endif
 #endif
 			m_scattering->RotateParticle(angle);
+#ifdef _DEBUG // DEB
+			m_particle->Output();
+#endif
 			m_scattering->ScatterLight(outBeams);
-//			m_particle->Output();
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
 
