@@ -1,8 +1,8 @@
-#include "DistortedHexagonal.h"
+#include "DistortedColumn.h"
 #include "global.h"
 #include <iostream>
 
-DistortedHexagonal::DistortedHexagonal(const complex &refrIndex, double diameter, double height,
+DistortedColumn::DistortedColumn(const complex &refrIndex, double diameter, double height,
 									   double angle)
 {
 	isConcave = false;
@@ -16,20 +16,12 @@ DistortedHexagonal::DistortedHexagonal(const complex &refrIndex, double diameter
 	DistortBases(angle);
 	SetSides(defaultFacets[0], defaultFacets[7]);
 
-	// change facet numbers
-//	Facet buf = defaultFacets[2];
-//	defaultFacets[2] = defaultFacets[6];
-//	defaultFacets[6] = buf;
-//	buf = defaultFacets[3];
-//	defaultFacets[3] = defaultFacets[5];
-//	defaultFacets[5] = buf;
-
 	SetDefaultNormals();
 	SetDefaultCenters();
 	Reset();
 }
 
-void DistortedHexagonal::DistortBases(double angle)
+void DistortedColumn::DistortBases(double angle)
 {
     double tilt = Angle::DegToRad(15);
     double tanA = tan(Angle::DegToRad(angle));

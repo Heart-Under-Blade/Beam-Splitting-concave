@@ -1,10 +1,10 @@
-#include "Hexagonal.h"
+#include "Column.h"
 #include "global.h"
 #include <algorithm>
 
-Hexagonal::Hexagonal() {}
+Column::Column() {}
 
-Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
+Column::Column(const complex &refrIndex, double diameter, double height)
 {
 	isConcave = false;
 	SetSize(diameter, height);
@@ -21,13 +21,13 @@ Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 	SetDefaultCenters();
 }
 
-void Hexagonal::SetSize(double diameter, double height)
+void Column::SetSize(double diameter, double height)
 {
 	m_diameter = diameter;
 	m_height = height;
 }
 
-void Hexagonal::SetFacetParams()
+void Column::SetFacetParams()
 {
 	SetSideFacetParams(1, nFacets-1);
 
@@ -36,7 +36,7 @@ void Hexagonal::SetFacetParams()
 	defaultFacets[nFacets-1].nVertices = BASE_VERTEX_NUM;
 }
 
-void Hexagonal::SetSideFacetParams(int first, int last)
+void Column::SetSideFacetParams(int first, int last)
 {
 	m_sideFacetIDs = Couple<int>{first, last};// REF: как-нибудь избавиться от этого
 
@@ -46,7 +46,7 @@ void Hexagonal::SetSideFacetParams(int first, int last)
 	}
 }
 
-void Hexagonal::SetBases(Facet &top, Facet &bottom)
+void Column::SetBases(Facet &top, Facet &bottom)
 {
 	Point3f *facet;
 
@@ -69,7 +69,7 @@ void Hexagonal::SetBases(Facet &top, Facet &bottom)
 	SetTwoDiagonalPoints(2, facet, -halfRadius, -inRadius, -halfHeight);
 }
 
-void Hexagonal::SetTwoDiagonalPoints(int index, Point3f *facet,
+void Column::SetTwoDiagonalPoints(int index, Point3f *facet,
 									 double x, double y, double z)
 {
 	int halfNumber = BASE_VERTEX_NUM/2;
@@ -78,7 +78,7 @@ void Hexagonal::SetTwoDiagonalPoints(int index, Point3f *facet,
 	facet[endIndex] = Point3f(-x, -y, z);
 }
 
-void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
+void Column::SetSides(Facet &baseTop, Facet &baseBottom)
 {
 	const Point3f *top = baseTop.arr;
 	const Point3f *bot = baseBottom.arr;

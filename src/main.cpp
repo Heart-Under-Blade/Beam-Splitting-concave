@@ -9,8 +9,8 @@
 #include "test.h"
 
 #include "Mueller.hpp"
-#include "Hexagonal.h"
-#include "ConcaveHexagonal.h"
+#include "Column.h"
+#include "HollowColumn.h"
 #include "CertainAggregate.h"
 #include "Bullet.h"
 #include "BulletRosette.h"
@@ -22,7 +22,7 @@
 #include "ArgPP.h"
 #include "Tracks.h"
 #include "Handler.h"
-#include "DistortedHexagonal.h"
+#include "DistortedColumn.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -35,11 +35,11 @@ using namespace chrono;
 
 enum class ParticleType : int
 {
-	Hexagonal = 1,
+	Column = 1,
 	Bullet = 2,
 	BulletRosette = 3,
-	ConcaveHexagonal = 10,
-	DistortedHexagonal = 11,
+	HollowColumn = 10,
+	DistortedColumn = 11,
 	HexagonalAggregate = 12,
 	CertainAggregate = 999
 };
@@ -164,8 +164,8 @@ int main(int argc, const char* argv[])
 
 		switch (type)
 		{
-		case ParticleType::Hexagonal:
-			particle = new Hexagonal(refrIndex, diameter, height);
+		case ParticleType::Column:
+			particle = new Column(refrIndex, diameter, height);
 			break;
 		case ParticleType::Bullet:
 			sup = (diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
@@ -175,13 +175,13 @@ int main(int argc, const char* argv[])
 			sup = (diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
 			particle = new BulletRosette(refrIndex, diameter, height, sup);
 			break;
-		case ParticleType::DistortedHexagonal:
+		case ParticleType::DistortedColumn:
 			sup = args.GetDoubleValue("p", 3);
-			particle = new DistortedHexagonal(refrIndex, diameter, height, sup);
+			particle = new DistortedColumn(refrIndex, diameter, height, sup);
 			break;
-		case ParticleType::ConcaveHexagonal:
+		case ParticleType::HollowColumn:
 			sup = args.GetDoubleValue("p", 3);
-			particle = new ConcaveHexagonal(refrIndex, diameter, height, sup);
+			particle = new HollowColumn(refrIndex, diameter, height, sup);
 			break;
 		case ParticleType::HexagonalAggregate:
 			num = args.GetIntValue("p", 3);

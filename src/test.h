@@ -8,10 +8,10 @@
 #include <fstream>
 #include <iostream>
 
-#include "Hexagonal.h"
+#include "Column.h"
 #include "HexagonalAggregate.h"
-#include "DistortedHexagonal.h"
-#include "ConcaveHexagonal.h"
+#include "DistortedColumn.h"
+#include "HollowColumn.h"
 #include "Intersection.h"
 #include "Scattering.h"
 

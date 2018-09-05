@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Hexagonal.h"
+#include "Column.h"
 
-class Bullet : public Hexagonal
+class Bullet : public Column
 {
 public:
 	Bullet();

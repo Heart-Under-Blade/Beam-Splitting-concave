@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Hexagonal.h"
+#include "Column.h"
 
 /**
  * @brief The Hexagon class
  * The prism particle with 6 number of side facets.
  */
-class DistortedHexagonal : public Hexagonal
+class DistortedColumn : public Column
 {
 public:
-	DistortedHexagonal();
-	DistortedHexagonal(const complex &refrIndex, double diameter, double height,
+	DistortedColumn();
+	DistortedColumn(const complex &refrIndex, double diameter, double height,
 					   double angle);
 
 private:

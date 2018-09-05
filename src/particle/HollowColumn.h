@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Hexagonal.h"
+#include "Column.h"
 
 /**
  * @brief The ConcaveHexagonal class
  * The prism particle with 6 number of side facets and 2 cavities on the base facets.
  */
-class ConcaveHexagonal : public Hexagonal
+class HollowColumn : public Column
 {
 public:
-	ConcaveHexagonal(const complex &refrIndex, double diameter, double height,
+	HollowColumn(const complex &refrIndex, double diameter, double height,
 					 double cavityAngle);
 
 private:

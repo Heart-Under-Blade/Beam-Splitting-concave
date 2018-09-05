@@ -1,10 +1,10 @@
-#include "ConcaveHexagonal.h"
+#include "HollowColumn.h"
 #include "global.h"
 #include <algorithm>
 
-ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
-								   double diameter, double height,
-								   double cavityAngle)
+HollowColumn::HollowColumn(const complex &refrIndex,
+						   double diameter, double height,
+						   double cavityAngle)
 {
 	isConcave = true;
 	SetSize(diameter, height);
@@ -31,7 +31,7 @@ ConcaveHexagonal::ConcaveHexagonal(const complex &refrIndex,
 	SetDefaultCenters();
 }
 
-void ConcaveHexagonal::SetFacetParams()
+void HollowColumn::SetFacetParams()
 {
 	SetSideFacetParams(BASE_VERTEX_NUM, 2*BASE_VERTEX_NUM);
 
@@ -55,7 +55,7 @@ void ConcaveHexagonal::SetFacetParams()
 	}
 }
 
-void ConcaveHexagonal::SetCavities(Facet &baseTop, Facet &baseBottom,
+void HollowColumn::SetCavities(Facet &baseTop, Facet &baseBottom,
 								   const CavityPoints &cavities)
 {
 	Point3f *bTop = baseTop.arr;
@@ -65,7 +65,7 @@ void ConcaveHexagonal::SetCavities(Facet &baseTop, Facet &baseBottom,
 	SetCavityFacets(2*BASE_VERTEX_NUM, 3*BASE_VERTEX_NUM, bBot, cavities.bottom); // bottom facets (triangles)
 }
 
-void ConcaveHexagonal::SetCavityFacets(int start, int end,
+void HollowColumn::SetCavityFacets(int start, int end,
 									   const Point3f *baseFacet,
 									   const Point3f &cavityPoint)
 {
@@ -83,7 +83,7 @@ void ConcaveHexagonal::SetCavityFacets(int start, int end,
 	}
 }
 
-void ConcaveHexagonal::SetOriginCavityPoints()
+void HollowColumn::SetOriginCavityPoints()
 {
 	m_defaultStateCavities.top	  = Point3f(0, 0,  m_height/2 - m_cavityDept);
 	m_defaultStateCavities.bottom = Point3f(0, 0, -m_height/2 + m_cavityDept);

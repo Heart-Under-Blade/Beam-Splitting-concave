@@ -6,11 +6,11 @@
  * @brief The Hexagon class
  * The prism particle with 6 side facets.
  */
-class Hexagonal : public Particle
+class Column : public Particle
 {
 public:
-	Hexagonal();
-	Hexagonal(const complex &refrIndex, double diameter, double height);
+	Column();
+	Column(const complex &refrIndex, double diameter, double height);
 
 protected:
 	static const int BASE_NUM		 = 2;	///< number hexagon's of bases
