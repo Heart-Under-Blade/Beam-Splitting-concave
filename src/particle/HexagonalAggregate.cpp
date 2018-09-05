@@ -106,11 +106,11 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 void HexagonalAggregate::SetFacetParams()
 {
-	defaultFacets[0].size = BASE_VERTEX_NUM;
-	defaultFacets[7].size = BASE_VERTEX_NUM;
+	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
+	defaultFacets[7].nVertices = BASE_VERTEX_NUM;
 
-	defaultFacets[8].size = BASE_VERTEX_NUM;
-	defaultFacets[15].size = BASE_VERTEX_NUM;
+	defaultFacets[8].nVertices = BASE_VERTEX_NUM;
+	defaultFacets[15].nVertices = BASE_VERTEX_NUM;
 
 	facets[1].isVisibleOut = false;
 	facets[2].isVisibleOut = false;
@@ -121,7 +121,7 @@ void HexagonalAggregate::SetFacetParams()
 	facets[12].isVisibleOut = false;
 	facets[15].isVisibleOut = false;
 
-	for (int i = 0; i < nFacets; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+	for (size_t i = 0; i < nFacets; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
 	{
 		facets[i].isVisibleIn = false;
 	}

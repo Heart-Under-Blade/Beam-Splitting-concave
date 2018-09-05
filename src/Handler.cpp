@@ -106,7 +106,7 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib)
 	}
 }
 
-double HandlerGO::BeamCrossSection(const Beam &beam) const
+double Handler::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
@@ -128,11 +128,23 @@ void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
 	double cross = BeamCrossSection(beam);
 	double area = cross*m_sinAngle;
+#ifdef _DEBUG // DEB
+//	vector<int> track;
+	double ddd = m[0][0];
+//	Tracks::RecoverTrack(beam, 8, track);
+#endif
+//	double dd = ddd + 1;
+//	double d = ddd + 2;
 	m *= area;
 }
 
 matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 {
+#ifdef _DEBUG // DEB
+	vector<int> track;
+//	double ddd = m[0][0];
+	Tracks::RecoverTrack(beam, 8, track);
+#endif
 	matrix m = Mueller(beam.J);
 
 	if (zenAng < 180 && zenAng > 0)
@@ -243,13 +255,13 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 
 	Point3f n1 = m_particle->facets[tr[0]].in_normal;
 
-	for (int i = 0; i < beam.size; ++i)
+	for (size_t i = 0; i < beam.nVertices; ++i)
 	{
 		double delta = Length(beam.Center() - beam.arr[i])/Length(k);
 		opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
 	}
 
-	opticalPath /= beam.size;
+	opticalPath /= beam.nVertices;
 
 	return opticalPath;
 }
@@ -363,6 +375,15 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 
 			m_totalContrib.AddMueller(zenith, m);
 			m_tracksContrib[groupId].AddMueller(zenith, m);
+
+			if (zenith == 180)
+			{
+				m_tracksContrib[groupId].back += m;
+			}
+			else if (zenith == 0)
+			{
+				m_tracksContrib[groupId].forward += m;
+			}
 		}
 	}
 }
@@ -376,16 +397,20 @@ void HandlerTracksGO::WriteMatricesToFile(string &destName)
 		if ((*m_tracks)[i].size != 0)
 		{
 			string subname = (*m_tracks)[i].CreateGroupName();
-			AverageOverAlpha(0, m_normIndex, m_tracksContrib[i]);
+			AverageOverAlpha(true, m_normIndex, m_tracksContrib[i]);
 			WriteToFile(m_tracksContrib[i], m_normIndex, dir + subname);
 		}
 	}
+
+	destName += "_all";
+	AverageOverAlpha(true, m_normIndex, m_totalContrib);
+	WriteToFile(m_totalContrib, m_normIndex, destName);
 }
 
 void HandlerTotalGO::WriteMatricesToFile(string &destName)
 {
 	destName += "_all";
-	AverageOverAlpha(0, m_normIndex, m_totalContrib);
+	AverageOverAlpha(true, m_normIndex, m_totalContrib);
 	WriteToFile(m_totalContrib, m_normIndex, destName);
 }
 
@@ -464,6 +489,11 @@ void HandlerPO::AddToMueller()
 			}
 		}
 	}
+}
+
+void HandlerPO::setCon20(bool value)
+{
+	con20 = value;
 }
 
 matrixC HandlerPO::ComputeFnJones(const Matrix2x2c &jones, const Point3d &center,
@@ -594,15 +624,17 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 #endif
 	for (Beam &beam : beams)
 	{
-		if (beam.direction.cz < BEAM_DIR_LIM)
-		{
-			continue;
-		}
 #ifdef _DEBUG // DEB
 		++c;
 		vector<int> tr;
 		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 #endif
+
+		if (con20 && beam.direction.cz < BEAM_DIR_LIM)
+		{
+			continue;
+		}
+
 		int groupId = m_tracks->FindGroupByTrackId(beam.id);
 
 		if (groupId < 0 && m_tracks->shouldComputeTracksOnly)
@@ -611,8 +643,14 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		}
 
 		beam.polarizationBasis = beam.RotateSpherical(-m_incidentLight->direction,
-							 m_incidentLight->polarizationBasis);
-
+													  m_incidentLight->polarizationBasis);
+#ifdef _DEBUG // DEB
+//		double cross = BeamCrossSection(beam);
+//		double area = cross*m_sinAngle;
+//		vector<int> track;
+//		double ddd = m[0][0];
+		int zenith = round((acos(beam.direction.cz)*SPHERE_RING_NUM)/M_PI);
+#endif
 		// absorbtion
 		if (m_hasAbsorbtion && beam.nActs > 0)
 		{
@@ -631,6 +669,10 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 
 		// correction
 		Matrix2x2c jonesCor = jones;
+
+#ifdef _DEBUG // DEB
+//		correctedContrib->AddToMueller(jonesCor);
+#endif
 		jonesCor.m12 -= jonesCor.m21;
 		jonesCor.m12 /= 2;
 		jonesCor.m21 = -jonesCor.m12;
@@ -650,7 +692,6 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 	originContrib->SumGroupTotal();
 	correctedContrib->SumGroupTotal();
 }
-
 
 void HandlerBackScatterPoint::SetTracks(Tracks *tracks)
 {

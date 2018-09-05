@@ -54,7 +54,7 @@ public:
 
 public:
 	Facet facets[MAX_FACET_NUM];	///< all facets of particle
-	int nFacets;					///< number of facets
+	size_t nFacets;					///< number of facets
 	bool isAggregated = false;
 
 	Angle rotAngle;

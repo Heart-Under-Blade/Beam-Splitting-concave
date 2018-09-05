@@ -316,11 +316,11 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	Resize(sizeIndex);
 
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
-		int last = defaultFacets[i].size-1;
+		int last = defaultFacets[i].nVertices-1;
 
-		for (int j = 0; j < defaultFacets[i].size/2; ++j)
+		for (size_t j = 0; j < defaultFacets[i].nVertices/2; ++j)
 		{
 			Point3f buf = defaultFacets[i].arr[j];
 			defaultFacets[i].arr[j] = defaultFacets[i].arr[last-j];
@@ -332,7 +332,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	SetDefaultCenters();
 	Reset();
 
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		defaultFacets[i].isVisibleIn = false;
 		defaultFacets[i].isVisibleOut = false;
@@ -343,9 +343,9 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 void CertainAggregate::Resize(double sizeIndex)
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < defaultFacets[i].size; ++j)
+		for (size_t j = 0; j < defaultFacets[i].nVertices; ++j)
 		{
 			defaultFacets[i].arr[j].cx *= sizeIndex;
 			defaultFacets[i].arr[j].cy *= sizeIndex;
@@ -356,15 +356,15 @@ void CertainAggregate::Resize(double sizeIndex)
 
 void CertainAggregate::SetFacetParams()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		if (i%8 == 7 || i%8 == 0 || i == 0)
 		{
-			defaultFacets[i].size = 6;
+			defaultFacets[i].nVertices = 6;
 		}
 		else
 		{
-			defaultFacets[i].size = 4;
+			defaultFacets[i].nVertices = 4;
 		}
 	}
 

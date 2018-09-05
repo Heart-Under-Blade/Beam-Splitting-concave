@@ -61,17 +61,17 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
-			facet->arr[facet->size].point[c_i++] = strtod(ptr, &trash);
+			facet->arr[facet->nVertices].point[c_i++] = strtod(ptr, &trash);
 			ptr = strtok(NULL, " ");
 		}
 
-		++(facet->size);
+		++(facet->nVertices);
 	}
 
 	pfile.close();
 
 	// correction of number of facet
-	if (defaultFacets[nFacets-1].size == 0)
+	if (defaultFacets[nFacets-1].nVertices == 0)
 	{
 		--nFacets;
 	}
@@ -82,7 +82,7 @@ void Particle::SetFromFile(const std::string &filename)
 
 	if (isConcave || isAggregated)
 	{
-		for (int i = 0; i < nFacets; ++i)
+		for (size_t i = 0; i < nFacets; ++i)
 		{
 			defaultFacets[i].isVisibleIn = false;
 			defaultFacets[i].isVisibleOut = false;
@@ -100,7 +100,7 @@ void Particle::Init(int facetCount, const complex &refrIndex)
 
 void Particle::RotateCenters()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		RotatePoint(defaultFacets[i].center, facets[i].center);
 	}
@@ -112,9 +112,9 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 	SetRotateMatrix(beta, gamma, alpha);
 
 	// REF: слить всё в один цикл
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (size_t j = 0; j < facets[i].nVertices; ++j)
 		{
 			RotatePoint(defaultFacets[i].arr[j], facets[i].arr[j]);
 		}
@@ -126,9 +126,9 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 
 void Particle::Fix()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (size_t j = 0; j < facets[i].nVertices; ++j)
 		{
 			defaultFacets[i].arr[j] = facets[i].arr[j];
 		}
@@ -144,7 +144,7 @@ void Particle::Concate(const std::vector<Particle> &parts)
 	{
 		nFacets += part.nFacets;
 
-		for (int j = 0; j < part.nFacets; ++j)
+		for (size_t j = 0; j < part.nFacets; ++j)
 		{
 			defaultFacets[i++] = part.facets[j];
 		}
@@ -159,9 +159,9 @@ double Particle::GetRotationRadius() const
 
 	double radius = 0;
 
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (size_t j = 0; j < facets[i].nVertices; ++j)
 		{
 			Point3f v_len = facets[i].arr[j] - p0;
 			double len = Length(v_len);
@@ -188,9 +188,9 @@ const Symmetry &Particle::GetSymmetry() const
 
 void Particle::Move(float dx, float dy, float dz)
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < defaultFacets[i].size; ++j)
+		for (size_t j = 0; j < defaultFacets[i].nVertices; ++j)
 		{
 			facets[i].arr[j] = defaultFacets[i].arr[j] + Point3f(dx, dy, dz);
 		}
@@ -206,9 +206,9 @@ void Particle::Output()
 {
 	std::ofstream M("particle.dat", std::ios::out);
 
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].size; ++j)
+		for (size_t j = 0; j < facets[i].nVertices; ++j)
 		{
 			Point3f p = facets[i].arr[j];
 			M << p.point[0] << ' '
@@ -231,7 +231,7 @@ void Particle::SetRefractiveIndex(const complex &value)
 
 void Particle::SetDefaultNormals()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		defaultFacets[i].SetNormal();
 	}
@@ -239,7 +239,7 @@ void Particle::SetDefaultNormals()
 
 void Particle::Reset()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		facets[i] = defaultFacets[i];
 	}
@@ -247,7 +247,7 @@ void Particle::Reset()
 
 void Particle::SetDefaultCenters()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		defaultFacets[i].SetCenter();
 	}
@@ -281,14 +281,14 @@ void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
 
 void Particle::RotateNormals()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		RotatePoint(defaultFacets[i].in_normal, facets[i].in_normal);
 	}
 
 	SetDParams();
 
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		facets[i].ex_normal = -facets[i].in_normal;
 		facets[i].ex_normal.d_param = -facets[i].in_normal.d_param;
@@ -297,7 +297,7 @@ void Particle::RotateNormals()
 
 void Particle::SetDParams()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nFacets; ++i)
 	{
 		double d = DotProduct(facets[i].arr[0], facets[i].in_normal);
 		facets[i].in_normal.d_param = -d;

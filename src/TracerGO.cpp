@@ -61,6 +61,7 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma)
 
 	vector<Beam> outBeams;
 	m_scattering->ScatterLight(b, g, outBeams);
+//	m_particle->Output();
 	m_handler->HandleBeams(outBeams);
 	outBeams.clear();
 

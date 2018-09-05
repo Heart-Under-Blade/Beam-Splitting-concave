@@ -22,6 +22,7 @@
 #include "ArgPP.h"
 #include "Tracks.h"
 #include "Handler.h"
+#include "DistortedHexagonal.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -38,7 +39,7 @@ enum class ParticleType : int
 	Bullet = 2,
 	BulletRosette = 3,
 	ConcaveHexagonal = 10,
-	TiltedHexagonal = 11,
+	DistortedHexagonal = 11,
 	HexagonalAggregate = 12,
 	CertainAggregate = 999
 };
@@ -56,10 +57,12 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("go", 0, true); // geometrical optics method
 	parser.AddRule("po", 0, true); // phisical optics method
 	parser.AddRule("w", 1, true); // wavelength
-	parser.AddRule("b", 2, true, "po"); // beta range (begin, end)
-	parser.AddRule("g", 2, true, "po"); // gamma range (begin, end)
+	parser.AddRule("b", 2, true); // beta range (begin, end)
+	parser.AddRule("g", 2, true); // gamma range (begin, end)
 	parser.AddRule("conus", 3, true, "po"); // calculate only backscatter cone (radius, phi, theta)
-	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
+	parser.AddRule("point", zero, true, "po"); // calculate only backscatter poin
+	parser.AddRule("con20", zero, true, "po");
+	parser.AddRule("gr", zero, true);
 	parser.AddRule("tr", 1, true); // file with trajectories
 	parser.AddRule("all", 0, true); // calculate all trajectories
 	parser.AddRule("abs", zero, true, "w"); // accounting of absorbtion
@@ -172,10 +175,10 @@ int main(int argc, const char* argv[])
 			sup = (diameter*sqrt(3)*tan(DegToRad(62)))/4;
 			particle = new BulletRosette(refrIndex, diameter, height, sup);
 			break;
-//		case ParticleType::TiltedHexagonal:
-//			sup = parser.argToValue<double>(vec[3]);
-//			particle = new TiltedHexagonal(r, hh, ri, sup);
-//			break;
+		case ParticleType::DistortedHexagonal:
+			sup = args.GetDoubleValue("p", 3);
+			particle = new DistortedHexagonal(refrIndex, diameter, height, sup);
+			break;
 		case ParticleType::ConcaveHexagonal:
 			sup = args.GetDoubleValue("p", 3);
 			particle = new ConcaveHexagonal(refrIndex, diameter, height, sup);
@@ -247,6 +250,11 @@ int main(int argc, const char* argv[])
 				handler->SetTracks(&trackGroups);
 				handler->SetAbsorbtionAccounting(isAbs);
 
+				if (args.IsCatched("con20"))
+				{
+					handler->setCon20(false);
+				}
+
 				tracer.SetIsOutputGroups(isOutputGroups);
 				tracer.SetHandler(handler);
 				tracer.Trace(beta, gamma, trackGroups, wave);
@@ -280,9 +288,6 @@ int main(int argc, const char* argv[])
 		TracerGO tracer(particle, reflNum, dirName);
 		tracer.SetIsOutputGroups(isOutputGroups);
 
-		AngleRange beta = GetRange(args, "b", particle);
-		AngleRange gamma = GetRange(args, "g", particle);
-
 		HandlerGO *handler;
 
 		if (args.IsCatched("tr"))
@@ -297,7 +302,19 @@ int main(int argc, const char* argv[])
 
 		handler->SetAbsorbtionAccounting(isAbs);
 		tracer.SetHandler(handler);
-		tracer.TraceRandom(beta, gamma);
+
+		if (args.IsCatched("fixed"))
+		{
+			double beta  = args.GetDoubleValue("fixed", 0);
+			double gamma = args.GetDoubleValue("fixed", 1);
+			tracer.TraceFixed(beta, gamma);
+		}
+		else if (args.IsCatched("random"))
+		{
+			AngleRange beta = GetRange(args, "b", particle);
+			AngleRange gamma = GetRange(args, "g", particle);
+			tracer.TraceRandom(beta, gamma);
+		}
 
 		delete handler;
 	}

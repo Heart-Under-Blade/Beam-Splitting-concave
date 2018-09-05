@@ -63,6 +63,10 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 
 		for (int id = 0; id < m_particle->nFacets; ++id)
 		{
+#ifdef _DEBUG // DEB
+		if (beam.id == 5418 && beam.lastFacetId == 7 && id == 5)
+			int ff = 4;
+#endif
 			if (id == beam.lastFacetId)
 			{
 				continue;
@@ -100,7 +104,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	Intersect(facetID, incidentBeam, outBeam);
 
-	if (outBeam.size < MIN_VERTEX_NUM)
+	if (outBeam.nVertices < MIN_VERTEX_NUM)
 	{
 		return false;
 	}
