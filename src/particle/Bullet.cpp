@@ -6,19 +6,16 @@ Bullet::Bullet()
 
 }
 
-Bullet::Bullet(const complex &refrIndex, double diameter, double height, double peakHeight)
+Bullet::Bullet(const complex &refrIndex, const Size &size, double peakHeight)
+	: Column(13, refrIndex, size, false)
 {
-	isConcave = false;
-	SetSize(diameter, height);
-	Init(13, refrIndex);
-
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();
 
 	Facet baseTop;
 	SetBases(baseTop, defaultFacets[7]);
 	SetSides(baseTop, defaultFacets[7]);
-	Point3f peak = Point3f(0, 0, m_height/2 + peakHeight);
+	Point3f peak = Point3f(0, 0, m_size.height/2 + peakHeight);
 	SetPeakFacets(8, 13, baseTop.arr, peak); // top facets (triangles)
 
 	SetDefaultNormals();
@@ -28,8 +25,8 @@ Bullet::Bullet(const complex &refrIndex, double diameter, double height, double 
 
 void Bullet::SetBaseFacet(Facet &facet)
 {
-	double radius = m_diameter/2;
-	double halfHeight = m_height/2;
+	double radius = m_size.diameter/2;
+	double halfHeight = m_size.height/2;
 
 	double halfRadius = radius/2;
 	double inRadius = (sqrt(3) * radius) / 2;

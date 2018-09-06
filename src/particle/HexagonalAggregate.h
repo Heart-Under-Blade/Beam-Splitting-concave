@@ -5,7 +5,7 @@
 class HexagonalAggregate : public Column
 {
 public:
-	HexagonalAggregate(const complex &refrIndex, double diameter, double height,
+	HexagonalAggregate(const complex &refrIndex, const Size &size,
 					   int particleNumber);
 protected:
 	void SetFacetParams() override;

@@ -59,6 +59,7 @@ class Particle
 {
 public:
 	Particle();
+	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
 	void SetFromFile(const std::string &filename);
 
@@ -98,11 +99,9 @@ protected:
 	Symmetry m_symmetry;		///< angle of particle symmetry
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
-	bool isConcave;
+	bool isNonConvex;
 
 protected:
-	void Init(int facetCount, const complex &refrIndex);
-
 	void SetDefaultNormals();
 	void SetDefaultCenters();
 	void Reset();

@@ -2,13 +2,10 @@
 #include "global.h"
 #include <iostream>
 
-DistortedColumn::DistortedColumn(const complex &refrIndex, double diameter, double height,
-									   double angle)
+DistortedColumn::DistortedColumn(const complex &refrIndex, const Size &size,
+								 double angle)
+	: Column(8, refrIndex, size, false)
 {
-	isConcave = false;
-	SetSize(diameter, height);
-	Init(8, refrIndex); // REF: перенести в конструктор Hexagonal и вызывать его тут
-
 	SetSymmetry(M_PI/2, 2*M_PI);
 	SetFacetParams();
 
@@ -25,7 +22,7 @@ void DistortedColumn::DistortBases(double angle)
 {
     double tilt = Angle::DegToRad(15);
     double tanA = tan(Angle::DegToRad(angle));
-	double k = m_diameter/2 * tanA;
+	double k = m_size.diameter/2 * tanA;
 
 	double h[6];
 	h[0] = k * cos(M_PI/3.0-tilt);

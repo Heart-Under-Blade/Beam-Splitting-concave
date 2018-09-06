@@ -2,10 +2,8 @@
 #include "global.h"
 
 CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
+	: Particle(64, refrIndex, true)
 {
-	isConcave = true;
-	Init(64, refrIndex);
-
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
 	isAggregated = true;

@@ -6,7 +6,13 @@
 
 Particle::Particle()
 {
-	isConcave = false;
+}
+
+Particle::Particle(int nFacets, const complex &refrIndex, bool isNonConvex)
+	: nFacets(nFacets),
+	  m_refractiveIndex(refrIndex),
+	  isNonConvex(isNonConvex)
+{
 }
 
 void Particle::SetFromFile(const std::string &filename)
@@ -28,7 +34,7 @@ void Particle::SetFromFile(const std::string &filename)
 	char *ptr, *trash;
 
 	pfile.getline(buff, bufSize);
-	isConcave = strtol(buff, &trash, 10);
+	isNonConvex = strtol(buff, &trash, 10);
 
 	pfile.getline(buff, bufSize);
 	isAggregated = strtol(buff, &trash, 10);
@@ -80,7 +86,7 @@ void Particle::SetFromFile(const std::string &filename)
 	Reset();
 	SetDefaultCenters();
 
-	if (isConcave || isAggregated)
+	if (isNonConvex || isAggregated)
 	{
 		for (size_t i = 0; i < nFacets; ++i)
 		{
@@ -90,12 +96,6 @@ void Particle::SetFromFile(const std::string &filename)
 			facets[i].isVisibleOut = false;
 		}
 	}
-}
-
-void Particle::Init(int facetCount, const complex &refrIndex)
-{
-	nFacets = facetCount;
-	m_refractiveIndex = refrIndex;
 }
 
 void Particle::RotateCenters()
@@ -199,7 +199,7 @@ void Particle::Move(float dx, float dy, float dz)
 
 bool Particle::IsConcave() const
 {
-	return isConcave;
+	return isNonConvex;
 }
 
 void Particle::Output()

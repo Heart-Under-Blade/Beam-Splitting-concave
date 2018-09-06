@@ -4,30 +4,28 @@
 
 BulletRosette::BulletRosette()
 {
-	SetSymmetry(M_PI/2, M_PI);
 }
 
-BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
-							 double height, double peakHeight)
-	: BulletRosette()
+BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
+							 double peakHeight)
+	: Particle(8, refrIndex, true) // REF: 8?????
 {
-	isConcave = true;
+	SetSymmetry(M_PI/2, M_PI);
+	isNonConvex = true;
 	isAggregated = true;
 
-	Init(8, refrIndex);
-
 	std::vector<Particle> bullets;
-	double halfHeight = height/2;
+	double halfHeight = size.height/2;
 
 	{
-		Bullet b(refrIndex, diameter, height, peakHeight);
+		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
 		bullets.push_back(b);
 	}
 
 	{
-		Bullet b(refrIndex, diameter, height, peakHeight);
+		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
 		b.Rotate(Angle(0, Angle::DegToRad(90), 0));
@@ -36,7 +34,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	}
 
 	{
-		Bullet b(refrIndex, diameter, height, peakHeight);
+		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
 		b.Rotate(Angle(0, Angle::DegToRad(180), 0));
@@ -45,7 +43,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	}
 
 	{
-		Bullet b(refrIndex, diameter, height, peakHeight);
+		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
 		b.Rotate(Angle(0, Angle::DegToRad(270), 0));
@@ -54,7 +52,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	}
 
 	{
-		Bullet b(refrIndex, diameter, height, peakHeight);
+		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
 		b.Rotate(Angle(0, Angle::DegToRad(90), 0));
@@ -65,7 +63,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, double diameter,
 	}
 
 	{
-		Bullet b(refrIndex, diameter, height, peakHeight);
+		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
 		b.Rotate(Angle(0, Angle::DegToRad(90), 0));

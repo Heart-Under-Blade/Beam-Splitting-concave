@@ -9,11 +9,12 @@
 #include "test.h"
 
 #include "Mueller.hpp"
-#include "Column.h"
+#include "RegularColumn.h"
 #include "HollowColumn.h"
 #include "CertainAggregate.h"
 #include "Bullet.h"
 #include "BulletRosette.h"
+#include "DistortedColumn.h"
 #include "global.h"
 #include "Beam.h"
 #include "PhysMtr.hpp"
@@ -22,7 +23,6 @@
 #include "ArgPP.h"
 #include "Tracks.h"
 #include "Handler.h"
-#include "DistortedColumn.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -35,7 +35,7 @@ using namespace chrono;
 
 enum class ParticleType : int
 {
-	Column = 1,
+	RegularColumn = 1,
 	Bullet = 2,
 	BulletRosette = 3,
 	HollowColumn = 10,
@@ -156,36 +156,37 @@ int main(int argc, const char* argv[])
 	else
 	{
 		ParticleType type = (ParticleType)args.GetIntValue("p", 0);
-		double height = args.GetDoubleValue("p", 1);
-		double diameter = args.GetDoubleValue("p", 2);
+		Size size;
+		size.height = args.GetDoubleValue("p", 1);
+		size.diameter = args.GetDoubleValue("p", 2);
 
 		double sup;
 		int num;
 
 		switch (type)
 		{
-		case ParticleType::Column:
-			particle = new Column(refrIndex, diameter, height);
+		case ParticleType::RegularColumn:
+			particle = new RegularColumn(refrIndex, size);
 			break;
 		case ParticleType::Bullet:
-			sup = (diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
-			particle = new Bullet(refrIndex, diameter, height, sup);
+			sup = (size.diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
+			particle = new Bullet(refrIndex, size, sup);
 			break;
 		case ParticleType::BulletRosette:
-			sup = (diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
-			particle = new BulletRosette(refrIndex, diameter, height, sup);
+			sup = (size.diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
+			particle = new BulletRosette(refrIndex, size, sup);
 			break;
 		case ParticleType::DistortedColumn:
 			sup = args.GetDoubleValue("p", 3);
-			particle = new DistortedColumn(refrIndex, diameter, height, sup);
+			particle = new DistortedColumn(refrIndex, size, sup);
 			break;
 		case ParticleType::HollowColumn:
 			sup = args.GetDoubleValue("p", 3);
-			particle = new HollowColumn(refrIndex, diameter, height, sup);
+			particle = new HollowColumn(refrIndex, size, sup);
 			break;
 		case ParticleType::HexagonalAggregate:
 			num = args.GetIntValue("p", 3);
-			particle = new HexagonalAggregate(refrIndex, diameter, height, num);
+			particle = new HexagonalAggregate(refrIndex, size, num);
 			break;
 		case ParticleType::CertainAggregate:
 			sup = args.GetDoubleValue("p", 3);

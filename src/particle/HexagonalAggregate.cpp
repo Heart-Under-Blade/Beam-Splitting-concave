@@ -1,13 +1,10 @@
 #include "HexagonalAggregate.h"
 #include "global.h"
 
-HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter, double height,
+HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &size,
 									   int particleNumber)
+	: Column(8*particleNumber, refrIndex, size, true)
 {
-	isConcave = true;
-	SetSize(diameter, height);
-	Init(8*particleNumber, refrIndex);
-
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
 
@@ -18,8 +15,8 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 		Point3f *facet;
 
-		double radius = m_diameter/2;
-		double halfHeight = m_height/2;
+		double radius = m_size.diameter/2;
+		double halfHeight = m_size.height/2;
 
 		double offset = halfHeight + radius + 1/*REF: вынести как конст.*/;
 
@@ -59,8 +56,8 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 		Point3f *facet;
 
-		double radius = m_diameter/2;
-		double halfHeight = m_height/2;
+		double radius = m_size.diameter/2;
+		double halfHeight = m_size.height/2;
 
 		double offset = halfHeight + radius + 1/*PART_OFFSET*/;
 

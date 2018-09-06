@@ -4,27 +4,11 @@
 
 Column::Column() {}
 
-Column::Column(const complex &refrIndex, double diameter, double height)
+Column::Column(size_t nFacets, const complex &refrIndex, const Size &size,
+			   bool isNonConvex)
+	: Particle(nFacets, refrIndex, isNonConvex),
+	  m_size(size)
 {
-	isConcave = false;
-	SetSize(diameter, height);
-	Init(8, refrIndex);
-
-	SetSymmetry(M_PI/2, M_PI/3);
-	SetFacetParams();
-
-	SetBases(defaultFacets[0], defaultFacets[7]);
-	SetSides(defaultFacets[0], defaultFacets[7]);
-
-	SetDefaultNormals();
-	Reset();
-	SetDefaultCenters();
-}
-
-void Column::SetSize(double diameter, double height)
-{
-	m_diameter = diameter;
-	m_height = height;
 }
 
 void Column::SetFacetParams()
@@ -50,8 +34,8 @@ void Column::SetBases(Facet &top, Facet &bottom)
 {
 	Point3f *facet;
 
-	double radius = m_diameter/2;
-	double halfHeight = m_height/2;
+	double radius = m_size.diameter/2;
+	double halfHeight = m_size.height/2;
 
 	double halfRadius = radius/2;
 	double inRadius = (sqrt(3) * radius) / 2;

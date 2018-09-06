@@ -2,18 +2,13 @@
 #include "global.h"
 #include <algorithm>
 
-HollowColumn::HollowColumn(const complex &refrIndex,
-						   double diameter, double height,
+HollowColumn::HollowColumn(const complex &refrIndex, const Size &size,
 						   double cavityAngle)
+	: Column(18, refrIndex, size, true)
 {
-	isConcave = true;
-	SetSize(diameter, height);
-
 	double angleD = Angle::DegToRad(cavityAngle);
-	double r = diameter/2;
+	double r = m_size.diameter/2;
 	m_cavityDept = (r*sin(angleD))/cos(angleD);
-
-	Init(18, refrIndex);
 
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();
@@ -85,6 +80,6 @@ void HollowColumn::SetCavityFacets(int start, int end,
 
 void HollowColumn::SetOriginCavityPoints()
 {
-	m_defaultStateCavities.top	  = Point3f(0, 0,  m_height/2 - m_cavityDept);
-	m_defaultStateCavities.bottom = Point3f(0, 0, -m_height/2 + m_cavityDept);
+	m_defaultStateCavities.top	  = Point3f(0, 0,  m_size.height/2 - m_cavityDept);
+	m_defaultStateCavities.bottom = Point3f(0, 0, -m_size.height/2 + m_cavityDept);
 }
