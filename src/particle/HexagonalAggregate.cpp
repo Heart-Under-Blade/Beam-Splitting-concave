@@ -118,7 +118,7 @@ void HexagonalAggregate::SetFacetParams()
 	elems[12].actual.isOverlayedOut = false;
 	elems[15].actual.isOverlayedOut = false;
 
-	for (size_t i = 0; i < nElems; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+	for (int i = 0; i < nElems; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
 	{
 		elems[i].actual.isOverlayedIn = false;
 	}

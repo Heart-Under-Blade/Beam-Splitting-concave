@@ -314,11 +314,11 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	Resize(sizeIndex);
 
-	for (size_t i = 0; i < nElems; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
 		int last = elems[i].origin.nVertices-1;
 
-		for (size_t j = 0; j < elems[i].origin.nVertices/2; ++j)
+		for (int j = 0; j < elems[i].origin.nVertices/2; ++j)
 		{
 			Point3f buf = elems[i].origin.arr[j];
 			elems[i].origin.arr[j] = elems[i].origin.arr[last-j];
@@ -330,7 +330,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	SetDefaultCenters();
 	Reset();
 
-	for (size_t i = 0; i < nElems; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
 		elems[i].origin.isOverlayedIn = false;
 		elems[i].origin.isOverlayedOut = false;
@@ -341,9 +341,9 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 void CertainAggregate::Resize(double sizeIndex)
 {
-	for (size_t i = 0; i < nElems; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		for (size_t j = 0; j < elems[i].origin.nVertices; ++j)
+		for (int j = 0; j < elems[i].origin.nVertices; ++j)
 		{
 			elems[i].origin.arr[j].cx *= sizeIndex;
 			elems[i].origin.arr[j].cy *= sizeIndex;
@@ -354,7 +354,7 @@ void CertainAggregate::Resize(double sizeIndex)
 
 void CertainAggregate::SetFacetParams()
 {
-	for (size_t i = 0; i < nElems; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
 		if (i%8 == 7 || i%8 == 0 || i == 0)
 		{
@@ -368,45 +368,47 @@ void CertainAggregate::SetFacetParams()
 
 }
 
-void CertainAggregate::GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const
+void CertainAggregate::GetParticalFacetIdRange(Facet *facet, int &begin, int &end) const
 {
-	// REF: make universal
-	if (id < 8)
+	// REF: упростить
+	int &index = facet->index;
+
+	if (index < 8)
 	{
 		begin = 0;
 		end = 8;
 	}
-	else if (id >= 8 && id < 16)
+	else if (index >= 8 && index < 16)
 	{
 		begin = 8;
 		end = 16;
 	}
-	else if (id >= 16 && id < 24)
+	else if (index >= 16 && index < 24)
 	{
 		begin = 16;
 		end = 24;
 	}
-	else if (id >= 24 && id < 32)
+	else if (index >= 24 && index < 32)
 	{
 		begin = 24;
 		end = 32;
 	}
-	else if (id >= 32 && id < 40)
+	else if (index >= 32 && index < 40)
 	{
 		begin = 32;
 		end = 40;
 	}
-	else if (id >= 40 && id < 48)
+	else if (index >= 40 && index < 48)
 	{
 		begin = 40;
 		end = 48;
 	}
-	else if (id >= 48 && id < 56)
+	else if (index >= 48 && index < 56)
 	{
 		begin = 48;
 		end = 56;
 	}
-	else if (id >= 56 && id < 64)
+	else if (index >= 56 && index < 64)
 	{
 		begin = 56;
 		end = 64;

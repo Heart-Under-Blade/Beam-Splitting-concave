@@ -6,7 +6,7 @@
 #include "float.h"
 #include "BigInteger.hh"
 #include "geometry_lib.h"
-#include "Polygon.h"
+#include "Facet.h"
 
 class Light
 {
@@ -32,6 +32,17 @@ public:
 		mask <<= nActs;
 		return (locations & mask) ? Location::Out : Location::In;
 	}
+
+	Track & operator = (const Track &other)
+	{
+		if (this != &other) // OPT: попробовать убрать это уловие для ускорения
+		{
+			id = other.id;
+			locations = other.locations;
+		}
+
+		return *this;
+	}
 };
 
 class Beam : public Polygon, public Light, public Track
@@ -55,7 +66,7 @@ public:
 	Beam & operator = (const Light &other);
 	Beam & operator = (Beam &&other);
 
-	void SetTracingParams(int facetId, int actN, Location location);
+	void SetTracingParams(Facet *fac, int act, Location location);
 
 	void MultiplyJonesMatrix(const complex &c1, const complex &c2);
 	void RotateJMatrix(const Vector3f &newBasis);
@@ -70,11 +81,8 @@ public:
 
 public:
 	Matrix2x2c J;		///< Jones matrix of beam
-
 	int nActs;			///< number of preview reflections
-
-	// REF: заменить на Facet
-	int lastFacetId;	///< last reflected facet id
+	Facet *facet;		///< last incident facet
 
 	Location location; // REF: заменить на 'bool isInside'			///< beam state towards the particle (inside or outside)
 

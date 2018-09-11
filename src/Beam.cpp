@@ -15,7 +15,7 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 	os << Polygon(beam);
 
 	os << "level: " << beam.nActs << endl
-	   << "last facet: " << beam.lastFacetId << endl
+	   << "last facet: " << beam.facet->index << endl
 	   << "location: " << beam.location << endl
 	   << "direction: "
 	   << beam.direction.cx << ", "
@@ -51,22 +51,20 @@ Beam::Beam()
 
 void Beam::Copy(const Beam &other)
 {
+	Track::operator=(other);
+
 	opticalPath = other.opticalPath;
 	front = other.front;
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
 
-	lastFacetId = other.lastFacetId;
+	facet = other.facet;
 	nActs = other.nActs;
 	location = other.location;
-	locations = other.locations;
 #ifdef _DEBUG // DEB
 	pols = other.pols;
 	ops = other.ops;
 	dirs = other.dirs;
-#endif
-#ifdef _TRACK_ALLOW
-	id = other.id;
 #endif
 }
 
@@ -158,7 +156,7 @@ void Beam::GetSpherical(double &fi, double &teta) const
 
 Beam &Beam::operator = (const Beam &other)
 {
-	if (this != &other)
+	if (this != &other) // OPT: попробовать убрать это уловие для ускорения
 	{
 		Copy(other);
 		Polygon::operator =(other);
@@ -188,7 +186,7 @@ void Beam::SetDefault(Beam &other)
 	other.direction = Vector3f(0, 0, 0);
 	other.polarizationBasis = Vector3f(0, 0, 0);
 
-	other.lastFacetId = 0;
+	other.facet = nullptr;
 	other.nActs = 0;
 	other.location = Location::Out;
 	other.locations = 0;
@@ -211,10 +209,10 @@ Beam &Beam::operator = (Beam &&other)
 	return *this;
 }
 
-void Beam::SetTracingParams(int facetId, int actN, Location loc)
+void Beam::SetTracingParams(Facet *fac, int act, Location loc)
 {
-	lastFacetId = facetId;
-	nActs = actN;
+	facet = fac;
+	nActs = act;
 	location = loc;
 
 	if (loc == Location::Out)
@@ -430,7 +428,7 @@ void Beam::SetPolygon(const Polygon &other)
 {
 	nVertices = other.nVertices;
 
-	for (size_t i = 0; i < other.nVertices; ++i)
+	for (int i = 0; i < other.nVertices; ++i)
 	{
 		arr[i] = other.arr[i];
 	}

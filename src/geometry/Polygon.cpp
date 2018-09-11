@@ -14,7 +14,7 @@ Polygon::Polygon(const Polygon &other)
 {
 	nVertices = other.nVertices;
 
-	for (size_t i = 0; i < other.nVertices; ++i)
+	for (int i = 0; i < other.nVertices; ++i)
 	{
 		arr[i] = other.arr[i];
 	}
@@ -24,7 +24,7 @@ Polygon::Polygon(Polygon &&other)
 {
 	nVertices = other.nVertices;
 
-	for (size_t i = 0; i < nVertices; ++i)
+	for (int i = 0; i < nVertices; ++i)
 	{
 		arr[i] = other.arr[i];
 	}
@@ -38,7 +38,7 @@ Polygon &Polygon::operator =(const Polygon &other)
 	{
 		nVertices = other.nVertices;
 
-		for (size_t i = 0; i < nVertices; ++i)
+		for (int i = 0; i < nVertices; ++i)
 		{
 			arr[i] = other.arr[i];
 		}
@@ -53,7 +53,7 @@ Polygon &Polygon::operator = (Polygon &&other)
 	{
 		nVertices = other.nVertices;
 
-		for (size_t i = 0; i < nVertices; ++i)
+		for (int i = 0; i < nVertices; ++i)
 		{
 			arr[i] = other.arr[i];
 		}
@@ -70,7 +70,7 @@ std::ostream &operator <<(std::ostream &os, const Polygon &beam)
 
 	os << "polygon: {" << endl;
 
-	for (size_t i = 0; i < beam.nVertices; ++i)
+	for (int i = 0; i < beam.nVertices; ++i)
 	{
 		os << "\t" << i << ": "
 		   << beam.arr[i].cx << ", "
@@ -89,7 +89,7 @@ double Polygon::Area() const
 	const Point3f &basePoint = arr[0];
 	Point3f p1 = arr[1] - basePoint;
 
-	for (size_t i = 2; i < nVertices; ++i)
+	for (int i = 2; i < nVertices; ++i)
 	{
 		Point3f p2 = arr[i] - basePoint;
 		Point3f res;
@@ -105,7 +105,7 @@ Point3f Polygon::Center() const
 {
 	Point3f p(0, 0, 0);
 
-	for (size_t i = 0; i < nVertices; ++i)
+	for (int i = 0; i < nVertices; ++i)
 	{
 		p = p + arr[i];
 	}
@@ -117,8 +117,8 @@ Point3f Polygon::Normal() const
 {
 	Point3f normal;
 
-	size_t count = 0;
-	size_t start, first, next;
+	int count = 0;
+	int start, first, next;
 	start = nVertices-1;
 
 	do

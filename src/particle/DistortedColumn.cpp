@@ -34,7 +34,7 @@ void DistortedColumn::DistortBases(double angle)
 
 	int endPointIndex = BASE_VERTEX_NUM-1;
 
-	for (size_t i = 0; i < nElems; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
 		elems[0].origin.arr[i].cz += h[i];
 		elems[7].origin.arr[endPointIndex-i].cz += h[i];

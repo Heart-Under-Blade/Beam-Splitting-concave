@@ -35,9 +35,9 @@ IdType Scattering::Scattering::RecomputeTrackId(const IdType &oldId, int facetId
 	return (oldId + (facetId + 1)) * (m_particle->nElems + 1);
 }
 
-void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
+void Scattering::PushBeamToTree(Beam &beam, Facet *facet, int level, Location location)
 {
-	beam.SetTracingParams(facetId, level, location);
+	beam.SetTracingParams(facet, level, location);
 #ifdef _DEBUG // DEB
 	beam.dirs.push_back(beam.direction);
 #endif
@@ -188,7 +188,7 @@ void Scattering::Difference(const Polygon &subject, const Vector3f &subjNormal,
 	__m128 _subject[MAX_VERTEX_NUM];
 	__m128 _buffer[MAX_VERTEX_NUM];
 
-	for (size_t i = 0; i < subject.nVertices; ++i)
+	for (int i = 0; i < subject.nVertices; ++i)
 	{
 		_subject[i] = _mm_load_ps(subject.arr[i].point);
 	}
@@ -202,7 +202,7 @@ void Scattering::Difference(const Polygon &subject, const Vector3f &subjNormal,
 
 	__m128 _p2 = _clip[clipSize-1];
 
-	for (size_t i = 0; i < clip.nVertices; ++i)
+	for (int i = 0; i < clip.nVertices; ++i)
 	{
 		int difSize = 0;
 

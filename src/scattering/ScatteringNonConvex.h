@@ -32,7 +32,7 @@ private:
 	bool SetOpticalBeamParams(Facet *facet, const Beam &incidentBeam,
 							  Beam &inBeam, Beam &outBeam);
 
-	void IntersectWithFacet(const Array<Facet*> &facets, size_t nCheckedFacets,
+	void IntersectWithFacet(const Array<Facet*> &facets, int nCheckedFacets,
 							PolygonArray &resFacets);
 
 	void SplitLightToBeams();
@@ -48,25 +48,25 @@ private:
 
 	bool IsVisibleFacet(Facet *facet, const Beam &beam);
 
-	void SplitByFacet(const Array<Facet*> &facets, size_t nCheckedFacets);
+	void SplitByFacet(const Array<Facet*> &facets, int nCheckedFacets);
 
 	bool SplitBeamByFacet(const Polygon &intersection,
 						  Facet *facet, Beam &beam);
 
-	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
+	void PushBeamsToBuffer(Facet *facet, const Beam &beam, bool hasOutBeam,
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 	void CutPolygonByFacets(const Polygon &pol,
-							const Array<Facet*> &facets, size_t size,
+							const Array<Facet*> &facets, int size,
 							const Vector3f &polNormal, const Vector3f &clipNormal,
 							const Vector3f &dir,
 							PolygonArray &pols);
 
 	void PushBeamPartsToTree(const Beam &beam,
 							 const PolygonArray &parts);
-	template<class T>
+
 	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
-						const T &newId, int facetId,
+						const IdType &newId, Facet *facet,
 						Location loc);
 
 protected:

@@ -93,7 +93,7 @@ protected:
 							const Polygon &lightedPolygon);
 
 
-	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);
+	void PushBeamToTree(Beam &beam, Facet *facet, int level, Location location);
 
 
 	IdType RecomputeTrackId(const IdType &oldId, int facetId);

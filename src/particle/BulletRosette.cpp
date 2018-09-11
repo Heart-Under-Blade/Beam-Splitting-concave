@@ -78,7 +78,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	SetDefaultCenters();
 	Reset();
 
-	for (size_t i = 0; i < nElems; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
 		elems[i].origin.isOverlayedIn = false;
 		elems[i].origin.isOverlayedOut = false;
@@ -87,9 +87,9 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	}
 }
 
-void BulletRosette::GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const
+void BulletRosette::GetParticalFacetIdRange(Facet *facet, int &begin, int &end) const
 {
-	int patN = id/13;
+	int patN = facet->index/13;
 	begin = patN*13;
 	end = begin+13;
 }

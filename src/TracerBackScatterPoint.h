@@ -18,7 +18,7 @@ private:
 	void CreateGroupResultFiles(const Tracks &tracks, ScatteringFiles &files,
 								const std::string &subdir,
 								const std::string &prefix = "");
-	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);
+	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, int maxGroupID);
 
 	bool isNan = false;
 };

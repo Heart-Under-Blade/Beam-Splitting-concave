@@ -17,10 +17,10 @@
 
 void outputParticle(Particle &particle)
 {
-	for (size_t i = 0; i < particle.nElems; ++i)
+	for (int i = 0; i < particle.nElems; ++i)
 	{
 		std::cout << i << ": ";
-		for (size_t j = 0; j < particle.GetActualFacet(i)->nVertices; ++j)
+		for (int j = 0; j < particle.GetActualFacet(i)->nVertices; ++j)
 		{
 			Point3f p = particle.GetActualFacet(i)->arr[j];
 			std::cout << "("
@@ -35,7 +35,7 @@ void outputParticle(Particle &particle)
 
 	std::cout << std::endl << "Normals" << std::endl << std::endl;
 
-	for (size_t i = 0; i < particle.nElems; ++i)
+	for (int i = 0; i < particle.nElems; ++i)
 	{
 		std::cout << i << ": ";
 		std::cout << "("
@@ -51,9 +51,9 @@ void toFile(Particle &particle)
 {
 	std::ofstream M("particle.dat", std::ios::out);
 
-	for (size_t i = 0; i < particle.nElems; ++i)
+	for (int i = 0; i < particle.nElems; ++i)
 	{
-		for (size_t j = 0; j < particle.GetActualFacet(i)->nVertices; ++j)
+		for (int j = 0; j < particle.GetActualFacet(i)->nVertices; ++j)
 		{
 			Point3f p = particle.GetActualFacet(i)->arr[j];
 			M << p.point[0] << ' '

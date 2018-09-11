@@ -28,12 +28,12 @@ void ScatteringConvex::ScatterLight(std::vector<Beam> &outBeams)
 		auto newId = RecomputeTrackId(0, facet->index);
 
 		outBeam.id = newId;
-		outBeam.lastFacetId = i;
+		outBeam.facet = facet;
 		outBeam.nActs = 0;
 		outBeams.push_back(outBeam);
 
 		inBeam.id = newId;
-		PushBeamToTree(inBeam, i, 0, Location::In);
+		PushBeamToTree(inBeam, facet, 0, Location::In);
 
 #ifdef _CHECK_ENERGY_BALANCE
 		ComputeFacetEnergy(facet->in_normal, outBeam);
@@ -62,11 +62,8 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 		for (int i = 0; i < m_particle->nElems; ++i)
 		{
 			Facet *facet = m_particle->GetActualFacet(i);
-#ifdef _DEBUG // DEB
-			if (beam.id == 5418 && beam.lastFacetId == 7 && facet->index == 5)
-				int ff = 4;
-#endif
-			if (i == beam.lastFacetId)
+
+			if (facet->index == beam.facet->index)
 			{
 				continue;
 			}
@@ -81,7 +78,7 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 
 			inBeam.id = RecomputeTrackId(beam.id, i);
 			inBeam.locations = beam.locations;
-			PushBeamToTree(inBeam, i, beam.nActs+1, Location::In);
+			PushBeamToTree(inBeam, facet, beam.nActs+1, Location::In);
 		}
 	}
 }
@@ -122,7 +119,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
 			outBeam.nActs = incidentBeam.nActs + 1;
 			outBeam.id = RecomputeTrackId(incidentBeam.id, facet->index);
 			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
-			outBeam.lastFacetId = facet->index;
+			outBeam.facet = facet;
 			outBeams.push_back(outBeam);
 		}
 		else // complete internal reflection incidence
@@ -138,7 +135,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
 		outBeam.id = RecomputeTrackId(incidentBeam.id, facet->index);
 		double path = m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
 		outBeam.opticalPath += path;
-		outBeam.lastFacetId = facet->index;
+		outBeam.facet = facet;
 		outBeams.push_back(outBeam);
 	}
 

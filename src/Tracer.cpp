@@ -118,7 +118,7 @@ void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone
 //		{
 //			gamma = j*gammaNorm;
 
-//			for (size_t groupID = 0; groupID < tracks.size(); ++groupID)
+//			for (int groupID = 0; groupID < tracks.size(); ++groupID)
 //			{
 //				m_scattering->ScatterLight(beta, gamma, tracks[groupID].tracks, outBeams);
 

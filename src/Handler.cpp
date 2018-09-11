@@ -112,7 +112,7 @@ double Handler::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
-	Point3f normal = m_particle->GetActualFacet(beam.lastFacetId)->ex_normal; // normal of last facet of beam
+	Point3f normal = beam.facet->ex_normal; // normal of last facet of beam
 	double cosA = DotProduct(normal, beam.direction);
 	double e = fabs(cosA);
 
@@ -257,7 +257,7 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 
 	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
 
-	for (size_t i = 0; i < beam.nVertices; ++i)
+	for (int i = 0; i < beam.nVertices; ++i)
 	{
 		double delta = Length(beam.Center() - beam.arr[i])/Length(k);
 		opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
@@ -329,7 +329,7 @@ void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 	vector<double> ps;
 	double sum = 0;
 
-	for (size_t i = 0; i < beam.nVertices; ++i)
+	for (int i = 0; i < beam.nVertices; ++i)
 	{
 		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.arr[i],
 														  track);
@@ -444,7 +444,7 @@ void HandlerTracksGO::WriteMatricesToFile(string &destName)
 {
 	string dir = CreateFolder(destName);
 
-	for (size_t i = 0; i < m_tracksContrib.size(); ++i)
+	for (int i = 0; i < m_tracksContrib.size(); ++i)
 	{
 		if ((*m_tracks)[i].size != 0)
 		{
@@ -529,7 +529,7 @@ void HandlerPO::SetScatteringConus(const Conus &conus)
 
 void HandlerPO::AddToMueller()
 {
-	for (size_t q = 0; q < J.size(); ++q)
+	for (int q = 0; q < J.size(); ++q)
 	{
 		for (int t = 0; t <= m_conus.thetaCount; ++t)
 		{
@@ -768,7 +768,7 @@ void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
 //cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
 	if (isOutputGroups)
 	{
-		for (size_t gr = 0; gr < m_tracks->size(); ++gr)
+		for (int gr = 0; gr < m_tracks->size(); ++gr)
 		{
 			ofstream &file = *(files.GetGroupFile(gr));
 			file << angle << ' ' << energy << ' ';

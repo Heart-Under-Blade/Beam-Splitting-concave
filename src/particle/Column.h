@@ -15,7 +15,7 @@ class Column : public Particle
 {
 public:
 	Column();
-	Column(size_t nFacets, const complex &refrIndex, const Size &size,
+	Column(int nFacets, const complex &refrIndex, const Size &size,
 		   bool isNonConvex);
 
 protected:

@@ -4,7 +4,7 @@
 
 Column::Column() {}
 
-Column::Column(size_t nElems, const complex &refrIndex, const Size &size,
+Column::Column(int nElems, const complex &refrIndex, const Size &size,
 			   bool isNonConvex)
 	: Particle(nElems, refrIndex, isNonConvex),
 	  m_size(size)

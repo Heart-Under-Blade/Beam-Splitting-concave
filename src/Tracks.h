@@ -45,5 +45,5 @@ public:
 	bool shouldComputeTracksOnly;
 
 private:
-	size_t m_nFacets;
+	int m_nFacets;
 };

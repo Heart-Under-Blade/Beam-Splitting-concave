@@ -10,7 +10,7 @@ class Polygon
 {
 public:
 	Point3f arr[MAX_VERTEX_NUM];
-	size_t nVertices = 0;
+	int nVertices = 0;
 
 	Polygon();
 	explicit Polygon(int nVertices);
@@ -30,7 +30,7 @@ class PolygonArray
 {
 public:
 	Polygon arr[MAX_POLYGON_NUM];
-	size_t size = 0;
+	int size = 0;
 
 	void Push(const Polygon &p)
 	{

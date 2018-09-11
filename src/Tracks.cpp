@@ -6,7 +6,7 @@
 
 int Tracks::FindGroupByTrackId(const IdType &trackId) const
 {
-	for (size_t i = 0; i < size(); ++i)
+	for (int i = 0; i < size(); ++i)
 	{
 		for (int j = 0; j < (*this)[i].size; ++j)
 		{
@@ -50,7 +50,7 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 		char *ptr, *trash;
 		ptr = strtok(buff, " ");
 
-		size_t groupIndex = 0;
+		int groupIndex = 0;
 		bool haveGroup = false;
 
 		while (ptr != NULL)
@@ -63,7 +63,7 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 
 				if (groupIndex >= size())
 				{
-					for (size_t i = size(); i <= groupIndex; ++i)
+					for (int i = size(); i <= groupIndex; ++i)
 					{
 						(*this).push_back(TrackGroup());
 					}

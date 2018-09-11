@@ -29,7 +29,7 @@ class Array
 {
 public:
 	T elems[MAX_FACET_NUM];
-	size_t nElems = 0;
+	int nElems = 0;
 
 	void Add(T elem)
 	{

@@ -49,19 +49,19 @@ public: // methods
 		CheckRequiredArgs();
 	}
 
-	int GetIntValue(const std::string &key, size_t valueIndex = 0) const
+	int GetIntValue(const std::string &key, int valueIndex = 0) const
 	{
 		std::string rawValue = FindArgValue(key, valueIndex);
 		return ConvertTo<int>(rawValue);
 	}
 
-	double GetDoubleValue(const std::string &key, size_t valueIndex = 0) const
+	double GetDoubleValue(const std::string &key, int valueIndex = 0) const
 	{
 		std::string rawValue = FindArgValue(key, valueIndex);
 		return ConvertTo<double>(rawValue);
 	}
 
-	std::string GetStringValue(const std::string &key, size_t valueIndex = 0) const
+	std::string GetStringValue(const std::string &key, int valueIndex = 0) const
 	{
 		return FindArgValue(key, valueIndex);
 	}
@@ -129,7 +129,7 @@ private: // fields
 
 private: // methods
 
-	std::string FindArgValue(const std::string &key, size_t valueIndex) const
+	std::string FindArgValue(const std::string &key, int valueIndex) const
 	{
 		Arg arg = FindArg(key);
 
@@ -146,9 +146,9 @@ private: // methods
 	void FillArgs(const std::vector<std::string> &rawArgs)
 	{
 		std::string key;
-		size_t valueNum = 0;
+		int valueNum = 0;
 
-		for (size_t i = 0; i < rawArgs.size(); ++i)
+		for (int i = 0; i < rawArgs.size(); ++i)
 		{
 			const std::string &rawArg = rawArgs[i];
 
@@ -175,7 +175,7 @@ private: // methods
 	}
 
 	void FillArg(const std::string &key, const std::string &rawArg,
-				 size_t &i, size_t &valueNum)
+				 int &i, int &valueNum)
 	{
 		if (valueNum == '+') // more than one args
 		{
@@ -302,7 +302,7 @@ private: // methods
 	{
 		using namespace std;
 		string key;
-		size_t c = 0;
+		int c = 0;
 		bool isOk = false;
 
 		if ((rawArg.size() > 1) && (IsKey(rawArg[c])))

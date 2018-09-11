@@ -14,7 +14,7 @@ TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, int reflNum,
 void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
 								   const Tracks &tracks, double wave)
 {
-	size_t nGroups = tracks.size();
+	int nGroups = tracks.size();
 
 	m_wavelength = wave;
 	CalcTimer timer;
@@ -96,7 +96,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	if (isOutputGroups)
 	{
-		for (size_t group = 0; group < nGroups; ++group)
+		for (int group = 0; group < nGroups; ++group)
 		{
 			ofstream &file = *(resFiles.GetGroupFile(group));
 			file.close();
@@ -138,7 +138,7 @@ void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
 													const string &subdir,
 													const string &prefix)
 {
-	for (size_t i = 0; i < tracks.size(); ++i)
+	for (int i = 0; i < tracks.size(); ++i)
 	{
 		string groupName = tracks[i].CreateGroupName();
 		string filename = prefix + groupName;
@@ -146,9 +146,9 @@ void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
 	}
 }
 
-void TracerBackScatterPoint::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
+void TracerBackScatterPoint::AllocGroupMatrices(vector<Arr2D> &mtrcs, int maxGroupID)
 {
-	for (size_t i = 0; i < maxGroupID; ++i)
+	for (int i = 0; i < maxGroupID; ++i)
 	{
 		Arr2D m(1, 1, 4, 4);
 		mtrcs.push_back(m);

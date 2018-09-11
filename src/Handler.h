@@ -31,7 +31,7 @@ struct Conus
 class PointContribution
 {
 public:
-	PointContribution(size_t nGroups, double normIndex)
+	PointContribution(int nGroups, double normIndex)
 		: m_nGroups(nGroups),
 		  m_normIndex(normIndex)
 	{
@@ -47,14 +47,14 @@ public:
 		rest += m;
 	}
 
-	void AddToGroup(const Matrix2x2c &jones, size_t groupId)
+	void AddToGroup(const Matrix2x2c &jones, int groupId)
 	{
 		groupJones[groupId] += jones;
 	}
 
 	void SumGroupTotal()
 	{
-		for (size_t gr = 0; gr < m_nGroups; ++gr)
+		for (int gr = 0; gr < m_nGroups; ++gr)
 		{
 			MuellerMatrix m(groupJones[gr]);
 			m *= m_normIndex;
@@ -86,7 +86,7 @@ public:
 		return rest;
 	}
 
-	const MuellerMatrix &GetGroupMueller(size_t groupID)
+	const MuellerMatrix &GetGroupMueller(int groupID)
 	{
 		return groupMuellers.at(groupID);
 	}
@@ -111,7 +111,7 @@ private:
 	MuellerMatrix rest;
 	MuellerMatrix total;
 
-	size_t m_nGroups;
+	int m_nGroups;
 	double m_normIndex;
 
 	void ResetJones()
