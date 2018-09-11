@@ -4,20 +4,20 @@
 
 Column::Column() {}
 
-Column::Column(size_t nFacets, const complex &refrIndex, const Size &size,
+Column::Column(size_t nElems, const complex &refrIndex, const Size &size,
 			   bool isNonConvex)
-	: Particle(nFacets, refrIndex, isNonConvex),
+	: Particle(nElems, refrIndex, isNonConvex),
 	  m_size(size)
 {
 }
 
 void Column::SetFacetParams()
 {
-	SetSideFacetParams(1, nFacets-1);
+	SetSideFacetParams(1, nElems-1);
 
 	// base facet number
-	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
-	defaultFacets[nFacets-1].nVertices = BASE_VERTEX_NUM;
+	elems[0].origin.nVertices = BASE_VERTEX_NUM;
+	elems[nElems-1].origin.nVertices = BASE_VERTEX_NUM;
 }
 
 void Column::SetSideFacetParams(int first, int last)
@@ -26,7 +26,7 @@ void Column::SetSideFacetParams(int first, int last)
 
 	for (int i = first; i < last; ++i)
 	{
-		defaultFacets[i].nVertices = SIDE_VERTEX_NUM;
+		elems[i].origin.nVertices = SIDE_VERTEX_NUM;
 	}
 }
 
@@ -74,7 +74,7 @@ void Column::SetSides(Facet &baseTop, Facet &baseBottom)
 
 	for (int i = m_sideFacetIDs.first; i < m_sideFacetIDs.last; ++i)
 	{
-		Point3f *facet = defaultFacets[i].arr;
+		Point3f *facet = elems[i].origin.arr;
 
 		facet[0] = top[i2];
 		facet[1] = top[i1];

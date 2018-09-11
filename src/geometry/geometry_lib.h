@@ -24,15 +24,16 @@ public:
 
 typedef Orientation Symmetry;
 
-class IntArray
+template <class T>
+class Array
 {
 public:
-	int arr[MAX_FACET_NUM];
-	size_t size = 0;
+	T elems[MAX_FACET_NUM];
+	size_t nElems = 0;
 
-	void Add(int elem)
+	void Add(T elem)
 	{
-		arr[size++] = elem;
+		elems[nElems++] = elem;
 	}
 };
 

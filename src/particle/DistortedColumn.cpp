@@ -9,9 +9,9 @@ DistortedColumn::DistortedColumn(const complex &refrIndex, const Size &size,
 	SetSymmetry(M_PI/2, 2*M_PI);
 	SetFacetParams();
 
-	SetBases(defaultFacets[0], defaultFacets[7]);
+	SetBases(elems[0].origin, elems[7].origin);
 	DistortBases(angle);
-	SetSides(defaultFacets[0], defaultFacets[7]);
+	SetSides(elems[0].origin, elems[7].origin);
 
 	SetDefaultNormals();
 	SetDefaultCenters();
@@ -34,9 +34,9 @@ void DistortedColumn::DistortBases(double angle)
 
 	int endPointIndex = BASE_VERTEX_NUM-1;
 
-    for (size_t i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nElems; ++i)
 	{
-		defaultFacets[0].arr[i].cz += h[i];
-		defaultFacets[7].arr[endPointIndex-i].cz += h[i];
+		elems[0].origin.arr[i].cz += h[i];
+		elems[7].origin.arr[endPointIndex-i].cz += h[i];
 	}
 }

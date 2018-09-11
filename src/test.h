@@ -15,14 +15,14 @@
 #include "Intersection.h"
 #include "Scattering.h"
 
-void outputParticle(const Particle &particle)
+void outputParticle(Particle &particle)
 {
-	for (size_t i = 0; i < particle.nFacets; ++i)
+	for (size_t i = 0; i < particle.nElems; ++i)
 	{
 		std::cout << i << ": ";
-		for (size_t j = 0; j < particle.facets[i].nVertices; ++j)
+		for (size_t j = 0; j < particle.GetActualFacet(i)->nVertices; ++j)
 		{
-			Point3f p = particle.facets[i].arr[j];
+			Point3f p = particle.GetActualFacet(i)->arr[j];
 			std::cout << "("
 					  << p.point[0] << ", "
 					  << p.point[1] << ", "
@@ -35,27 +35,27 @@ void outputParticle(const Particle &particle)
 
 	std::cout << std::endl << "Normals" << std::endl << std::endl;
 
-	for (size_t i = 0; i < particle.nFacets; ++i)
+	for (size_t i = 0; i < particle.nElems; ++i)
 	{
 		std::cout << i << ": ";
 		std::cout << "("
-				  << particle.facets[i].in_normal.cx << ", "
-				  << particle.facets[i].in_normal.cy << ", "
-				  << particle.facets[i].in_normal.cz
+				  << particle.GetActualFacet(i)->in_normal.cx << ", "
+				  << particle.GetActualFacet(i)->in_normal.cy << ", "
+				  << particle.GetActualFacet(i)->in_normal.cz
 				  << "), ";
 		std::cout << std::endl;
 	}
 }
 
-void toFile(const Particle &particle)
+void toFile(Particle &particle)
 {
 	std::ofstream M("particle.dat", std::ios::out);
 
-	for (size_t i = 0; i < particle.nFacets; ++i)
+	for (size_t i = 0; i < particle.nElems; ++i)
 	{
-		for (size_t j = 0; j < particle.facets[i].nVertices; ++j)
+		for (size_t j = 0; j < particle.GetActualFacet(i)->nVertices; ++j)
 		{
-			Point3f p = particle.facets[i].arr[j];
+			Point3f p = particle.GetActualFacet(i)->arr[j];
 			M << p.point[0] << ' '
 							<< p.point[1] << ' '
 							<< p.point[2];

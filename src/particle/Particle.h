@@ -50,17 +50,24 @@ public:
 
 };
 
+struct ParticleFacet
+{
+	Facet origin; // facet with origin coordinates of points
+	Facet actual; // facet with actual coordinates of points
+};
+
 /**
  * @brief The Particle class
  * The base class inherited by other concrete particle classes.
  * Vertices are ordered by counterclock-wise direction if you see from outside.
  */
-class Particle
+class Particle : public Array<ParticleFacet>
 {
 public:
 	Particle();
-	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
+	Particle(size_t nFacets, const complex &refrIndex, bool isNonConvex = false);
 
+	Facet *GetActualFacet(size_t i);
 	void SetFromFile(const std::string &filename);
 
 	void Rotate(const Angle &angle);
@@ -82,24 +89,18 @@ public:
 	const Symmetry &GetSymmetry() const;
 	virtual void GetParticalFacetIdRangeByFacetId(int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
-	bool IsConcave() const;
-
+	bool IsNonConvex() const;
 	void Output();
 
 public:
-	Facet facets[MAX_FACET_NUM];	///< all facets of particle
-	size_t nFacets;					///< number of facets
 	bool isAggregated = false;
-
 	Angle rotAngle;
 
 protected:
-	Facet defaultFacets[MAX_FACET_NUM];
-
 	Symmetry m_symmetry;		///< angle of particle symmetry
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
-	bool isNonConvex;
+	bool m_isNonConvex;
 
 protected:
 	void SetDefaultNormals();
@@ -112,12 +113,12 @@ private:
 	void SetDParams();
 	void RotateNormals();
 	void RotatePoint(const Point3f &point, Point3f &result);
-	void RotateCenters();
 	void SetRotateMatrix();
+	void ReadSymmetry(const int bufSize, char *trash, char *buff,
+					  std::ifstream pfile, char *ptr);
+	void SetFacetIndices();
 
 private:
 	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
-	void ReadSymmetry(const int bufSize, char *trash, char *buff,
-					  std::ifstream pfile, char *ptr);
 };
 

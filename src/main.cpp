@@ -44,8 +44,6 @@ enum class ParticleType : int
 	CertainAggregate = 999
 };
 
-Tracks trackGroups;
-
 void SetArgRules(ArgPP &parser)
 {
 	int zero = 0;
@@ -198,6 +196,8 @@ int main(int argc, const char* argv[])
 		}
 	}
 
+	Tracks trackGroups;
+
 	particle->Output();
 
 	int reflNum = args.GetDoubleValue("n");
@@ -210,7 +210,7 @@ int main(int argc, const char* argv[])
 	if (args.IsCatched("tr"))
 	{
 		string trackFileName = args.GetStringValue("tr");
-		trackGroups.ImportTracks(particle->nFacets, trackFileName);
+		trackGroups.ImportTracks(particle->nElems, trackFileName);
 		trackGroups.shouldComputeTracksOnly = !args.IsCatched("all");
 	}
 

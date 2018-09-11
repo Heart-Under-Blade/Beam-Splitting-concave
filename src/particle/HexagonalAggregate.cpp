@@ -10,8 +10,8 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 
 //  SetBases1 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = defaultFacets[0];
-		Facet &baseBottom = defaultFacets[7];
+		Facet &baseTop = elems[0].origin;
+		Facet &baseBottom = elems[7].origin;
 
 		Point3f *facet;
 
@@ -51,8 +51,8 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 
 //	SetBases2 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = defaultFacets[8];
-		Facet &baseBottom = defaultFacets[15];
+		Facet &baseTop = elems[8].origin;
+		Facet &baseBottom = elems[15].origin;
 
 		Point3f *facet;
 
@@ -91,10 +91,10 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 	}
 
 	SetSideFacetParams(1, 7);
-	SetSides(defaultFacets[0], defaultFacets[7]);
+	SetSides(elems[0].origin, elems[7].origin);
 
 	SetSideFacetParams(9, 15);
-	SetSides(defaultFacets[8], defaultFacets[15]);
+	SetSides(elems[8].origin, elems[15].origin);
 
 	SetDefaultNormals();
 	SetDefaultCenters();
@@ -103,23 +103,23 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 
 void HexagonalAggregate::SetFacetParams()
 {
-	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
-	defaultFacets[7].nVertices = BASE_VERTEX_NUM;
+	elems[0].origin.nVertices = BASE_VERTEX_NUM;
+	elems[7].origin.nVertices = BASE_VERTEX_NUM;
 
-	defaultFacets[8].nVertices = BASE_VERTEX_NUM;
-	defaultFacets[15].nVertices = BASE_VERTEX_NUM;
+	elems[8].origin.nVertices = BASE_VERTEX_NUM;
+	elems[15].origin.nVertices = BASE_VERTEX_NUM;
 
-	facets[1].isVisibleOut = false;
-	facets[2].isVisibleOut = false;
-	facets[3].isVisibleOut = false;
-	facets[7].isVisibleOut = false;
-	facets[10].isVisibleOut = false;
-	facets[11].isVisibleOut = false;
-	facets[12].isVisibleOut = false;
-	facets[15].isVisibleOut = false;
+	elems[1].actual.isOverlayedOut = false;
+	elems[2].actual.isOverlayedOut = false;
+	elems[3].actual.isOverlayedOut = false;
+	elems[7].actual.isOverlayedOut = false;
+	elems[10].actual.isOverlayedOut = false;
+	elems[11].actual.isOverlayedOut = false;
+	elems[12].actual.isOverlayedOut = false;
+	elems[15].actual.isOverlayedOut = false;
 
-	for (size_t i = 0; i < nFacets; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+	for (size_t i = 0; i < nElems; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
 	{
-		facets[i].isVisibleIn = false;
+		elems[i].actual.isOverlayedIn = false;
 	}
 }

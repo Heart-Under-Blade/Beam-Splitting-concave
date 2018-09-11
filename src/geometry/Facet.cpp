@@ -1,5 +1,9 @@
 #include "Facet.h"
 
+Facet::Facet()
+{
+}
+
 void Facet::SetNormal()
 {
 	ex_normal = Normal();

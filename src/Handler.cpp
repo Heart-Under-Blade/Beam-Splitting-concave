@@ -112,7 +112,7 @@ double Handler::BeamCrossSection(const Beam &beam) const
 {
 	const double eps = 1e7*DBL_EPSILON;
 
-	Point3f normal = m_particle->facets[beam.lastFacetId].ex_normal; // normal of last facet of beam
+	Point3f normal = m_particle->GetActualFacet(beam.lastFacetId)->ex_normal; // normal of last facet of beam
 	double cosA = DotProduct(normal, beam.direction);
 	double e = fabs(cosA);
 
@@ -145,7 +145,7 @@ matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 #ifdef _DEBUG // DEB
 	vector<int> track;
 //	double ddd = m[0][0];
-	Tracks::RecoverTrack(beam, 8, track);
+	m_tracks->RecoverTrack(beam, track);
 #endif
 	matrix m = Mueller(beam.J);
 
@@ -231,14 +231,14 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 Point3f HandlerGO::CalcK(vector<int> &tr)
 {	// OPT: сделать из переменных ссылки
 	Point3f k, tmp;
-	Point3f n1 = m_particle->facets[tr[0]].in_normal;
-	Point3f nq = m_particle->facets[tr[tr.size()-1]].in_normal;
+	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
+	Point3f nq = m_particle->GetActualFacet(tr[tr.size()-1])->in_normal;
 	CrossProduct(nq, n1, tmp);
 	CrossProduct(tmp, nq, k);
 
 	for (int i = tr.size()-2; i > 0; --i)
 	{
-		Point3f ni = m_particle->facets[tr[i]].in_normal;
+		Point3f ni = m_particle->GetActualFacet(tr[i])->in_normal;
 		k = k - ni*2*fabs(DotProduct(ni, k));
 	}
 
@@ -251,11 +251,11 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 	double opticalPath = 0;
 
 	vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+	m_tracks->RecoverTrack(beam, tr);
 
 	Point3f k = CalcK(tr);
 
-	Point3f n1 = m_particle->facets[tr[0]].in_normal;
+	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
 
 	for (size_t i = 0; i < beam.nVertices; ++i)
 	{
@@ -324,14 +324,15 @@ HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float w
 void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 {
 	vector<int> track;
-	Tracks::RecoverTrack(beam, m_particle->nFacets, track);
+	m_tracks->RecoverTrack(beam, track);
 
 	vector<double> ps;
 	double sum = 0;
 
 	for (size_t i = 0; i < beam.nVertices; ++i)
 	{
-		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.arr[i]);
+		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.arr[i],
+														  track);
 		ps.push_back(p0.internal);
 		sum += p0.internal;
 	}
@@ -355,8 +356,12 @@ void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 
 void Handler::ApplyAbsorbtion(Beam &beam)
 {
+	vector<int> track;
+	m_tracks->RecoverTrack(beam, track);
+
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-	OpticalPath path = m_scattering->ComputeOpticalPath(beam, beam.Center());
+	OpticalPath path = m_scattering->ComputeOpticalPath(beam, beam.Center(),
+														track);
 
 	if (path.internal > DBL_EPSILON)
 	{
@@ -674,7 +679,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 #ifdef _DEBUG // DEB
 		++c;
 		vector<int> tr;
-		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+		m_tracks->RecoverTrack(beam, tr);
 #endif
 
 		if (con20 && beam.direction.cz < BEAM_DIR_LIM)

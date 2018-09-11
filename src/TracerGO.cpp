@@ -33,7 +33,7 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 #endif
 			m_scattering->RotateParticle(angle);
 #ifdef _DEBUG // DEB
-			m_particle->Output();
+			m_scattering->GetParticle()->Output();
 #endif
 			m_scattering->ScatterLight(outBeams);
 			m_handler->HandleBeams(outBeams);

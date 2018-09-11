@@ -33,20 +33,20 @@ void HollowColumn::SetFacetParams()
 	// top facet (triangles)
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		defaultFacets[i].nVertices = CAVITY_FACET_VERTEX_NUM;
-		facets[i].isVisibleOut = false;
+		elems[i].origin.nVertices = CAVITY_FACET_VERTEX_NUM;
+		elems[i].actual.isOverlayedOut = false;
 	}
 
 	// bottom facet (triangles)
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		defaultFacets[i].nVertices = CAVITY_FACET_VERTEX_NUM;
-		facets[i].isVisibleOut = false;
+		elems[i].origin.nVertices = CAVITY_FACET_VERTEX_NUM;
+		elems[i].actual.isOverlayedOut = false;
 	}
 
 	for (int i = BASE_VERTEX_NUM; i < 2*BASE_VERTEX_NUM; ++i)
 	{
-		facets[i].isVisibleIn = false;
+		elems[i].actual.isOverlayedIn = false;
 	}
 }
 
@@ -61,8 +61,8 @@ void HollowColumn::SetCavities(Facet &baseTop, Facet &baseBottom,
 }
 
 void HollowColumn::SetCavityFacets(int start, int end,
-									   const Point3f *baseFacet,
-									   const Point3f &cavityPoint)
+								   const Point3f *baseFacet,
+								   const Point3f &cavityPoint)
 {
 	// base facet point indices
 	int p0 = BASE_VERTEX_NUM-1;
@@ -70,9 +70,9 @@ void HollowColumn::SetCavityFacets(int start, int end,
 
 	for (int i = start; i < end; ++i)
 	{
-		defaultFacets[i].arr[0] = baseFacet[p0];
-		defaultFacets[i].arr[1] = baseFacet[p1];
-		defaultFacets[i].arr[2] = cavityPoint;
+		elems[i].origin.arr[0] = baseFacet[p0];
+		elems[i].origin.arr[1] = baseFacet[p1];
+		elems[i].origin.arr[2] = cavityPoint;
 		p0 = p1;
 		++p1;
 	}

@@ -39,12 +39,8 @@ struct OpticalPath
 
 class Scattering
 {
-public:
-	// REF: убрать в протектед потом
-	Particle *m_particle;			///< scattering particle (crystal)
-
 protected:
-	Facet *m_facets;
+	Particle *m_particle;	///< scattering particle (crystal)
 	Splitting m_splitting;
 	Light *m_incidentLight;
 
@@ -52,7 +48,7 @@ protected:
 	Vector3f m_polarBasis;
 	int m_nActs;
 
-	Beam m_beamTree[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
+	Beam m_propagatingBeams[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
 	double m_incidentEnergy;
 
@@ -69,28 +65,32 @@ public:
 
 	double GetIncedentEnergy() const;
 
-	OpticalPath ComputeOpticalPath(const Beam &beam, const Point3f &startPoint);
+	OpticalPath ComputeOpticalPath(const Beam &beam, const Point3f &startPoint,
+								   std::vector<int> track);
 //	double CrossSection(const Point3f &beamDir) const;
 
+	Particle *GetParticle() const;
+
 protected:
-	void SetIncidentBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outBeam);
+	void SetIncidentBeamOpticalParams(Facet *facet, Beam &inBeam, Beam &outBeam);
 
 	void Difference(const Polygon &subject, const Vector3f &subjNormal,
 					const Polygon &clip, const Vector3f &clipNormal,
 					const Vector3f &clipDir, PolygonArray &difference) const;
 
-	void Intersect(int facetId, const Beam& beam, Polygon &intersection) const;
+	void Intersect(Facet *facet, const Beam& beam, Polygon &intersection) const;
 
-	void SetPolygonByFacet(int facetId, Polygon &polygon) const;
+	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;
 
 	bool IsTerminalAct(const Beam &beam);
 
-	void SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam);
+	void SplitLightToBeams(Facet *facet, Beam &inBeam, Beam &outBeam);
 
 	void ComputePolarisationParams(const Vector3f &dir,
 								   const Vector3f &facetNormal, Beam &beam);
 
-	void ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon);
+	void ComputeFacetEnergy(const Vector3f &facetNormal,
+							const Polygon &lightedPolygon);
 
 
 	void PushBeamToTree(Beam &beam, int facetId, int level, Location location);

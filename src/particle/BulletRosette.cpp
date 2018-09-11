@@ -11,7 +11,6 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	: Particle(8, refrIndex, true) // REF: 8?????
 {
 	SetSymmetry(M_PI/2, M_PI);
-	isNonConvex = true;
 	isAggregated = true;
 
 	std::vector<Particle> bullets;
@@ -79,12 +78,12 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	SetDefaultCenters();
 	Reset();
 
-	for (size_t i = 0; i < nFacets; ++i)
+	for (size_t i = 0; i < nElems; ++i)
 	{
-		defaultFacets[i].isVisibleIn = false;
-		defaultFacets[i].isVisibleOut = false;
-		facets[i].isVisibleIn = false;
-		facets[i].isVisibleOut = false;
+		elems[i].origin.isOverlayedIn = false;
+		elems[i].origin.isOverlayedOut = false;
+		elems[i].actual.isOverlayedIn = false;
+		elems[i].actual.isOverlayedOut = false;
 	}
 }
 

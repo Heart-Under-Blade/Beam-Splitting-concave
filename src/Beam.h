@@ -72,7 +72,10 @@ public:
 	Matrix2x2c J;		///< Jones matrix of beam
 
 	int nActs;			///< number of preview reflections
+
+	// REF: заменить на Facet
 	int lastFacetId;	///< last reflected facet id
+
 	Location location; // REF: заменить на 'bool isInside'			///< beam state towards the particle (inside or outside)
 
 	// REF: перенести в PhisBeam

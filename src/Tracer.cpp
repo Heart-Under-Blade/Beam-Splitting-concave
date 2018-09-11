@@ -19,7 +19,7 @@ Tracer::Tracer(Particle *particle, int nActs, const string &resultFileName)
 {
 	SetIncidentLight(particle);
 
-	if (particle->IsConcave())
+	if (particle->IsNonConvex())
 	{
 		m_scattering = new ScatteringNonConvex(particle, &m_incidentLight, true, nActs);
 	}
@@ -28,8 +28,7 @@ Tracer::Tracer(Particle *particle, int nActs, const string &resultFileName)
 		m_scattering = new ScatteringConvex(particle, &m_incidentLight, true, nActs);
 	}
 
-	m_particle = m_scattering->m_particle;
-	m_symmetry = m_particle->GetSymmetry();
+	m_symmetry = m_scattering->GetParticle()->GetSymmetry();
 }
 
 Tracer::~Tracer()

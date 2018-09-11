@@ -63,7 +63,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 			m_scattering->RotateParticle(angle);
 			m_scattering->ScatterLight(outBeams);
 #ifdef _DEBUG // DEB
-			m_particle->Output();
+			m_scattering->GetParticle()->Output();
 #endif
 			m_incomingEnergy += m_scattering->GetIncedentEnergy();
 

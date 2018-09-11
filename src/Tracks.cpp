@@ -27,6 +27,7 @@ int Tracks::FindGroupByTrackId(const IdType &trackId) const
 
 void Tracks::ImportTracks(int nFacets, const std::string &filename)
 {
+	m_nFacets = nFacets;
 	const int bufSize = 1024;
 	std::ifstream trackFile(filename, std::ios::in);
 
@@ -112,10 +113,9 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 	}
 }
 
-void Tracks::RecoverTrack(const Beam &beam, int facetNum,
-						  std::vector<int> &track)
+void Tracks::RecoverTrack(const Beam &beam, std::vector<int> &track)
 {
-	int coef = facetNum + 1;
+	int coef = m_nFacets + 1;
 	std::vector<int> tmp_track;
 
 	auto tmpId = beam.id/coef;
