@@ -50,8 +50,7 @@ private:
 
 	void SplitByFacet(const Array<Facet*> &facets, int nCheckedFacets);
 
-	bool SplitBeamByFacet(const Polygon &intersection,
-						  Facet *facet, Beam &beam);
+	bool SplitBeamByVisibleFacets(const Array<Facet*> &facets, Beam &beam);
 
 	void PushBeamsToBuffer(Facet *facet, const Beam &beam, bool hasOutBeam,
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
@@ -71,6 +70,7 @@ private:
 
 protected:
 	void ScatterBeams(std::vector<Beam> &scaterredBeams);
+	bool FindRestOfBeamShape(Facet *facet, Beam &beam);
 
 private:
 	PolygonArray m_polygonBuffer;

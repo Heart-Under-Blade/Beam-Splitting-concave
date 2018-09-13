@@ -77,9 +77,9 @@ public: // methods
 		return it != m_args.end();
 	}
 
-	unsigned GetArgNumber(const std::string &key) const
+	int GetArgNumber(const std::string &key) const
 	{
-		unsigned num = 0;
+		int num = 0;
 
 		auto it = m_args.find(key);
 

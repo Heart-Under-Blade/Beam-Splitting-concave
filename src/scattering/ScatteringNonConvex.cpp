@@ -41,7 +41,7 @@ void ScatteringNonConvex::PushBeamsToTree(Facet *facet, const PolygonArray &poly
 	inBeam.id = id;
 	outBeam.id = id;
 
-	for (unsigned j = 0; j < polygons.size; ++j)
+	for (int j = 0; j < polygons.size; ++j)
 	{
 		Beam in = inBeam;
 		Beam out = outBeam;
@@ -149,7 +149,7 @@ void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
 	pols.Push(pol);
 
 	// cut facet projections out of polygon one by one
-	for (unsigned i = 0; i < size; ++i)
+	for (int i = 0; i < size; ++i)
 	{
 		m_polygonBuffer.Clear();
 
@@ -164,7 +164,7 @@ void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
 
 		if (m_polygonBuffer.size != 0)
 		{
-			for (unsigned i = 0; i < m_polygonBuffer.size; ++i)
+			for (int i = 0; i < m_polygonBuffer.size; ++i)
 			{
 				pols.Push(m_polygonBuffer.arr[i]);
 			}
@@ -195,7 +195,7 @@ void ScatteringNonConvex::CutExternalBeam(const Beam &beam,
 #ifdef _DEBUG // DEB
 	tmp.ops.push_back(path);
 #endif
-	for (unsigned i = 0; i < resultBeams.size; ++i)
+	for (int i = 0; i < resultBeams.size; ++i)
 	{
 		tmp.SetPolygon(resultBeams.arr[i]);
 		scaterredBeams.push_back(tmp);
@@ -378,30 +378,14 @@ void ScatteringNonConvex::ScatterBeams(std::vector<Beam> &scaterredBeams)
 			Array<Facet*> facets;
 			SelectVisibleFacets(beam, facets);
 
-			bool isDivided = false;
-
-			for (unsigned i = 0; (i < facets.nElems) && !isDivided; ++i)// OPT: move this loop to SplitBeamByFacet
-			{
-				Facet *facet = facets.elems[i];
-#ifdef _DEBUG // DEB
-				if (beam.id == 2370 && count == 427 && facet->index == 47)
-					int fff = 0;
-#endif
-				Polygon intersection;
-				Intersect(facet, beam, intersection);
-
-				if (intersection.nVertices >= MIN_VERTEX_NUM)
-				{
-					isDivided = SplitBeamByFacet(intersection, facet, beam);
-				}
-			}
+			SplitBeamByVisibleFacets(facets, beam);
 
 			if (IsOutgoingBeam(beam))
 			{	// посылаем обрезанный всеми гранями внешний пучок на сферу
 				double path = m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
 				beam.opticalPath += path;
 #ifdef _DEBUG // DEB
-	beam.ops.push_back(path);
+				beam.ops.push_back(path);
 #endif
 				scaterredBeams.push_back(beam);
 			}
@@ -429,7 +413,7 @@ bool ScatteringNonConvex::SetOpticalBeamParams(Facet *facet, const Beam &inciden
 		if (incidentBeam.location == Location::In)
 		{
 			m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
-			ComputePolarisationParams(incBeam.direction, normal, incBeam);
+			ComputePolarisationParams(incidentBeam.direction, normal, incBeam);
 //			incBeam.direction = -incBeam.direction;
 
 			hasOutBeam = !m_splitting.IsCompleteReflection();
@@ -645,7 +629,7 @@ void ScatteringNonConvex::PushBeamPartsToTree(const Beam &beam,
 {
 	Beam tmp = beam; // OPT: try to replace 'tmp' to 'beam'
 
-	for (unsigned i = 0; i < parts.size; ++i)
+	for (int i = 0; i < parts.size; ++i)
 	{
 		tmp = parts.arr[i];
 		assert(m_treeSize < MAX_BEAM_REFL_NUM);
@@ -665,30 +649,8 @@ void ScatteringNonConvex::PushBeamToTree(Beam &beam, const Beam &oldBeam,
 	Scattering::PushBeamToTree(beam, facet, oldBeam.nActs+1, loc);
 }
 
-bool ScatteringNonConvex::SplitBeamByFacet(const Polygon &intersection,
-										   Facet *facet, Beam &beam)
+bool ScatteringNonConvex::FindRestOfBeamShape(Facet *facet, Beam &beam)
 {
-	Beam inBeam, outBeam;
-	inBeam.SetPolygon(intersection);
-	outBeam.SetPolygon(intersection);
-#ifdef _DEBUG // DEB
-	inBeam.pols = beam.pols;
-	outBeam.pols = beam.pols;
-	inBeam.pols.push_back(intersection);
-	outBeam.pols.push_back(intersection);
-#endif
-
-	bool hasOutBeam = SetOpticalBeamParams(facet, beam, inBeam, outBeam);
-
-	auto newId = RecomputeTrackId(beam.id, facet->index);
-
-	if (hasOutBeam)
-	{
-		PushBeamToTree(outBeam, beam, newId, facet, Location::Out);
-	}
-
-	PushBeamToTree(inBeam, beam, newId, facet, Location::In);
-
 	m_polygonBuffer.Clear();
 	CutBeamByFacet(facet, beam, m_polygonBuffer);
 
@@ -703,8 +665,42 @@ bool ScatteringNonConvex::SplitBeamByFacet(const Polygon &intersection,
 	{
 		beam = m_polygonBuffer.arr[0];
 	}
+}
 
-	return isDivided;
+bool ScatteringNonConvex::SplitBeamByVisibleFacets(const Array<Facet*> &facets, Beam &beam)
+{
+	bool isDivided = false;
+
+	for (int i = 0; (i < facets.nElems) && !isDivided; ++i)// OPT: move this loop to SplitBeamByFacet
+	{
+		Facet *facet = facets.elems[i];
+
+		Polygon beamShape;
+		bool isIntersected = IncidentBeamToFacet(facet, beam, beamShape);
+
+		if (isIntersected)
+		{
+			Beam inBeam, outBeam;
+			inBeam.SetPolygon(beamShape);
+			outBeam.SetPolygon(beamShape);
+#ifdef _DEBUG // DEB
+			inBeam.pols = beam.pols;
+			inBeam.pols.push_back(beamShape);
+			outBeam.pols = beam.pols;
+			outBeam.pols.push_back(beamShape);
+#endif
+			bool hasOutBeam = SetOpticalBeamParams(facet, beam, inBeam, outBeam);
+			auto newId = RecomputeTrackId(beam.id, facet->index);
+
+			if (hasOutBeam)
+			{
+				PushBeamToTree(outBeam, beam, newId, facet, Location::Out);
+			}
+
+			PushBeamToTree(inBeam, beam, newId, facet, Location::In);
+			isDivided = FindRestOfBeamShape(facet, beam);
+		}
+	}
 }
 
 void ScatteringNonConvex::PushBeamsToBuffer(Facet *facet, const Beam &beam, bool hasOutBeam,

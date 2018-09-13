@@ -49,5 +49,4 @@ HEADERS += \
     ../src/bigint/*.hh
 
 DISTFILES += \
-	classes.qmodel \
-    sequence.qmodel
+    *.qmodel

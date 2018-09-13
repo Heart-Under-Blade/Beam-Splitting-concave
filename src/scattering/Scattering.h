@@ -78,7 +78,8 @@ protected:
 					const Polygon &clip, const Vector3f &clipNormal,
 					const Vector3f &clipDir, PolygonArray &difference) const;
 
-	void Intersect(Facet *facet, const Beam& beam, Polygon &intersection) const;
+	bool IncidentBeamToFacet(Facet *facet, const Beam& beam,
+							 Polygon &intersection) const;
 
 	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;
 

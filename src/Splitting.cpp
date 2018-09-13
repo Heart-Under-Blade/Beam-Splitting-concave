@@ -98,7 +98,8 @@ void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentB
 	}
 }
 
-void Splitting::ComputeRegularJonesParams(const Point3f &normal, const Beam &incidentBeam, Beam &inBeam, Beam &outBeam)
+void Splitting::ComputeRegularJonesParams(const Point3f &normal, const Beam &incidentBeam,
+										  Beam &inBeam, Beam &outBeam)
 {
 	inBeam.J = incidentBeam.J;
 	outBeam.J = incidentBeam.J;
@@ -107,6 +108,7 @@ void Splitting::ComputeRegularJonesParams(const Point3f &normal, const Beam &inc
 
 	complex tmp0 = m_ri * cosA;
 	complex tmp1 = m_ri * cosG;
+
 	complex Tv0 = tmp1 + cosA;
 	complex Th0 = tmp0 + cosG;
 
@@ -116,6 +118,19 @@ void Splitting::ComputeRegularJonesParams(const Point3f &normal, const Beam &inc
 	complex Tv = cosA - tmp1;
 	complex Th = tmp0 - cosG;
 	inBeam.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
+}
+
+void Splitting::ComputeCRJonesParams(complex &cv, complex &ch)
+{
+	const double bf = reRiEff*(1.0 - cosA*cosA) - 1.0;
+	double im = (bf > 0) ? sqrt(bf) : 0;
+
+	const complex sq(0, im);
+	complex tmp0 = m_ri * cosA;
+	complex tmp1 = m_ri * sq;
+
+	cv = (cosA - tmp1)/(tmp1 + cosA);
+	ch = (tmp0 - sq)/(tmp0 + sq);
 }
 
 void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
@@ -136,19 +151,6 @@ void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
 	tmp = sqrt(tmp);
 	dir = (r/tmp) - normal;
 	Normalize(dir);
-}
-
-void Splitting::ComputeCRJonesParams(complex &cv, complex &ch)
-{
-	const double bf = reRiEff*(1.0 - cosA*cosA) - 1.0;
-	double im = (bf > 0) ? sqrt(bf) : 0;
-
-	const complex sq(0, im);
-	complex tmp0 = m_ri * cosA;
-	complex tmp1 = m_ri * sq;
-
-	cv = (cosA - tmp1)/(tmp1 + cosA);
-	ch = (tmp0 - sq)/(tmp0 + sq);
 }
 
 void Splitting::ComputeCosA(const Point3f &normal, const Point3f &incidentDir)

@@ -98,7 +98,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
 		return false;
 	}
 
-	Intersect(facet, incidentBeam, outBeam);
+	IncidentBeamToFacet(facet, incidentBeam, outBeam);
 
 	if (outBeam.nVertices < MIN_VERTEX_NUM)
 	{

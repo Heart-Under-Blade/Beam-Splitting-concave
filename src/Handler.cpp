@@ -623,7 +623,7 @@ void HandlerPO::CleanJ()
 	Arr2DC tmp(m_conus.phiCount + 1, m_conus.thetaCount + 1, 2, 2);
 	tmp.ClearArr();
 
-	for (unsigned q = 0; q < m_tracks->size(); q++)
+	for (int q = 0; q < m_tracks->size(); q++)
 	{
 		J.push_back(tmp);
 	}

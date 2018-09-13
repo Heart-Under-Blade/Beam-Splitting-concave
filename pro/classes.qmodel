@@ -49,7 +49,7 @@
                          </base-DElement>
                          <object>{94b75307-2d9d-4c7d-8615-178b3e2d4a96}</object>
                          <name>Scattering</name>
-                         <pos>x:535;y:485</pos>
+                         <pos>x:500;y:480</pos>
                          <rect>x:-40;y:-25;w:80;h:50</rect>
                          <auto-sized>false</auto-sized>
                          <visual-role>0</visual-role>
@@ -70,7 +70,7 @@
                          </base-DElement>
                          <object>{2b00809d-f3da-493e-acf5-876e5902eada}</object>
                          <name>ScatteringConvex</name>
-                         <pos>x:460;y:380</pos>
+                         <pos>x:395;y:560</pos>
                          <rect>x:-55;y:-30;w:110;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -108,7 +108,7 @@
                          </base-DElement>
                          <object>{c5651cf8-fb0a-4b92-9418-5a357d934dfe}</object>
                          <name>ScatteringNonConvex</name>
-                         <pos>x:640;y:375</pos>
+                         <pos>x:600;y:560</pos>
                          <rect>x:-65;y:-30;w:130;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -146,7 +146,7 @@
                          </base-DElement>
                          <object>{2ab30e6c-c18c-480a-abcb-351afb693b0d}</object>
                          <name>Tracer</name>
-                         <pos>x:545;y:275</pos>
+                         <pos>x:535;y:320</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -262,7 +262,7 @@
                          </base-DElement>
                          <object>{bfe31e9b-8949-4684-8614-cae01714936d}</object>
                          <name>HandlerGO</name>
-                         <pos>x:745;y:610</pos>
+                         <pos>x:760;y:610</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -282,7 +282,7 @@
                          </base-DElement>
                          <object>{722d76a2-9f92-4df9-a0ea-636bb05ed282}</object>
                          <name>HandlerPO</name>
-                         <pos>x:895;y:605</pos>
+                         <pos>x:930;y:610</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -396,7 +396,7 @@
                          </base-DElement>
                          <object>{cc462f7a-e686-4643-8bc2-5aad50b1782c}</object>
                          <name>HandlerTotalGO</name>
-                         <pos>x:815;y:725</pos>
+                         <pos>x:835;y:720</pos>
                          <rect>x:-50;y:-30;w:100;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -477,7 +477,7 @@
                          </base-DElement>
                          <object>{6bd23f6e-ea29-44c4-9f2a-c1b34de2c225}</object>
                          <name>Beam</name>
-                         <pos>x:275;y:435</pos>
+                         <pos>x:245;y:425</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -522,7 +522,7 @@
                          </base-DElement>
                          <object>{8ac91a35-14f5-4739-b131-3a4683f3f3c3}</object>
                          <name>Light</name>
-                         <pos>x:430;y:790</pos>
+                         <pos>x:430;y:770</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -560,7 +560,7 @@
                          </base-DElement>
                          <object>{829c0071-d016-4ed1-8438-a9f27c9802fe}</object>
                          <name>Particle</name>
-                         <pos>x:855;y:350</pos>
+                         <pos>x:840;y:340</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -580,7 +580,7 @@
                          </base-DElement>
                          <object>{9516fe02-d2ba-4685-9e58-3ac93113874a}</object>
                          <name>Symmetry</name>
-                         <pos>x:730;y:250</pos>
+                         <pos>x:695;y:310</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -650,7 +650,7 @@
                          </base-DElement>
                          <object>{f6aa4e92-b49d-4202-8a98-e9d5f7a716b5}</object>
                          <name>Facet</name>
-                         <pos>x:820;y:160</pos>
+                         <pos>x:735;y:210</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -720,7 +720,7 @@
                          </base-DElement>
                          <object>{153604fe-28a5-4a9c-bb3a-6eafad4952fc}</object>
                          <name>Polygon</name>
-                         <pos>x:290;y:545</pos>
+                         <pos>x:275;y:795</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -758,7 +758,7 @@
                          </base-DElement>
                          <object>{6b45a9f0-9ece-4578-a194-05cd8a51289f}</object>
                          <name>Tracks</name>
-                         <pos>x:935;y:245</pos>
+                         <pos>x:940;y:250</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -877,7 +877,7 @@
                          </base-DElement>
                          <object>{baa5bc76-6b72-45fb-a273-d3877cac35dc}</object>
                          <name>ContributionGO</name>
-                         <pos>x:745;y:845</pos>
+                         <pos>x:760;y:810</pos>
                          <rect>x:-45;y:-30;w:90;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -947,7 +947,7 @@
                          </base-DElement>
                          <object>{bece6ae7-d1e1-42e2-b20a-8da8c2d100ae}</object>
                          <name>PointContribution</name>
-                         <pos>x:1065;y:605</pos>
+                         <pos>x:1040;y:845</pos>
                          <rect>x:-50;y:-30;w:100;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -967,7 +967,7 @@
                          </base-DElement>
                          <object>{11362ae5-1fb5-4f70-abf7-0c7f2fe212e4}</object>
                          <name>ScatteringFiles</name>
-                         <pos>x:1005;y:150</pos>
+                         <pos>x:1040;y:175</pos>
                          <rect>x:-45;y:-30;w:90;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -1122,7 +1122,7 @@
                          </base-DElement>
                          <object>{462ef611-4b89-492c-828c-c462cfeffa69}</object>
                          <name>PhisBeam</name>
-                         <pos>x:310;y:280</pos>
+                         <pos>x:145;y:295</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -1255,29 +1255,6 @@
                          </base-DElement>
                          <object>{4c7f930c-10b2-481b-82f7-8b99c663c23b}</object>
                          <a>{605b45e8-77a9-401d-b825-f999a55b88b5}</a>
-                         <b>{25248ff1-2745-4360-aa39-e879788fe64d}</b>
-                        </DRelation>
-                       </base-DRelation>
-                       <a>
-                        <DAssociationEnd>
-                         <navigable>true</navigable>
-                        </DAssociationEnd>
-                       </a>
-                      </DAssociation>
-                     </instance>
-                    </item>
-                    <item>
-                     <instance type="DAssociation">
-                      <DAssociation>
-                       <base-DRelation>
-                        <DRelation>
-                         <base-DElement>
-                          <DElement>
-                           <uid>{bb953a02-cf48-4f1d-b102-460c97b4f486}</uid>
-                          </DElement>
-                         </base-DElement>
-                         <object>{702d2bdf-600f-4d8d-ae70-84c66657fe9c}</object>
-                         <a>{dd21a098-e71f-458f-9145-c2560fe8b413}</a>
                          <b>{25248ff1-2745-4360-aa39-e879788fe64d}</b>
                         </DRelation>
                        </base-DRelation>
@@ -1486,7 +1463,7 @@
                          </base-DElement>
                          <object>{bedf58a9-8933-428a-ac80-c08e88bd4648}</object>
                          <name>Track</name>
-                         <pos>x:180;y:545</pos>
+                         <pos>x:145;y:795</pos>
                          <rect>x:-40;y:-30;w:80;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -1514,7 +1491,7 @@
                     </item>
                    </qlist>
                   </elements>
-                  <last-modified>1529297533338</last-modified>
+                  <last-modified>1536657892184</last-modified>
                   <toolbarid>Classes</toolbarid>
                  </MDiagram>
                 </base-MDiagram>

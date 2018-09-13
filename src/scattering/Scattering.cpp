@@ -112,7 +112,7 @@ void Scattering::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
 {
 //	m_particle->Rotate(beta, gamma, 0);
 
-//	for (unsigned int i = 0; i < tracks.size(); ++i)
+//	for (int i = 0; i < tracks.size(); ++i)
 //	{
 //		int facetId = tracks.at(i).at(0);
 //		const Point3f &extNormal = m_facets[facetId].ex_normal;
@@ -134,11 +134,11 @@ void Scattering::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
 //			outBuff.push_back(outBeam);
 //		}
 
-//		unsigned int size = tracks.at(i).size();
+//		int size = tracks.at(i).size();
 
 //		try // internal beams
 //		{
-//			for (unsigned int j = 1; j < size; ++j)
+//			for (int j = 1; j < size; ++j)
 //			{
 //				facetId = tracks.at(i).at(j);
 
@@ -309,7 +309,8 @@ bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Vector3f &dir
 }
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
-void Scattering::Intersect(Facet *facet, const Beam &beam, Polygon &intersection) const
+bool Scattering::IncidentBeamToFacet(Facet *facet, const Beam &beam,
+									 Polygon &intersection) const
 {
 	__m128 _output_points[MAX_VERTEX_NUM];
 	// REF: перенести в случай невыпуклых частиц
@@ -321,7 +322,7 @@ void Scattering::Intersect(Facet *facet, const Beam &beam, Polygon &intersection
 										   _output_points);
 	if (!isProjected)
 	{
-		return;
+		return false;
 	}
 
 	__m128 _normal_to_facet = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
@@ -394,6 +395,7 @@ void Scattering::Intersect(Facet *facet, const Beam &beam, Polygon &intersection
 	}
 
 	SetOutputPolygon(_output_ptr, outputSize, intersection);
+	return intersection.nVertices >= MIN_VERTEX_NUM;
 }
 
 void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,

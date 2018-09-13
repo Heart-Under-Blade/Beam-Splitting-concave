@@ -153,7 +153,7 @@ void Tracer::SetHandler(Handler *handler)
 
 void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Conus &bsCone, int groupID)
 {
-//	for (unsigned int i = 0; i < outBeams.size(); ++i)
+//	for (int i = 0; i < outBeams.size(); ++i)
 //	{
 //		Beam &beam = outBeams.at(i);
 
