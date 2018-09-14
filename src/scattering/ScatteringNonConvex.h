@@ -29,9 +29,6 @@ private:
 	void SelectVisibleFacets(const Beam &beam, Array<Facet *> &facets);
 	void SelectVisibleFacetsForLight(Array<Facet*> &facetIDs);
 
-	bool SetOpticalBeamParams(Facet *facet, const Beam &incidentBeam,
-							  Beam &inBeam, Beam &outBeam);
-
 	void IntersectWithFacet(const Array<Facet*> &facets, int nCheckedFacets,
 							PolygonArray &resFacets);
 
@@ -43,8 +40,7 @@ private:
 
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
 
-	void PushBeamsToTree(Facet *facet, const PolygonArray &polygons,
-						 Beam &inBeam, Beam &outBeam);
+	void PushBeamsToTree(Facet *facet, const PolygonArray &polygons);
 
 	bool IsVisibleFacet(Facet *facet, const Beam &beam);
 
@@ -64,9 +60,6 @@ private:
 	void PushBeamPartsToTree(const Beam &beam,
 							 const PolygonArray &parts);
 
-	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
-						const IdType &newId, Facet *facet,
-						Location loc);
 
 protected:
 	void ScatterBeams(std::vector<Beam> &scaterredBeams);

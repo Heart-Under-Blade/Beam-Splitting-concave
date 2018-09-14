@@ -8,11 +8,17 @@
 
 #include <float.h>
 
+#include "RegularIncidence.h"
+#include "NormalIncidence.h"
+#include "CompleteReflectionIncidence.h"
+
 //#define MAX_BEAM_REFL_NUM 32768
 #define MAX_BEAM_REFL_NUM 65536
 //#define MAX_BEAM_REFL_NUM 1048576
 
 #define EPS_M_COS_90	-1.7453292519943295769148298069306e-10	//cos(89.99999999)
+
+class Incidence;
 
 /**
  * @brief The BeamTree struct
@@ -54,6 +60,11 @@ protected:
 
 	const double EPS_BEAM_ENERGY = 2e-12;
 
+	// incidences
+	RegularIncidence				m_regularIncidence;
+	NormalIncidence					m_normalIncidence;
+	CompleteReflectionIncidence		m_completeReflectionIncidence;
+
 public:
 	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 			   int nActs);
@@ -72,7 +83,11 @@ public:
 	Particle *GetParticle() const;
 
 protected:
-	void SetIncidentBeamOpticalParams(Facet *facet, Beam &inBeam, Beam &outBeam);
+	void ComputeOpticalParams(const Incidence &incidence,
+							  const Beam &incidentBeam, Splitting &splitter);
+
+	void SetIncidentBeamOpticalParams(Facet *facet);
+	bool SetOpticalBeamParams(Facet *facet, const Beam &incidentBeam);
 
 	void Difference(const Polygon &subject, const Vector3f &subjNormal,
 					const Polygon &clip, const Vector3f &clipNormal,
@@ -85,7 +100,7 @@ protected:
 
 	bool IsTerminalAct(const Beam &beam);
 
-	void SplitLightToBeams(Facet *facet, Beam &inBeam, Beam &outBeam);
+	void SplitLightToBeams(Facet *facet);
 
 	void ComputePolarisationParams(const Vector3f &dir,
 								   const Vector3f &facetNormal, Beam &beam);
@@ -93,9 +108,11 @@ protected:
 	void ComputeFacetEnergy(const Vector3f &facetNormal,
 							const Polygon &lightedPolygon);
 
-
 	void PushBeamToTree(Beam &beam, Facet *facet, int level, Location location);
 
+	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
+						const IdType &newId, Facet *facet,
+						Location loc);
 
 	IdType RecomputeTrackId(const IdType &oldId, int facetId);
 

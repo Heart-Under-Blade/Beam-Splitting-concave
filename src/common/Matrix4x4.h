@@ -14,8 +14,8 @@ public:
 	Matrix4x4d operator - (const Matrix4x4d &other) const;
 	void operator +=(const Matrix4x4d &other);
 	void operator *=(double value);
-	double operator ()(int int i, int int j) const;
-	double &operator () (int int i, int int j);
+	double operator ()(int i, int j) const;
+	double &operator () (int i, int j);
 
 	friend std::ofstream& operator << (std::ofstream &out, const Matrix4x4d &m);
 

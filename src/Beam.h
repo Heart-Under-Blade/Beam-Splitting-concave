@@ -7,6 +7,7 @@
 #include "BigInteger.hh"
 #include "geometry_lib.h"
 #include "Facet.h"
+#include "Tracks.h"
 
 class Light
 {
@@ -18,11 +19,7 @@ public:
 class Track
 {
 public:
-#ifdef _DEBUG // DEB
-	long long id = 0;
-#else
-	BigInteger id = 0;
-#endif
+	IdType id = 0;
 	int locations;		///< each bit of variable represents location of beam after an r/r act from left to right
 						///< "0" when beam location is "inside" and "1" if it's "outside"
 
@@ -58,6 +55,7 @@ public:
 	void SetPolygon(const Polygon &other);
 	void SetLight(const Vector3f &dir, const Vector3f &polarBasis);
 	void SetLight(const Light &other);
+	void Clear();
 	void AddOpticalPath(double path);
 	void CopyTrack(const Track &other);
 
@@ -68,7 +66,7 @@ public:
 
 	void SetTracingParams(Facet *fac, int act, Location location);
 
-	void MultiplyJonesMatrix(const complex &c1, const complex &c2);
+	void MultiplyJonesMatrix(const complex &f1, const complex &f2);
 	void RotateJMatrix(const Vector3f &newBasis);
 
 	// REF: перенести в PhisBeam

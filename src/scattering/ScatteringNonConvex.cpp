@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <iostream>
 
+#include "Incidence.h"
 #include "BigIntegerLibrary.hh"
 
 //#ifdef _DEBUG // DEB
@@ -32,19 +33,18 @@ void ScatteringNonConvex::ScatterLight(std::vector<Beam> &scaterredBeams)
 	ScatterBeams(scaterredBeams);
 }
 
-void ScatteringNonConvex::PushBeamsToTree(Facet *facet, const PolygonArray &polygons,
-										  Beam &inBeam, Beam &outBeam)
+void ScatteringNonConvex::PushBeamsToTree(Facet *facet, const PolygonArray &polygons)
 {
 	auto id = RecomputeTrackId(0, facet->index);
-	inBeam.SetTracingParams(facet, 0, Location::In);
-	outBeam.SetTracingParams(facet, 0, Location::Out);
-	inBeam.id = id;
-	outBeam.id = id;
+	m_splitting.inBeam.SetTracingParams(facet, 0, Location::In);
+	m_splitting.outBeam.SetTracingParams(facet, 0, Location::Out);
+	m_splitting.inBeam.id = id;
+	m_splitting.outBeam.id = id;
 
 	for (int j = 0; j < polygons.size; ++j)
 	{
-		Beam in = inBeam;
-		Beam out = outBeam;
+		Beam in = m_splitting.inBeam;
+		Beam out = m_splitting.outBeam;
 		const Polygon &pol = polygons.arr[j];
 		in = pol;
 		out = pol;
@@ -84,9 +84,9 @@ void ScatteringNonConvex::SplitByFacet(const Array<Facet*> &facets, int nChecked
 	{
 		Facet *facet = facets.elems[nCheckedFacets];
 
-		Beam inBeam, outBeam;
-		SetIncidentBeamOpticalParams(facet, inBeam, outBeam);
-		PushBeamsToTree(facet, resPolygons, inBeam, outBeam);
+		m_splitting.SetBeams(Polygon());
+		SetIncidentBeamOpticalParams(facet);
+		PushBeamsToTree(facet, resPolygons);
 	}
 }
 
@@ -393,70 +393,6 @@ void ScatteringNonConvex::ScatterBeams(std::vector<Beam> &scaterredBeams)
 	}
 }
 
-bool ScatteringNonConvex::SetOpticalBeamParams(Facet *facet, const Beam &incidentBeam,
-											   Beam &inBeam, Beam &outBeam)
-{
-	const Point3f &dir = incidentBeam.direction;
-	const Point3f &normal = facet->ex_normal;
-
-	bool hasOutBeam = true;
-	m_splitting.ComputeCosA(dir, normal);
-
-	if (m_splitting.IsNormalIncidence()) // normal incidence
-	{
-		m_splitting.ComputeNormalBeamParams(incidentBeam, inBeam, outBeam);
-	}
-	else // regular incidence
-	{
-		Beam incBeam = incidentBeam;
-
-		if (incidentBeam.location == Location::In)
-		{
-			m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
-			ComputePolarisationParams(incidentBeam.direction, normal, incBeam);
-//			incBeam.direction = -incBeam.direction;
-
-			hasOutBeam = !m_splitting.IsCompleteReflection();
-
-			if (hasOutBeam)
-			{
-				m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
-													  inBeam, outBeam);
-			}
-			else // complete internal reflection incidence
-			{
-				m_splitting.ComputeCRBeamParams(normal, incidentBeam, inBeam);
-			}
-		}
-		else // beam is external
-		{
-			inBeam.J = incidentBeam.J;
-			m_splitting.ComputeCosA(dir, -normal);
-
-			const Point3f &facetNormal = facet->in_normal;
-			ComputePolarisationParams(-incBeam.direction, facetNormal, incBeam);
-			m_splitting.ComputeRegularBeamParamsExternal(facetNormal, incBeam,
-														 inBeam, outBeam);
-//			if (m_isOpticalPath)
-			{
-				double path = m_splitting.ComputeSegmentOpticalPath(incidentBeam,
-																	inBeam.Center());
-#ifdef _DEBUG // DEB
-	inBeam.ops = incidentBeam.ops;
-	outBeam.ops = incidentBeam.ops;
-	inBeam.ops.push_back(path);
-	outBeam.ops.push_back(path);
-#endif
-				path += incidentBeam.opticalPath;
-				inBeam.AddOpticalPath(path);
-				outBeam.AddOpticalPath(path);
-			}
-		}
-	}
-
-	return hasOutBeam;
-}
-
 void ScatteringNonConvex::FindVisibleFacetsForLight(Array<Facet*> &facets)
 {
 	for (int i = 0; i < m_particle->nElems; ++i)
@@ -637,18 +573,6 @@ void ScatteringNonConvex::PushBeamPartsToTree(const Beam &beam,
 	}
 }
 
-void ScatteringNonConvex::PushBeamToTree(Beam &beam, const Beam &oldBeam,
-										 const IdType &newId, Facet *facet,
-										 Location loc)
-{
-	beam.id = newId;
-	beam.locations = oldBeam.locations;
-#ifdef _DEBUG // DEB
-	beam.dirs = oldBeam.dirs;
-#endif
-	Scattering::PushBeamToTree(beam, facet, oldBeam.nActs+1, loc);
-}
-
 bool ScatteringNonConvex::FindRestOfBeamShape(Facet *facet, Beam &beam)
 {
 	m_polygonBuffer.Clear();
@@ -665,6 +589,8 @@ bool ScatteringNonConvex::FindRestOfBeamShape(Facet *facet, Beam &beam)
 	{
 		beam = m_polygonBuffer.arr[0];
 	}
+
+	return isDivided;
 }
 
 bool ScatteringNonConvex::SplitBeamByVisibleFacets(const Array<Facet*> &facets, Beam &beam)
@@ -680,24 +606,23 @@ bool ScatteringNonConvex::SplitBeamByVisibleFacets(const Array<Facet*> &facets, 
 
 		if (isIntersected)
 		{
-			Beam inBeam, outBeam;
-			inBeam.SetPolygon(beamShape);
-			outBeam.SetPolygon(beamShape);
+			m_splitting.ComputeCosA(facet->ex_normal, beam.direction);
+			m_splitting.SetBeams(beamShape);
 #ifdef _DEBUG // DEB
 			inBeam.pols = beam.pols;
 			inBeam.pols.push_back(beamShape);
 			outBeam.pols = beam.pols;
 			outBeam.pols.push_back(beamShape);
 #endif
-			bool hasOutBeam = SetOpticalBeamParams(facet, beam, inBeam, outBeam);
+			bool hasOutBeam = SetOpticalBeamParams(facet, beam);
 			auto newId = RecomputeTrackId(beam.id, facet->index);
 
 			if (hasOutBeam)
 			{
-				PushBeamToTree(outBeam, beam, newId, facet, Location::Out);
+				PushBeamToTree(m_splitting.outBeam, beam, newId, facet, Location::Out);
 			}
 
-			PushBeamToTree(inBeam, beam, newId, facet, Location::In);
+			PushBeamToTree(m_splitting.inBeam, beam, newId, facet, Location::In);
 			isDivided = FindRestOfBeamShape(facet, beam);
 		}
 	}

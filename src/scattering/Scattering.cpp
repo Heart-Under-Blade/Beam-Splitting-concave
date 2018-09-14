@@ -30,7 +30,7 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 }
 
 // REF: перенести в Tracks
-IdType Scattering::Scattering::RecomputeTrackId(const IdType &oldId, int facetId)
+IdType Scattering::RecomputeTrackId(const IdType &oldId, int facetId)
 {
 	return (oldId + (facetId + 1)) * (m_particle->nElems + 1);
 }
@@ -44,28 +44,81 @@ void Scattering::PushBeamToTree(Beam &beam, Facet *facet, int level, Location lo
 	m_propagatingBeams[m_treeSize++] = beam;
 }
 
-void Scattering::SetIncidentBeamOpticalParams(Facet *facet,
-											  Beam &inBeam, Beam &outBeam)
+void Scattering::SetIncidentBeamOpticalParams(Facet *facet)
 {
 	const Point3f &normal = facet->in_normal;
 	m_splitting.ComputeCosA(m_incidentDir, normal);
 
-	if (!m_splitting.IsNormalIncidence()) // regular incidence
+	Beam fakeIncidentBeam;
+	fakeIncidentBeam.SetLight(*m_incidentLight);
+	fakeIncidentBeam.location = Location::Out;
+
+	if (m_splitting.IsNormalIncidence())
 	{
-		Beam fakeIncidentBeam;
-		fakeIncidentBeam.SetLight(*m_incidentLight);
+		ComputeOpticalParams(m_normalIncidence, fakeIncidentBeam, m_splitting);
+	}
+	else // regular incidence
+	{
 		const Point3f &facetNormal = facet->in_normal;
 		ComputePolarisationParams(-fakeIncidentBeam.direction, facetNormal,
 								  fakeIncidentBeam);
-		m_splitting.ComputeRegularBeamParamsExternal(facetNormal,
-													 fakeIncidentBeam,
-													 inBeam, outBeam);
+		m_splitting.SetNormal(facetNormal);
+		ComputeOpticalParams(m_regularIncidence, fakeIncidentBeam, m_splitting);
 	}
-	else // normal incidence
+}
+
+bool Scattering::SetOpticalBeamParams(Facet *facet, const Beam &incidentBeam)
+{
+	const Point3f &dir = incidentBeam.direction;
+	const Point3f &normal = facet->ex_normal;
+
+	bool hasOutBeam = true;
+
+	if (m_splitting.IsNormalIncidence()) // normal incidence
 	{
-		m_splitting.ComputeNormalBeamParamsExternal(*m_incidentLight,
-													inBeam, outBeam);
+		ComputeOpticalParams(m_normalIncidence, incidentBeam, m_splitting);
 	}
+	else // regular incidence
+	{
+		Beam incBeam = incidentBeam;
+
+		m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
+		ComputePolarisationParams(incidentBeam.direction, normal, incBeam);
+
+		hasOutBeam = !m_splitting.IsCompleteReflection();
+
+		if (hasOutBeam)
+		{
+			if (incidentBeam.location == Location::In)
+			{
+				m_splitting.SetNormal(normal);
+				ComputeOpticalParams(m_regularIncidence, incidentBeam, m_splitting);
+			}
+			else // beam is external
+			{
+				m_splitting.ComputeCosA(-normal, dir);
+
+				ComputePolarisationParams(-incBeam.direction, facet->in_normal, incBeam);
+				m_splitting.SetNormal(facet->in_normal);
+				ComputeOpticalParams(m_regularIncidence, incBeam, m_splitting);
+			}
+		}
+		else // complete internal reflection incidence
+		{
+			m_splitting.SetNormal(normal);
+			ComputeOpticalParams(m_completeReflectionIncidence, incidentBeam, m_splitting);
+		}
+	}
+
+	return hasOutBeam;
+}
+
+void Scattering::ComputeOpticalParams(const Incidence &incidence,
+									  const Beam &incidentBeam, Splitting &splitter)
+{
+	incidence.ComputeLightParams(incidentBeam, splitter);
+	incidence.ComputeJonesMatrices(incidentBeam, splitter);
+	incidence.ComputeOpticalPaths(incidentBeam, splitter);
 }
 
 void Scattering::ComputePolarisationParams(const Vector3f &dir,
@@ -77,21 +130,10 @@ void Scattering::ComputePolarisationParams(const Vector3f &dir,
 	beam.polarizationBasis = newBasis;
 }
 
-void Scattering::SplitLightToBeams(Facet *facet, Beam &inBeam, Beam &outBeam)
+void Scattering::SplitLightToBeams(Facet *facet)
 {
-	SetPolygonByFacet(facet, inBeam); // REF: try to exchange this to inBeam = m_facets[facetId]
-	SetPolygonByFacet(facet, outBeam);
-	SetIncidentBeamOpticalParams(facet, inBeam, outBeam);
-
-//	if (m_isOpticalPath)
-	{
-		Point3f p = inBeam.Center();
-		double path = m_splitting.ComputeIncidentOpticalPath(m_incidentDir, p);
-		inBeam.opticalPath = 0;
-		outBeam.opticalPath = 0;
-		inBeam.AddOpticalPath(path);
-		outBeam.AddOpticalPath(path);
-	}
+	m_splitting.SetBeams(*facet);
+	SetIncidentBeamOpticalParams(facet);
 }
 
 Particle *Scattering::GetParticle() const
@@ -104,6 +146,18 @@ void Scattering::ComputeFacetEnergy(const Vector3f &facetNormal,
 {
 	double cosA = DotProduct(m_incidentDir, facetNormal);
 	m_incidentEnergy += lightedPolygon.Area() * cosA;
+}
+
+void Scattering::PushBeamToTree(Beam &beam, const Beam &oldBeam,
+								const IdType &newId, Facet *facet,
+								Location loc)
+{
+	beam.id = newId;
+	beam.locations = oldBeam.locations;
+#ifdef _DEBUG // DEB
+	beam.dirs = oldBeam.dirs;
+#endif
+	PushBeamToTree(beam, facet, oldBeam.nActs+1, loc);
 }
 
 // TODO: пофиксить

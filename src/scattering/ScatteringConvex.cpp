@@ -22,21 +22,21 @@ void ScatteringConvex::ScatterLight(std::vector<Beam> &outBeams)
 			continue;
 		}
 
-		Beam inBeam, outBeam;
-		SplitLightToBeams(facet, inBeam, outBeam);
+		SplitLightToBeams(facet);
 
 		auto newId = RecomputeTrackId(0, facet->index);
 
-		outBeam.id = newId;
-		outBeam.facet = facet;
-		outBeam.nActs = 0;
-		outBeams.push_back(outBeam);
+		m_splitting.outBeam.id = newId;
+		m_splitting.outBeam.facet = facet;
+		m_splitting.outBeam.nActs = 0;
+		m_splitting.outBeam.location = Location::Out;
+		outBeams.push_back(m_splitting.outBeam);
 
-		inBeam.id = newId;
-		PushBeamToTree(inBeam, facet, 0, Location::In);
+		m_splitting.inBeam.id = newId;
+		PushBeamToTree(m_splitting.inBeam, facet, 0, Location::In);
 
 #ifdef _CHECK_ENERGY_BALANCE
-		ComputeFacetEnergy(facet->in_normal, outBeam);
+		ComputeFacetEnergy(facet->in_normal, m_splitting.outBeam);
 #endif
 	}
 
@@ -68,76 +68,42 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 				continue;
 			}
 
-			Beam inBeam;
-			bool isIncident = SplitSecondaryBeams(beam, facet, inBeam, outBeams);
-
-			if (!isIncident)
-			{
-				continue;
-			}
-
-			inBeam.id = RecomputeTrackId(beam.id, i);
-			inBeam.locations = beam.locations;
-			PushBeamToTree(inBeam, facet, beam.nActs+1, Location::In);
+			SplitSecondaryBeams(beam, facet, outBeams);
 		}
 	}
 }
 
-bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
-										   Beam &inBeam, std::vector<Beam> &outBeams)
+void ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
+										   std::vector<Beam> &outBeams)
 {
-	Beam outBeam;
-	const Point3f &incidentDir = incidentBeam.direction;
-
 	// ext. normal uses in this calculating
-	const Point3f &normal = facet->ex_normal;
-	m_splitting.ComputeCosA(normal, incidentDir);
+	m_splitting.ComputeCosA(facet->ex_normal, incidentBeam.direction);
 
 	if (!m_splitting.IsIncident())
 	{
-		return false;
+		return;
 	}
 
-	IncidentBeamToFacet(facet, incidentBeam, outBeam);
+	Polygon beamShape;
+	bool isIntersected = IncidentBeamToFacet(facet, incidentBeam, beamShape);
 
-	if (outBeam.nVertices < MIN_VERTEX_NUM)
+	if (isIntersected)
 	{
-		return false;
-	}
+		m_splitting.SetBeams(beamShape);
 
-	inBeam = outBeam;
-	m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
+		bool hasOutBeam = SetOpticalBeamParams(facet, incidentBeam);
+		auto newId = RecomputeTrackId(incidentBeam.id, facet->index);
 
-	if (!m_splitting.IsNormalIncidence())
-	{	// regular incidence
-		ComputePolarisationParams(incidentBeam.direction, normal, incidentBeam);
-
-		if (!m_splitting.IsCompleteReflection())
+		if (hasOutBeam)
 		{
-			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
-												  inBeam, outBeam);
-			outBeam.nActs = incidentBeam.nActs + 1;
-			outBeam.id = RecomputeTrackId(incidentBeam.id, facet->index);
-			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
-			outBeam.facet = facet;
-			outBeams.push_back(outBeam);
+			m_splitting.outBeam.nActs = incidentBeam.nActs + 1;
+			m_splitting.outBeam.id = newId;
+			m_splitting.outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(m_splitting.outBeam); // добираем оптический путь
+			m_splitting.outBeam.facet = facet;
+			m_splitting.outBeam.location = Location::Out;
+			outBeams.push_back(m_splitting.outBeam);
 		}
-		else // complete internal reflection incidence
-		{
-			m_splitting.ComputeCRBeamParams(normal, incidentBeam, inBeam);
-		}
-	}
-	else
-	{	// normal incidence
-		m_splitting.ComputeNormalBeamParams(incidentBeam, inBeam, outBeam);
 
-		outBeam.nActs = incidentBeam.nActs + 1;
-		outBeam.id = RecomputeTrackId(incidentBeam.id, facet->index);
-		double path = m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
-		outBeam.opticalPath += path;
-		outBeam.facet = facet;
-		outBeams.push_back(outBeam);
+		PushBeamToTree(m_splitting.inBeam, incidentBeam, newId, facet, Location::In);
 	}
-
-	return true;
 }

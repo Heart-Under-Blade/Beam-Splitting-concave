@@ -223,12 +223,12 @@ void Beam::SetTracingParams(Facet *fac, int act, Location loc)
 	}
 }
 
-void Beam::MultiplyJonesMatrix(const complex &c1, const complex &c2)
+void Beam::MultiplyJonesMatrix(const complex &f1, const complex &f2)
 {
-	J.m11 *= c1;
-	J.m12 *= c1;
-	J.m21 *= c2;
-	J.m22 *= c2;
+	J.m11 *= f1;
+	J.m12 *= f1;
+	J.m21 *= f2;
+	J.m22 *= f2;
 }
 
 complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
@@ -444,6 +444,13 @@ void Beam::SetLight(const Light &other)
 {
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
+}
+
+void Beam::Clear()
+{
+	locations = 0;
+	opticalPath = 0;
+	polarizationBasis = Vector3f(0, 1, 0);
 }
 
 void Beam::AddOpticalPath(double path)

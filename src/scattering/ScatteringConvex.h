@@ -14,6 +14,6 @@ public:
 
 protected:
 	void TraceInternalBeams(std::vector<Beam> &outBeams);
-	bool SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
-							 Beam &inBeam, std::vector<Beam> &outBeams);
+	void SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
+							 std::vector<Beam> &outBeams);
 };

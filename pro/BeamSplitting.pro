@@ -27,6 +27,7 @@ INCLUDEPATH += \
 	../src/geometry \
 	../src/scattering \
     ../src/tracer \
+    ../src/incidence \
 	../src/bigint
 
 SOURCES += \
@@ -36,6 +37,7 @@ SOURCES += \
 	../src/geometry/*.cpp \
 	../src/common/*.cpp \
 	../src/scattering/*.cpp \
+    ../src/incidence/*.cpp \
     ../src/bigint/*.cc
 
 HEADERS += \
@@ -46,6 +48,7 @@ HEADERS += \
 	../src/geometry/*.h \
 	../src/common/*.h \
 	../src/scattering/*.h \
+    ../src/incidence/*.h \
     ../src/bigint/*.hh
 
 DISTFILES += \

@@ -42,6 +42,20 @@ bool Splitting::IsIncident()
 	return cosA >= EPS_COS_90;
 }
 
+void Splitting::SetBeams(const Polygon &beamShape)
+{
+	inBeam.Clear();
+	inBeam.SetPolygon(beamShape);
+
+	outBeam.Clear();
+	outBeam.SetPolygon(beamShape);
+}
+
+void Splitting::SetNormal(const Point3f &normal)
+{
+	m_normal = normal;
+}
+
 double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &facetPoint) const
 {
 	double tmp = DotProductD(beam.direction, facetPoint);
@@ -71,68 +85,6 @@ double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &fac
 	return path;
 }
 
-// REF: создать отдельные классы RegularSplitting, CRSplitting, NormalSplitting
-
-void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentBeam,
-									Beam &inBeam)
-{
-	Point3f reflDir = r - normal;
-	Normalize(reflDir);
-	inBeam.SetLight(reflDir, incidentBeam.polarizationBasis);
-
-	complex cv, ch;
-	ComputeCRJonesParams(cv, ch);
-
-	inBeam.J = incidentBeam.J;
-	inBeam.MultiplyJonesMatrix(cv, ch);
-
-	if (m_isOpticalPath)
-	{
-		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
-#ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
-#endif
-		path += incidentBeam.opticalPath;
-		inBeam.AddOpticalPath(path);
-	}
-}
-
-void Splitting::ComputeRegularJonesParams(const Point3f &normal, const Beam &incidentBeam,
-										  Beam &inBeam, Beam &outBeam)
-{
-	inBeam.J = incidentBeam.J;
-	outBeam.J = incidentBeam.J;
-
-	double cosG = DotProduct(normal, outBeam.direction);
-
-	complex tmp0 = m_ri * cosA;
-	complex tmp1 = m_ri * cosG;
-
-	complex Tv0 = tmp1 + cosA;
-	complex Th0 = tmp0 + cosG;
-
-	complex tmp = 2.0 * tmp0;
-	outBeam.MultiplyJonesMatrix(tmp/Tv0, tmp/Th0);
-
-	complex Tv = cosA - tmp1;
-	complex Th = tmp0 - cosG;
-	inBeam.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
-}
-
-void Splitting::ComputeCRJonesParams(complex &cv, complex &ch)
-{
-	const double bf = reRiEff*(1.0 - cosA*cosA) - 1.0;
-	double im = (bf > 0) ? sqrt(bf) : 0;
-
-	const complex sq(0, im);
-	complex tmp0 = m_ri * cosA;
-	complex tmp1 = m_ri * sq;
-
-	cv = (cosA - tmp1)/(tmp1 + cosA);
-	ch = (tmp0 - sq)/(tmp0 + sq);
-}
-
 void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
 												   const Vector3f &normal,
 												   Vector3f &dir)
@@ -156,118 +108,6 @@ void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
 void Splitting::ComputeCosA(const Point3f &normal, const Point3f &incidentDir)
 {
 	cosA = DotProduct(normal, incidentDir);
-}
-
-void Splitting::ComputeRegularBeamsParams(const Point3f &normal,
-										  const Beam &incidentBeam,
-										  Beam &inBeam, Beam &outBeam)
-{
-	Point3f reflDir = r - normal;
-	Normalize(reflDir);
-	inBeam.SetLight(reflDir, incidentBeam.polarizationBasis);
-
-	Point3f refrDir = r/sqrt(s) + normal;
-	Normalize(refrDir);
-	outBeam.SetLight(refrDir, incidentBeam.polarizationBasis);
-
-	ComputeRegularJonesParams(normal, incidentBeam, inBeam, outBeam);
-
-	if (m_isOpticalPath)
-	{
-		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
-#ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		outBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
-		outBeam.ops.push_back(path);
-#endif
-		path += incidentBeam.opticalPath;
-		inBeam.AddOpticalPath(path);
-		outBeam.AddOpticalPath(path);
-	}
-}
-
-void Splitting::ComputeNormalBeamParams(const Beam &incidentBeam,
-										Beam &inBeam, Beam &outBeam)
-{
-	const Point3f &dir = incidentBeam.direction;
-	inBeam.SetLight(-dir, incidentBeam.polarizationBasis);
-	outBeam.SetLight(dir, incidentBeam.polarizationBasis);
-
-	inBeam.J = incidentBeam.J;
-	outBeam.J = incidentBeam.J;
-
-	complex temp;
-
-	temp = (2.0 * m_ri)/(1.0 + m_ri); // OPT: вынести целиком
-	outBeam.MultiplyJonesMatrix(temp, temp);
-
-	temp = (1.0 - m_ri)/(1.0 + m_ri); // OPT: вынести целиком
-	inBeam.MultiplyJonesMatrix(temp, -temp);
-
-	if (m_isOpticalPath)
-	{
-		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
-		path += incidentBeam.opticalPath;
-#ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
-		outBeam.ops = incidentBeam.ops;
-		outBeam.ops.push_back(path);
-#endif
-		inBeam.AddOpticalPath(path);
-		outBeam.AddOpticalPath(path);
-	}
-}
-
-void Splitting::ComputeNormalBeamParamsExternal(const Light &incidentLight,
-												Beam &inBeam, Beam &outBeam)
-{
-	inBeam.SetLight(incidentLight);
-	outBeam.SetLight(-incidentLight.direction, incidentLight.polarizationBasis);
-
-	inBeam.J.m11 = 2.0/(m_ri + 1.0); // OPT: вынести
-	inBeam.J.m22 = inBeam.J.m11;
-
-	outBeam.J.m11 = (m_ri - 1.0)/(m_ri + 1.0);
-	outBeam.J.m22 = -outBeam.J.m11;
-}
-
-void Splitting::ComputeRegularBeamParamsExternal(const Point3f &facetNormal,
-												 Beam &incidentBeam,
-												 Beam &inBeam, Beam &outBeam)
-{
-	inBeam.polarizationBasis = incidentBeam.polarizationBasis;
-
-	inBeam.J = incidentBeam.J;
-	outBeam.J = incidentBeam.J;
-
-	Point3f refrDir;
-	const Point3f &dir = incidentBeam.direction;
-
-	Point3f r = dir/cosA - facetNormal;
-
-	refrDir = r - facetNormal;
-	Normalize(refrDir);
-
-	ComputeInternalRefractiveDirection(r, -facetNormal, inBeam.direction);
-
-	outBeam.SetLight(refrDir, incidentBeam.polarizationBasis);
-
-	double cosB = DotProduct(facetNormal, inBeam.direction);
-
-	complex tmp0 = m_ri * cosA;
-	complex tmp1 = m_ri * cosB;
-
-	complex Tv0 = tmp0 + cosB;
-	complex Th0 = tmp1 + cosA;
-
-	complex Tv = tmp0 - cosB;
-	complex Th = cosA - tmp1;
-	outBeam.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
-
-	double cos2A = 2.0*cosA;
-	inBeam.MultiplyJonesMatrix(cos2A/Tv0, cos2A/Th0);
 }
 
 double Splitting::ComputeIncidentOpticalPath(const Point3f &direction,
