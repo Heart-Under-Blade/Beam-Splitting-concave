@@ -51,6 +51,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("p", '+'); // particle (type, size, ...)
 	parser.AddRule("ri", 2); // refractive index (Re and Im parts)
 	parser.AddRule("n", 1); // number of internal reflection
+	parser.AddRule("pf", zero, true); // particle (filename)
 	parser.AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
 	parser.AddRule("random", 2, true); // random orientarion (beta number, gamma number)
 	parser.AddRule("go", 0, true); // geometrical optics method
@@ -143,9 +144,9 @@ int main(int argc, const char* argv[])
 
 	Particle *particle = nullptr;
 
-	if (args.GetArgNumber("p") == 1)
+	if (args.IsCatched("pf"))
 	{
-		std::string filename = args.GetStringValue("pf");
+		std::string filename = args.GetStringValue("p");
 		particle = new Particle();
 		particle->SetFromFile(filename);
 		particle->SetRefractiveIndex(complex(refrIndex));
