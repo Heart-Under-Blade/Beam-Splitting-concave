@@ -31,7 +31,7 @@ void TracingConvex::SplitBeamByParticle(double beta, double gamma, std::vector<B
 		outBeam.level = 0;
 		SetBeamID(outBeam);
 		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.D); // добираем оптический путь
-		outBeam.ops.push_back(fabs(FAR_ZONE_DISTANCE + outBeam.D));
+//		outBeam.ops.push_back(fabs(FAR_ZONE_DISTANCE + outBeam.D));
 		outBeams.push_back(outBeam);
 		PushBeamToTree(inBeam, facetID, 0, Location::In);
 
@@ -77,6 +77,7 @@ void TracingConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 			}
 
 			inBeam.id = beam.id;
+			inBeam.locations = beam.locations;
 			PushBeamToTree(inBeam, facetID, beam.level+1, Location::In);
 		}
 	}

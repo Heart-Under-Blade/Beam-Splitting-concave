@@ -4,7 +4,7 @@
 
 #include "Beam.h"
 
-int Tracks::FindGroupByTrackId(const BigInteger &trackId) const
+int Tracks::FindGroupByTrackId(const IdType &trackId) const
 {
 	for (size_t i = 0; i < size(); ++i)
 	{
@@ -77,7 +77,7 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 			ptr = strtok(NULL, " ");
 		}
 
-		BigInteger trackID = 0;
+		int trackID = 0;
 
 		for (int t : track)
 		{
@@ -118,10 +118,15 @@ void Tracks::RecoverTrack(const Beam &beam, int facetNum,
 	int coef = facetNum + 1;
 	std::vector<int> tmp_track;
 
-	BigInteger tmpId = beam.trackId/coef;
-	for (int i = 0; i <= beam.act; ++i)
+	auto tmpId = beam.id/coef;
+
+	for (int i = 0; i <= beam.nActs; ++i)
 	{
+#ifdef _DEBUG // DEB
+		int tmp = (tmpId%coef);
+#else
 		int tmp = (tmpId%coef).toInt();
+#endif
 		tmpId -= tmp;
 		tmpId /= coef;
 		tmp -= 1;

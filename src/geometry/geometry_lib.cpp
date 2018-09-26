@@ -20,7 +20,6 @@ double DotProductD(const Vector3d &v1, const Vector3d &v2)
 double Norm(const Vector3f &p)
 {
 #ifdef _DEBUG // DEB
-
 	double pp = p.cx * p.cx;
 	pp += p.cy * p.cy;
 	pp += p.cz * p.cz;
@@ -89,6 +88,16 @@ void Normalize(Vector3f &v)
 	v.cx /= lenght;
 	v.cy /= lenght;
 	v.cz /= lenght;
+}
+
+Vector3d NormalizeD(const Vector3d &v)
+{
+	Vector3d res;
+	double lenght = sqrt(NormD(v));
+	res.x = v.x / lenght;
+	res.y = v.y / lenght;
+	res.z = v.z / lenght;
+	return res;
 }
 
 Point3f ProjectPointToPlane(const Point3f &point, const Vector3f &direction,

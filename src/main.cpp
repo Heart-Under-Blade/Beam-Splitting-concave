@@ -67,12 +67,12 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("o", 1, true); // output folder name
 }
 
-Cone SetCone(ArgPP &parser)
+Conus SetCone(ArgPP &parser)
 {
 	double radius = parser.GetDoubleValue("conus", 0);
 	int phiCount = parser.GetDoubleValue("conus", 1);
 	int thetaCount = parser.GetDoubleValue("conus", 2);
-	return Cone(radius, phiCount, thetaCount);
+	return Conus(radius, phiCount, thetaCount);
 }
 
 AngleRange GetRange(const ArgPP &parser, const std::string &key,
@@ -214,7 +214,7 @@ int main(int argc, const char* argv[])
 	{
 		if (args.IsCatched("fixed"))
 		{
-			Cone bsCone = SetCone(args);
+			Conus bsCone = SetCone(args);
 
 			double beta  = args.GetDoubleValue("fixed", 0);
 			double gamma = args.GetDoubleValue("fixed", 1);
@@ -224,6 +224,7 @@ int main(int argc, const char* argv[])
 			HandlerPO *handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 			handler->SetTracks(&trackGroups);
 			handler->SetScatteringConus(bsCone);
+			handler->SetAbsorbtionAccounting(isAbs);
 
 			tracer.SetIsOutputGroups(isOutputGroups);
 			tracer.SetHandler(handler);
@@ -244,6 +245,7 @@ int main(int argc, const char* argv[])
 				double normIndex = gamma.step/gamma.norm;
 				handler->SetNormIndex(normIndex);
 				handler->SetTracks(&trackGroups);
+				handler->SetAbsorbtionAccounting(isAbs);
 
 				tracer.SetIsOutputGroups(isOutputGroups);
 				tracer.SetHandler(handler);
@@ -251,13 +253,14 @@ int main(int argc, const char* argv[])
 			}
 			else
 			{
-				Cone bsCone = SetCone(args);
+				Conus bsCone = SetCone(args);
 
 				TracerPO tracer(particle, reflNum, dirName);
 
 				handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 				handler->SetTracks(&trackGroups);
 				handler->SetScatteringConus(bsCone);
+				handler->SetAbsorbtionAccounting(isAbs);
 
 				tracer.SetIsOutputGroups(isOutputGroups);
 				tracer.SetHandler(handler);

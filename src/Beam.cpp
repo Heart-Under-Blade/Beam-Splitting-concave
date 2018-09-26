@@ -14,11 +14,9 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 
 	os << Polygon(beam);
 
-	os << "level: " << beam.act << endl
+	os << "level: " << beam.nActs << endl
 	   << "last facet: " << beam.lastFacetId << endl
 	   << "location: " << beam.location << endl
-//	   << "id: " << beam.id << endl
-	   << "D: " << beam.frontPosition << endl
 	   << "direction: "
 	   << beam.direction.cx << ", "
 	   << beam.direction.cy << ", "
@@ -54,21 +52,21 @@ Beam::Beam()
 void Beam::Copy(const Beam &other)
 {
 	opticalPath = other.opticalPath;
-	frontPosition = other.frontPosition;
+	front = other.front;
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
 
 	lastFacetId = other.lastFacetId;
-	act = other.act;
+	nActs = other.nActs;
 	location = other.location;
 	locations = other.locations;
-
 #ifdef _DEBUG // DEB
-	dirs = other.dirs;
+	pols = other.pols;
 	ops = other.ops;
+	dirs = other.dirs;
 #endif
 #ifdef _TRACK_ALLOW
-	trackId = other.trackId;
+	id = other.id;
 #endif
 }
 
@@ -91,9 +89,9 @@ Beam::Beam(Beam &&other)
 	SetDefault(other);
 }
 
-void Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
+Vector3f Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 {
-	Point3f newBasis;
+	Vector3f newBasis;
 	double cs = DotProduct(dir, direction);
 
 	if (fabs(1.0 - cs) <= DBL_EPSILON)
@@ -115,6 +113,7 @@ void Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 	}
 
 	RotateJMatrix(newBasis);
+	return newBasis;
 }
 
 void Beam::GetSpherical(double &fi, double &teta) const
@@ -185,21 +184,17 @@ Beam &Beam::operator = (const Light &other)
 void Beam::SetDefault(Beam &other)
 {
 	other.opticalPath = 0;
-	other.frontPosition = 0;
-	direction = Vector3f(0, 0, 0);
-	polarizationBasis = Vector3f(0, 0, 0);
+	other.front = 0;
+	other.direction = Vector3f(0, 0, 0);
+	other.polarizationBasis = Vector3f(0, 0, 0);
 
 	other.lastFacetId = 0;
-	other.act = 0;
+	other.nActs = 0;
 	other.location = Location::Out;
 	other.locations = 0;
 
-#ifdef _DEBUG // DEB
-other.dirs.clear();
-other.ops.clear();
-#endif
 #ifdef _TRACK_ALLOW
-	other.trackId = 0;
+	other.id = 0;
 #endif
 }
 
@@ -216,26 +211,26 @@ Beam &Beam::operator = (Beam &&other)
 	return *this;
 }
 
-void Beam::SetTracingParams(int facetID, int lvl, Location loc)
+void Beam::SetTracingParams(int facetId, int actN, Location loc)
 {
-	lastFacetId = facetID;
-	act = lvl;
+	lastFacetId = facetId;
+	nActs = actN;
 	location = loc;
 
 	if (loc == Location::Out)
 	{	// write location
 		int loc = 1;
-		loc <<= lvl;
-		locations &= loc;
+		loc <<= nActs;
+		locations |= loc;
 	}
 }
 
-void Beam::SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2)
+void Beam::MultiplyJonesMatrix(const complex &c1, const complex &c2)
 {
-	J.m11 = c1 * other.J.m11;
-	J.m12 = c1 * other.J.m12;
-	J.m21 = c2 * other.J.m21;
-	J.m22 = c2 * other.J.m22;
+	J.m11 *= c1;
+	J.m12 *= c1;
+	J.m21 *= c2;
+	J.m22 *= c2;
 }
 
 complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
@@ -246,7 +241,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	Vector3f _n = Normal();
 
 	int begin, startIndex, endIndex;
-	bool order = (DotProduct(_n, direction) < 0);
+	bool order = !(DotProduct(_n, direction) < 0);
 
 	if (order)
 	{
@@ -389,67 +384,46 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	return one*wavelength*s/SQR(M_2PI);
 }
 
-void Beam::RotatePlane(const Point3f &newBasis)
-{
-	RotateJMatrix(newBasis);
-}
-
-Location Beam::GetLocationByActNumber(int level) const
-{
-	int mask = 1;
-	mask <<= level;
-	return (locations & mask) ? Location::Out : Location::In;
-}
-
-void Beam::RotateJMatrix(const Point3f &newBasis)
+void Beam::RotateJMatrix(const Vector3f &newBasis)
 {
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
 	double cs = DotProduct(newBasis, polarizationBasis);
 
-	if (fabs(1.0 - cs) < eps)
+	if (fabs(1.0 - cs) >= eps)
 	{
-		return;
-	}
-
-	if (fabs(1.0 + cs) < eps)
-	{
-		J.m11 = -J.m11;
-		J.m12 = -J.m12;
-		J.m21 = -J.m21;
-		J.m22 = -J.m22;
-	}
-	else
-	{
-		Point3f k;
-		CrossProduct(polarizationBasis, newBasis, k);
-		Normalize(k);
-
-		double angle = acos(cs);
-
-		Point3f r = k + direction;
-
-		if (Norm(r) <= 0.5)
+		if (fabs(1.0 + cs) < eps)
 		{
-			angle = -angle;
+			J.m11 = -J.m11;
+			J.m12 = -J.m12;
+			J.m21 = -J.m21;
+			J.m22 = -J.m22;
 		}
+		else
+		{
+			Point3f k;
+			CrossProduct(polarizationBasis, newBasis, k);
+			Normalize(k);
 
-		double sn = sin(angle); // the rotation of matrix "m"
+			double angle = acos(cs);
 
-		complex b00 = J.m11*cs + J.m21*sn; // first row of the result
-		complex b01 = J.m12*cs + J.m22*sn;
+			Point3f r = k + direction;
 
-		J.m21 = J.m21*cs - J.m11*sn;
-		J.m22 = J.m22*cs - J.m12*sn;
-		J.m11 = b00;
-		J.m12 = b01;
+			if (Norm(r) <= 0.5)
+			{
+				angle = -angle;
+			}
+
+			double sn = sin(angle); // the rotation of matrix "m"
+
+			complex b00 = J.m11*cs + J.m21*sn; // first row of the result
+			complex b01 = J.m12*cs + J.m22*sn;
+
+			J.m21 = J.m21*cs - J.m11*sn;
+			J.m22 = J.m22*cs - J.m12*sn;
+			J.m11 = b00;
+			J.m12 = b01;
+		}
 	}
-
-	polarizationBasis = newBasis;
-}
-
-void Beam::AddVertex(const Point3f &vertex)
-{
-	arr[size++] = vertex;
 }
 
 void Beam::SetPolygon(const Polygon &other)
@@ -462,13 +436,26 @@ void Beam::SetPolygon(const Polygon &other)
 	}
 }
 
-void Beam::SetLight(const Point3f &dir, const Point3f &polarBasis)
+void Beam::SetLight(const Vector3f &dir, const Vector3f &polarBasis)
 {
 	direction = dir;
 	polarizationBasis = polarBasis;
 }
 
-void Beam::ComputeFrontPosition()
+void Beam::SetLight(const Light &other)
 {
-	frontPosition = DotProduct(-direction, Center());
+	direction = other.direction;
+	polarizationBasis = other.polarizationBasis;
+}
+
+void Beam::AddOpticalPath(double path)
+{
+	opticalPath += path;
+	front = DotProduct(-direction, Center());
+}
+
+void Beam::CopyTrack(const Track &other)
+{
+	id = other.id;
+	locations = other.locations;
 }
