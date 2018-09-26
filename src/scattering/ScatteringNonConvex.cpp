@@ -373,6 +373,10 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 
 		if (!IsTerminalAct(beam)) // REF, OPT: перенести проверку во все места, где пучок закидывается в дерево, чтобы пучки заранее не закидывались в него
 		{
+#ifdef _DEBUG // DEB
+			if (count == 11)
+				int ggg = 0;
+#endif
 			IntArray facetIds;
 			SelectVisibleFacets(beam, facetIds);
 
@@ -399,7 +403,8 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 				double path = m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
 				beam.opticalPath += path;
 #ifdef _DEBUG // DEB
-	beam.ops.push_back(path);
+				if (scaterredBeams.size() == 212)
+					int ggg = 0;
 #endif
 				scaterredBeams.push_back(beam);
 			}
@@ -689,7 +694,10 @@ if (beam.lastFacetId==0 && facetId==6)
 	bool hasOutBeam = SetOpticalBeamParams(facet, beam, inBeam, outBeam);
 
 	auto newId = RecomputeTrackId(beam.id, facetId);
-
+#ifdef _DEBUG // DEB
+	if (newId == 102882210656)
+		int fff = 0;
+#endif
 	if (hasOutBeam)
 	{
 		PushBeamToTree(outBeam, beam, newId, facetId, Location::Out);

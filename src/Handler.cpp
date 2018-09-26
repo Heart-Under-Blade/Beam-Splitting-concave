@@ -348,7 +348,7 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 
 	if (path.internal > DBL_EPSILON)
 	{
-//		OutputPaths(beam, path);
+		OutputPaths(beam, path);
 
 #ifdef _DEBUG // DEB
 		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
@@ -365,6 +365,10 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (size_t i = 0; i < beams.size(); ++i)
 	{
+#ifdef _DEBUG // DEB
+		if (i == 45)
+			int fff = 0;
+#endif
 		Beam &beam = beams[i];
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
