@@ -1,6 +1,12 @@
 #pragma once
 
-#include "geometry_lib.h"
+#include "Point.h"
+#include <iostream>
+
+#define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
+#define MAX_VERTEX_NUM 64		///< maximum number of vertices in polygon
+
+#define MAX_POLYGON_NUM 512		///< maximum number of polygons in array of polygons
 
 /**
  * @brief The Polygon struct

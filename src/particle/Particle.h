@@ -9,47 +9,6 @@
 
 #define ROT_MTR_RANK 3
 
-class Angle
-{
-public:
-	double alpha;
-	double beta;
-	double gamma;
-
-	Angle() {}
-	Angle(double a, double b, double g)
-	{
-		alpha = a;
-		beta = b;
-		gamma = g;
-	}
-
-	void ToRadian()
-	{
-		alpha = DegToRad(alpha);
-		beta = DegToRad(beta);
-		gamma = DegToRad(gamma);
-	}
-
-	void ToDegree()
-	{
-		alpha = RadToDeg(alpha);
-		beta = RadToDeg(beta);
-		gamma = RadToDeg(gamma);
-	}
-
-	static double DegToRad(double deg)
-	{
-		return (deg*M_PI)/180;
-	}
-
-	static double RadToDeg(double rad)
-	{
-		return (rad*180)/M_PI;
-	}
-
-};
-
 struct ParticleFacet
 {
 	Facet origin; // facet with origin coordinates of points

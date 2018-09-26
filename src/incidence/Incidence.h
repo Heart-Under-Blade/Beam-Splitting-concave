@@ -6,11 +6,11 @@ class Splitting;
 class Incidence
 {
 public:
-	virtual void ComputeLightParams(const Beam &incidentBeam,
+    virtual void ComputeLightParams(const Beam &beam,
 									Splitting &splitter) const {};
 
-	virtual void ComputeJonesMatrices(const Beam &incidentBeam,
-									Splitting &splitter) const {};
+    virtual void ComputeJonesMatrices(const Beam &beam,
+                                      Splitting &splitter) const {};
 
-	void ComputeOpticalPaths(const Beam &incidentBeam, Splitting &splitter) const;
+    void ComputeOpticalPaths(const Beam &beam, Splitting &splitter) const;
 };

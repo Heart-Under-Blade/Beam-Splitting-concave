@@ -46,7 +46,7 @@ private:
 
 	void SplitByFacet(const Array<Facet*> &facets, int nCheckedFacets);
 
-	bool SplitBeamByVisibleFacets(const Array<Facet*> &facets, Beam &beam);
+	bool SplitBeamByVisibleFacets(Beam &beam);
 
 	void PushBeamsToBuffer(Facet *facet, const Beam &beam, bool hasOutBeam,
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
@@ -59,7 +59,6 @@ private:
 
 	void PushBeamPartsToTree(const Beam &beam,
 							 const PolygonArray &parts);
-
 
 protected:
 	void ScatterBeams(std::vector<Beam> &scaterredBeams);

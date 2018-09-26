@@ -29,8 +29,8 @@ PO::PO()
 	incidentLight.direction = Point3f(0, 0, -1);
 	incidentLight.polarizationBasis = Point3f(0, 1, 0);
 
-	pt = new BulletRosette(complex(1.3116, 0), 42.04, 100,
-						   (42.04*sqrt(3)*tan(DegToRad(62)))/4);
+	pt = new BulletRosette(complex(1.3116, 0), Size(42.04, 100),
+						   (42.04*sqrt(3)*tan(Angle::DegToRad(62)))/4);
 	sc = new ScatteringNonConvex(pt, &incidentLight, true, 4);
 }
 
@@ -41,10 +41,12 @@ PO::~PO()
 void PO::test_Absorption()
 {
 	Point3f point = incidentLight.direction * pt->GetRotationRadius();
-	incidentLight.direction.d_param = DotProduct(point, incidentLight.direction);
+	incidentLight.direction.d_param = Point3f::DotProduct(point, incidentLight.direction);
 
 	vector<Beam> outBeams;
-	sc->ScatterLight(179.34, 37, outBeams);
+	sc->RotateParticle(Angle(0, Angle::DegToRad(179.34), Angle::DegToRad(37)));
+//	sc->RotateParticle(Angle(0, 179.34, 37));
+	sc->ScatterLight(outBeams);
 
 	pt->Output();
 
@@ -57,21 +59,25 @@ void PO::test_Absorption()
 //	QVERIFY(b.opticalPath <= 20022.8021);
 
 	// absorption
+
+	Tracks tracks(pt->nElems);
+
 	for (unsigned i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams[i];
 
-		if (beam.nActs > 0)
+		if (beam.act > 0)
 		{
 			vector<int> tr;
-			Tracks::RecoverTrack(beam, pt->nFacets, tr);
+			tracks.RecoverTrack(beam, tr);
 
-			double path = sc->ComputeInternalOpticalPath(beam, tr);
+			OpticalPath path = sc->ComputeOpticalPath(beam, beam.Center(), tr);
+			double total = path.GetTotal();
 #ifdef _DEBUG // DEB
-			if (fabs(path - beam.opticalPath) >= 10e-4)
+			if (fabs(total - beam.opticalPath) >= 10e-4)
 				int ggg = 0;
 #endif
-			QVERIFY(fabs(path - beam.opticalPath) < 10e-4);
+			QVERIFY(fabs(total - beam.opticalPath) < 10e-4);
 		}
 	}
 }

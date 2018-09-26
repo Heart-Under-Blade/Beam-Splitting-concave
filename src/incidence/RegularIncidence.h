@@ -8,9 +8,9 @@ class Splitting;
 class RegularIncidence : public Incidence
 {
 public:
-	virtual void ComputeLightParams(const Beam &incidentBeam,
+	virtual void ComputeLightParams(const Beam &beam,
 									Splitting &splitter) const override;
 
-	virtual void ComputeJonesMatrices(const Beam &incidentBeam,
+	virtual void ComputeJonesMatrices(const Beam &beam,
 									  Splitting &splitter) const override;
 };

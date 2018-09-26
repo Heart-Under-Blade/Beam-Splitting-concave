@@ -13,7 +13,7 @@ public:
 					  std::vector<Beam> &) override; ///> for predefined trajectories
 
 protected:
-	void TraceInternalBeams(std::vector<Beam> &outBeams);
-	void SplitSecondaryBeams(Beam &incidentBeam, Facet *facet,
-							 std::vector<Beam> &outBeams);
+	void ScatterBeams(std::vector<Beam> &outBeams);
+	void SplitBeamsByFacet(Beam &beam, Facet *facet,
+						   std::vector<Beam> &outBeams);
 };

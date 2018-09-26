@@ -3,49 +3,47 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void RegularIncidence::ComputeLightParams(const Beam &incidentBeam,
+void RegularIncidence::ComputeLightParams(const Beam &beam,
 										  Splitting &splitter) const
 {
-	if (incidentBeam.location == Location::In)
+	if (beam.isInside)
 	{
 		Point3f reflDir = splitter.r - splitter.m_normal;
-		Normalize(reflDir);
-		splitter.inBeam.SetLight(reflDir, incidentBeam.polarizationBasis);
+		Point3f::Normalize(reflDir);
+		splitter.inBeam.SetLight(reflDir, beam.polarizationBasis);
 
 		Point3f refrDir = splitter.r/sqrt(splitter.s) + splitter.m_normal;
-		Normalize(refrDir);
-		splitter.outBeam.SetLight(refrDir, incidentBeam.polarizationBasis);
+		Point3f::Normalize(refrDir);
+		splitter.outBeam.SetLight(refrDir, beam.polarizationBasis);
 	}
 	else
 	{
-		splitter.inBeam.polarizationBasis = incidentBeam.polarizationBasis;
+		splitter.inBeam.polarizationBasis = beam.polarizationBasis;
 
 		Point3f refrDir;
-		const Point3f &dir = incidentBeam.direction;
+		const Point3f &dir = beam.direction;
 
-		Point3f r = dir/splitter.cosA + splitter.m_normal;
+		splitter.r = dir/splitter.cosA + splitter.m_normal;
 
-		refrDir = r + splitter.m_normal;
-		Normalize(refrDir);
+		refrDir = splitter.r + splitter.m_normal;
+		Point3f::Normalize(refrDir);
 
 		splitter.ComputeInternalRefractiveDirection(splitter.r, splitter.m_normal,
 													splitter.inBeam.direction);
 
-		splitter.outBeam.SetLight(refrDir, incidentBeam.polarizationBasis);
-
+		splitter.outBeam.SetLight(refrDir, beam.polarizationBasis);
 	}
 }
 
-void RegularIncidence::ComputeJonesMatrices(const Beam &incidentBeam,
+void RegularIncidence::ComputeJonesMatrices(const Beam &beam,
 											Splitting &splitter) const
-
 {
-	splitter.inBeam.J = incidentBeam.J;
-	splitter.outBeam.J = incidentBeam.J;
+	splitter.inBeam.J = beam.J;
+	splitter.outBeam.J = beam.J;
 
-	if (incidentBeam.location == Location::In)
+	if (beam.isInside)
 	{
-		double cosG = DotProduct(splitter.m_normal, splitter.outBeam.direction);
+		double cosG = Point3f::DotProduct(splitter.m_normal, splitter.outBeam.direction);
 
 		complex tmp0 = splitter.m_ri * splitter.cosA;
 		complex tmp1 = splitter.m_ri * cosG;
@@ -62,7 +60,7 @@ void RegularIncidence::ComputeJonesMatrices(const Beam &incidentBeam,
 	}
 	else
 	{
-		double cosB = DotProduct(-splitter.m_normal, splitter.inBeam.direction);
+		double cosB = Point3f::DotProduct(-splitter.m_normal, splitter.inBeam.direction);
 
 		complex tmp0 = splitter.m_ri * splitter.cosA;
 		complex tmp1 = splitter.m_ri * cosB;

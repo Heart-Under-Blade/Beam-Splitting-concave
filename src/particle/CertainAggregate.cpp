@@ -1,4 +1,5 @@
 #include "CertainAggregate.h"
+#include "Point.h"
 #include "global.h"
 
 CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)

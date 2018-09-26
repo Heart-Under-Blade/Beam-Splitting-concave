@@ -7,7 +7,7 @@ void CompleteReflectionIncidence::ComputeLightParams(const Beam &incidentBeam,
                                                      Splitting &splitter) const
 {
     Point3f reflDir = splitter.r - splitter.m_normal;
-    Normalize(reflDir);
+	Point3f::Normalize(reflDir);
     splitter.inBeam.SetLight(reflDir, incidentBeam.polarizationBasis);
 }
 
@@ -43,10 +43,10 @@ void CompleteReflectionIncidence::ComputeOpticalPaths(const Beam &incidentBeam,
 		double path = splitter.ComputeSegmentOpticalPath(incidentBeam,
 														 splitter.inBeam.Center());
 		path += incidentBeam.opticalPath;
-	#ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
-	#endif
+#ifdef _DEBUG // DEB
+		splitter.inBeam.ops = incidentBeam.ops;
+		splitter.inBeam.ops.push_back(path);
+#endif
 		path += incidentBeam.opticalPath;
 		splitter.inBeam.AddOpticalPath(path);
 	}

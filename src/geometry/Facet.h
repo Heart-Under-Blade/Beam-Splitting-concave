@@ -2,6 +2,10 @@
 
 #include "Polygon.h"
 
+// short access for normals of Facet
+#define in_normal normal[0]
+#define ex_normal normal[1]
+
 class Facet : public Polygon
 {
 public:

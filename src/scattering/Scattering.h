@@ -3,7 +3,6 @@
 #include "Tracks.h"
 #include "Beam.h"
 #include "Particle.h"
-#include "Intersection.h"
 #include "Splitting.h"
 
 #include <float.h>
@@ -48,13 +47,10 @@ class Scattering
 protected:
 	Particle *m_particle;	///< scattering particle (crystal)
 	Splitting m_splitting;
-	Light *m_incidentLight;
-
-	Vector3f m_incidentDir;
-	Vector3f m_polarBasis;
+	Beam m_originBeam;
 	int m_nActs;
 
-	Beam m_propagatingBeams[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
+	Beam m_tracingBeams[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
 	double m_incidentEnergy;
 
@@ -78,8 +74,6 @@ public:
 
 	OpticalPath ComputeOpticalPath(const Beam &beam, const Point3f &startPoint,
 								   std::vector<int> track);
-//	double CrossSection(const Point3f &beamDir) const;
-
 	Particle *GetParticle() const;
 
 protected:
@@ -87,14 +81,7 @@ protected:
 							  const Beam &incidentBeam, Splitting &splitter);
 
 	void SetIncidentBeamOpticalParams(Facet *facet);
-	bool SetOpticalBeamParams(Facet *facet, const Beam &incidentBeam);
-
-	void Difference(const Polygon &subject, const Vector3f &subjNormal,
-					const Polygon &clip, const Vector3f &clipNormal,
-					const Vector3f &clipDir, PolygonArray &difference) const;
-
-	bool IncidentBeamToFacet(Facet *facet, const Beam& beam,
-							 Polygon &intersection) const;
+	bool SetOpticalBeamParams(Facet *facet, const Beam &beam);
 
 	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;
 
@@ -108,19 +95,10 @@ protected:
 	void ComputeFacetEnergy(const Vector3f &facetNormal,
 							const Polygon &lightedPolygon);
 
-	void PushBeamToTree(Beam &beam, Facet *facet, int level, Location location);
+	void PushBeamToTree(Beam &beam, Facet *facet, int level, bool isIn);
 
 	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
-						const IdType &newId, Facet *facet,
-						Location loc);
+						const IdType &newId, Facet *facet, bool isIn);
 
 	IdType RecomputeTrackId(const IdType &oldId, int facetId);
-
-private:
-	void SetOutputPolygon(__m128 *_output_points, int outputSize,
-						  Polygon &polygon) const;
-
-	bool ProjectToFacetPlane(const Polygon &polygon, const Vector3f &dir,
-							 const Point3f &normal, __m128 *_projection) const;
-
 };

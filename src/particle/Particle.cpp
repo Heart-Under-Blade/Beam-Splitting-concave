@@ -177,7 +177,7 @@ double Particle::GetRotationRadius() const
 		for (int j = 0; j < facet.nVertices; ++j)
 		{
 			Point3f v_len = facet.arr[j] - p0;
-			double len = Length(v_len);
+			double len = Point3f::Length(v_len);
 
 			if (len > radius)
 			{
@@ -317,7 +317,7 @@ void Particle::SetDParams()
 	for (int i = 0; i < nElems; ++i)
 	{
 		Facet &facet = elems[i].actual;
-		double d = DotProduct(facet.arr[0], facet.in_normal);
+		double d = Point3f::DotProduct(facet.arr[0], facet.in_normal);
 		facet.in_normal.d_param = -d;
 	}
 }

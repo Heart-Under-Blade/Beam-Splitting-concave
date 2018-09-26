@@ -93,8 +93,8 @@ double Polygon::Area() const
 	{
 		Point3f p2 = arr[i] - basePoint;
 		Point3f res;
-		CrossProduct(p1, p2, res);
-		square += Length(res);
+		Point3f::CrossProduct(p1, p2, res);
+		square += Point3f::Length(res);
 		p1 = p2;
 	}
 
@@ -128,8 +128,8 @@ Point3f Polygon::Normal() const
 		next  = (first + 1 != nVertices) ? first + 1 : 0;
 		Point3f p1 = arr[first] - arr[start];
 		Point3f p2 = arr[next] - arr[start];
-		CrossProduct(p1, p2, normal);
-		Normalize(normal);
+		Point3f::CrossProduct(p1, p2, normal);
+		Point3f::Normalize(normal);
 		++count;
 	}
 	while (isnan(normal.cx) && count < nVertices);

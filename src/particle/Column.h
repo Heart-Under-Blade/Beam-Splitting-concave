@@ -4,6 +4,8 @@
 
 struct Size
 {
+	Size() {}
+	Size(double d, double h) {diameter = d; height = h;}
 	double diameter;
 	double height;
 };

@@ -6,50 +6,40 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES +=  tst_po.cpp
+SOURCES += tst_po.cpp
 
 QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
 CONFIG(release, debug|release): {
     DEFINES += _NDEBUG
-    TARGET = mbs
+    TARGET = mbs_tst
 }
 
 CONFIG(debug,	debug|release): {
     DEFINES += _DEBUG
-    TARGET = mbs_d
+    TARGET = mbs_tst_d
 }
 
 INCLUDEPATH += \
-    ../../src \
     ../../src/math \
     ../../src/common \
     ../../src/particle \
     ../../src/geometry \
     ../../src/scattering \
     ../../src/tracer \
-    ../../src/bigint
+    ../../src/bigint \
+    ../../src/incidence
 
 SOURCES += \
-    ../../src/Beam.cpp \
-    ../../src/CalcTimer.cpp \
-    ../../src/Handler.cpp \
-    ../../src/ScatteringFiles.cpp \
-    ../../src/Splitting.cpp \
-    ../../src/Tracer.cpp \
-    ../../src/TracerBackScatterPoint.cpp \
-    ../../src/TracerGO.cpp \
-    ../../src/TracerPO.cpp \
-    ../../src/Tracks.cpp \
     ../../src/math/*.cpp \
     ../../src/particle/*.cpp \
     ../../src/geometry/*.cpp \
     ../../src/common/*.cpp \
     ../../src/scattering/*.cpp \
+    ../../src/incidence/*.cpp \
     ../../src/bigint/*.cc
 
-SOURCES -= ../../src/main.cpp
 message($$SOURCES)
 
 HEADERS += \
