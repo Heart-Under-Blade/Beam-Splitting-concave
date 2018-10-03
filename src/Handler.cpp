@@ -204,10 +204,18 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 		{
 			allFile << ' ' << bf[0][0]*norm/(2.0*M_PI*sn)
 					<< ' ' << bf[0][1]/bf[0][0]
+					<< ' ' << bf[0][2]/bf[0][0] // usually = 0
+					<< ' ' << bf[0][3]/bf[0][0] // usually = 0
 					<< ' ' << bf[1][0]/bf[0][0]
 					<< ' ' << bf[1][1]/bf[0][0]
+					<< ' ' << bf[1][2]/bf[0][0] // usually = 0
+					<< ' ' << bf[1][3]/bf[0][0] // usually = 0
+					<< ' ' << bf[2][0]/bf[0][0] // usually = 0
+					<< ' ' << bf[2][1]/bf[0][0] // usually = 0
 					<< ' ' << bf[2][2]/bf[0][0]
 					<< ' ' << bf[2][3]/bf[0][0]
+					<< ' ' << bf[3][0]/bf[0][0] // usually = 0
+					<< ' ' << bf[3][1]/bf[0][0] // usually = 0
 					<< ' ' << bf[3][2]/bf[0][0]
 					<< ' ' << bf[3][3]/bf[0][0];
 		}
