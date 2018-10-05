@@ -76,7 +76,6 @@ void ScatteringNonConvex::PushBeamsToTree(Facet *facet, const PolygonArray &poly
 
 void ScatteringNonConvex::SplitByFacet(const Array<Facet*> &facets, int nCheckedFacets)
 {
-
 	PolygonArray resPolygons;
 	IntersectWithFacet(facets, nCheckedFacets, resPolygons);
 
@@ -380,10 +379,6 @@ void ScatteringNonConvex::ScatterBeams(std::vector<Beam> &scaterredBeams)
 			{	// посылаем обрезанный всеми гранями внешний пучок на сферу
 				double path = m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
 				beam.opticalPath += path;
-#ifdef _DEBUG // DEB
-				if (scaterredBeams.size() == 212)
-					int ggg = 0;
-#endif
 				scaterredBeams.push_back(beam);
 			}
 		}
@@ -435,7 +430,7 @@ void ScatteringNonConvex::FindVisibleFacets(const Beam &beam, Array<Facet*> &fac
 		if (cosFB >= FLT_EPSILON) // beam incidents to this facet
 		{
 			if (IsVisibleFacet(facet, beam))
-			{	// facet is in front of begin of beam
+			{	// facet is in front of beam polygon
 				facets.Add(facet);
 			}
 		}
@@ -589,10 +584,10 @@ bool ScatteringNonConvex::FindRestOfBeamShape(Facet *facet, Beam &beam)
 	return isDivided;
 }
 
-bool ScatteringNonConvex::SplitBeamByVisibleFacets(Beam &beam)
+void ScatteringNonConvex::SplitBeamByVisibleFacets(Beam &beam)
 {
 	Array<Facet*> facets;
-	SelectVisibleFacets(beam, facets); // REF: перенести в функцию ниже
+	SelectVisibleFacets(beam, facets);
 
 	bool isDivided = false;
 
@@ -630,8 +625,6 @@ bool ScatteringNonConvex::SplitBeamByVisibleFacets(Beam &beam)
 			isDivided = FindRestOfBeamShape(facet, beam);
 		}
 	}
-
-	return isDivided;
 }
 
 void ScatteringNonConvex::PushBeamsToBuffer(Facet *facet, const Beam &beam,

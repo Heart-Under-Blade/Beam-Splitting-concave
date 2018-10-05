@@ -9,7 +9,20 @@ public:
 	void ComputeRiParams(const complex &ri);
 
 	void ComputeCosA(const Point3f &normal, const Point3f &incidentDir);
-	void ComputeSplittingParams(const Point3f &dir, const Point3f &normal);
+	void ComputeSplittingParams(const Point3f &dir, const Point3f &normal,
+								bool isInside);
+
+	void ComputeReflectedDirection(Vector3f &dir) const
+	{
+		dir = r - m_normal;
+		Point3f::Normalize(dir); // REF, OPT: нужно ли это нормализовать всегда?
+	}
+
+	void ComputeRefractedDirection(Vector3f &dir) const
+	{
+		dir = r/sqrt(s) + m_normal;
+		Point3f::Normalize(dir); // REF, OPT: нужно ли это нормализовать всегда?
+	}
 
 	bool IsCompleteReflection();
 	bool IsNormalIncidence();
@@ -26,19 +39,12 @@ public:
 	double ComputeSegmentOpticalPath(const Beam &beam,
 									 const Point3f &facetPoint) const;
 
-	Point3f ComputeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
-								bool isIn1, bool isIn2);
-
-	void ComputeInternalRefractiveDirection(const Vector3f &r,
-											const Vector3f &normal, Vector3f &dir);
-
 	complex GetRi() const;
 
 public:
 	Point3f r;
 	double reRiEff;
 	double s;
-//	double cosA;
 	bool m_isOpticalPath;
 
 	complex m_ri;	//  refractive index

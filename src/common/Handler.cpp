@@ -143,9 +143,9 @@ void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 {
 #ifdef _DEBUG // DEB
-	vector<int> track;
+//	vector<int> track;
 //	double ddd = m[0][0];
-	m_tracks->RecoverTrack(beam, track);
+//	m_tracks->RecoverTrack(beam, track);
 #endif
 	matrix m = Mueller(beam.J);
 
@@ -393,7 +393,10 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 		const float &z = beam.direction.cz;
 		int zenith = round((acos(z)*SPHERE_RING_NUM)/M_PI);
 		matrix m = ComputeMueller(zenith, beam);
-
+#ifdef _DEBUG // DEB
+		if (isnan(m[0][0]))
+			int fff = 0;
+#endif
 		m_totalContrib.AddMueller(zenith, m);
 	}
 #ifdef _DEBUG // DEB

@@ -157,7 +157,7 @@ public:
 	matrix forward;		///< Mueller matrix in forward direction
 };
 
-class Handler
+class Handler // REF: rename to "Detector"
 {
 public:
 	Handler(Particle *particle, Light *incidentLight, float wavelength = 0);

@@ -78,10 +78,10 @@ public:
 
 protected:
 	void ComputeOpticalParams(const Incidence &incidence,
-							  const Beam &incidentBeam, Splitting &splitter);
+							  const Beam &incidentBeam);
 
 	void SetIncidentBeamOpticalParams(Facet *facet);
-	bool SetOpticalBeamParams(Facet *facet, const Beam &beam);
+	bool SetOpticalBeamParams(Facet *facet, Beam beam);
 
 	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;
 
@@ -91,6 +91,9 @@ protected:
 
 	void ComputePolarisationParams(const Vector3f &dir,
 								   const Vector3f &facetNormal, Beam &beam);
+
+	Point3f ComputeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
+								bool isIn1, bool isIn2);
 
 	void ComputeFacetEnergy(const Vector3f &facetNormal,
 							const Polygon &lightedPolygon);

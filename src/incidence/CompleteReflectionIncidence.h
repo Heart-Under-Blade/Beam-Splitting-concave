@@ -8,7 +8,7 @@ class Splitting;
 class CompleteReflectionIncidence : public Incidence
 {
 public:
-	virtual void ComputeLightParams(const Beam &incidentBeam,
+	virtual void ComputeDirections(const Beam &incidentBeam,
 									Splitting &splitter) const override;
 
 	virtual void ComputeJonesMatrices(const Beam &incidentBeam,

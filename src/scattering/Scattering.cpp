@@ -49,55 +49,50 @@ void Scattering::SetIncidentBeamOpticalParams(Facet *facet)
 
 	if (m_splitting.IsNormalIncidence())
 	{
-		ComputeOpticalParams(m_normalIncidence, m_originBeam, m_splitting);
+		ComputeOpticalParams(m_normalIncidence, m_originBeam);
 	}
 	else // regular incidence
 	{
+		m_splitting.ComputeSplittingParams(m_originBeam.direction, facet->in_normal,
+										   m_originBeam.isInside);
 		ComputePolarisationParams(-m_originBeam.direction, facet->in_normal,
 								  m_originBeam);
-		m_splitting.SetNormal(facet->ex_normal);
-		ComputeOpticalParams(m_regularIncidence, m_originBeam, m_splitting);
+		ComputeOpticalParams(m_regularIncidence, m_originBeam);
 	}
 }
 
-bool Scattering::SetOpticalBeamParams(Facet *facet, const Beam &beam)
+bool Scattering::SetOpticalBeamParams(Facet *facet, Beam beam)
 {
-	const Point3f &dir = beam.direction;
-	const Point3f &normal = facet->ex_normal;
-
 	bool hasOutBeam = true;
 
 	if (m_splitting.IsNormalIncidence()) // normal incidence
 	{
-		ComputeOpticalParams(m_normalIncidence, beam, m_splitting);
+		ComputeOpticalParams(m_normalIncidence, beam);
 	}
 	else // regular incidence
 	{
-		Beam incBeam = beam;
-
 		if (beam.isInside)
 		{
-			m_splitting.SetNormal(normal);
-			m_splitting.ComputeSplittingParams(beam.direction, normal);
-			ComputePolarisationParams(beam.direction, normal, incBeam);
+			m_splitting.ComputeSplittingParams(beam.direction, facet->ex_normal, beam.isInside);
+			ComputePolarisationParams(beam.direction, facet->ex_normal, beam);
 
 			hasOutBeam = !m_splitting.IsCompleteReflection();
 
 			if (hasOutBeam)
 			{
-				ComputeOpticalParams(m_regularIncidence, beam, m_splitting);
+				ComputeOpticalParams(m_regularIncidence, beam);
 			}
 			else // complete internal reflection incidence
 			{
-				ComputeOpticalParams(m_completeReflectionIncidence, beam, m_splitting);
+				ComputeOpticalParams(m_completeReflectionIncidence, beam);
 			}
 		}
 		else // beam is external
 		{
-			m_splitting.ComputeCosA(facet->ex_normal, dir);
-			ComputePolarisationParams(-incBeam.direction, facet->in_normal, incBeam);
-			m_splitting.SetNormal(facet->ex_normal);
-			ComputeOpticalParams(m_regularIncidence, incBeam, m_splitting);
+			m_splitting.ComputeCosA(facet->in_normal, beam.direction);
+			m_splitting.ComputeSplittingParams(beam.direction, facet->in_normal, beam.isInside);
+			ComputePolarisationParams(-beam.direction, facet->in_normal, beam);
+			ComputeOpticalParams(m_regularIncidence, beam);
 		}
 	}
 
@@ -105,12 +100,11 @@ bool Scattering::SetOpticalBeamParams(Facet *facet, const Beam &beam)
 }
 
 void Scattering::ComputeOpticalParams(const Incidence &incidence,
-									  const Beam &incidentBeam,
-									  Splitting &splitter)
+									  const Beam &incidentBeam)
 {
-	incidence.ComputeLightParams(incidentBeam, splitter);
-	incidence.ComputeJonesMatrices(incidentBeam, splitter);
-	incidence.ComputeOpticalPaths(incidentBeam, splitter);
+	incidence.ComputeDirections(incidentBeam, m_splitting);
+	incidence.ComputeJonesMatrices(incidentBeam, m_splitting);
+	incidence.ComputeOpticalPaths(incidentBeam, m_splitting);
 }
 
 void Scattering::ComputePolarisationParams(const Vector3f &dir,
@@ -153,7 +147,7 @@ void Scattering::PushBeamToTree(Beam &beam, const Beam &oldBeam,
 
 // TODO: пофиксить
 void Scattering::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
-								  std::vector<Beam> &/*outBeams*/)
+							  std::vector<Beam> &/*outBeams*/)
 {
 //	m_particle->Rotate(beta, gamma, 0);
 
@@ -199,7 +193,7 @@ void Scattering::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
 //		}
 
 //		outBeams.push_back(outBuff.back());
-	//	}
+//	}
 }
 
 void Scattering::RotateParticle(const Angle &angle)
@@ -230,6 +224,35 @@ double Scattering::GetIncedentEnergy() const
 	return m_incidentEnergy;
 }
 
+Point3f Scattering::ComputeBeamDirection(const Vector3f &oldDir,
+										 const Vector3f &normal,
+										 bool isIn1, bool isIn2)
+{
+	Point3f newDir;
+
+	if (!isIn1)
+	{
+		m_splitting.ComputeCosA(oldDir, -normal);
+		m_splitting.ComputeSplittingParams(oldDir, -normal, isIn1);
+	}
+	else
+	{
+		m_splitting.ComputeCosA(oldDir, normal);
+		m_splitting.ComputeSplittingParams(oldDir, normal, isIn1);
+	}
+
+	if (isIn1 == isIn2)
+	{
+		m_splitting.ComputeReflectedDirection(newDir);
+	}
+	else
+	{
+		m_splitting.ComputeRefractedDirection(newDir);
+	}
+
+	return newDir;
+}
+
 OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 										   const Point3f &startPoint,
 										   std::vector<int> track)
@@ -252,7 +275,7 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 		f2 = m_particle->GetActualFacet(track[act-1]);
 
 		isIn2 = beam.IsInsideOnAct(act-1);
-		dir = m_splitting.ComputeBeamDirection(dir, f1->ex_normal, isIn1, isIn2);
+		dir = ComputeBeamDirection(dir, f1->ex_normal, isIn1, isIn2);
 		p2 = Geometry::ProjectPointToPlane(p1, dir, f2->in_normal);
 		double len = Point3f::Length(p2 - p1);
 

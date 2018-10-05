@@ -46,7 +46,7 @@ private:
 
 	void SplitByFacet(const Array<Facet*> &facets, int nCheckedFacets);
 
-	bool SplitBeamByVisibleFacets(Beam &beam);
+	void SplitBeamByVisibleFacets(Beam &beam);
 
 	void PushBeamsToBuffer(Facet *facet, const Beam &beam, bool hasOutBeam,
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);

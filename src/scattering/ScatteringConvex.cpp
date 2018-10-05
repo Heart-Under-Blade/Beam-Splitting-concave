@@ -6,7 +6,7 @@ ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
 {
 }
 
-void ScatteringConvex::ScatterLight(std::vector<Beam> &outBeams)
+void ScatteringConvex::ScatterLight(std::vector<Beam> &scatteredBeams)
 {
 	m_incidentEnergy = 0;
 	m_treeSize = 0;
@@ -30,7 +30,7 @@ void ScatteringConvex::ScatterLight(std::vector<Beam> &outBeams)
 		m_splitting.outBeam.facet = facet;
 		m_splitting.outBeam.act = 0;
 		m_splitting.outBeam.isInside = false;
-		outBeams.push_back(m_splitting.outBeam);
+		scatteredBeams.push_back(m_splitting.outBeam);
 
 		m_splitting.inBeam.id = newId;
 		PushBeamToTree(m_splitting.inBeam, facet, 0, true);
@@ -40,7 +40,7 @@ void ScatteringConvex::ScatterLight(std::vector<Beam> &outBeams)
 #endif
 	}
 
-	ScatterBeams(outBeams);
+	ScatterBeams(scatteredBeams);
 }
 
 void ScatteringConvex::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,

@@ -3,12 +3,11 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void CompleteReflectionIncidence::ComputeLightParams(const Beam &incidentBeam,
+void CompleteReflectionIncidence::ComputeDirections(const Beam &incidentBeam,
                                                      Splitting &splitter) const
 {
-    Point3f reflDir = splitter.r - splitter.m_normal;
-	Point3f::Normalize(reflDir);
-    splitter.inBeam.SetLight(reflDir, incidentBeam.polarizationBasis);
+	splitter.ComputeReflectedDirection(splitter.inBeam.direction);
+	splitter.inBeam.polarizationBasis = incidentBeam.polarizationBasis;
 }
 
 void CompleteReflectionIncidence::ComputeJonesMatrices(const Beam &incidentBeam,

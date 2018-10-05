@@ -8,7 +8,7 @@ public:
 	ScatteringConvex(Particle *particle, Light *incidentLight,
 					 bool isOpticalPath, int nActs);
 
-	void ScatterLight(std::vector<Beam> &outBeams) override;
+	void ScatterLight(std::vector<Beam> &scatteredBeams) override;
 	void ScatterLight(const std::vector<std::vector<int>> &,
 					  std::vector<Beam> &) override; ///> for predefined trajectories
 

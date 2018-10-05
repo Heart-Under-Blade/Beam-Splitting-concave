@@ -8,7 +8,7 @@ class Splitting;
 class NormalIncidence : public Incidence
 {
 public:
-	virtual void ComputeLightParams(const Beam &beam,
+	virtual void ComputeDirections(const Beam &beam,
 									Splitting &splitter) const override;
 
 	virtual void ComputeJonesMatrices(const Beam &beam,

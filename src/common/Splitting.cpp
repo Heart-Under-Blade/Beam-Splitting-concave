@@ -20,11 +20,30 @@ void Splitting::ComputeRiParams(const complex &ri)
 	m_cRiIm = 4*re*re*im;
 }
 
-void Splitting::ComputeSplittingParams(const Point3f &dir, const Point3f &normal)
+void Splitting::ComputeSplittingParams(const Point3f &dir, const Point3f &normal,
+									   bool isInside)
 {
-	r = dir/cosA - normal;
-	reRiEff = ComputeEffectiveReRi();
-	s = 1.0/(reRiEff*cosA*cosA) - Point3f::Norm(r);
+	m_normal = normal;
+	r = dir/cosA - m_normal;
+
+	if (isInside)
+	{
+		reRiEff = ComputeEffectiveReRi();
+		s = 1.0/(reRiEff*cosA*cosA) - Point3f::Norm(r);
+	}
+	else
+	{
+		double cosA2 = cosA * cosA;
+		double tmp = m_cRiRe + cosA2 - 1.0;
+
+		if (m_cRiIm > FLT_EPSILON)
+		{
+			tmp = sqrt(tmp*tmp + m_cRiIm);
+		}
+
+		tmp = (m_cRiRe + 1.0 - cosA2 + tmp)/2.0;
+		s = (tmp/cosA2) - Point3f::Norm(r);
+	}
 }
 
 double Splitting::ComputeEffectiveReRi() const
@@ -77,8 +96,8 @@ double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &fac
 	double cosB = Point3d::DotProduct(Point3d::Normalize(facetPoint - beam.Center()), beam.direction);
 #else
 	Vector3f vectorToCenter = facetPoint - beam.Center();
-	Normalize(vectorToCenter);
-	double cosB = DotProduct(vectorToCenter, beam.direction);
+	Point3f::Normalize(vectorToCenter);
+	double cosB = Point3f::DotProduct(vectorToCenter, beam.direction);
 #endif
 
 	if (cosB < 0 && beam.isInside)
@@ -92,26 +111,6 @@ double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &fac
 	}
 
 	return path;
-}
-
-void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
-												   const Vector3f &normal,
-												   Vector3f &dir)
-{
-	double cosA2 = cosA * cosA;
-	double tmp = m_cRiRe + cosA2 - 1.0;
-
-	if (m_cRiIm > FLT_EPSILON)
-	{
-		tmp = sqrt(tmp*tmp + m_cRiIm);
-	}
-
-	tmp = (m_cRiRe + 1.0 - cosA2 + tmp)/2.0;
-	tmp = (tmp/cosA2);
-	tmp -= Point3f::Norm(r);
-	tmp = sqrt(tmp);
-	dir = (r/tmp) - normal;
-	Point3f::Normalize(dir);
 }
 
 void Splitting::ComputeCosA(const Point3f &normal, const Point3f &incidentDir)
@@ -128,47 +127,6 @@ double Splitting::ComputeIncidentOpticalPath(const Point3f &direction,
 double Splitting::ComputeOutgoingOpticalPath(const Beam &beam)
 {
 	return FAR_ZONE_DISTANCE + beam.front;
-}
-
-Point3f Splitting::ComputeBeamDirection(const Vector3f &oldDir,
-									   const Vector3f &normal,
-									   bool isIn1, bool isIn2)
-{
-	Point3f newDir;
-
-	if (!isIn1)
-	{
-		ComputeCosA(oldDir, -normal);
-		Vector3f r = normal + oldDir/cosA;
-
-		if (isIn1 == isIn2)
-		{
-			newDir = normal + r;
-			Point3f::Normalize(newDir);
-		}
-		else
-		{
-			ComputeInternalRefractiveDirection(r, normal, newDir);
-		}
-	}
-	else
-	{
-		ComputeCosA(oldDir, normal);
-		ComputeSplittingParams(oldDir, normal);
-
-		if (isIn1 == isIn2 /*|| (loc == Location::In && IsCompleteReflection())*/)
-		{
-			newDir = r - normal;
-		}
-		else
-		{
-			newDir = r/sqrt(s) + normal;
-		}
-
-		Point3f::Normalize(newDir);
-	}
-
-	return newDir;
 }
 
 complex Splitting::GetRi() const

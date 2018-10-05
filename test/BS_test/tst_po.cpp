@@ -2,6 +2,7 @@
 
 #include "ScatteringNonConvex.h"
 #include "BulletRosette.h"
+#include "HollowColumn.h"
 #include "Tracks.h"
 #include "global.h"
 
@@ -19,7 +20,7 @@ private slots:
 	void test_Absorption();
 
 private:
-	BulletRosette *pt;
+	Particle *pt;
 	ScatteringNonConvex *sc;
 	Light incidentLight;
 };
@@ -29,8 +30,9 @@ PO::PO()
 	incidentLight.direction = Point3f(0, 0, -1);
 	incidentLight.polarizationBasis = Point3f(0, 1, 0);
 
-	pt = new BulletRosette(complex(1.3116, 0), Size(42.04, 100),
-						   (42.04*sqrt(3)*tan(Angle::DegToRad(62)))/4);
+//	pt = new BulletRosette(complex(1.3116, 0), Size(42.04, 100),
+//						   (42.04*sqrt(3)*tan(Angle::DegToRad(62)))/4);
+	pt = new HollowColumn(complex(1.3116, 0), Size(42.04, 100), 5);
 	sc = new ScatteringNonConvex(pt, &incidentLight, true, 4);
 }
 

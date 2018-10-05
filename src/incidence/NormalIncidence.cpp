@@ -3,7 +3,7 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void NormalIncidence::ComputeLightParams(const Beam &beam,
+void NormalIncidence::ComputeDirections(const Beam &beam,
 										 Splitting &splitter) const
 {
 	const Point3f &dir = (beam.isInside) ? beam.direction
