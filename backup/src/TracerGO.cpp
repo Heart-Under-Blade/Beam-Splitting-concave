@@ -73,9 +73,18 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma)
 double TracerGO::CalcNorm(long long orNum)
 {
 	double &symBeta = m_symmetry.beta;
-	double tmp = (/*isRandom*/true) ? symBeta : 1.0;
-	double dBeta = -(cos(symBeta) - cos(0));
-	return tmp/(orNum*dBeta);
+
+	if (symBeta < M_PI - FLT_EPSILON) //
+	{
+		double tmp = symBeta;
+		double dBeta = -(cos(symBeta));
+		dBeta -= cos(0);
+		return tmp/(orNum*dBeta);
+	}
+	else // otherwise the result becomes 'inf'
+	{
+		return 1;
+	}
 }
 
 void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &timer)
