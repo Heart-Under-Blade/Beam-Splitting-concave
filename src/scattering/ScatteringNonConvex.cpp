@@ -608,8 +608,7 @@ void ScatteringNonConvex::SplitBeamByVisibleFacets(Beam &beam)
 			m_splitting.inBeam.pols.push_back(beamShape);
 			m_splitting.outBeam.pols = beam.pols;
 			m_splitting.outBeam.pols.push_back(beamShape);
-#endif
-#ifdef _DEBUG // DEB
+
 			if (beam.facet->index == 32 && facet->index == 29)
 				int fff = 0;
 #endif

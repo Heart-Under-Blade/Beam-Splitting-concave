@@ -303,12 +303,18 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 	vector<int> tr;
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
+<<<<<<< HEAD:backup/src/Handler.cpp
 //	double opAbs = CalcOpticalPathAbsorption(beam);
 #ifdef _DEBUG // DEB
 	if (beam.id == 407490777/*415047647*/)
 		int fff = 0;
 #endif
 	double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
+=======
+	if (path.internal > DBL_EPSILON)
+	{
+		OutputPaths(beam, path);
+>>>>>>> origin/feature/absorbtion:src/Handler.cpp
 
 #ifdef _DEBUG // DEB
 	double ddd = fabs(path - beam.opticalPath);
@@ -329,6 +335,14 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
+<<<<<<< HEAD:backup/src/Handler.cpp
+=======
+#ifdef _DEBUG // DEB
+		if (i == 45)
+			int fff = 0;
+#endif
+		Beam &beam = beams[i];
+>>>>>>> origin/feature/absorbtion:src/Handler.cpp
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion

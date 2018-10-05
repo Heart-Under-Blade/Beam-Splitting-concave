@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
 <<<<<<< HEAD
+<<<<<<< HEAD
 <!-- Written by QtCreator 4.7.0, 2018-10-05T12:00:45. -->
 =======
 <!-- Written by QtCreator 4.7.0, 2018-09-28T11:03:59. -->
 >>>>>>> origin/develop
+=======
+<!-- Written by QtCreator 4.7.0, 2018-09-24T18:52:53. -->
+>>>>>>> origin/feature/absorbtion
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -75,10 +79,14 @@
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
 <<<<<<< HEAD
+<<<<<<< HEAD
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">4</value>
 =======
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">10</value>
 >>>>>>> origin/develop
+=======
+   <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">3</value>
+>>>>>>> origin/feature/absorbtion
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">../build</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
