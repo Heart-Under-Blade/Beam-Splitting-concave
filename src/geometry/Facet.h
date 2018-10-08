@@ -15,8 +15,8 @@ public:
 	Point3f normal[2];	///< internal and external normals
 	Point3f center;		///< center of facet polygon (for fast access without calc)
 
-	bool isOverlayedIn = true;
-	bool isOverlayedOut = true;
+	bool isOverlayedIn = false;
+	bool isOverlayedOut = false;
 
 	void SetNormal();
 	void SetCenter();

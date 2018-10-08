@@ -13,8 +13,8 @@ public:
 	void ScatterLight(const std::vector<std::vector<int>> &tracks,
 					  std::vector<Beam> &scaterredBeams) override;
 private:
-	void SortFacets_faster(const Point3f &beamDir, Array<Facet*> &facets);
-	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir);
+	void SortFacets_faster(const Point3f &beamDir, Array<Facet*> &facets) const;
+	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir) const;
 	void CutBeamByFacet(Facet *facet, Beam &beam,
 						PolygonArray &result);
 
@@ -24,13 +24,13 @@ private:
 	void CutExternalBeam(const Beam &beam, std::vector<Beam> &scaterredBeams);
 
 	void FindVisibleFacets(const Beam &beam, Array<Facet *> &facets);
-	void FindVisibleFacetsForLight(Array<Facet*> &facets);
+	void FindVisibleFacetsForLight(Array<Facet*> &facets) const;
 
 	void SelectVisibleFacets(const Beam &beam, Array<Facet *> &facets);
-	void SelectVisibleFacetsForLight(Array<Facet*> &facetIDs);
+	void SelectVisibleFacetsForLight(Array<Facet*> &facets) const;
 
-	void IntersectWithFacet(const Array<Facet*> &facets, int nCheckedFacets,
-							PolygonArray &resFacets);
+	bool IntersectLightWithFacet(const Array<Facet*> &facets, int nCheckedFacets,
+								 PolygonArray &resFacets);
 
 	void SplitLightToBeams();
 
@@ -42,9 +42,7 @@ private:
 
 	void PushBeamsToTree(Facet *facet, const PolygonArray &polygons);
 
-	bool IsVisibleFacet(Facet *facet, const Beam &beam);
-
-	void SplitByFacet(const Array<Facet*> &facets, int nCheckedFacets);
+	bool IsVisibleFacet(Facet *facet, const Beam &beam); ///< if true then facet is not behind of beam polygon
 
 	void SplitBeamByVisibleFacets(Beam &beam);
 

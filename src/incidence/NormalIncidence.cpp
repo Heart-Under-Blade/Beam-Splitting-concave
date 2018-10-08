@@ -11,6 +11,11 @@ void NormalIncidence::ComputeDirections(const Beam &beam,
 
 	splitter.inBeam.SetLight(-dir, beam.polarizationBasis);
 	splitter.outBeam.SetLight(dir, beam.polarizationBasis);
+
+#ifdef _DEBUG // DEB
+	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
+	splitter.outBeam.dirs.push_back(splitter.outBeam.direction);
+#endif
 }
 
 void NormalIncidence::ComputeJonesMatrices(const Beam &beam,

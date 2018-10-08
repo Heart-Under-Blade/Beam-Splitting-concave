@@ -457,6 +457,9 @@ void Beam::AddOpticalPath(double path)
 {
 	opticalPath += path;
 	front = Point3f::DotProduct(-direction, Center());
+#ifdef _DEBUG // DEB
+	ops.push_back(path);
+#endif
 }
 
 void Beam::CopyTrack(const Track &other)

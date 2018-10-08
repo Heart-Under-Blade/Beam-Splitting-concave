@@ -102,8 +102,7 @@ public:
 									   const Vector3f &planeNormal);
 
 	static bool IncidentBeamToFacet(Facet *facet, const Polygon &beamPol,
-									const Vector3f &facetNormal,
-									const Vector3f &incDir,
+									bool isInside, const Vector3f &incDir,
 									Polygon &intersection);
 
 private:

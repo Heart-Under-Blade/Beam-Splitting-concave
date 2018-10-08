@@ -73,6 +73,11 @@ void Splitting::SetBeams(const Polygon &beamShape)
 
 	outBeam.Clear();
 	outBeam.SetPolygon(beamShape);
+
+#ifdef _DEBUG // DEB
+	inBeam.pols.push_back(beamShape);
+	outBeam.pols.push_back(beamShape);
+#endif
 }
 
 void Splitting::SetNormal(const Point3f &normal)

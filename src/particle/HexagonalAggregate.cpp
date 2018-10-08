@@ -109,17 +109,17 @@ void HexagonalAggregate::SetFacetParams()
 	elems[8].origin.nVertices = BASE_VERTEX_NUM;
 	elems[15].origin.nVertices = BASE_VERTEX_NUM;
 
-	elems[1].actual.isOverlayedOut = false;
-	elems[2].actual.isOverlayedOut = false;
-	elems[3].actual.isOverlayedOut = false;
-	elems[7].actual.isOverlayedOut = false;
-	elems[10].actual.isOverlayedOut = false;
-	elems[11].actual.isOverlayedOut = false;
-	elems[12].actual.isOverlayedOut = false;
-	elems[15].actual.isOverlayedOut = false;
+	elems[1].actual.isOverlayedOut = true;
+	elems[2].actual.isOverlayedOut = true;
+	elems[3].actual.isOverlayedOut = true;
+	elems[7].actual.isOverlayedOut = true;
+	elems[10].actual.isOverlayedOut = true;
+	elems[11].actual.isOverlayedOut = true;
+	elems[12].actual.isOverlayedOut = true;
+	elems[15].actual.isOverlayedOut = true;
 
 	for (int i = 0; i < nElems; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
 	{
-		elems[i].actual.isOverlayedIn = false;
+		elems[i].actual.isOverlayedIn = true;
 	}
 }

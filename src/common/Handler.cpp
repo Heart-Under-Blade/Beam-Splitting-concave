@@ -191,7 +191,11 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 	string name = CreateUniqueFileName(filename);
 	ofstream allFile(name, std::ios::out);
 
-	allFile << "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
+	allFile << "tetta"\
+				   "M11 M12/M11 M13/M11 M14/M11 "\
+			   "M21/M11 M22/M11 M23/M11 M24/M11 "\
+			   "M31/M11 M32/M11 M33/M11 M34/M11 "\
+			   "M21/M41 M42/M11 M43/M11 M44/M11 ";
 
 	for (int j = SPHERE_RING_NUM; j >= 0; j--)
 	{

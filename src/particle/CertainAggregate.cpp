@@ -333,10 +333,10 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[i].origin.isOverlayedIn = false;
-		elems[i].origin.isOverlayedOut = false;
-		elems[i].actual.isOverlayedIn = false;
-		elems[i].actual.isOverlayedOut = false;
+		elems[i].origin.isOverlayedIn = true;
+		elems[i].origin.isOverlayedOut = true;
+		elems[i].actual.isOverlayedIn = true;
+		elems[i].actual.isOverlayedOut = true;
 	}
 }
 

@@ -64,8 +64,8 @@ void Bullet::SetFacetParams()
 {
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[i].actual.isOverlayedIn = false;
-		elems[i].actual.isOverlayedOut = false;
+		elems[i].actual.isOverlayedIn = true;
+		elems[i].actual.isOverlayedOut = true;
 	}
 
 	elems[0].origin.nVertices = 3;

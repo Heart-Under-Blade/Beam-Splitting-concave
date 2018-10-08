@@ -16,4 +16,5 @@ protected:
 	void ScatterBeams(std::vector<Beam> &outBeams);
 	void SplitBeamsByFacet(Beam &beam, Facet *facet,
 						   std::vector<Beam> &outBeams);
+	void SplitLightToBeams(std::vector<Beam> &scatteredBeams);
 };

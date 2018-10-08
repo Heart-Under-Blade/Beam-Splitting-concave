@@ -6,40 +6,41 @@ ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
 {
 }
 
-void ScatteringConvex::ScatterLight(std::vector<Beam> &scatteredBeams)
+void ScatteringConvex::SplitLightToBeams(std::vector<Beam> &scatteredBeams)
 {
-	m_incidentEnergy = 0;
-	m_treeSize = 0;
-
-	/// first extermal beam
 	for (int i = 0; i < m_particle->nElems; ++i)
 	{
 		Facet *facet = m_particle->GetActualFacet(i);
 		m_splitting.ComputeCosA(m_originBeam.direction, facet->in_normal);
 
-		if (!m_splitting.IsIncident()) /// beam is not incident to this facet
+		if (m_splitting.IsIncident()) /// beam is not incident to this facet
 		{
-			continue;
-		}
+			m_splitting.SetBeams(*facet);
+			SetOpticalBeamParams(facet, m_originBeam);
 
-		SplitLightToBeams(facet);
+			auto newId = RecomputeTrackId(0, facet->index);
+			m_splitting.outBeam.id = newId;
+			m_splitting.outBeam.SetTracingParams(facet, 0, false);
+			scatteredBeams.push_back(m_splitting.outBeam);
 
-		auto newId = RecomputeTrackId(0, facet->index);
-
-		m_splitting.outBeam.id = newId;
-		m_splitting.outBeam.facet = facet;
-		m_splitting.outBeam.act = 0;
-		m_splitting.outBeam.isInside = false;
-		scatteredBeams.push_back(m_splitting.outBeam);
-
-		m_splitting.inBeam.id = newId;
-		PushBeamToTree(m_splitting.inBeam, facet, 0, true);
+			m_splitting.inBeam.id = newId;
+			PushBeamToTree(m_splitting.inBeam, facet, 0, true);
 
 #ifdef _CHECK_ENERGY_BALANCE
-		ComputeFacetEnergy(facet->in_normal, m_splitting.outBeam);
+			ComputeFacetEnergy(facet->in_normal, m_splitting.outBeam);
 #endif
+		}
 	}
+}
 
+void ScatteringConvex::ScatterLight(std::vector<Beam> &scatteredBeams)
+{
+#ifdef _CHECK_ENERGY_BALANCE
+	m_incidentEnergy = 0;
+#endif
+	m_treeSize = 0;
+
+	SplitLightToBeams(scatteredBeams);
 	ScatterBeams(scatteredBeams);
 }
 
@@ -85,9 +86,8 @@ void ScatteringConvex::SplitBeamsByFacet(Beam &beam, Facet *facet,
 	}
 
 	Polygon beamShape;
-	const Vector3f &n = (beam.isInside) ? facet->in_normal : facet->ex_normal;
-	bool isIntersected = Geometry::IncidentBeamToFacet(facet, beam, n, beam.direction, beamShape);
-
+	bool isIntersected = Geometry::IncidentBeamToFacet(facet, beam, beam.isInside,
+													   beam.direction, beamShape);
 	if (isIntersected)
 	{
 		m_splitting.SetBeams(beamShape);

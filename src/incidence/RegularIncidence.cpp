@@ -16,7 +16,10 @@ void RegularIncidence::ComputeDirections(const Beam &beam,
 		splitter.ComputeReflectedDirection(splitter.outBeam.direction);
 		splitter.ComputeRefractedDirection(splitter.inBeam.direction);
 	}
-
+#ifdef _DEBUG // DEB
+	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
+	splitter.outBeam.dirs.push_back(splitter.outBeam.direction);
+#endif
 	splitter.inBeam.polarizationBasis = beam.polarizationBasis;
 	splitter.outBeam.polarizationBasis = beam.polarizationBasis;
 }

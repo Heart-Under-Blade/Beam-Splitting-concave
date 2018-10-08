@@ -8,6 +8,9 @@ void CompleteReflectionIncidence::ComputeDirections(const Beam &incidentBeam,
 {
 	splitter.ComputeReflectedDirection(splitter.inBeam.direction);
 	splitter.inBeam.polarizationBasis = incidentBeam.polarizationBasis;
+#ifdef _DEBUG // DEB
+	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
+#endif
 }
 
 void CompleteReflectionIncidence::ComputeJonesMatrices(const Beam &incidentBeam,

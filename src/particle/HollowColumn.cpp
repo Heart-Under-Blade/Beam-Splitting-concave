@@ -34,19 +34,19 @@ void HollowColumn::SetFacetParams()
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
 		elems[i].origin.nVertices = CAVITY_FACET_VERTEX_NUM;
-		elems[i].actual.isOverlayedOut = false;
+		elems[i].actual.isOverlayedOut = true;
 	}
 
 	// bottom facet (triangles)
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
 		elems[i].origin.nVertices = CAVITY_FACET_VERTEX_NUM;
-		elems[i].actual.isOverlayedOut = false;
+		elems[i].actual.isOverlayedOut = true;
 	}
 
 	for (int i = BASE_VERTEX_NUM; i < 2*BASE_VERTEX_NUM; ++i)
 	{
-		elems[i].actual.isOverlayedIn = false;
+		elems[i].actual.isOverlayedIn = true;
 	}
 }
 

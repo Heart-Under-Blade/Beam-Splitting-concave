@@ -47,11 +47,12 @@ class Scattering
 protected:
 	Particle *m_particle;	///< scattering particle (crystal)
 	Splitting m_splitting;
-	Beam m_originBeam;
-	int m_nActs;
+	int m_maxNActs;
 
+	Beam m_originBeam;
 	Beam m_tracingBeams[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
 	int m_treeSize;
+
 	double m_incidentEnergy;
 
 	const double EPS_BEAM_ENERGY = 2e-12;
@@ -80,7 +81,6 @@ protected:
 	void ComputeOpticalParams(const Incidence &incidence,
 							  const Beam &incidentBeam);
 
-	void SetIncidentBeamOpticalParams(Facet *facet);
 	bool SetOpticalBeamParams(Facet *facet, Beam beam);
 
 	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;

@@ -123,10 +123,11 @@ void Geometry::DifferPolygons(const Polygon &subject, const Vector3f &subjNormal
 
 /// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
 bool Geometry::IncidentBeamToFacet(Facet *facet, const Polygon &beamPol,
-								   const Vector3f &facetNormal,
-								   const Vector3f &incDir,
+								   bool isInside, const Vector3f &incDir,
 								   Polygon &intersection)
 {
+	const Vector3f &facetNormal = isInside ? facet->in_normal : facet->ex_normal;
+
 	__m128 _output_points[MAX_VERTEX_NUM];
 	// REF: перенести в случай невыпуклых частиц
 	const Point3f &normal = facet->in_normal;

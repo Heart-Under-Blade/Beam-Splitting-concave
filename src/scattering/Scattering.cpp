@@ -18,7 +18,7 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 					   int nActs)
 	: m_particle(particle),
 	  m_splitting(isOpticalPath),
-	  m_nActs(nActs)
+	  m_maxNActs(nActs)
 {
 	m_originBeam.direction = incidentLight->direction;
 	m_originBeam.direction.d_param = incidentLight->direction.d_param;
@@ -43,26 +43,12 @@ void Scattering::PushBeamToTree(Beam &beam, Facet *facet, int level, bool isIn)
 	m_tracingBeams[m_treeSize++] = beam;
 }
 
-void Scattering::SetIncidentBeamOpticalParams(Facet *facet)
-{
-	m_splitting.ComputeCosA(m_originBeam.direction, facet->in_normal);
-
-	if (m_splitting.IsNormalIncidence())
-	{
-		ComputeOpticalParams(m_normalIncidence, m_originBeam);
-	}
-	else // regular incidence
-	{
-		m_splitting.ComputeSplittingParams(m_originBeam.direction, facet->in_normal,
-										   m_originBeam.isInside);
-		ComputePolarisationParams(-m_originBeam.direction, facet->in_normal,
-								  m_originBeam);
-		ComputeOpticalParams(m_regularIncidence, m_originBeam);
-	}
-}
-
 bool Scattering::SetOpticalBeamParams(Facet *facet, Beam beam)
 {
+#ifdef _DEBUG // DEB
+	m_splitting.inBeam.pols = beam.pols;
+	m_splitting.outBeam.pols = beam.pols;
+#endif
 	bool hasOutBeam = true;
 
 	if (m_splitting.IsNormalIncidence()) // normal incidence
@@ -118,8 +104,6 @@ void Scattering::ComputePolarisationParams(const Vector3f &dir,
 
 void Scattering::SplitLightToBeams(Facet *facet)
 {
-	m_splitting.SetBeams(*facet);
-	SetIncidentBeamOpticalParams(facet);
 }
 
 Particle *Scattering::GetParticle() const
@@ -203,7 +187,7 @@ void Scattering::RotateParticle(const Angle &angle)
 
 bool Scattering::IsTerminalAct(const Beam &beam)
 {
-	return (beam.act >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
+	return (beam.act >= m_maxNActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
