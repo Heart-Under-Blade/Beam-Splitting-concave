@@ -1,0 +1,68 @@
+\hypertarget{class_polygon}{}\section{Polygon Class Reference}
+\label{class_polygon}\index{Polygon@{Polygon}}
+
+
+The \mbox{\hyperlink{class_polygon}{Polygon}} struct Convex polygon.  
+
+
+
+
+{\ttfamily \#include $<$Polygon.\+h$>$}
+
+Inheritance diagram for Polygon\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_polygon}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_polygon_a30007de4ec1b150d50714a6bde4fb79d}\label{class_polygon_a30007de4ec1b150d50714a6bde4fb79d}} 
+{\bfseries Polygon} (int n\+Vertices)
+\item 
+\mbox{\Hypertarget{class_polygon_a117451a285cc0c9d443638cd449e032b}\label{class_polygon_a117451a285cc0c9d443638cd449e032b}} 
+{\bfseries Polygon} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&other)
+\item 
+\mbox{\Hypertarget{class_polygon_ad8fc5651b8c9161a8b47b49eff09fe9c}\label{class_polygon_ad8fc5651b8c9161a8b47b49eff09fe9c}} 
+{\bfseries Polygon} (\mbox{\hyperlink{class_polygon}{Polygon}} \&\&other)
+\item 
+\mbox{\Hypertarget{class_polygon_a073ed9d24fca614f09b23b0ed6571e36}\label{class_polygon_a073ed9d24fca614f09b23b0ed6571e36}} 
+\mbox{\hyperlink{class_polygon}{Polygon}} \& {\bfseries operator=} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&other)
+\item 
+\mbox{\Hypertarget{class_polygon_a90dd4293d3da213a7d313fd3f36b354b}\label{class_polygon_a90dd4293d3da213a7d313fd3f36b354b}} 
+\mbox{\hyperlink{class_polygon}{Polygon}} \& {\bfseries operator=} (\mbox{\hyperlink{class_polygon}{Polygon}} \&\&other)
+\item 
+\mbox{\Hypertarget{class_polygon_a93e54fdbdb5a7de543eccbed07e0f7c8}\label{class_polygon_a93e54fdbdb5a7de543eccbed07e0f7c8}} 
+double {\bfseries Area} () const
+\item 
+\mbox{\Hypertarget{class_polygon_a8f283e92255018b9f8331e24aaf75c57}\label{class_polygon_a8f283e92255018b9f8331e24aaf75c57}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries Center} () const
+\item 
+\mbox{\Hypertarget{class_polygon_a2b1fae8937c3b44cce5022d2eee61f31}\label{class_polygon_a2b1fae8937c3b44cce5022d2eee61f31}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries Normal} () const
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_polygon_a5e9924cf3d12df34b38dc75707c05254}\label{class_polygon_a5e9924cf3d12df34b38dc75707c05254}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries arr} \mbox{[}M\+A\+X\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+N\+UM\mbox{]}
+\item 
+\mbox{\Hypertarget{class_polygon_acad554243e51c93bbb13371c576006ea}\label{class_polygon_acad554243e51c93bbb13371c576006ea}} 
+int {\bfseries n\+Vertices} = 0
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_polygon_a3d971bd1da5beb2188d6d011bf0becdd}\label{class_polygon_a3d971bd1da5beb2188d6d011bf0becdd}} 
+std\+::ostream \& {\bfseries operator$<$$<$} (std\+::ostream \&os, const \mbox{\hyperlink{class_polygon}{Polygon}} \&beam)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \mbox{\hyperlink{class_polygon}{Polygon}} struct Convex polygon. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+geometry/Polygon.\+h\item 
+geometry/Polygon.\+cpp\end{DoxyCompactItemize}

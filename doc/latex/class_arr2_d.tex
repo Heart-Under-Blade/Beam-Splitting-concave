@@ -1,0 +1,201 @@
+\hypertarget{class_arr2_d}{}\section{Arr2D Class Reference}
+\label{class_arr2_d}\index{Arr2D@{Arr2D}}
+
+
+The array with (N-\/rows x M-\/columns) dimensions of small {\bfseries real-\/value} matrixes with (n x m) dimensions.  
+
+
+
+
+{\ttfamily \#include $<$Phys\+Mtr.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_arr2_d_a207bbbf33b1873cbae1821988eedc91f}\label{class_arr2_d_a207bbbf33b1873cbae1821988eedc91f}} 
+\mbox{\hyperlink{class_arr2_d_a207bbbf33b1873cbae1821988eedc91f}{Arr2D}} (int \+\_\+N, int \+\_\+M, int \+\_\+n, int \+\_\+m)
+\begin{DoxyCompactList}\small\item\em Creates the array with (\+\_\+\+N-\/rows x \+\_\+\+M-\/columns) dimensions of small real-\/value matrixes with (\+\_\+n x \+\_\+m) dimensions. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_arr2_d_a02978a25e92120e63eb8a6ccdce2f805}\label{class_arr2_d_a02978a25e92120e63eb8a6ccdce2f805}} 
+{\bfseries Arr2D} (const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&)
+\item 
+\mbox{\Hypertarget{class_arr2_d_afec92f155e77d207e24651e5c1848726}\label{class_arr2_d_afec92f155e77d207e24651e5c1848726}} 
+\mbox{\hyperlink{classmatrix}{matrix}} \mbox{\hyperlink{class_arr2_d_afec92f155e77d207e24651e5c1848726}{operator()}} (int, int) const
+\begin{DoxyCompactList}\small\item\em Returns the matrix stored in the array by address (\+\_\+N,\+\_\+M) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_arr2_d_a8fca0ac08f6d32d4ee98491b39f8dd91}\label{class_arr2_d_a8fca0ac08f6d32d4ee98491b39f8dd91}} 
+double \& \mbox{\hyperlink{class_arr2_d_a8fca0ac08f6d32d4ee98491b39f8dd91}{operator()}} (int \+\_\+N, int \+\_\+M, int \+\_\+n, int \+\_\+m)
+\begin{DoxyCompactList}\small\item\em Returns a reference to the matrix element (\+\_\+n,\+\_\+m) stored in the array by address (\+\_\+N,\+\_\+M) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_arr2_d_acfb2cee23c6fdd3e85971580ac1966c7}\label{class_arr2_d_acfb2cee23c6fdd3e85971580ac1966c7}} 
+double \mbox{\hyperlink{class_arr2_d_acfb2cee23c6fdd3e85971580ac1966c7}{operator()}} (int \+\_\+N, int \+\_\+M, int \+\_\+n, int \+\_\+m) const
+\begin{DoxyCompactList}\small\item\em Returns the matrix element (\+\_\+n,\+\_\+m) stored in the array by address (\+\_\+N,\+\_\+M) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_arr2_d_af6fac280c6350de3bf998d64480ec50b}\label{class_arr2_d_af6fac280c6350de3bf998d64480ec50b}} 
+\mbox{\hyperlink{class_arr2_d}{Arr2D}} {\bfseries operator=} (const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&)
+\item 
+\mbox{\Hypertarget{class_arr2_d_aa652c84f2741466fb2275dd6a1c434e7}\label{class_arr2_d_aa652c84f2741466fb2275dd6a1c434e7}} 
+\mbox{\hyperlink{class_arr2_d}{Arr2D}} {\bfseries operator+=} (const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&)
+\item 
+\mbox{\Hypertarget{class_arr2_d_ac1e1a96570628b2823fe418a862845a0}\label{class_arr2_d_ac1e1a96570628b2823fe418a862845a0}} 
+\mbox{\hyperlink{class_arr2_d}{Arr2D}} {\bfseries operator$\ast$} (double)
+\item 
+\mbox{\Hypertarget{class_arr2_d_a0f97b167a7657cab0a898feffd13ea64}\label{class_arr2_d_a0f97b167a7657cab0a898feffd13ea64}} 
+void \mbox{\hyperlink{class_arr2_d_a0f97b167a7657cab0a898feffd13ea64}{Clear\+Arr}} (void) const
+\begin{DoxyCompactList}\small\item\em The function clears all elements of all matrixes in the array. ~\newline
+ \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_arr2_d_aee51dbd3ea4719ab1aa13ec474e46427}{insert}} (int \+\_\+N, int \+\_\+M, const \mbox{\hyperlink{classmatrix}{matrix}} \&mt)
+\begin{DoxyCompactList}\small\item\em The function adds the matrix mt to existing matrix, located in the array by address (\+\_\+N,\+\_\+M) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_arr2_d_acd1a53b083550ba287f6533876256b76}{replace}} (int \+\_\+N, int \+\_\+M, const \mbox{\hyperlink{classmatrix}{matrix}} \&mt)
+\begin{DoxyCompactList}\small\item\em The function replaces existing matrix, located in the array by address (\+\_\+N,\+\_\+M), by the matrix mt. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+double \mbox{\hyperlink{class_arr2_d_a4a5ec0331f3df137656a3a959b40112b}{Max}} (const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&Arr)
+\begin{DoxyCompactList}\small\item\em The function returns the maximal value of all elements contained in the array. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classmatrix}{matrix}} \mbox{\hyperlink{class_arr2_d_a51c6d259f0af23458e423bf168730528}{Sum\+Arr}} (const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&)
+\begin{DoxyCompactList}\small\item\em The function sums up all matrixes contained in the array. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_arr2_d_a2bb49591960104f03344c72f4cf50d66}{Str\+Arr}} (const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&Arr)
+\begin{DoxyCompactList}\small\item\em The function returns row counts. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_arr2_d_a26461596a4c6662d3c715f23ea8ba89b}{Col\+Arr}} (const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&Arr)
+\begin{DoxyCompactList}\small\item\em The function returns column counts. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The array with (N-\/rows x M-\/columns) dimensions of small {\bfseries real-\/value} matrixes with (n x m) dimensions. 
+
+Example of using\+: 
+\begin{DoxyCode}
+...
+Arr2D Arr(0,0,0,0); \textcolor{comment}{//creating an array}
+main() 
+\{
+  ...
+  Arr = \mbox{\hyperlink{class_arr2_d}{Arr2D}}(1, 1, 2, 2); \textcolor{comment}{//changing the size}
+  Arr.ClearArr();   \textcolor{comment}{//clearing the array}
+  \mbox{\hyperlink{classmatrix}{matrix}} mt(2,2);  
+  Arr.insert(0,0, mt); \textcolor{comment}{//adding matrix mt to the array}
+  \mbox{\hyperlink{classmatrix}{matrix}} M=Arr(0,0); \textcolor{comment}{//taking matrix M from the array}
+  ... 
+\}
+\end{DoxyCode}
+ 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_arr2_d_aee51dbd3ea4719ab1aa13ec474e46427}\label{class_arr2_d_aee51dbd3ea4719ab1aa13ec474e46427}} 
+\index{Arr2D@{Arr2D}!insert@{insert}}
+\index{insert@{insert}!Arr2D@{Arr2D}}
+\subsubsection{\texorpdfstring{insert()}{insert()}}
+{\footnotesize\ttfamily void Arr2\+D\+::insert (\begin{DoxyParamCaption}\item[{int}]{\+\_\+N,  }\item[{int}]{\+\_\+M,  }\item[{const \mbox{\hyperlink{classmatrix}{matrix}} \&}]{mt }\end{DoxyParamCaption})}
+
+
+
+The function adds the matrix mt to existing matrix, located in the array by address (\+\_\+N,\+\_\+M) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em \+\_\+N,\+\_\+M} & number of a cell in the array \\
+\hline
+{\em mt} & adding matrix \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+none 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_arr2_d_acd1a53b083550ba287f6533876256b76}\label{class_arr2_d_acd1a53b083550ba287f6533876256b76}} 
+\index{Arr2D@{Arr2D}!replace@{replace}}
+\index{replace@{replace}!Arr2D@{Arr2D}}
+\subsubsection{\texorpdfstring{replace()}{replace()}}
+{\footnotesize\ttfamily void Arr2\+D\+::replace (\begin{DoxyParamCaption}\item[{int}]{\+\_\+N,  }\item[{int}]{\+\_\+M,  }\item[{const \mbox{\hyperlink{classmatrix}{matrix}} \&}]{mt }\end{DoxyParamCaption})}
+
+
+
+The function replaces existing matrix, located in the array by address (\+\_\+N,\+\_\+M), by the matrix mt. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em \+\_\+N,\+\_\+M} & number of a cell in the array \\
+\hline
+{\em mt} & new matrix \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+none 
+\end{DoxyReturn}
+
+
+\subsection{Friends And Related Function Documentation}
+\mbox{\Hypertarget{class_arr2_d_a26461596a4c6662d3c715f23ea8ba89b}\label{class_arr2_d_a26461596a4c6662d3c715f23ea8ba89b}} 
+\index{Arr2D@{Arr2D}!Col\+Arr@{Col\+Arr}}
+\index{Col\+Arr@{Col\+Arr}!Arr2D@{Arr2D}}
+\subsubsection{\texorpdfstring{Col\+Arr}{ColArr}}
+{\footnotesize\ttfamily int Col\+Arr (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&}]{Arr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+The function returns column counts. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Arr} & pointer to the array \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+column counts, (Arr.\+M) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_arr2_d_a4a5ec0331f3df137656a3a959b40112b}\label{class_arr2_d_a4a5ec0331f3df137656a3a959b40112b}} 
+\index{Arr2D@{Arr2D}!Max@{Max}}
+\index{Max@{Max}!Arr2D@{Arr2D}}
+\subsubsection{\texorpdfstring{Max}{Max}}
+{\footnotesize\ttfamily double Max (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&}]{Arr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+The function returns the maximal value of all elements contained in the array. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Arr} & pointer to the array \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+maximal element of the array 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_arr2_d_a2bb49591960104f03344c72f4cf50d66}\label{class_arr2_d_a2bb49591960104f03344c72f4cf50d66}} 
+\index{Arr2D@{Arr2D}!Str\+Arr@{Str\+Arr}}
+\index{Str\+Arr@{Str\+Arr}!Arr2D@{Arr2D}}
+\subsubsection{\texorpdfstring{Str\+Arr}{StrArr}}
+{\footnotesize\ttfamily int Str\+Arr (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&}]{Arr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+The function returns row counts. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Arr} & pointer to the array \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+row counts, (Arr.\+N) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_arr2_d_a51c6d259f0af23458e423bf168730528}\label{class_arr2_d_a51c6d259f0af23458e423bf168730528}} 
+\index{Arr2D@{Arr2D}!Sum\+Arr@{Sum\+Arr}}
+\index{Sum\+Arr@{Sum\+Arr}!Arr2D@{Arr2D}}
+\subsubsection{\texorpdfstring{Sum\+Arr}{SumArr}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classmatrix}{matrix}} Sum\+Arr (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_arr2_d}{Arr2D}} \&}]{Arr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+The function sums up all matrixes contained in the array. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Arr} & pointer to the array \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+summed matrix 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+math/Phys\+Mtr.\+hpp\item 
+math/Phys\+Mtr.\+cpp\end{DoxyCompactItemize}

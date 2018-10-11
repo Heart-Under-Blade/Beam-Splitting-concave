@@ -1,0 +1,40 @@
+\hypertarget{class_scattering_non_convex}{}\section{Scattering\+Non\+Convex Class Reference}
+\label{class_scattering_non_convex}\index{Scattering\+Non\+Convex@{Scattering\+Non\+Convex}}
+
+
+{\ttfamily \#include $<$Scattering\+Non\+Convex.\+h$>$}
+
+Inheritance diagram for Scattering\+Non\+Convex\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_scattering_non_convex}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_non_convex_a5f3c70da9700ae22364603289182bb1c}\label{class_scattering_non_convex_a5f3c70da9700ae22364603289182bb1c}} 
+{\bfseries Scattering\+Non\+Convex} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, bool is\+Optical\+Path, int n\+Acts)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_non_convex_a7190966638776aecf57152da1cc2c566}\label{class_scattering_non_convex_a7190966638776aecf57152da1cc2c566}} 
+void {\bfseries Split\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scaterred\+Beams) override
+\item 
+\mbox{\Hypertarget{class_scattering_non_convex_a4af996add762e6e0a79f2dfdaf22c6f8}\label{class_scattering_non_convex_a4af996add762e6e0a79f2dfdaf22c6f8}} 
+void {\bfseries Split\+Light\+To\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&) override
+\item 
+\mbox{\Hypertarget{class_scattering_non_convex_a1c771582d9be525919a4ca4abe3a150d}\label{class_scattering_non_convex_a1c771582d9be525919a4ca4abe3a150d}} 
+bool {\bfseries Find\+Rest\+Of\+Beam\+Shape} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+N\+O\+TE\+: пучки выходят со случайно ориентированным порядком вершин 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+scattering/Scattering\+Non\+Convex.\+h\item 
+scattering/Scattering\+Non\+Convex.\+cpp\end{DoxyCompactItemize}

@@ -3,18 +3,19 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void CompleteReflectionIncidence::ComputeDirections(const Beam &incidentBeam,
-                                                     Splitting &splitter) const
+void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
+													Splitting &splitter) const
 {
+	splitter.ComputePolarisationParams(beam);
 	splitter.ComputeReflectedDirection(splitter.inBeam.direction);
-	splitter.inBeam.polarizationBasis = incidentBeam.polarizationBasis;
+	splitter.inBeam.polarizationBasis = beam.polarizationBasis;
 #ifdef _DEBUG // DEB
 	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
 #endif
 }
 
-void CompleteReflectionIncidence::ComputeJonesMatrices(const Beam &incidentBeam,
-                                                       Splitting &splitter) const
+void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &beam,
+													   Splitting &splitter) const
 {
     const double bf = splitter.reRiEff*(1.0 - splitter.cosA*splitter.cosA) - 1.0;
     double im = (bf > 0) ? sqrt(bf) : 0;
@@ -26,7 +27,7 @@ void CompleteReflectionIncidence::ComputeJonesMatrices(const Beam &incidentBeam,
     complex cv = (splitter.cosA - tmp1)/(tmp1 + splitter.cosA);
     complex ch = (tmp0 - sq)/(tmp0 + sq);
 
-    splitter.inBeam.J = incidentBeam.J;
+	splitter.inBeam.J = beam.J;
     splitter.inBeam.MultiplyJonesMatrix(cv, ch);
 }
 

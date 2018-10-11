@@ -5,11 +5,6 @@
 #define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00		0.99999999998254670756866631966593		//1 - cos(89.99999999)
 
-Splitting::Splitting(bool isOpticalPath)
-{
-	m_isOpticalPath = isOpticalPath;
-}
-
 void Splitting::ComputeRiParams(const complex &ri)
 {
 	m_ri = ri;
@@ -20,50 +15,66 @@ void Splitting::ComputeRiParams(const complex &ri)
 	m_cRiIm = 4*re*re*im;
 }
 
-void Splitting::ComputeSplittingParams(const Point3f &dir, const Point3f &normal,
-									   bool isInside)
+void Splitting::ComputeParams(const Point3f &dir, const Vector3f &normal,
+							  bool isInside)
 {
-	m_normal = normal;
-	r = dir/cosA - m_normal;
+	m_hasOutBeam = true;
 
-	if (isInside)
+	if (cosA > EPS_COS_00)
 	{
-		reRiEff = ComputeEffectiveReRi();
-		s = 1.0/(reRiEff*cosA*cosA) - Point3f::Norm(r);
+		m_incidence = new NormalIncidence();
 	}
 	else
 	{
-		double cosA2 = cosA * cosA;
-		double tmp = m_cRiRe + cosA2 - 1.0;
+		m_normal = normal;
+		cosA = Point3f::DotProduct(m_normal, dir);
+		r = dir/cosA - m_normal;
 
-		if (m_cRiIm > FLT_EPSILON)
+		if (isInside)
 		{
-			tmp = sqrt(tmp*tmp + m_cRiIm);
-		}
+			reRiEff = ComputeEffectiveReRi();
+			s = 1.0/(reRiEff*cosA*cosA) - Point3f::Norm(r);
 
-		tmp = (m_cRiRe + 1.0 - cosA2 + tmp)/2.0;
-		s = (tmp/cosA2) - Point3f::Norm(r);
+			if (s < DBL_EPSILON)
+			{
+				m_hasOutBeam = false;
+				m_incidence = new CompleteReflectionIncidence();
+			}
+			else
+			{
+				m_incidence = new RegularIncidence();
+			}
+		}
+		else
+		{
+			m_incidence = new RegularIncidence();
+
+			double cosA2 = cosA * cosA;
+			double tmp = m_cRiRe + cosA2 - 1.0;
+
+			if (m_cRiIm > FLT_EPSILON)
+			{
+				tmp = sqrt(tmp*tmp + m_cRiIm);
+			}
+
+			tmp = (m_cRiRe + 1.0 - cosA2 + tmp)/2.0;
+			s = (tmp/cosA2) - Point3f::Norm(r);
+		}
 	}
+}
+
+void Splitting::ComputePolarisationParams(Beam &beam)
+{
+	Point3f newBasis = (beam.isInside) ? Point3f::CrossProduct(m_normal, beam.direction)
+									   : Point3f::CrossProduct(m_normal, -beam.direction);
+	Point3f::Normalize(newBasis);
+	beam.RotateJMatrix(newBasis);
+	beam.polarizationBasis = newBasis;
 }
 
 double Splitting::ComputeEffectiveReRi() const
 {
 	return (m_cRiRe + sqrt(m_cRiRe2 + m_cRiIm/(cosA*cosA)))/2.0;
-}
-
-bool Splitting::IsCompleteReflection()
-{
-	return s <= DBL_EPSILON;
-}
-
-bool Splitting::IsNormalIncidence()
-{
-	return cosA >= EPS_COS_00;
-}
-
-bool Splitting::IsIncident()
-{
-	return cosA >= EPS_COS_90;
 }
 
 void Splitting::SetBeams(const Polygon &beamShape)
@@ -83,6 +94,11 @@ void Splitting::SetBeams(const Polygon &beamShape)
 void Splitting::SetNormal(const Point3f &normal)
 {
 	m_normal = normal;
+}
+
+bool Splitting::HasOutBeam()
+{
+	return m_hasOutBeam;
 }
 
 double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &facetPoint) const
@@ -118,11 +134,6 @@ double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &fac
 	return path;
 }
 
-void Splitting::ComputeCosA(const Point3f &normal, const Point3f &incidentDir)
-{
-	cosA = Point3f::DotProduct(normal, incidentDir);
-}
-
 double Splitting::ComputeIncidentOpticalPath(const Point3f &direction,
 											 const Point3f &facetPoint)
 {
@@ -137,4 +148,9 @@ double Splitting::ComputeOutgoingOpticalPath(const Beam &beam)
 complex Splitting::GetRi() const
 {
 	return m_ri;
+}
+
+Incidence *Splitting::GetIncidence() const
+{
+	return m_incidence;
 }

@@ -7,10 +7,6 @@
 
 #include <float.h>
 
-#include "RegularIncidence.h"
-#include "NormalIncidence.h"
-#include "CompleteReflectionIncidence.h"
-
 //#define MAX_BEAM_REFL_NUM 32768
 #define MAX_BEAM_REFL_NUM 65536
 //#define MAX_BEAM_REFL_NUM 1048576
@@ -46,8 +42,12 @@ class Scattering
 {
 protected:
 	Particle *m_particle;	///< scattering particle (crystal)
+	int m_nActsMax;
+
 	Splitting m_splitting;
-	int m_maxNActs;
+
+	LightFacetChecker m_lightChecker;
+	BeamFacetChecker m_beamChecker;
 
 	Beam m_originBeam;
 	Beam m_tracingBeams[MAX_BEAM_REFL_NUM];	///< tree of beams (works like stack)
@@ -57,18 +57,11 @@ protected:
 
 	const double EPS_BEAM_ENERGY = 2e-12;
 
-	// incidences
-	RegularIncidence				m_regularIncidence;
-	NormalIncidence					m_normalIncidence;
-	CompleteReflectionIncidence		m_completeReflectionIncidence;
-
 public:
 	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 			   int nActs);
 
-	virtual void ScatterLight(std::vector<Beam> &scaterredBeams) = 0;
-	virtual void ScatterLight(const std::vector<std::vector<int>> &tracks,
-							  std::vector<Beam> &scaterredBeams) = 0;
+	void ScatterLight(std::vector<Beam> &scaterredBeams);
 	void RotateParticle(const Angle &angle);
 
 	double GetIncedentEnergy() const;
@@ -78,19 +71,17 @@ public:
 	Particle *GetParticle() const;
 
 protected:
-	void ComputeOpticalParams(const Incidence &incidence,
-							  const Beam &incidentBeam);
+	virtual void SplitLightToBeams(std::vector<Beam> &scatteredBeams) = 0;
+	virtual void SplitBeams(std::vector<Beam> &scatteredBeams) = 0;
 
-	bool SetOpticalBeamParams(Facet *facet, Beam beam);
+	virtual void FindVisibleFacets(const Beam &beam, FacetChecker &checker,
+								   int begin, int end, Array<Facet*> &facets);
+
+	bool ComputeOpticalBeamParams(Facet *facet, Beam beam);
 
 	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;
 
 	bool IsTerminalAct(const Beam &beam);
-
-	void SplitLightToBeams(Facet *facet);
-
-	void ComputePolarisationParams(const Vector3f &dir,
-								   const Vector3f &facetNormal, Beam &beam);
 
 	Point3f ComputeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
 								bool isIn1, bool isIn2);

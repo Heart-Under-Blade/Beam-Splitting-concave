@@ -16,8 +16,7 @@ struct ParticleFacet
 };
 
 /**
- * @brief The Particle class
- * The base class inherited by other concrete particle classes.
+ * @brief The Particle class is the base class inherited by other concrete particle classes.
  * Vertices are ordered by counterclock-wise direction if you see from outside.
  */
 class Particle : public Array<ParticleFacet>

@@ -1,16 +1,14 @@
 #pragma once
 
-class Beam;
+#include "Beam.h"
+
 class Splitting;
 
 class Incidence
 {
 public:
-	virtual void ComputeDirections(const Beam &beam,
-									Splitting &splitter) const {};
-
-    virtual void ComputeJonesMatrices(const Beam &beam,
-                                      Splitting &splitter) const {};
+	virtual void ComputeDirections(Beam &beam, Splitting &splitter) const {};
+	virtual void ComputeJonesMatrices(Beam &beam, Splitting &splitter) const {};
 
     void ComputeOpticalPaths(const Beam &beam, Splitting &splitter) const;
 };

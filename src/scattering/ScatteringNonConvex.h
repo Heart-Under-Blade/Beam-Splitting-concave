@@ -8,10 +8,6 @@ class ScatteringNonConvex : public Scattering
 public:
 	ScatteringNonConvex(Particle *particle, Light *incidentLight,
 						bool isOpticalPath, int nActs);
-
-	void ScatterLight(std::vector<Beam> &scaterredBeams) override;
-	void ScatterLight(const std::vector<std::vector<int>> &tracks,
-					  std::vector<Beam> &scaterredBeams) override;
 private:
 	void SortFacets_faster(const Point3f &beamDir, Array<Facet*> &facets) const;
 	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir) const;
@@ -23,16 +19,14 @@ private:
 
 	void CutExternalBeam(const Beam &beam, std::vector<Beam> &scaterredBeams);
 
-	void FindVisibleFacets(const Beam &beam, Array<Facet *> &facets);
-	void FindVisibleFacetsForLight(Array<Facet*> &facets) const;
+	void FindVisibleFacetsForBeam(const Beam &beam, Array<Facet *> &facets);
 
 	void SelectVisibleFacets(const Beam &beam, Array<Facet *> &facets);
-	void SelectVisibleFacetsForLight(Array<Facet*> &facets) const;
+	void SelectVisibleFacetsForLight(Array<Facet*> &facets);
 
 	bool IntersectLightWithFacet(const Array<Facet*> &facets, int nCheckedFacets,
 								 PolygonArray &resFacets);
 
-	void SplitLightToBeams();
 
 	bool IsOutgoingBeam(Beam &incidentBeam);
 
@@ -40,9 +34,8 @@ private:
 
 	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
 
-	void PushBeamsToTree(Facet *facet, const PolygonArray &polygons);
-
-	bool IsVisibleFacet(Facet *facet, const Beam &beam); ///< if true then facet is not behind of beam polygon
+	void PushBeamsToTree(Facet *facet, Splitting &splitting,
+						 const PolygonArray &polygons);
 
 	void SplitBeamByVisibleFacets(Beam &beam);
 
@@ -57,9 +50,10 @@ private:
 
 	void PushBeamPartsToTree(const Beam &beam,
 							 const PolygonArray &parts);
-
 protected:
-	void ScatterBeams(std::vector<Beam> &scaterredBeams);
+	void SplitBeams(std::vector<Beam> &scaterredBeams) override;
+	void SplitLightToBeams(std::vector<Beam> &/*scatteredBeams*/) override;
+
 	bool FindRestOfBeamShape(Facet *facet, Beam &beam);
 
 private:

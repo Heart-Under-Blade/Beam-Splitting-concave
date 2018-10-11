@@ -3,8 +3,7 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void NormalIncidence::ComputeDirections(const Beam &beam,
-										 Splitting &splitter) const
+void NormalIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
 {
 	const Point3f &dir = (beam.isInside) ? beam.direction
 										 : -beam.direction;
@@ -18,8 +17,7 @@ void NormalIncidence::ComputeDirections(const Beam &beam,
 #endif
 }
 
-void NormalIncidence::ComputeJonesMatrices(const Beam &beam,
-										   Splitting &splitter) const
+void NormalIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter) const
 {
 	splitter.inBeam.J = beam.J;
 	splitter.outBeam.J = beam.J;

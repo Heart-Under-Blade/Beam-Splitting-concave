@@ -1,0 +1,98 @@
+\hypertarget{class_beam}{}\section{Beam Class Reference}
+\label{class_beam}\index{Beam@{Beam}}
+Inheritance diagram for Beam\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_beam}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_beam_adbc5396fffb1ace9dc8cd19c4fdc88cd}\label{class_beam_adbc5396fffb1ace9dc8cd19c4fdc88cd}} 
+{\bfseries Beam} (const \mbox{\hyperlink{class_beam}{Beam}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_a05e068b4ebc57f440e097c4a63317265}\label{class_beam_a05e068b4ebc57f440e097c4a63317265}} 
+{\bfseries Beam} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_a6341eed626313828398def11cbf3b509}\label{class_beam_a6341eed626313828398def11cbf3b509}} 
+{\bfseries Beam} (\mbox{\hyperlink{class_beam}{Beam}} \&\&other)
+\item 
+\mbox{\Hypertarget{class_beam_ab69efe43df201ea6baf20edb61e46da7}\label{class_beam_ab69efe43df201ea6baf20edb61e46da7}} 
+\mbox{\hyperlink{struct_point3f}{Vector3f}} {\bfseries Rotate\+Spherical} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&polar\+Basis)
+\item 
+\mbox{\Hypertarget{class_beam_a1d64711b13ffc63640f88a8134d74635}\label{class_beam_a1d64711b13ffc63640f88a8134d74635}} 
+void {\bfseries Set\+Polygon} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_a704233632d400ba7d6fa2135e87110e9}\label{class_beam_a704233632d400ba7d6fa2135e87110e9}} 
+void {\bfseries Set\+Light} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&polar\+Basis)
+\item 
+\mbox{\Hypertarget{class_beam_a04d2568a66519b691169ad34de1a9dc5}\label{class_beam_a04d2568a66519b691169ad34de1a9dc5}} 
+void {\bfseries Set\+Light} (const \mbox{\hyperlink{class_light}{Light}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_a9b3e47e4c2f90f1c8f779ef76a19ea04}\label{class_beam_a9b3e47e4c2f90f1c8f779ef76a19ea04}} 
+void {\bfseries Clear} ()
+\item 
+\mbox{\Hypertarget{class_beam_a99651f25bb8382a0fefb45a36f6654de}\label{class_beam_a99651f25bb8382a0fefb45a36f6654de}} 
+void {\bfseries Add\+Optical\+Path} (double path)
+\item 
+\mbox{\Hypertarget{class_beam_af7f8a41463c9fc4d610f26b747459400}\label{class_beam_af7f8a41463c9fc4d610f26b747459400}} 
+void {\bfseries Copy\+Track} (const \mbox{\hyperlink{class_track}{Track}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_a997934d2767596c43a639d56329b96f7}\label{class_beam_a997934d2767596c43a639d56329b96f7}} 
+\mbox{\hyperlink{class_beam}{Beam}} \& {\bfseries operator=} (const \mbox{\hyperlink{class_beam}{Beam}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_a7209c2c0a466af4d5a86949162c102cc}\label{class_beam_a7209c2c0a466af4d5a86949162c102cc}} 
+\mbox{\hyperlink{class_beam}{Beam}} \& {\bfseries operator=} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_a3e1cf69d3a76b5adcab75c5d8b9073d4}\label{class_beam_a3e1cf69d3a76b5adcab75c5d8b9073d4}} 
+\mbox{\hyperlink{class_beam}{Beam}} \& {\bfseries operator=} (const \mbox{\hyperlink{class_light}{Light}} \&other)
+\item 
+\mbox{\Hypertarget{class_beam_af5dbd7b4282b858982753eac9872c741}\label{class_beam_af5dbd7b4282b858982753eac9872c741}} 
+\mbox{\hyperlink{class_beam}{Beam}} \& {\bfseries operator=} (\mbox{\hyperlink{class_beam}{Beam}} \&\&other)
+\item 
+\mbox{\Hypertarget{class_beam_ac330cf4dff292a294912b4ef0a3cd54a}\label{class_beam_ac330cf4dff292a294912b4ef0a3cd54a}} 
+void {\bfseries Set\+Tracing\+Params} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$fac, int actN, bool is\+In)
+\item 
+\mbox{\Hypertarget{class_beam_a2213010326ea833a80eb7c611559a1bb}\label{class_beam_a2213010326ea833a80eb7c611559a1bb}} 
+void {\bfseries Multiply\+Jones\+Matrix} (const \mbox{\hyperlink{classcomplex}{complex}} \&f1, const \mbox{\hyperlink{classcomplex}{complex}} \&f2)
+\item 
+\mbox{\Hypertarget{class_beam_a65280f7435acc8fb35cc704293254d48}\label{class_beam_a65280f7435acc8fb35cc704293254d48}} 
+void {\bfseries Rotate\+J\+Matrix} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&new\+Basis)
+\item 
+\mbox{\Hypertarget{class_beam_ad8f6c8517bddffd413410aa8ee5b8ad2}\label{class_beam_ad8f6c8517bddffd413410aa8ee5b8ad2}} 
+\mbox{\hyperlink{classcomplex}{complex}} \mbox{\hyperlink{class_beam_ad8f6c8517bddffd413410aa8ee5b8ad2}{Diffraction\+Incline}} (const \mbox{\hyperlink{struct_point3d}{Point3d}} \&pt, double wavelength) const
+\begin{DoxyCompactList}\small\item\em calculate diffraction at the point /b pt \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_beam_a17dc5762614f2586d61d1bd3f52a8645}\label{class_beam_a17dc5762614f2586d61d1bd3f52a8645}} 
+\mbox{\hyperlink{class_matrix2x2c}{Matrix2x2c}} \mbox{\hyperlink{class_beam_a17dc5762614f2586d61d1bd3f52a8645}{J}}
+\begin{DoxyCompactList}\small\item\em Jones matrix of beam. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_a9f3f0cba366e2762398a6f58a2e55a02}\label{class_beam_a9f3f0cba366e2762398a6f58a2e55a02}} 
+int \mbox{\hyperlink{class_beam_a9f3f0cba366e2762398a6f58a2e55a02}{act}}
+\begin{DoxyCompactList}\small\item\em number of preview reflections \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_a0d17c3816a24da6cdbd933a32dea711c}\label{class_beam_a0d17c3816a24da6cdbd933a32dea711c}} 
+\mbox{\hyperlink{class_facet}{Facet}} $\ast$ \mbox{\hyperlink{class_beam_a0d17c3816a24da6cdbd933a32dea711c}{facet}}
+\begin{DoxyCompactList}\small\item\em last incident facet \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_a823d6dda3dc96dd2382e41647bda0268}\label{class_beam_a823d6dda3dc96dd2382e41647bda0268}} 
+bool \mbox{\hyperlink{class_beam_a823d6dda3dc96dd2382e41647bda0268}{is\+Inside}}
+\begin{DoxyCompactList}\small\item\em beam state towards the particle (inside or outside) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_a9b914eb95bb720ef405edfb80bda3c41}\label{class_beam_a9b914eb95bb720ef405edfb80bda3c41}} 
+double \mbox{\hyperlink{class_beam_a9b914eb95bb720ef405edfb80bda3c41}{optical\+Path}}
+\begin{DoxyCompactList}\small\item\em optical path of beam \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_a2640aeff4f9d38ff8c6da5cabda0b070}\label{class_beam_a2640aeff4f9d38ff8c6da5cabda0b070}} 
+double \mbox{\hyperlink{class_beam_a2640aeff4f9d38ff8c6da5cabda0b070}{front}}
+\begin{DoxyCompactList}\small\item\em current position of phase front from Ax+\+By+\+Cz+D=0 (where D is front) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_beam_a9329c5f95148c6d5fc95d72ab66d8265}\label{class_beam_a9329c5f95148c6d5fc95d72ab66d8265}} 
+std\+::ostream \& {\bfseries operator$<$$<$} (std\+::ostream \&os, const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+common/Beam.\+h\item 
+common/Beam.\+cpp\end{DoxyCompactItemize}

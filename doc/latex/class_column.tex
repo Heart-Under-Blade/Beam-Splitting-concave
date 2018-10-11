@@ -1,0 +1,72 @@
+\hypertarget{class_column}{}\section{Column Class Reference}
+\label{class_column}\index{Column@{Column}}
+
+
+The \mbox{\hyperlink{class_column}{Column}} class.  
+
+
+
+
+{\ttfamily \#include $<$Column.\+h$>$}
+
+Inheritance diagram for Column\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.947368cm]{class_column}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_column_a7eaee92cd3aed5562652242037e8a58c}\label{class_column_a7eaee92cd3aed5562652242037e8a58c}} 
+{\bfseries Column} (int n\+Facets, const \mbox{\hyperlink{classcomplex}{complex}} \&refr\+Index, const \mbox{\hyperlink{struct_size}{Size}} \&size, bool is\+Non\+Convex)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_column_a6c1b221d3b77b84dc327080bdc832dc8}\label{class_column_a6c1b221d3b77b84dc327080bdc832dc8}} 
+void {\bfseries Set\+Facet\+Params} () override
+\item 
+\mbox{\Hypertarget{class_column_af9e69ceebb96af7c4968e51cdcf7f01a}\label{class_column_af9e69ceebb96af7c4968e51cdcf7f01a}} 
+void {\bfseries Set\+Bases} (\mbox{\hyperlink{class_facet}{Facet}} \&top, \mbox{\hyperlink{class_facet}{Facet}} \&bottom)
+\item 
+\mbox{\Hypertarget{class_column_ac0558dde864e35ac694a4463a0cadb99}\label{class_column_ac0558dde864e35ac694a4463a0cadb99}} 
+void {\bfseries Set\+Two\+Diagonal\+Points} (int index, \mbox{\hyperlink{struct_point3f}{Point3f}} $\ast$facet, double x, double y, double z)
+\item 
+\mbox{\Hypertarget{class_column_aa12a30383a19d408f4d57b9aa2b348a2}\label{class_column_aa12a30383a19d408f4d57b9aa2b348a2}} 
+void {\bfseries Set\+Sides} (\mbox{\hyperlink{class_facet}{Facet}} \&base\+Top, \mbox{\hyperlink{class_facet}{Facet}} \&base\+Bottom)
+\item 
+\mbox{\Hypertarget{class_column_aaff3281532436d6c70c0eaca569665d8}\label{class_column_aaff3281532436d6c70c0eaca569665d8}} 
+void {\bfseries Set\+Side\+Facet\+Params} (int first, int last)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_column_aad02a5a2b9c19658759d57d399e84ce4}\label{class_column_aad02a5a2b9c19658759d57d399e84ce4}} 
+\mbox{\hyperlink{class_couple}{Couple}}$<$ int $>$ {\bfseries m\+\_\+side\+Facet\+I\+Ds}
+\item 
+\mbox{\Hypertarget{class_column_a6d4ce98d9797d37ce75073ab9853e218}\label{class_column_a6d4ce98d9797d37ce75073ab9853e218}} 
+\mbox{\hyperlink{struct_size}{Size}} {\bfseries m\+\_\+size}
+\end{DoxyCompactItemize}
+\subsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_column_a5988fac458953d180b4dcb1a5d2826fa}\label{class_column_a5988fac458953d180b4dcb1a5d2826fa}} 
+static const int \mbox{\hyperlink{class_column_a5988fac458953d180b4dcb1a5d2826fa}{B\+A\+S\+E\+\_\+\+N\+UM}} = 2
+\begin{DoxyCompactList}\small\item\em number of bases \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_column_aa3e3e5d6543b7e34191914ecdd7368bd}\label{class_column_aa3e3e5d6543b7e34191914ecdd7368bd}} 
+static const int \mbox{\hyperlink{class_column_aa3e3e5d6543b7e34191914ecdd7368bd}{S\+I\+D\+E\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+N\+UM}} = 4
+\begin{DoxyCompactList}\small\item\em number of vertex of the each side facet \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_column_a54b8114ca0318ba212dfe2bda99e0918}\label{class_column_a54b8114ca0318ba212dfe2bda99e0918}} 
+static const int \mbox{\hyperlink{class_column_a54b8114ca0318ba212dfe2bda99e0918}{B\+A\+S\+E\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+N\+UM}} = 6
+\begin{DoxyCompactList}\small\item\em number of side facets \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+The \mbox{\hyperlink{class_column}{Column}} class. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+particle/Column.\+h\item 
+particle/Column.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,158 @@
+\hypertarget{class_tracing}{}\section{Tracing Class Reference}
+\label{class_tracing}\index{Tracing@{Tracing}}
+Inheritance diagram for Tracing\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_tracing}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tracing_acd69ed15b6ee7ec09bb032d8d1988ac3}\label{class_tracing_acd69ed15b6ee7ec09bb032d8d1988ac3}} 
+{\bfseries Tracing} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, bool is\+Optical\+Path, int inter\+Reflection\+Number)
+\item 
+\mbox{\Hypertarget{class_tracing_a6bab64b22d0a0821ce687bee1ce134d2}\label{class_tracing_a6bab64b22d0a0821ce687bee1ce134d2}} 
+virtual void {\bfseries Split\+Beam\+By\+Particle} (double, double, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&)
+\item 
+\mbox{\Hypertarget{class_tracing_acbe2779573da6b926db3ddd79f9d2e91}\label{class_tracing_acbe2779573da6b926db3ddd79f9d2e91}} 
+virtual void {\bfseries Split\+Beam\+By\+Particle} (double beta, double gamma, const std\+::vector$<$ std\+::vector$<$ int $>$$>$ \&tracks, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scaterred\+Beams)
+\item 
+\mbox{\Hypertarget{class_tracing_abdc4eaa61b6c1084d6091fe0b5c8496e}\label{class_tracing_abdc4eaa61b6c1084d6091fe0b5c8496e}} 
+double {\bfseries Get\+Incoming\+Energy} () const
+\item 
+\mbox{\Hypertarget{class_tracing_afd7ac36166da74e5f61f96d8373155d2}\label{class_tracing_afd7ac36166da74e5f61f96d8373155d2}} 
+double {\bfseries Compute\+Internal\+Optical\+Path} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, const std\+::vector$<$ int $>$ \&tr)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tracing_a1efb92d44fd7c64e6a10379ef2d14dbd}\label{class_tracing_a1efb92d44fd7c64e6a10379ef2d14dbd}} 
+\mbox{\hyperlink{class_particle}{Particle}} $\ast$ \mbox{\hyperlink{class_tracing_a1efb92d44fd7c64e6a10379ef2d14dbd}{m\+\_\+particle}}
+\begin{DoxyCompactList}\small\item\em scattering particle (crystal) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tracing_aec003fe5ec76d682820343d140bad9ac}\label{class_tracing_aec003fe5ec76d682820343d140bad9ac}} 
+void {\bfseries Set\+Beam\+Optical\+Params} (int facet\+Id, \mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&out\+Beam)
+\item 
+\mbox{\Hypertarget{class_tracing_a978af0f403e8cc7a9bfd356765f9bb48}\label{class_tracing_a978af0f403e8cc7a9bfd356765f9bb48}} 
+void {\bfseries Set\+Beam} (\mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{class_beam}{Beam}} \&other, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&dir, const \mbox{\hyperlink{classcomplex}{complex}} \&coef1, const \mbox{\hyperlink{classcomplex}{complex}} \&coef2) const
+\item 
+\mbox{\Hypertarget{class_tracing_a99dc46565a81fbedc5bfdcd252e310d3}\label{class_tracing_a99dc46565a81fbedc5bfdcd252e310d3}} 
+void {\bfseries Difference} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&subject, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&subj\+Normal, const \mbox{\hyperlink{class_polygon}{Polygon}} \&clip, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&clip\+Normal, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&clip\+Dir, \mbox{\hyperlink{class_polygon}{Polygon}} $\ast$difference, int \&result\+Size) const
+\item 
+\mbox{\Hypertarget{class_tracing_a257f8200eaf682dac765d100391c5d1e}\label{class_tracing_a257f8200eaf682dac765d100391c5d1e}} 
+bool \mbox{\hyperlink{class_tracing_a257f8200eaf682dac765d100391c5d1e}{Intersect}} (int facet\+Id, const \mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{class_polygon}{Polygon}} \&intersection) const
+\begin{DoxyCompactList}\small\item\em N\+O\+TE\+: вершины пучка и грани должны быть ориентированы в одном направлении \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_tracing_a6968bb9a769fc44e191355d70c0cf56e}{Set\+Polygon\+By\+Facet}} (int facet\+Id, \mbox{\hyperlink{class_polygon}{Polygon}} \&polygon) const
+\item 
+\mbox{\Hypertarget{class_tracing_a8d31b476a030d623e9d2390e97af7028}\label{class_tracing_a8d31b476a030d623e9d2390e97af7028}} 
+void {\bfseries Calc\+Optical\+Path} (double cos\+IN, const \mbox{\hyperlink{class_beam}{Beam}} \&incident\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&out\+Beam) const
+\item 
+\mbox{\Hypertarget{class_tracing_a4ea27d6eac331e809307fcbb0acaf822}\label{class_tracing_a4ea27d6eac331e809307fcbb0acaf822}} 
+bool {\bfseries Is\+Terminal\+Beam} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_tracing_a2d192e0a23637161bcd7e49a60f12acc}\label{class_tracing_a2d192e0a23637161bcd7e49a60f12acc}} 
+void {\bfseries Trace\+First\+Beam} (int facet\+Id, \mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&out\+Beam)
+\item 
+void \mbox{\hyperlink{class_tracing_a1eb24906dd1db23bdffbdfc4d7864baf}{Trace\+Secondary\+Beams}} (\mbox{\hyperlink{class_beam}{Beam}} \&incident\+Beam, int facet\+ID, \mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&out\+Beams)
+\item 
+\mbox{\Hypertarget{class_tracing_a9cc5f8b35b0f3e5791ca62cb10e598e4}\label{class_tracing_a9cc5f8b35b0f3e5791ca62cb10e598e4}} 
+void {\bfseries Rotate\+Polarisation\+Plane} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&dir, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&facet\+Normal, \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_tracing_a25e87ab96197e6e13ba206c721305dee}\label{class_tracing_a25e87ab96197e6e13ba206c721305dee}} 
+void {\bfseries Set\+Slopping\+Beam\+Params\+\_\+initial} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&beam\+Dir, double cos\+IN, int facet\+Id, \mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&out\+Beam)
+\item 
+\mbox{\Hypertarget{class_tracing_a2520c8204b764df82682b7ba7655559f}\label{class_tracing_a2520c8204b764df82682b7ba7655559f}} 
+void {\bfseries Set\+Normal\+Incidence\+Beam\+Params} (double cos\+IN, const \mbox{\hyperlink{class_beam}{Beam}} \&incident\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&out\+Beam)
+\item 
+void \mbox{\hyperlink{class_tracing_a426d2564586b18910ddd7407fcc5fd47}{Set\+Slopping\+Incidence\+Beam\+Params}} (double cos\+IN, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&normal, \mbox{\hyperlink{class_beam}{Beam}} \&incident\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&out\+Beam, bool \&is\+Trivial\+Incidence)
+\item 
+\mbox{\Hypertarget{class_tracing_a1eca7de1606439f44b85e6bc03e4f09e}\label{class_tracing_a1eca7de1606439f44b85e6bc03e4f09e}} 
+void {\bfseries Calc\+Facet\+Energy} (int facet\+ID, const \mbox{\hyperlink{class_polygon}{Polygon}} \&lighted\+Polygon)
+\item 
+\mbox{\Hypertarget{class_tracing_a05ee4083d55c4ed73f59ea5a9b90df61}\label{class_tracing_a05ee4083d55c4ed73f59ea5a9b90df61}} 
+void {\bfseries Calc\+Optical\+Path\+\_\+initial} (\mbox{\hyperlink{class_beam}{Beam}} \&in\+Beam, \mbox{\hyperlink{class_beam}{Beam}} \&out\+Beam)
+\item 
+\mbox{\Hypertarget{class_tracing_a2d3d2ac9923c515398381ef2a269e579}\label{class_tracing_a2d3d2ac9923c515398381ef2a269e579}} 
+void {\bfseries Push\+Beam\+To\+Tree} (\mbox{\hyperlink{class_beam}{Beam}} \&beam, int facet\+Id, int level, Location location)
+\item 
+\mbox{\Hypertarget{class_tracing_a43f4c6c8b6641a5bfa009e6805d66e9d}\label{class_tracing_a43f4c6c8b6641a5bfa009e6805d66e9d}} 
+void {\bfseries Push\+Beam\+To\+Tree} (\mbox{\hyperlink{class_beam}{Beam}} \&beam, int facet\+Id, int level)
+\item 
+\mbox{\Hypertarget{class_tracing_ae29bbd14ab8e082325839b55c68115a8}\label{class_tracing_ae29bbd14ab8e082325839b55c68115a8}} 
+void {\bfseries Push\+Beam\+To\+Tree} (\mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_tracing_a1578036bb682b4d769c8baf4df6ad65d}\label{class_tracing_a1578036bb682b4d769c8baf4df6ad65d}} 
+void {\bfseries Set\+Beam\+ID} (\mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tracing_ac8f3377fa73be91dfdb166babed6255e}\label{class_tracing_ac8f3377fa73be91dfdb166babed6255e}} 
+\mbox{\hyperlink{class_facet}{Facet}} $\ast$ {\bfseries m\+\_\+facets}
+\item 
+\mbox{\Hypertarget{class_tracing_a7dd12cbc4e59f2ba8b12ddd4b7aed76e}\label{class_tracing_a7dd12cbc4e59f2ba8b12ddd4b7aed76e}} 
+\mbox{\hyperlink{class_light}{Light}} $\ast$ {\bfseries m\+\_\+incident\+Light}
+\item 
+\mbox{\Hypertarget{class_tracing_aefe49bf5c3bffd54cddb2e0acb028f57}\label{class_tracing_aefe49bf5c3bffd54cddb2e0acb028f57}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries m\+\_\+incident\+Dir}
+\item 
+\mbox{\Hypertarget{class_tracing_aa3e14498c747ce375a67141152f99e10}\label{class_tracing_aa3e14498c747ce375a67141152f99e10}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries m\+\_\+polar\+Basis}
+\item 
+\mbox{\Hypertarget{class_tracing_a26bb838f98169f69219761999f766ca9}\label{class_tracing_a26bb838f98169f69219761999f766ca9}} 
+bool {\bfseries m\+\_\+is\+Optical\+Path}
+\item 
+\mbox{\Hypertarget{class_tracing_a4daab6ec5b297894faa48b9967d0bd4c}\label{class_tracing_a4daab6ec5b297894faa48b9967d0bd4c}} 
+int {\bfseries m\+\_\+inter\+Reflection\+Number}
+\item 
+\mbox{\Hypertarget{class_tracing_ae147e97b0754d62db2ac62fd36be2046}\label{class_tracing_ae147e97b0754d62db2ac62fd36be2046}} 
+\mbox{\hyperlink{class_beam}{Beam}} \mbox{\hyperlink{class_tracing_ae147e97b0754d62db2ac62fd36be2046}{m\+\_\+beam\+Tree}} \mbox{[}M\+A\+X\+\_\+\+B\+E\+A\+M\+\_\+\+R\+E\+F\+L\+\_\+\+N\+UM\mbox{]}
+\begin{DoxyCompactList}\small\item\em tree of beams (works like stack) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_tracing_a92128489e2b53ece6da4cb069c7bcbbd}\label{class_tracing_a92128489e2b53ece6da4cb069c7bcbbd}} 
+int {\bfseries m\+\_\+tree\+Size}
+\item 
+\mbox{\Hypertarget{class_tracing_a2bd7b2c3a83b1db6ccfee67425f88bca}\label{class_tracing_a2bd7b2c3a83b1db6ccfee67425f88bca}} 
+double {\bfseries m\+\_\+incomming\+Energy}
+\item 
+\mbox{\Hypertarget{class_tracing_afb5d56155efe0b3b97a4663da3b48c0c}\label{class_tracing_afb5d56155efe0b3b97a4663da3b48c0c}} 
+const double {\bfseries F\+A\+R\+\_\+\+Z\+O\+N\+E\+\_\+\+D\+I\+S\+T\+A\+N\+CE} = 10000.\+0
+\item 
+\mbox{\Hypertarget{class_tracing_a2a957ec62acbabc7d1f1926bf75a00ff}\label{class_tracing_a2a957ec62acbabc7d1f1926bf75a00ff}} 
+const double {\bfseries E\+P\+S\+\_\+\+B\+E\+A\+M\+\_\+\+E\+N\+E\+R\+GY} = 2e-\/12
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_tracing_a6968bb9a769fc44e191355d70c0cf56e}\label{class_tracing_a6968bb9a769fc44e191355d70c0cf56e}} 
+\index{Tracing@{Tracing}!Set\+Polygon\+By\+Facet@{Set\+Polygon\+By\+Facet}}
+\index{Set\+Polygon\+By\+Facet@{Set\+Polygon\+By\+Facet}!Tracing@{Tracing}}
+\subsubsection{\texorpdfstring{Set\+Polygon\+By\+Facet()}{SetPolygonByFacet()}}
+{\footnotesize\ttfamily void Tracing\+::\+Set\+Polygon\+By\+Facet (\begin{DoxyParamCaption}\item[{int}]{facet\+Id,  }\item[{\mbox{\hyperlink{class_polygon}{Polygon}} \&}]{polygon }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [protected]}}
+
+N\+O\+TE\+: Result beams are ordered in inverse direction \mbox{\Hypertarget{class_tracing_a426d2564586b18910ddd7407fcc5fd47}\label{class_tracing_a426d2564586b18910ddd7407fcc5fd47}} 
+\index{Tracing@{Tracing}!Set\+Slopping\+Incidence\+Beam\+Params@{Set\+Slopping\+Incidence\+Beam\+Params}}
+\index{Set\+Slopping\+Incidence\+Beam\+Params@{Set\+Slopping\+Incidence\+Beam\+Params}!Tracing@{Tracing}}
+\subsubsection{\texorpdfstring{Set\+Slopping\+Incidence\+Beam\+Params()}{SetSloppingIncidenceBeamParams()}}
+{\footnotesize\ttfamily void Tracing\+::\+Set\+Slopping\+Incidence\+Beam\+Params (\begin{DoxyParamCaption}\item[{double}]{cos\+IN,  }\item[{const \mbox{\hyperlink{struct_point3f}{Point3f}} \&}]{normal,  }\item[{\mbox{\hyperlink{class_beam}{Beam}} \&}]{incident\+Beam,  }\item[{\mbox{\hyperlink{class_beam}{Beam}} \&}]{in\+Beam,  }\item[{\mbox{\hyperlink{class_beam}{Beam}} \&}]{out\+Beam,  }\item[{bool \&}]{is\+Trivial\+Incidence }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+trivial incidence
+
+complete internal reflection \mbox{\Hypertarget{class_tracing_a1eb24906dd1db23bdffbdfc4d7864baf}\label{class_tracing_a1eb24906dd1db23bdffbdfc4d7864baf}} 
+\index{Tracing@{Tracing}!Trace\+Secondary\+Beams@{Trace\+Secondary\+Beams}}
+\index{Trace\+Secondary\+Beams@{Trace\+Secondary\+Beams}!Tracing@{Tracing}}
+\subsubsection{\texorpdfstring{Trace\+Secondary\+Beams()}{TraceSecondaryBeams()}}
+{\footnotesize\ttfamily void Tracing\+::\+Trace\+Secondary\+Beams (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_beam}{Beam}} \&}]{incident\+Beam,  }\item[{int}]{facet\+ID,  }\item[{\mbox{\hyperlink{class_beam}{Beam}} \&}]{in\+Beam,  }\item[{std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&}]{out\+Beams }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+beam is not incident to this facet
+
+normal incidence
+
+slopping incidence 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+tracing/Tracing.\+h\item 
+tracing/Tracing.\+cpp\end{DoxyCompactItemize}

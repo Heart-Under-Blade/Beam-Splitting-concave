@@ -1,0 +1,125 @@
+\hypertarget{class_particle}{}\section{Particle Class Reference}
+\label{class_particle}\index{Particle@{Particle}}
+
+
+The \mbox{\hyperlink{class_particle}{Particle}} class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-\/wise direction if you see from outside.  
+
+
+
+
+{\ttfamily \#include $<$Particle.\+h$>$}
+
+Inheritance diagram for Particle\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.947368cm]{class_particle}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_particle_ade07dfa403a16f3a9faad7fec89d658a}\label{class_particle_ade07dfa403a16f3a9faad7fec89d658a}} 
+{\bfseries Particle} (int n\+Facets, const \mbox{\hyperlink{classcomplex}{complex}} \&refr\+Index, bool is\+Non\+Convex=false)
+\item 
+\mbox{\Hypertarget{class_particle_a3ea99e51c15fc69406a9d4812eff7248}\label{class_particle_a3ea99e51c15fc69406a9d4812eff7248}} 
+\mbox{\hyperlink{class_facet}{Facet}} $\ast$ {\bfseries Get\+Actual\+Facet} (int i)
+\item 
+\mbox{\Hypertarget{class_particle_a6877eea54e7fb816809dd2be6cd5acdc}\label{class_particle_a6877eea54e7fb816809dd2be6cd5acdc}} 
+void {\bfseries Set\+From\+File} (const std\+::string \&filename)
+\item 
+\mbox{\Hypertarget{class_particle_a55618b93d3d41f7d16af88f28dc4281b}\label{class_particle_a55618b93d3d41f7d16af88f28dc4281b}} 
+void {\bfseries Rotate} (const \mbox{\hyperlink{class_angle}{Angle}} \&angle)
+\item 
+\mbox{\Hypertarget{class_particle_a62328fcaf288317fa6667ee9bba90de4}\label{class_particle_a62328fcaf288317fa6667ee9bba90de4}} 
+void {\bfseries Move} (float dx, float dy, float dz)
+\item 
+\mbox{\Hypertarget{class_particle_a3e8f5b164ae0571114a98c2bafd15892}\label{class_particle_a3e8f5b164ae0571114a98c2bafd15892}} 
+void {\bfseries Fix} ()
+\item 
+\mbox{\Hypertarget{class_particle_aecdc7104b12fab4e8485ef56546b4e1b}\label{class_particle_aecdc7104b12fab4e8485ef56546b4e1b}} 
+void {\bfseries Concate} (const std\+::vector$<$ \mbox{\hyperlink{class_particle}{Particle}} $>$ \&parts)
+\item 
+double \mbox{\hyperlink{class_particle_ab06b62449ba3213e3f8bf580a910dd66}{Get\+Rotation\+Radius}} () const
+\begin{DoxyCompactList}\small\item\em Get\+Rotation\+Radius. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_particle_a5883ada02784b29b5cb1851f16f48066}\label{class_particle_a5883ada02784b29b5cb1851f16f48066}} 
+const \mbox{\hyperlink{classcomplex}{complex}} \& {\bfseries Get\+Refractive\+Index} () const
+\item 
+\mbox{\Hypertarget{class_particle_a9345bfffdb91b7beb9ec48c9af29141e}\label{class_particle_a9345bfffdb91b7beb9ec48c9af29141e}} 
+void {\bfseries Set\+Refractive\+Index} (const \mbox{\hyperlink{classcomplex}{complex}} \&value)
+\item 
+\mbox{\Hypertarget{class_particle_a29fe705a8c842ab5e31ccb94cf36fe88}\label{class_particle_a29fe705a8c842ab5e31ccb94cf36fe88}} 
+const \mbox{\hyperlink{class_orientation}{Symmetry}} \& {\bfseries Get\+Symmetry} () const
+\item 
+\mbox{\Hypertarget{class_particle_a9e5414148dbe4bdcee8a96b9db7d1b6e}\label{class_particle_a9e5414148dbe4bdcee8a96b9db7d1b6e}} 
+virtual void {\bfseries Get\+Partical\+Facet\+Id\+Range} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$, int \&, int \&) const
+\item 
+\mbox{\Hypertarget{class_particle_a7bc2c366cbceb9fcae17d4cf8a318a73}\label{class_particle_a7bc2c366cbceb9fcae17d4cf8a318a73}} 
+bool {\bfseries Is\+Non\+Convex} () const
+\item 
+\mbox{\Hypertarget{class_particle_aa93506becba0fc23f34c8da36c2b846b}\label{class_particle_aa93506becba0fc23f34c8da36c2b846b}} 
+void {\bfseries Output} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_particle_a57ad5c8ac7c6a4af8546210c5b4b2439}\label{class_particle_a57ad5c8ac7c6a4af8546210c5b4b2439}} 
+bool {\bfseries is\+Aggregated} = false
+\item 
+\mbox{\Hypertarget{class_particle_a0be211b0c7c5a3148ed7bde2d15da36d}\label{class_particle_a0be211b0c7c5a3148ed7bde2d15da36d}} 
+\mbox{\hyperlink{class_angle}{Angle}} {\bfseries rot\+Angle}
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_particle_a8df38703bbda2e838467a51a650624dc}\label{class_particle_a8df38703bbda2e838467a51a650624dc}} 
+void {\bfseries Set\+Default\+Normals} ()
+\item 
+\mbox{\Hypertarget{class_particle_ab48482d12c9e0cf4eaa3a23ba9931d44}\label{class_particle_ab48482d12c9e0cf4eaa3a23ba9931d44}} 
+void {\bfseries Set\+Default\+Centers} ()
+\item 
+\mbox{\Hypertarget{class_particle_a77d1dccca2dc8b6c2f28025256f681b8}\label{class_particle_a77d1dccca2dc8b6c2f28025256f681b8}} 
+void {\bfseries Reset} ()
+\item 
+\mbox{\Hypertarget{class_particle_af7f8367651719a52accf283d433140bd}\label{class_particle_af7f8367651719a52accf283d433140bd}} 
+void {\bfseries Set\+Symmetry} (double beta, double gamma, double alpha=0)
+\item 
+\mbox{\Hypertarget{class_particle_a33bf0c9eb07d48eb3e0c218554f3e20d}\label{class_particle_a33bf0c9eb07d48eb3e0c218554f3e20d}} 
+virtual void {\bfseries Set\+Facet\+Params} ()
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_particle_af8aaf3ce5bd6c6525543b98a23fb44a0}\label{class_particle_af8aaf3ce5bd6c6525543b98a23fb44a0}} 
+\mbox{\hyperlink{class_orientation}{Symmetry}} \mbox{\hyperlink{class_particle_af8aaf3ce5bd6c6525543b98a23fb44a0}{m\+\_\+symmetry}}
+\begin{DoxyCompactList}\small\item\em angle of particle symmetry \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_particle_a2285c983db1931fd823a44d104ddb578}\label{class_particle_a2285c983db1931fd823a44d104ddb578}} 
+\mbox{\hyperlink{classcomplex}{complex}} \mbox{\hyperlink{class_particle_a2285c983db1931fd823a44d104ddb578}{m\+\_\+refractive\+Index}}
+\begin{DoxyCompactList}\small\item\em complex value of refractive index of the particle \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_particle_a95ebda6d49685a57da79d849fca898ab}\label{class_particle_a95ebda6d49685a57da79d849fca898ab}} 
+bool {\bfseries m\+\_\+is\+Non\+Convex}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \mbox{\hyperlink{class_particle}{Particle}} class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-\/wise direction if you see from outside. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_particle_ab06b62449ba3213e3f8bf580a910dd66}\label{class_particle_ab06b62449ba3213e3f8bf580a910dd66}} 
+\index{Particle@{Particle}!Get\+Rotation\+Radius@{Get\+Rotation\+Radius}}
+\index{Get\+Rotation\+Radius@{Get\+Rotation\+Radius}!Particle@{Particle}}
+\subsubsection{\texorpdfstring{Get\+Rotation\+Radius()}{GetRotationRadius()}}
+{\footnotesize\ttfamily double Particle\+::\+Get\+Rotation\+Radius (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Get\+Rotation\+Radius. 
+
+\begin{DoxyReturn}{Returns}
+The distance from beginning of the center of coordinate system to the farthest point of particle. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+particle/Particle.\+h\item 
+particle/Particle.\+cpp\end{DoxyCompactItemize}

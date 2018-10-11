@@ -3,9 +3,10 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void RegularIncidence::ComputeDirections(const Beam &beam,
-										 Splitting &splitter) const
+void RegularIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
 {
+	splitter.ComputePolarisationParams(beam);
+
 	if (beam.isInside)
 	{
 		splitter.ComputeReflectedDirection(splitter.inBeam.direction);
@@ -24,8 +25,7 @@ void RegularIncidence::ComputeDirections(const Beam &beam,
 	splitter.outBeam.polarizationBasis = beam.polarizationBasis;
 }
 
-void RegularIncidence::ComputeJonesMatrices(const Beam &beam,
-											Splitting &splitter) const
+void RegularIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter) const
 {
 	splitter.inBeam.J = beam.J;
 	splitter.outBeam.J = beam.J;

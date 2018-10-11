@@ -17,8 +17,7 @@ using namespace std;
 Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 					   int nActs)
 	: m_particle(particle),
-	  m_splitting(isOpticalPath),
-	  m_maxNActs(nActs)
+	  m_nActsMax(nActs)
 {
 	m_originBeam.direction = incidentLight->direction;
 	m_originBeam.direction.d_param = incidentLight->direction.d_param;
@@ -26,6 +25,17 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 	m_originBeam.isInside = false;
 
 	m_splitting.ComputeRiParams(m_particle->GetRefractiveIndex());
+}
+
+void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
+{
+#ifdef _CHECK_ENERGY_BALANCE
+	m_incidentEnergy = 0;
+#endif
+	m_treeSize = 0;
+
+	SplitLightToBeams(scatteredBeams);
+	SplitBeams(scatteredBeams);
 }
 
 // REF: перенести в Tracks
@@ -43,72 +53,39 @@ void Scattering::PushBeamToTree(Beam &beam, Facet *facet, int level, bool isIn)
 	m_tracingBeams[m_treeSize++] = beam;
 }
 
-bool Scattering::SetOpticalBeamParams(Facet *facet, Beam beam)
+bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
 {
 #ifdef _DEBUG // DEB
 	m_splitting.inBeam.pols = beam.pols;
 	m_splitting.outBeam.pols = beam.pols;
 #endif
-	bool hasOutBeam = true;
+	m_splitting.ComputeParams(beam.direction, facet->normal[!beam.isInside], beam.isInside);
 
-	if (m_splitting.IsNormalIncidence()) // normal incidence
-	{
-		ComputeOpticalParams(m_normalIncidence, beam);
-	}
-	else // regular incidence
-	{
-		if (beam.isInside)
-		{
-			m_splitting.ComputeSplittingParams(beam.direction, facet->ex_normal, beam.isInside);
-			ComputePolarisationParams(beam.direction, facet->ex_normal, beam);
+	Incidence *incidence = m_splitting.GetIncidence();
+	incidence->ComputeDirections(beam, m_splitting);
+	incidence->ComputeJonesMatrices(beam, m_splitting);
+	incidence->ComputeOpticalPaths(beam, m_splitting);
 
-			hasOutBeam = !m_splitting.IsCompleteReflection();
-
-			if (hasOutBeam)
-			{
-				ComputeOpticalParams(m_regularIncidence, beam);
-			}
-			else // complete internal reflection incidence
-			{
-				ComputeOpticalParams(m_completeReflectionIncidence, beam);
-			}
-		}
-		else // beam is external
-		{
-			m_splitting.ComputeCosA(facet->in_normal, beam.direction);
-			m_splitting.ComputeSplittingParams(beam.direction, facet->in_normal, beam.isInside);
-			ComputePolarisationParams(-beam.direction, facet->in_normal, beam);
-			ComputeOpticalParams(m_regularIncidence, beam);
-		}
-	}
-
-	return hasOutBeam;
-}
-
-void Scattering::ComputeOpticalParams(const Incidence &incidence,
-									  const Beam &incidentBeam)
-{
-	incidence.ComputeDirections(incidentBeam, m_splitting);
-	incidence.ComputeJonesMatrices(incidentBeam, m_splitting);
-	incidence.ComputeOpticalPaths(incidentBeam, m_splitting);
-}
-
-void Scattering::ComputePolarisationParams(const Vector3f &dir,
-										   const Vector3f &facetNormal, Beam &beam)
-{
-	Point3f newBasis = Point3f::CrossProduct(facetNormal, dir);
-	Point3f::Normalize(newBasis);
-	beam.RotateJMatrix(newBasis);
-	beam.polarizationBasis = newBasis;
-}
-
-void Scattering::SplitLightToBeams(Facet *facet)
-{
+	return m_splitting.HasOutBeam();
 }
 
 Particle *Scattering::GetParticle() const
 {
 	return m_particle;
+}
+
+void Scattering::FindVisibleFacets(const Beam &beam, FacetChecker &checker,
+								   int begin, int end, Array<Facet*> &facets)
+{
+	for (int i = begin; i < end; ++i)
+	{
+		Facet *facet = m_particle->GetActualFacet(i);
+
+		if (checker.IsVisibleFacet(facet, beam))
+		{
+			facets.Add(facet);
+		}
+	}
 }
 
 void Scattering::ComputeFacetEnergy(const Vector3f &facetNormal,
@@ -129,57 +106,6 @@ void Scattering::PushBeamToTree(Beam &beam, const Beam &oldBeam,
 	PushBeamToTree(beam, facet, oldBeam.act+1, isIn);
 }
 
-// TODO: пофиксить
-void Scattering::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
-							  std::vector<Beam> &/*outBeams*/)
-{
-//	m_particle->Rotate(beta, gamma, 0);
-
-//	for (int i = 0; i < tracks.size(); ++i)
-//	{
-//		int facetId = tracks.at(i).at(0);
-//		const Point3f &extNormal = m_facets[facetId].ex_normal;
-
-//		double cosIN = DotProduct(m_incidentDir, extNormal);
-
-//		if (cosIN < EPS_COS_90) /// beam is not incident to this facet
-//		{
-//			continue;
-//		}
-
-//		std::vector<Beam> outBuff;
-//		Beam incidentBeam;
-
-//		// first incident beam
-//		{
-//			Beam outBeam;
-//			SplitLightToBeams(facetId, incidentBeam, outBeam);
-//			outBuff.push_back(outBeam);
-//		}
-
-//		int size = tracks.at(i).size();
-
-//		try // internal beams
-//		{
-//			for (int j = 1; j < size; ++j)
-//			{
-//				facetId = tracks.at(i).at(j);
-
-//				Beam inBeam;
-//				SplitSecondaryBeams(incidentBeam, facetId, inBeam, outBuff);
-
-//				incidentBeam = inBeam;
-//			}
-//		}
-//		catch (const std::exception &)
-//		{
-//			continue;
-//		}
-
-//		outBeams.push_back(outBuff.back());
-//	}
-}
-
 void Scattering::RotateParticle(const Angle &angle)
 {
 	m_particle->Rotate(angle);
@@ -187,7 +113,7 @@ void Scattering::RotateParticle(const Angle &angle)
 
 bool Scattering::IsTerminalAct(const Beam &beam)
 {
-	return (beam.act >= m_maxNActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
+	return (beam.act >= m_nActsMax) || (beam.J.Norm() < EPS_BEAM_ENERGY);
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
@@ -216,13 +142,11 @@ Point3f Scattering::ComputeBeamDirection(const Vector3f &oldDir,
 
 	if (!isIn1)
 	{
-		m_splitting.ComputeCosA(oldDir, -normal);
-		m_splitting.ComputeSplittingParams(oldDir, -normal, isIn1);
+		m_splitting.ComputeParams(oldDir, -normal, isIn1);
 	}
 	else
 	{
-		m_splitting.ComputeCosA(oldDir, normal);
-		m_splitting.ComputeSplittingParams(oldDir, normal, isIn1);
+		m_splitting.ComputeParams(oldDir, normal, isIn1);
 	}
 
 	if (isIn1 == isIn2)
@@ -266,9 +190,7 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 		if (isIn2)
 		{
 #ifdef _DEBUG // DEB
-			m_splitting.ComputeCosA(dir, f1->ex_normal);
-			double reRi = m_splitting.ComputeEffectiveReRi();
-			len *= sqrt(reRi);
+			len *= sqrt(real(m_splitting.GetRi()));
 #endif
 			path.internal += len;
 		}

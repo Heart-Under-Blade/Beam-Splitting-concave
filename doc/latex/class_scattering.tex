@@ -1,0 +1,118 @@
+\hypertarget{class_scattering}{}\section{Scattering Class Reference}
+\label{class_scattering}\index{Scattering@{Scattering}}
+Inheritance diagram for Scattering\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_scattering}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_ac71a8e1647ec322a7673a8d17d4bf771}\label{class_scattering_ac71a8e1647ec322a7673a8d17d4bf771}} 
+{\bfseries Scattering} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, bool is\+Optical\+Path, int n\+Acts)
+\item 
+\mbox{\Hypertarget{class_scattering_ab428bc4f6c26d02bcf7044e653cdf523}\label{class_scattering_ab428bc4f6c26d02bcf7044e653cdf523}} 
+void {\bfseries Scatter\+Light} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scaterred\+Beams)
+\item 
+\mbox{\Hypertarget{class_scattering_ad6e04f119afe24a685dcc3db8fc3831d}\label{class_scattering_ad6e04f119afe24a685dcc3db8fc3831d}} 
+void {\bfseries Rotate\+Particle} (const \mbox{\hyperlink{class_angle}{Angle}} \&angle)
+\item 
+\mbox{\Hypertarget{class_scattering_a47ef76beb93ec117c2f10c7cf7f07152}\label{class_scattering_a47ef76beb93ec117c2f10c7cf7f07152}} 
+double {\bfseries Get\+Incedent\+Energy} () const
+\item 
+\mbox{\Hypertarget{class_scattering_ac628a914ca4f93914df8cc3e64b03636}\label{class_scattering_ac628a914ca4f93914df8cc3e64b03636}} 
+\mbox{\hyperlink{struct_optical_path}{Optical\+Path}} {\bfseries Compute\+Optical\+Path} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&start\+Point, std\+::vector$<$ int $>$ track)
+\item 
+\mbox{\Hypertarget{class_scattering_ac099d494af981dc3577888f2878ddcc0}\label{class_scattering_ac099d494af981dc3577888f2878ddcc0}} 
+\mbox{\hyperlink{class_particle}{Particle}} $\ast$ {\bfseries Get\+Particle} () const
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_a781dd840b4d4e70db1e86a4d12420cec}\label{class_scattering_a781dd840b4d4e70db1e86a4d12420cec}} 
+virtual void {\bfseries Split\+Light\+To\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams)=0
+\item 
+\mbox{\Hypertarget{class_scattering_a785c2bb1080e9cd0cdf00c75ac82299c}\label{class_scattering_a785c2bb1080e9cd0cdf00c75ac82299c}} 
+virtual void {\bfseries Scatter\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams)=0
+\item 
+\mbox{\Hypertarget{class_scattering_ac5a9e79817c487d63f422a9abb529b45}\label{class_scattering_ac5a9e79817c487d63f422a9abb529b45}} 
+void {\bfseries Compute\+Optical\+Params} (const \mbox{\hyperlink{class_incidence}{Incidence}} \&incidence, const \mbox{\hyperlink{class_beam}{Beam}} \&incident\+Beam)
+\item 
+\mbox{\Hypertarget{class_scattering_aad22434637775b6f2eb881419935316a}\label{class_scattering_aad22434637775b6f2eb881419935316a}} 
+bool {\bfseries Set\+Optical\+Beam\+Params} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, \mbox{\hyperlink{class_beam}{Beam}} beam)
+\item 
+void \mbox{\hyperlink{class_scattering_abdf7a6563ec37996654fa59ab99bab3f}{Set\+Polygon\+By\+Facet}} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, \mbox{\hyperlink{class_polygon}{Polygon}} \&polygon) const
+\item 
+\mbox{\Hypertarget{class_scattering_abe93cd1898e52b1601c96735020454fe}\label{class_scattering_abe93cd1898e52b1601c96735020454fe}} 
+bool {\bfseries Is\+Terminal\+Act} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_scattering_a104a9e3ee72b4449d239f29303556811}\label{class_scattering_a104a9e3ee72b4449d239f29303556811}} 
+void {\bfseries Compute\+Polarisation\+Params} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&facet\+Normal, \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_scattering_acccb70145215368218d90cf4bd93b63b}\label{class_scattering_acccb70145215368218d90cf4bd93b63b}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries Compute\+Beam\+Direction} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&old\+Dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&normal, bool is\+In1, bool is\+In2)
+\item 
+\mbox{\Hypertarget{class_scattering_ac1b11b96eaa2a09c4595f4d0f65c5dbe}\label{class_scattering_ac1b11b96eaa2a09c4595f4d0f65c5dbe}} 
+void {\bfseries Compute\+Facet\+Energy} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&facet\+Normal, const \mbox{\hyperlink{class_polygon}{Polygon}} \&lighted\+Polygon)
+\item 
+\mbox{\Hypertarget{class_scattering_a8d95065ea7cee053cd7a6bc7540896f6}\label{class_scattering_a8d95065ea7cee053cd7a6bc7540896f6}} 
+void {\bfseries Push\+Beam\+To\+Tree} (\mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, int level, bool is\+In)
+\item 
+\mbox{\Hypertarget{class_scattering_a1059cb7f6c1951fdf44bb5ed25a95be4}\label{class_scattering_a1059cb7f6c1951fdf44bb5ed25a95be4}} 
+void {\bfseries Push\+Beam\+To\+Tree} (\mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{class_beam}{Beam}} \&old\+Beam, const \mbox{\hyperlink{class_big_integer}{Id\+Type}} \&new\+Id, \mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, bool is\+In)
+\item 
+\mbox{\Hypertarget{class_scattering_a7384cc5c2328ab37d7235a3b858eede0}\label{class_scattering_a7384cc5c2328ab37d7235a3b858eede0}} 
+\mbox{\hyperlink{class_big_integer}{Id\+Type}} {\bfseries Recompute\+Track\+Id} (const \mbox{\hyperlink{class_big_integer}{Id\+Type}} \&old\+Id, int facet\+Id)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_aabab038d88c737bb87dd777175b9d541}\label{class_scattering_aabab038d88c737bb87dd777175b9d541}} 
+\mbox{\hyperlink{class_particle}{Particle}} $\ast$ \mbox{\hyperlink{class_scattering_aabab038d88c737bb87dd777175b9d541}{m\+\_\+particle}}
+\begin{DoxyCompactList}\small\item\em scattering particle (crystal) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_aa4535b7a8928911c533fb4f6f026e75d}\label{class_scattering_aa4535b7a8928911c533fb4f6f026e75d}} 
+\mbox{\hyperlink{class_splitting}{Splitting}} {\bfseries m\+\_\+splitting}
+\item 
+\mbox{\Hypertarget{class_scattering_ad606af7cb9ada7951ab591d648fb9bbc}\label{class_scattering_ad606af7cb9ada7951ab591d648fb9bbc}} 
+int {\bfseries m\+\_\+n\+Acts\+Max}
+\item 
+\mbox{\Hypertarget{class_scattering_a82f0c3297cbde80cd091a503428f2dc5}\label{class_scattering_a82f0c3297cbde80cd091a503428f2dc5}} 
+\mbox{\hyperlink{class_beam}{Beam}} {\bfseries m\+\_\+origin\+Beam}
+\item 
+\mbox{\Hypertarget{class_scattering_afc1ba0bd9bfe75cd35c389899d091ef7}\label{class_scattering_afc1ba0bd9bfe75cd35c389899d091ef7}} 
+\mbox{\hyperlink{class_beam}{Beam}} \mbox{\hyperlink{class_scattering_afc1ba0bd9bfe75cd35c389899d091ef7}{m\+\_\+tracing\+Beams}} \mbox{[}M\+A\+X\+\_\+\+B\+E\+A\+M\+\_\+\+R\+E\+F\+L\+\_\+\+N\+UM\mbox{]}
+\begin{DoxyCompactList}\small\item\em tree of beams (works like stack) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_adb62197742a6ee9e1b9c3e988a4a89ee}\label{class_scattering_adb62197742a6ee9e1b9c3e988a4a89ee}} 
+int {\bfseries m\+\_\+tree\+Size}
+\item 
+\mbox{\Hypertarget{class_scattering_a698c33191f5e87477b37b27e36bca0a2}\label{class_scattering_a698c33191f5e87477b37b27e36bca0a2}} 
+double {\bfseries m\+\_\+incident\+Energy}
+\item 
+\mbox{\Hypertarget{class_scattering_a172f9184deb0e131762f21cd33a02788}\label{class_scattering_a172f9184deb0e131762f21cd33a02788}} 
+const double {\bfseries E\+P\+S\+\_\+\+B\+E\+A\+M\+\_\+\+E\+N\+E\+R\+GY} = 2e-\/12
+\item 
+\mbox{\Hypertarget{class_scattering_a3f471d07fae2b3c9eede14e9ea543f50}\label{class_scattering_a3f471d07fae2b3c9eede14e9ea543f50}} 
+\mbox{\hyperlink{class_regular_incidence}{Regular\+Incidence}} {\bfseries m\+\_\+regular\+Incidence}
+\item 
+\mbox{\Hypertarget{class_scattering_a42d796c6e0ca51fd73022a4f54e457f5}\label{class_scattering_a42d796c6e0ca51fd73022a4f54e457f5}} 
+\mbox{\hyperlink{class_normal_incidence}{Normal\+Incidence}} {\bfseries m\+\_\+normal\+Incidence}
+\item 
+\mbox{\Hypertarget{class_scattering_a7dc66db9ff2cf273cd19676f69cdae3a}\label{class_scattering_a7dc66db9ff2cf273cd19676f69cdae3a}} 
+\mbox{\hyperlink{class_complete_reflection_incidence}{Complete\+Reflection\+Incidence}} {\bfseries m\+\_\+complete\+Reflection\+Incidence}
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_scattering_abdf7a6563ec37996654fa59ab99bab3f}\label{class_scattering_abdf7a6563ec37996654fa59ab99bab3f}} 
+\index{Scattering@{Scattering}!Set\+Polygon\+By\+Facet@{Set\+Polygon\+By\+Facet}}
+\index{Set\+Polygon\+By\+Facet@{Set\+Polygon\+By\+Facet}!Scattering@{Scattering}}
+\subsubsection{\texorpdfstring{Set\+Polygon\+By\+Facet()}{SetPolygonByFacet()}}
+{\footnotesize\ttfamily void Scattering\+::\+Set\+Polygon\+By\+Facet (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_facet}{Facet}} $\ast$}]{facet,  }\item[{\mbox{\hyperlink{class_polygon}{Polygon}} \&}]{polygon }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [protected]}}
+
+N\+O\+TE\+: Result beams are ordered in inverse direction 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+scattering/Scattering.\+h\item 
+scattering/Scattering.\+cpp\end{DoxyCompactItemize}

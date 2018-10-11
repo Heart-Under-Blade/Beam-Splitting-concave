@@ -1,6 +1,5 @@
 #include "Incidence.h"
 
-#include "Beam.h"
 #include "Splitting.h"
 
 void Incidence::ComputeOpticalPaths(const Beam &beam, Splitting &splitter) const

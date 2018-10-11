@@ -41,6 +41,11 @@ public:
 	T last;
 };
 
+/**
+ * @brief Three Euler angles. The units (degrees or radians) is defined by yours
+ * i.e. if you consider units of this object as degrees from beginning
+ * then you can call ToRadian() to convert angles of the object from degrees to radians.
+ */
 class Angle
 {
 public:
@@ -56,6 +61,9 @@ public:
 		gamma = g;
 	}
 
+	/**
+	 * @brief Convert angles to radians
+	 */
 	void ToRadian()
 	{
 		alpha = DegToRad(alpha);
@@ -63,6 +71,9 @@ public:
 		gamma = DegToRad(gamma);
 	}
 
+	/**
+	 * @brief Convert angles to degrees
+	 */
 	void ToDegree()
 	{
 		alpha = RadToDeg(alpha);
