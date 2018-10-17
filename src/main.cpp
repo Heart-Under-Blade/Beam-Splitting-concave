@@ -281,9 +281,6 @@ int main(int argc, const char* argv[])
 		TracerGO tracer(particle, reflNum, dirName);
 		tracer.SetIsOutputGroups(isOutputGroups);
 
-		AngleRange beta = GetRange(args, "b", particle);
-		AngleRange gamma = GetRange(args, "g", particle);
-
 		HandlerGO *handler;
 
 		if (args.IsCatched("tr"))
@@ -298,7 +295,19 @@ int main(int argc, const char* argv[])
 
 		handler->SetAbsorbtionAccounting(isAbs);
 		tracer.SetHandler(handler);
-		tracer.TraceRandom(beta, gamma);
+
+		if (args.IsCatched("fixed"))
+		{
+			double beta  = args.GetDoubleValue("fixed", 0);
+			double gamma = args.GetDoubleValue("fixed", 1);
+			tracer.TraceFixed(beta, gamma);
+		}
+		else if (args.IsCatched("random"))
+		{
+			AngleRange beta = GetRange(args, "b", particle);
+			AngleRange gamma = GetRange(args, "g", particle);
+			tracer.TraceRandom(beta, gamma);
+		}
 
 		delete handler;
 	}

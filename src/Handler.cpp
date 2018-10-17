@@ -25,11 +25,11 @@ void Handler::HandleBeams(std::vector<Beam> &/*beams*/)
 
 void Handler::SetTracks(Tracks *tracks)
 {
-	if (!m_tracks)
-	{
-		std::cerr << "Tracks are not set" << std::endl;
-		throw std::exception();
-	}
+//	if (!m_tracks)
+//	{
+//		std::cerr << "Tracks are not set" << std::endl;
+//		throw std::exception();
+//	}
 
 	m_tracks = tracks;
 }
@@ -375,7 +375,7 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 	{
 		int groupId = m_tracks->FindGroupByTrackId(beam.id);
 
-		if (groupId >= 0)
+		if (groupId >= 0 || !m_tracks->shouldComputeTracksOnly)
 		{
 			beam.RotateSpherical(-m_incidentLight->direction,
 								 m_incidentLight->polarizationBasis);
@@ -393,22 +393,26 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 void HandlerTracksGO::WriteMatricesToFile(string &destName)
 {
 	string dir = CreateFolder(destName);
+	dir += destName + "\\";
 
 	for (size_t i = 0; i < m_tracksContrib.size(); ++i)
 	{
 		if ((*m_tracks)[i].size != 0)
 		{
 			string subname = (*m_tracks)[i].CreateGroupName();
-			AverageOverAlpha(0, m_normIndex, m_tracksContrib[i]);
+//			AverageOverAlpha(true, m_normIndex, m_tracksContrib[i]);
 			WriteToFile(m_tracksContrib[i], m_normIndex, dir + subname);
 		}
 	}
+
+	AverageOverAlpha(true, m_normIndex, m_totalContrib);
+	WriteToFile(m_totalContrib, m_normIndex, dir + destName + "_all");
 }
 
 void HandlerTotalGO::WriteMatricesToFile(string &destName)
 {
 	destName += "_all";
-	AverageOverAlpha(0, m_normIndex, m_totalContrib);
+	AverageOverAlpha(true, m_normIndex, m_totalContrib);
 	WriteToFile(m_totalContrib, m_normIndex, destName);
 }
 
