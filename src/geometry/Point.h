@@ -21,20 +21,22 @@ struct Point3f
     Point3f(float x, float y, float z, float d);
     Point3f(const Point3f &other);
 
+	bool IsEqualTo(const Point3f &other, float eps) const;
+
     Point3f &operator = (const Point3f &other);
     Point3f operator * (double value) const;
     Point3f operator / (double value) const;
     Point3f operator - (const Point3f &value) const;
     Point3f operator + (const Point3f &value) const;
     Point3f operator += (double value);
-    Point3f operator - () const;
+	Point3f operator - () const;
 
     static float DotProduct(const Point3f &v1, const Point3f &v2);
     static void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
     static Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
     static double Norm(const Point3f &point);
     static void Normalize(Point3f &v);
-    static double Length(const Point3f &v);
+	static double Length(const Point3f &v);
 
 } __attribute__ ((aligned (16)));
 

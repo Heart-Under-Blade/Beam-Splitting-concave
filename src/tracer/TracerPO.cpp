@@ -15,7 +15,7 @@ void TracerPO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	ofstream outFile(m_resultDirName, ios::out);
 
 	vector<Beam> outBeams;
-	double beta, gamma;
+	Orientation angle;
 	int halfGammaNum = gammaRange.number/2;
 
 	double normIndex = gammaRange.step/gammaRange.norm;
@@ -25,13 +25,14 @@ void TracerPO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
-		beta = i*betaRange.step;
+		angle.beta = i*betaRange.step;
 
 		for (int j = -halfGammaNum; j <= halfGammaNum; ++j)
 		{
-			gamma = j*gammaRange.step;
+			angle.gamma = j*gammaRange.step;
 
-			m_scattering->ScatterLight(beta, gamma, outBeams);
+			m_particle->Rotate(angle);
+			m_scattering->ScatterLight(outBeams);
 
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
@@ -51,9 +52,12 @@ void TracerPO::TraceFixed(const double &beta, const double &gamma)
 	ofstream outFile(m_resultDirName, ios::out);
 	vector<Beam> outBeams;
 
-	double b = DegToRad(beta);
-	double g = DegToRad(gamma);
-	m_scattering->ScatterLight(b, g, outBeams);
+	Orientation angle;
+	angle.beta = Orientation::DegToRad(beta);
+	angle.gamma = Orientation::DegToRad(gamma);
+
+	m_particle->Rotate(angle);
+	m_scattering->ScatterLight(outBeams);
 
 	m_handler->HandleBeams(outBeams);
 	outBeams.clear();

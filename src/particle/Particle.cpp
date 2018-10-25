@@ -59,10 +59,10 @@ void Particle::SetFromFile(const std::string &filename)
 		pfile.getline(buff, bufSize);
 
 		ptr = strtok(buff, " ");
-		m_symmetry.beta = Angle::DegToRad(strtod(ptr, &trash));
+		m_symmetry.beta = Angle3d::DegToRad(strtod(ptr, &trash));
 
 		ptr = strtok(NULL, " ");
-		m_symmetry.gamma = Angle::DegToRad(strtod(ptr, &trash));
+		m_symmetry.gamma = Angle3d::DegToRad(strtod(ptr, &trash));
 	}
 
 	pfile.getline(buff, bufSize); // skip empty line
@@ -113,7 +113,7 @@ void Particle::SetFromFile(const std::string &filename)
 	}
 }
 
-void Particle::Rotate(const Angle &angle)
+void Particle::Rotate(const Orientation &angle)
 {
 	rotAngle = angle;
 	SetRotateMatrix();
@@ -194,7 +194,7 @@ const complex &Particle::GetRefractiveIndex() const
 	return m_refractiveIndex;
 }
 
-const Symmetry &Particle::GetSymmetry() const
+const Angle3d &Particle::GetSymmetry() const
 {
 	return m_symmetry;
 }

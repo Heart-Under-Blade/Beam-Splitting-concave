@@ -1,11 +1,22 @@
 \hypertarget{class_beam}{}\section{Beam Class Reference}
 \label{class_beam}\index{Beam@{Beam}}
-Inheritance diagram for Beam\+:\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[height=3.000000cm]{class_beam}
-\end{center}
-\end{figure}
+
+
+A plane-\/parallel optical beam that is created by act of reflection / refraction when a light incidents on a \mbox{\hyperlink{class_particle}{Particle}}.  
+
+
+
+
+{\ttfamily \#include $<$Beam.\+h$>$}
+
+
+
+Inheritance diagram for Beam\+:
+% FIG 0
+
+
+Collaboration diagram for Beam\+:
+% FIG 1
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
@@ -23,12 +34,6 @@ Inheritance diagram for Beam\+:\begin{figure}[H]
 \item 
 \mbox{\Hypertarget{class_beam_a1d64711b13ffc63640f88a8134d74635}\label{class_beam_a1d64711b13ffc63640f88a8134d74635}} 
 void {\bfseries Set\+Polygon} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&other)
-\item 
-\mbox{\Hypertarget{class_beam_a704233632d400ba7d6fa2135e87110e9}\label{class_beam_a704233632d400ba7d6fa2135e87110e9}} 
-void {\bfseries Set\+Light} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&polar\+Basis)
-\item 
-\mbox{\Hypertarget{class_beam_a04d2568a66519b691169ad34de1a9dc5}\label{class_beam_a04d2568a66519b691169ad34de1a9dc5}} 
-void {\bfseries Set\+Light} (const \mbox{\hyperlink{class_light}{Light}} \&other)
 \item 
 \mbox{\Hypertarget{class_beam_a9b3e47e4c2f90f1c8f779ef76a19ea04}\label{class_beam_a9b3e47e4c2f90f1c8f779ef76a19ea04}} 
 void {\bfseries Clear} ()
@@ -51,8 +56,8 @@ void {\bfseries Copy\+Track} (const \mbox{\hyperlink{class_track}{Track}} \&othe
 \mbox{\Hypertarget{class_beam_af5dbd7b4282b858982753eac9872c741}\label{class_beam_af5dbd7b4282b858982753eac9872c741}} 
 \mbox{\hyperlink{class_beam}{Beam}} \& {\bfseries operator=} (\mbox{\hyperlink{class_beam}{Beam}} \&\&other)
 \item 
-\mbox{\Hypertarget{class_beam_ac330cf4dff292a294912b4ef0a3cd54a}\label{class_beam_ac330cf4dff292a294912b4ef0a3cd54a}} 
-void {\bfseries Set\+Tracing\+Params} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$fac, int actN, bool is\+In)
+\mbox{\Hypertarget{class_beam_a26b413c65c1040a843bd438e68728ca7}\label{class_beam_a26b413c65c1040a843bd438e68728ca7}} 
+void {\bfseries Set\+Location} (bool is\+In)
 \item 
 \mbox{\Hypertarget{class_beam_a2213010326ea833a80eb7c611559a1bb}\label{class_beam_a2213010326ea833a80eb7c611559a1bb}} 
 void {\bfseries Multiply\+Jones\+Matrix} (const \mbox{\hyperlink{classcomplex}{complex}} \&f1, const \mbox{\hyperlink{classcomplex}{complex}} \&f2)
@@ -66,30 +71,49 @@ void {\bfseries Rotate\+J\+Matrix} (const \mbox{\hyperlink{struct_point3f}{Vecto
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{class_beam_a17dc5762614f2586d61d1bd3f52a8645}\label{class_beam_a17dc5762614f2586d61d1bd3f52a8645}} 
-\mbox{\hyperlink{class_matrix2x2c}{Matrix2x2c}} \mbox{\hyperlink{class_beam_a17dc5762614f2586d61d1bd3f52a8645}{J}}
-\begin{DoxyCompactList}\small\item\em Jones matrix of beam. \end{DoxyCompactList}\item 
-\mbox{\Hypertarget{class_beam_a9f3f0cba366e2762398a6f58a2e55a02}\label{class_beam_a9f3f0cba366e2762398a6f58a2e55a02}} 
-int \mbox{\hyperlink{class_beam_a9f3f0cba366e2762398a6f58a2e55a02}{act}}
-\begin{DoxyCompactList}\small\item\em number of preview reflections \end{DoxyCompactList}\item 
-\mbox{\Hypertarget{class_beam_a0d17c3816a24da6cdbd933a32dea711c}\label{class_beam_a0d17c3816a24da6cdbd933a32dea711c}} 
-\mbox{\hyperlink{class_facet}{Facet}} $\ast$ \mbox{\hyperlink{class_beam_a0d17c3816a24da6cdbd933a32dea711c}{facet}}
-\begin{DoxyCompactList}\small\item\em last incident facet \end{DoxyCompactList}\item 
-\mbox{\Hypertarget{class_beam_a823d6dda3dc96dd2382e41647bda0268}\label{class_beam_a823d6dda3dc96dd2382e41647bda0268}} 
-bool \mbox{\hyperlink{class_beam_a823d6dda3dc96dd2382e41647bda0268}{is\+Inside}}
-\begin{DoxyCompactList}\small\item\em beam state towards the particle (inside or outside) \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{class_beam_a9b914eb95bb720ef405edfb80bda3c41}\label{class_beam_a9b914eb95bb720ef405edfb80bda3c41}} 
 double \mbox{\hyperlink{class_beam_a9b914eb95bb720ef405edfb80bda3c41}{optical\+Path}}
-\begin{DoxyCompactList}\small\item\em optical path of beam \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Optical path of beam. \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{class_beam_a2640aeff4f9d38ff8c6da5cabda0b070}\label{class_beam_a2640aeff4f9d38ff8c6da5cabda0b070}} 
 double \mbox{\hyperlink{class_beam_a2640aeff4f9d38ff8c6da5cabda0b070}{front}}
-\begin{DoxyCompactList}\small\item\em current position of phase front from Ax+\+By+\+Cz+D=0 (where D is front) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Current position of phase front from Ax+\+By+\+Cz+D=0 (where D is front) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_a86c9a07440dc286729261c86bd83e05b}\label{class_beam_a86c9a07440dc286729261c86bd83e05b}} 
+\mbox{\hyperlink{class_matrix2x2c}{Matrix2x2c}} \mbox{\hyperlink{class_beam_a86c9a07440dc286729261c86bd83e05b}{Jones}}
+\begin{DoxyCompactList}\small\item\em Jones matrix of beam. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_a823d6dda3dc96dd2382e41647bda0268}\label{class_beam_a823d6dda3dc96dd2382e41647bda0268}} 
+bool \mbox{\hyperlink{class_beam_a823d6dda3dc96dd2382e41647bda0268}{is\+Inside}}
+\begin{DoxyCompactList}\small\item\em \mbox{\hyperlink{class_beam}{Beam}} state towards the particle (inside or outside) \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Friends}
 \begin{DoxyCompactItemize}
 \item 
+std\+::ostream \& \mbox{\hyperlink{class_beam_a9329c5f95148c6d5fc95d72ab66d8265}{operator$<$$<$}} (std\+::ostream \&os, const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\begin{DoxyCompactList}\small\item\em Outputs beam params. Use it with std\+::cout or std\+::ofstream. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A plane-\/parallel optical beam that is created by act of reflection / refraction when a light incidents on a \mbox{\hyperlink{class_particle}{Particle}}. 
+
+\subsection{Friends And Related Function Documentation}
 \mbox{\Hypertarget{class_beam_a9329c5f95148c6d5fc95d72ab66d8265}\label{class_beam_a9329c5f95148c6d5fc95d72ab66d8265}} 
-std\+::ostream \& {\bfseries operator$<$$<$} (std\+::ostream \&os, const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
-\end{DoxyCompactItemize}
+\index{Beam@{Beam}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Beam@{Beam}}
+\subsubsection{\texorpdfstring{operator$<$$<$}{operator<<}}
+{\footnotesize\ttfamily std\+::ostream\& operator$<$$<$ (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{os,  }\item[{const \mbox{\hyperlink{class_beam}{Beam}} \&}]{beam }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+Outputs beam params. Use it with std\+::cout or std\+::ofstream. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em os} & \\
+\hline
+{\em beam} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}

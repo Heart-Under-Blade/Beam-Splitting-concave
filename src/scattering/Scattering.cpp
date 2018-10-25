@@ -14,17 +14,28 @@
 
 using namespace std;
 
-Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
-					   int nActs)
+Scattering::Scattering(Particle *particle, const Light &incidentLight,
+					   int maxActNo)
 	: m_particle(particle),
-	  m_nActsMax(nActs)
+	  m_maxActNo(maxActNo),
+	  m_splitting(m_particle->GetRefractiveIndex())
 {
-	m_originBeam.direction = incidentLight->direction;
-	m_originBeam.direction.d_param = incidentLight->direction.d_param;
-	m_originBeam.polarizationBasis = incidentLight->polarizationBasis;
-	m_originBeam.isInside = false;
+	CreateOriginBeam(incidentLight.direction, incidentLight.polarizationBasis);
+}
 
-	m_splitting.ComputeRiParams(m_particle->GetRefractiveIndex());
+Scattering::~Scattering()
+{
+	delete m_originBeam.facet;
+}
+
+void Scattering::CreateOriginBeam(const Vector3f &dir, const Vector3f &basis)
+{
+	m_originBeam.direction = dir;
+	m_originBeam.direction.d_param = dir.d_param;
+	m_originBeam.polarizationBasis = basis;
+	m_originBeam.isInside = false;
+	m_originBeam.facet = new Facet();
+	m_originBeam.facet->index = -1;
 }
 
 void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
@@ -33,24 +44,33 @@ void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
 	m_incidentEnergy = 0;
 #endif
 	m_treeSize = 0;
+	m_scatteredBeams = &scatteredBeams;
 
-	SplitLightToBeams(scatteredBeams);
-	SplitBeams(scatteredBeams);
+	SplitOriginBeam(scatteredBeams);
+	SplitSecondaryBeams(scatteredBeams);
 }
 
-// REF: перенести в Tracks
-IdType Scattering::RecomputeTrackId(const IdType &oldId, int facetId)
+void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 {
-	return (oldId + (facetId + 1)) * (m_particle->nElems + 1);
-}
-
-void Scattering::PushBeamToTree(Beam &beam, Facet *facet, int level, bool isIn)
-{
-	beam.SetTracingParams(facet, level, isIn);
 #ifdef _DEBUG // DEB
-	beam.dirs.push_back(beam.direction);
+	int count = 0;
 #endif
-	m_tracingBeams[m_treeSize++] = beam;
+	while (m_treeSize != 0)
+	{
+		Beam beam = m_propagatingBeams[--m_treeSize];
+#ifdef _DEBUG // DEB
+		++count;
+		if (beam.id == 1142698)
+			int ffgf = 0;
+//		cout << count << endl;
+#endif
+		SplitBeamByVisibleFacets(beam);
+
+		if (IsTerminalAct(beam))
+		{
+			ReleaseBeam(beam);
+		}
+	}
 }
 
 bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
@@ -59,7 +79,8 @@ bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
 	m_splitting.inBeam.pols = beam.pols;
 	m_splitting.outBeam.pols = beam.pols;
 #endif
-	m_splitting.ComputeParams(beam.direction, facet->normal[!beam.isInside], beam.isInside);
+	const Vector3f &normal = facet->normal[beam.isInside];
+	m_splitting.ComputeParams(beam.direction, normal, beam.isInside);
 
 	Incidence *incidence = m_splitting.GetIncidence();
 	incidence->ComputeDirections(beam, m_splitting);
@@ -67,11 +88,6 @@ bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
 	incidence->ComputeOpticalPaths(beam, m_splitting);
 
 	return m_splitting.HasOutBeam();
-}
-
-Particle *Scattering::GetParticle() const
-{
-	return m_particle;
 }
 
 void Scattering::FindVisibleFacets(const Beam &beam, FacetChecker &checker,
@@ -95,25 +111,27 @@ void Scattering::ComputeFacetEnergy(const Vector3f &facetNormal,
 	m_incidentEnergy += lightedPolygon.Area() * cosA;
 }
 
-void Scattering::PushBeamToTree(Beam &beam, const Beam &oldBeam,
-								const IdType &newId, Facet *facet, bool isIn)
+void Scattering::PushBeamToTree(Beam &beam)
 {
-	beam.id = newId;
-	beam.locations = oldBeam.locations;
+	if (Scattering::IsTerminalAct(beam))
+	{
+		if (!beam.isInside)
+		{
+			ReleaseBeam(beam);
+		}
+	}
+	else
+	{
 #ifdef _DEBUG // DEB
-	beam.dirs = oldBeam.dirs;
+		beam.dirs.push_back(beam.direction);
 #endif
-	PushBeamToTree(beam, facet, oldBeam.act+1, isIn);
-}
-
-void Scattering::RotateParticle(const Angle &angle)
-{
-	m_particle->Rotate(angle);
+		m_propagatingBeams[m_treeSize++] = beam;
+	}
 }
 
 bool Scattering::IsTerminalAct(const Beam &beam)
 {
-	return (beam.act >= m_nActsMax) || (beam.J.Norm() < EPS_BEAM_ENERGY);
+	return (beam.actNo >= m_maxActNo) || (beam.Jones.Norm() < EPS_BEAM_ENERGY);
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
@@ -129,7 +147,7 @@ void Scattering::SetPolygonByFacet(Facet *facet, Polygon &polygon) const
 	}
 }
 
-double Scattering::GetIncedentEnergy() const
+double Scattering::GetIncidentEnergy() const
 {
 	return m_incidentEnergy;
 }
@@ -217,4 +235,68 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 //		int ff = 0;
 #endif
 	return path;
+}
+
+void Scattering::ReleaseBeam(Beam &beam)
+{
+	beam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
+	m_scatteredBeams->push_back(beam);
+}
+
+void Scattering::SplitBeamByVisibleFacets(Beam &beam)
+{
+	Array<Facet*> visibleFacets; // NOTE: DO NOT MAKE IT FIELD OF CLASS!!
+	SelectVisibleFacets(beam, visibleFacets);
+
+	for (int i = 0; !isTerminalFacet(i, visibleFacets); ++i)
+	{
+		Facet *facet = visibleFacets.elems[i];
+#ifdef _DEBUG // DEB
+		if (i == 9)
+			int fff = 0;
+#endif
+		Polygon beamShape;
+		bool isIntersected = Geometry::IncidentBeamToFacet(facet, beam, beam.isInside,
+														   beam.direction, beamShape);
+		if (isIntersected)
+		{
+			m_splitting.SetBeams(beamShape);
+			bool hasOutBeam = ComputeOpticalBeamParams(facet, beam);
+			PushBeamsToBuffer(beam, facet, hasOutBeam);
+		}
+	}
+}
+
+bool Scattering::isTerminalFacet(int index, Array<Facet*> &facets)
+{
+	return index >= facets.nElems;
+}
+
+void Scattering::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
+								   bool hasOutBeam)
+{
+	Track tr = parentBeam;
+	tr.Update(facet);
+	tr.RecomputeTrackId(facet->index, m_particle->nElems);
+
+#ifdef _DEBUG // DEB
+	if (tr.id == 4222009)
+		int fff = 0;
+#endif
+	m_splitting.inBeam.CopyTrack(tr);
+	m_splitting.inBeam.SetLocation(true);
+#ifdef _DEBUG // DEB
+	m_splitting.inBeam.dirs = parentBeam.dirs;
+#endif
+	PushBeamToTree(m_splitting.inBeam);
+
+	if (hasOutBeam)
+	{
+		m_splitting.outBeam.CopyTrack(tr);
+		m_splitting.outBeam.SetLocation(false);
+#ifdef _DEBUG // DEB
+		m_splitting.outBeam.dirs = parentBeam.dirs;
+#endif
+		PushBeamToTree(m_splitting.outBeam);
+	}
 }

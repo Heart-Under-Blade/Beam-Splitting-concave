@@ -21,37 +21,9 @@ CONFIG(debug,	debug|release): {
     TARGET = mbs_tst_d
 }
 
-INCLUDEPATH += \
-    ../../src/math \
-    ../../src/common \
-    ../../src/particle \
-    ../../src/geometry \
-    ../../src/scattering \
-    ../../src/tracer \
-    ../../src/bigint \
-    ../../src/incidence
+SRC = ../../src
 
-SOURCES += \
-    ../../src/math/*.cpp \
-    ../../src/particle/*.cpp \
-    ../../src/geometry/*.cpp \
-    ../../src/common/*.cpp \
-    ../../src/scattering/*.cpp \
-    ../../src/incidence/*.cpp \
-    ../../src/bigint/*.cc
+SOURCES +=
+    $$SRC/*.cpp \
 
-message($$SOURCES)
-
-HEADERS += \
-    ../../src/*.h \
-    ../../src/math/*.hpp \
-    ../../src/math/*.h \
-    ../../src/particle/*.h \
-    ../../src/geometry/*.h \
-    ../../src/common/*.h \
-    ../../src/scattering/*.h \
-    ../../src/bigint/*.hh
-
-DISTFILES += \
-    classes.qmodel \
-    sequence.qmodel
+include(../../pro/MBS.pri)

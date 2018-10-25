@@ -1,16 +1,23 @@
 \hypertarget{class_track}{}\section{Track Class Reference}
 \label{class_track}\index{Track@{Track}}
-Inheritance diagram for Track\+:\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[height=3.000000cm]{class_track}
-\end{center}
-\end{figure}
+
+
+Inheritance diagram for Track\+:
+% FIG 0
+
+
+Collaboration diagram for Track\+:
+% FIG 1
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{class_track_a0e023ede0704dab14c1bfbac164a8f73}\label{class_track_a0e023ede0704dab14c1bfbac164a8f73}} 
-bool {\bfseries Is\+Inside\+On\+Act} (int act) const
+\mbox{\Hypertarget{class_track_a4df6f946922339d5f9f64d4b6a0ce27c}\label{class_track_a4df6f946922339d5f9f64d4b6a0ce27c}} 
+void {\bfseries Update} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$face)
+\item 
+bool \mbox{\hyperlink{class_track_afa8ecb5618ed9ecefab2ea5f0e755d44}{Is\+Inside\+On\+Act}} (int i\+Act) const
+\begin{DoxyCompactList}\small\item\em Shows where the \mbox{\hyperlink{class_beam}{Beam}} is located towards the \mbox{\hyperlink{class_particle}{Particle}} inside or outside. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_track_aa9152f9a092de15ac7e92cf7120222eb}\label{class_track_aa9152f9a092de15ac7e92cf7120222eb}} 
+void {\bfseries Recompute\+Track\+Id} (int facet\+Id, int n\+Facets)
 \item 
 \mbox{\Hypertarget{class_track_a5c9b01364289589a2dfaf4a865a88cf1}\label{class_track_a5c9b01364289589a2dfaf4a865a88cf1}} 
 \mbox{\hyperlink{class_track}{Track}} \& {\bfseries operator=} (const \mbox{\hyperlink{class_track}{Track}} \&other)
@@ -19,10 +26,37 @@ bool {\bfseries Is\+Inside\+On\+Act} (int act) const
 \begin{DoxyCompactItemize}
 \item 
 \mbox{\Hypertarget{class_track_a04d6f364003aa9e8cd212df0dbb2447f}\label{class_track_a04d6f364003aa9e8cd212df0dbb2447f}} 
-\mbox{\hyperlink{class_big_integer}{Id\+Type}} {\bfseries id} = 0
-\item 
+\mbox{\hyperlink{class_big_integer}{Id\+Type}} \mbox{\hyperlink{class_track_a04d6f364003aa9e8cd212df0dbb2447f}{id}}
+\begin{DoxyCompactList}\small\item\em Unique id of beam calculated by facet ids. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{class_track_a9a1bcdb52e5765ac6d91e62f26a51df0}{locations}}
-\end{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_track_a677ef64963f95925017853f2657722c7}\label{class_track_a677ef64963f95925017853f2657722c7}} 
+int \mbox{\hyperlink{class_track_a677ef64963f95925017853f2657722c7}{act\+No}}
+\begin{DoxyCompactList}\small\item\em Current r/r act number. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_track_aa5529af7dae62559eb396deca64db430}\label{class_track_aa5529af7dae62559eb396deca64db430}} 
+\mbox{\hyperlink{class_facet}{Facet}} $\ast$ \mbox{\hyperlink{class_track_aa5529af7dae62559eb396deca64db430}{facet}}
+\begin{DoxyCompactList}\small\item\em Last incident facet of the \mbox{\hyperlink{class_particle}{Particle}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_track_afa8ecb5618ed9ecefab2ea5f0e755d44}\label{class_track_afa8ecb5618ed9ecefab2ea5f0e755d44}} 
+\index{Track@{Track}!Is\+Inside\+On\+Act@{Is\+Inside\+On\+Act}}
+\index{Is\+Inside\+On\+Act@{Is\+Inside\+On\+Act}!Track@{Track}}
+\subsubsection{\texorpdfstring{Is\+Inside\+On\+Act()}{IsInsideOnAct()}}
+{\footnotesize\ttfamily bool Track\+::\+Is\+Inside\+On\+Act (\begin{DoxyParamCaption}\item[{int}]{i\+Act }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Shows where the \mbox{\hyperlink{class_beam}{Beam}} is located towards the \mbox{\hyperlink{class_particle}{Particle}} inside or outside. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em i\+Act} & r/r act number \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if beam location is \char`\"{}inside\char`\"{} on r/r act, otherwise returns false 
+\end{DoxyReturn}
 
 
 \subsection{Member Data Documentation}
@@ -32,7 +66,7 @@ int \mbox{\hyperlink{class_track_a9a1bcdb52e5765ac6d91e62f26a51df0}{locations}}
 \subsubsection{\texorpdfstring{locations}{locations}}
 {\footnotesize\ttfamily int Track\+::locations}
 
-each bit of variable represents location of beam after an r/r act from left to right \char`\"{}0\char`\"{} when beam location is \char`\"{}inside\char`\"{} and \char`\"{}1\char`\"{} if it\textquotesingle{}s \char`\"{}outside\char`\"{} 
+Every bit of the variable represents location of beam after an r/r act from the right to the left \char`\"{}0\char`\"{} when beam location is \char`\"{}inside\char`\"{} and \char`\"{}1\char`\"{} if it\textquotesingle{}s \char`\"{}outside\char`\"{} 
 
 The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
 \item 

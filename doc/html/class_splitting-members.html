@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Member List</title>
+<title>Modified Beam-Splitting: Member List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,9 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Modified Beam-Splitting
    </div>
+   <div id="projectbrief">The simulator of light scattering for crystals.</div>
   </td>
  </tr>
  </tbody>
@@ -68,35 +69,30 @@ $(function() {
 
 <p>This is the complete list of members for <a class="el" href="class_splitting.html">Splitting</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeCosA</b>(const Point3f &amp;normal, const Point3f &amp;incidentDir) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>ComputeEffectiveReRi</b>() const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeIncidentOpticalPath</b>(const Point3f &amp;direction, const Point3f &amp;facetPoint) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>ComputeOutgoingOpticalPath</b>(const Beam &amp;beam) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeReflectedDirection</b>(Vector3f &amp;dir) const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>ComputeRefractedDirection</b>(Vector3f &amp;dir) const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeRiParams</b>(const complex &amp;ri) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeEffectiveReRi</b>() const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>ComputeIncidentOpticalPath</b>(const Point3f &amp;direction, const Point3f &amp;facetPoint) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeOutgoingOpticalPath</b>(const Beam &amp;beam) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>ComputeParams</b>(const Point3f &amp;dir, const Vector3f &amp;normal, bool isInside) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputePolarisationParams</b>(Beam &amp;beam) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>ComputeReflectedDirection</b>(Vector3f &amp;dir) const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeRefractedDirection</b>(Vector3f &amp;dir) const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>ComputeSegmentOpticalPath</b>(const Beam &amp;beam, const Point3f &amp;facetPoint) const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ComputeSplittingParams</b>(const Point3f &amp;dir, const Point3f &amp;normal, bool isInside) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>cosA</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_splitting.html#a414e93aea45af1e8ce0cebcfb977a077">FAR_ZONE_DISTANCE</a></td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>cosA</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_splitting.html#a414e93aea45af1e8ce0cebcfb977a077">FAR_ZONE_DISTANCE</a></td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>GetIncidence</b>() const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>GetRi</b>() const (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>inBeam</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>IsCompleteReflection</b>() (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>IsIncident</b>() (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>IsNormalIncidence</b>() (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>m_cRiIm</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>m_cRiRe</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>m_cRiRe2</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>m_isOpticalPath</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>m_normal</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>m_ri</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>outBeam</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>r</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>reRiEff</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>s</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>SetBeams</b>(const Polygon &amp;beamShape) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>SetNormal</b>(const Point3f &amp;normal) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>Splitting</b>(bool isOpticalPath) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>HasOutBeam</b>() (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>inBeam</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>m_incidence</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>m_normal</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_splitting.html#a6a42f8997eeb3f7bd6c7aaf7b5744a23">m_ri</a></td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>outBeam</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>r</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>reRiEff</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>s</b> (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>SetBeams</b>(const Polygon &amp;beamShape) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>SetNormal</b>(const Point3f &amp;normal) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>Splitting</b>(const complex &amp;ri) (defined in <a class="el" href="class_splitting.html">Splitting</a>)</td><td class="entry"><a class="el" href="class_splitting.html">Splitting</a></td><td class="entry"></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

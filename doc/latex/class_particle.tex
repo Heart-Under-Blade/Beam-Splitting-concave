@@ -9,12 +9,14 @@ The \mbox{\hyperlink{class_particle}{Particle}} class is the base class inherite
 
 {\ttfamily \#include $<$Particle.\+h$>$}
 
-Inheritance diagram for Particle\+:\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[height=2.947368cm]{class_particle}
-\end{center}
-\end{figure}
+
+
+Inheritance diagram for Particle\+:
+% FIG 0
+
+
+Collaboration diagram for Particle\+:
+% FIG 1
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
@@ -27,8 +29,8 @@ Inheritance diagram for Particle\+:\begin{figure}[H]
 \mbox{\Hypertarget{class_particle_a6877eea54e7fb816809dd2be6cd5acdc}\label{class_particle_a6877eea54e7fb816809dd2be6cd5acdc}} 
 void {\bfseries Set\+From\+File} (const std\+::string \&filename)
 \item 
-\mbox{\Hypertarget{class_particle_a55618b93d3d41f7d16af88f28dc4281b}\label{class_particle_a55618b93d3d41f7d16af88f28dc4281b}} 
-void {\bfseries Rotate} (const \mbox{\hyperlink{class_angle}{Angle}} \&angle)
+\mbox{\Hypertarget{class_particle_aee7a26b9ff9a26bfb554aefa9ceaf89f}\label{class_particle_aee7a26b9ff9a26bfb554aefa9ceaf89f}} 
+void {\bfseries Rotate} (const \mbox{\hyperlink{class_angle3d}{Orientation}} \&angle)
 \item 
 \mbox{\Hypertarget{class_particle_a62328fcaf288317fa6667ee9bba90de4}\label{class_particle_a62328fcaf288317fa6667ee9bba90de4}} 
 void {\bfseries Move} (float dx, float dy, float dz)
@@ -47,8 +49,8 @@ const \mbox{\hyperlink{classcomplex}{complex}} \& {\bfseries Get\+Refractive\+In
 \mbox{\Hypertarget{class_particle_a9345bfffdb91b7beb9ec48c9af29141e}\label{class_particle_a9345bfffdb91b7beb9ec48c9af29141e}} 
 void {\bfseries Set\+Refractive\+Index} (const \mbox{\hyperlink{classcomplex}{complex}} \&value)
 \item 
-\mbox{\Hypertarget{class_particle_a29fe705a8c842ab5e31ccb94cf36fe88}\label{class_particle_a29fe705a8c842ab5e31ccb94cf36fe88}} 
-const \mbox{\hyperlink{class_orientation}{Symmetry}} \& {\bfseries Get\+Symmetry} () const
+\mbox{\Hypertarget{class_particle_a4b5d31774942742d633aea72c589ffea}\label{class_particle_a4b5d31774942742d633aea72c589ffea}} 
+const \mbox{\hyperlink{class_angle3d}{Angle3d}} \& {\bfseries Get\+Symmetry} () const
 \item 
 \mbox{\Hypertarget{class_particle_a9e5414148dbe4bdcee8a96b9db7d1b6e}\label{class_particle_a9e5414148dbe4bdcee8a96b9db7d1b6e}} 
 virtual void {\bfseries Get\+Partical\+Facet\+Id\+Range} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$, int \&, int \&) const
@@ -65,8 +67,8 @@ void {\bfseries Output} ()
 \mbox{\Hypertarget{class_particle_a57ad5c8ac7c6a4af8546210c5b4b2439}\label{class_particle_a57ad5c8ac7c6a4af8546210c5b4b2439}} 
 bool {\bfseries is\+Aggregated} = false
 \item 
-\mbox{\Hypertarget{class_particle_a0be211b0c7c5a3148ed7bde2d15da36d}\label{class_particle_a0be211b0c7c5a3148ed7bde2d15da36d}} 
-\mbox{\hyperlink{class_angle}{Angle}} {\bfseries rot\+Angle}
+\mbox{\Hypertarget{class_particle_ad6fcf8ffaf7ee979e7030afb96836ac3}\label{class_particle_ad6fcf8ffaf7ee979e7030afb96836ac3}} 
+\mbox{\hyperlink{class_angle3d}{Orientation}} {\bfseries rot\+Angle}
 \end{DoxyCompactItemize}
 \subsection*{Protected Member Functions}
 \begin{DoxyCompactItemize}
@@ -89,8 +91,8 @@ virtual void {\bfseries Set\+Facet\+Params} ()
 \subsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{class_particle_af8aaf3ce5bd6c6525543b98a23fb44a0}\label{class_particle_af8aaf3ce5bd6c6525543b98a23fb44a0}} 
-\mbox{\hyperlink{class_orientation}{Symmetry}} \mbox{\hyperlink{class_particle_af8aaf3ce5bd6c6525543b98a23fb44a0}{m\+\_\+symmetry}}
+\mbox{\Hypertarget{class_particle_a54a7726a6a0a4aff34d9c6089a23ce1d}\label{class_particle_a54a7726a6a0a4aff34d9c6089a23ce1d}} 
+\mbox{\hyperlink{class_angle3d}{Angle3d}} \mbox{\hyperlink{class_particle_a54a7726a6a0a4aff34d9c6089a23ce1d}{m\+\_\+symmetry}}
 \begin{DoxyCompactList}\small\item\em angle of particle symmetry \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{class_particle_a2285c983db1931fd823a44d104ddb578}\label{class_particle_a2285c983db1931fd823a44d104ddb578}} 
 \mbox{\hyperlink{classcomplex}{complex}} \mbox{\hyperlink{class_particle_a2285c983db1931fd823a44d104ddb578}{m\+\_\+refractive\+Index}}

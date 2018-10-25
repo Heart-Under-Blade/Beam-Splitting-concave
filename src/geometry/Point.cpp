@@ -118,6 +118,13 @@ double Point3f::Length(const Point3f &v)
 	return sqrt(Norm(v));
 }
 
+bool Point3f::IsEqualTo(const Point3f &other, float eps) const
+{
+	return (fabs(point[0] - other.point[0]) +
+			fabs(point[1] - other.point[1]) +
+			fabs(point[2] - other.point[2]))/3 < eps;
+}
+
 Point3f Point3f::operator - (const Point3f &value) const
 {
     return Point3f(point[0] - value.point[0],

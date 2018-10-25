@@ -12,9 +12,11 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 {
 	using namespace std;
 
+	os << "polygon: {" << endl;
 	os << Polygon(beam);
+	os << "}" << endl << endl;
 
-	os << "level: " << beam.act << endl
+	os << "level: " << beam.actNo << endl
 	   << "last facet: " << beam.facet->index << endl
 	   << "location: " << beam.isInside << endl
 	   << "direction: "
@@ -44,7 +46,6 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 
 Beam::Beam()
 {
-	locations = 0;
 	opticalPath = 0;
 	polarizationBasis = Vector3f(0, 1, 0);
 }
@@ -58,18 +59,11 @@ void Beam::Copy(const Beam &other)
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
 
-	facet = other.facet;
-	act = other.act;
 	isInside = other.isInside;
-#ifdef _DEBUG // DEB
-	pols = other.pols;
-	ops = other.ops;
-	dirs = other.dirs;
-#endif
 }
 
 Beam::Beam(const Beam &other)
-	: J(other.J)
+	: Jones(other.Jones)
 {
 	Copy(other);
 	Polygon::operator =(other);
@@ -92,21 +86,21 @@ Vector3f Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 	Vector3f newBasis;
 	double cs = Point3f::DotProduct(dir, direction);
 
-	if (fabs(1.0 - cs) <= DBL_EPSILON)
+	if (fabs(1.0 - cs) < DBL_EPSILON)
 	{
 		newBasis = -polarBasis;
 	}
 	else
 	{
-		if (fabs(1.0 + cs) <= DBL_EPSILON)
+		if (fabs(1.0 + cs) < DBL_EPSILON)
 		{
 			newBasis = polarBasis;
 		}
 		else
 		{
-			double fi, teta;
-			GetSpherical(fi, teta);
-			newBasis = Vector3f(-sin(fi), cos(fi), 0);
+			double phi, teta;
+			GetSpherical(phi, teta);
+			newBasis = Vector3f(-sin(phi), cos(phi), 0);
 		}
 	}
 
@@ -160,7 +154,7 @@ Beam &Beam::operator = (const Beam &other)
 	{
 		Copy(other);
 		Polygon::operator =(other);
-		J = other.J;
+		Jones = other.Jones;
 	}
 
 	return *this;
@@ -187,7 +181,7 @@ void Beam::SetDefault(Beam &other)
 	other.polarizationBasis = Vector3f(0, 0, 0);
 
 	other.facet = nullptr;
-	other.act = 0;
+	other.actNo = 0;
 	other.isInside = false;
 	other.locations = 0;
 
@@ -202,33 +196,32 @@ Beam &Beam::operator = (Beam &&other)
 	{
 		Polygon::operator =(other);
 		Copy(other);
-		J = other.J;
+		Jones = other.Jones;
 		SetDefault(other);
 	}
 
 	return *this;
 }
 
-void Beam::SetTracingParams(Facet *fac, int actN, bool isIn)
+void Beam::SetLocation(bool isIn)
 {
-	facet = fac;
-	act = actN;
 	isInside = isIn;
 
 	if (!isInside)
 	{	// write location
 		int loc = 1;
-		loc <<= act;
+		loc <<= actNo;
 		locations |= loc;
 	}
 }
 
+// REF: перенести в Matrix2x2c
 void Beam::MultiplyJonesMatrix(const complex &f1, const complex &f2)
 {
-	J.m11 *= f1;
-	J.m12 *= f1;
-	J.m21 *= f2;
-	J.m22 *= f2;
+	Jones.m11 *= f1;
+	Jones.m12 *= f1;
+	Jones.m21 *= f2;
+	Jones.m22 *= f2;
 }
 
 complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
@@ -302,6 +295,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 				{
 					++i;
 				}
+
 				continue;
 			}
 
@@ -391,10 +385,10 @@ void Beam::RotateJMatrix(const Vector3f &newBasis)
 	{
 		if (fabs(1.0 + cs) < eps)
 		{
-			J.m11 = -J.m11;
-			J.m12 = -J.m12;
-			J.m21 = -J.m21;
-			J.m22 = -J.m22;
+			Jones.m11 = -Jones.m11;
+			Jones.m12 = -Jones.m12;
+			Jones.m21 = -Jones.m21;
+			Jones.m22 = -Jones.m22;
 		}
 		else
 		{
@@ -413,13 +407,13 @@ void Beam::RotateJMatrix(const Vector3f &newBasis)
 
 			double sn = sin(angle); // the rotation of matrix "m"
 
-			complex b00 = J.m11*cs + J.m21*sn; // first row of the result
-			complex b01 = J.m12*cs + J.m22*sn;
+			complex b00 = Jones.m11*cs + Jones.m21*sn; // first row of the result
+			complex b01 = Jones.m12*cs + Jones.m22*sn;
 
-			J.m21 = J.m21*cs - J.m11*sn;
-			J.m22 = J.m22*cs - J.m12*sn;
-			J.m11 = b00;
-			J.m12 = b01;
+			Jones.m21 = Jones.m21*cs - Jones.m11*sn;
+			Jones.m22 = Jones.m22*cs - Jones.m12*sn;
+			Jones.m11 = b00;
+			Jones.m12 = b01;
 		}
 	}
 }
@@ -432,18 +426,6 @@ void Beam::SetPolygon(const Polygon &other)
 	{
 		arr[i] = other.arr[i];
 	}
-}
-
-void Beam::SetLight(const Vector3f &dir, const Vector3f &polarBasis)
-{
-	direction = dir;
-	polarizationBasis = polarBasis;
-}
-
-void Beam::SetLight(const Light &other)
-{
-	direction = other.direction;
-	polarizationBasis = other.polarizationBasis;
 }
 
 void Beam::Clear()
@@ -464,6 +446,5 @@ void Beam::AddOpticalPath(double path)
 
 void Beam::CopyTrack(const Track &other)
 {
-	id = other.id;
-	locations = other.locations;
+	Track::operator=(other);
 }

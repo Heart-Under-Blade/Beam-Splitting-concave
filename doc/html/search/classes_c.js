@@ -1,7 +1,13 @@
 var searchData=
 [
-  ['opticalpath',['OpticalPath',['../struct_optical_path.html',1,'']]],
-  ['orientation',['Orientation',['../class_orientation.html',1,'']]],
-  ['outpt',['OutPt',['../struct_clipper_lib_1_1_out_pt.html',1,'ClipperLib']]],
-  ['outrec',['OutRec',['../struct_clipper_lib_1_1_out_rec.html',1,'ClipperLib']]]
+  ['particle',['Particle',['../class_particle.html',1,'']]],
+  ['particlefacet',['ParticleFacet',['../struct_particle_facet.html',1,'']]],
+  ['phisbeam',['PhisBeam',['../class_phis_beam.html',1,'']]],
+  ['plane',['Plane',['../class_plane.html',1,'']]],
+  ['point3d',['Point3d',['../struct_point3d.html',1,'']]],
+  ['point3f',['Point3f',['../struct_point3f.html',1,'']]],
+  ['pointcontribution',['PointContribution',['../class_point_contribution.html',1,'']]],
+  ['pointposition',['PointPosition',['../struct_point_position.html',1,'']]],
+  ['polygon',['Polygon',['../class_polygon.html',1,'']]],
+  ['polygonarray',['PolygonArray',['../class_polygon_array.html',1,'']]]
 ];

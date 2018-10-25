@@ -1,42 +1,32 @@
 \hypertarget{class_scattering_convex}{}\section{Scattering\+Convex Class Reference}
 \label{class_scattering_convex}\index{Scattering\+Convex@{Scattering\+Convex}}
-Inheritance diagram for Scattering\+Convex\+:\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[height=2.000000cm]{class_scattering_convex}
-\end{center}
-\end{figure}
+
+
+Inheritance diagram for Scattering\+Convex\+:
+% FIG 0
+
+
+Collaboration diagram for Scattering\+Convex\+:
+% FIG 1
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{class_scattering_convex_a9adedd65ccc3aff302db10a7609d6b18}\label{class_scattering_convex_a9adedd65ccc3aff302db10a7609d6b18}} 
-{\bfseries Scattering\+Convex} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, bool is\+Optical\+Path, int n\+Acts)
+\mbox{\Hypertarget{class_scattering_convex_a94805a2f8ee65ee820fc09a639e2ba56}\label{class_scattering_convex_a94805a2f8ee65ee820fc09a639e2ba56}} 
+{\bfseries Scattering\+Convex} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, const \mbox{\hyperlink{class_light}{Light}} \&incident\+Light, int max\+Act\+No)
 \end{DoxyCompactItemize}
 \subsection*{Protected Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{class_scattering_convex_a9f7ef5a3606a49f8be327cb966d217bb}\label{class_scattering_convex_a9f7ef5a3606a49f8be327cb966d217bb}} 
-void {\bfseries Scatter\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams) override
+\mbox{\Hypertarget{class_scattering_convex_a0884df61c37195f81996c9cacd13e752}\label{class_scattering_convex_a0884df61c37195f81996c9cacd13e752}} 
+void {\bfseries Split\+Origin\+Beam} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams) override
 \item 
-void \mbox{\hyperlink{class_scattering_convex_acb8aa7121ffd9dfb7bf1d51a0d68e93a}{Split\+Light\+To\+Beams}} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams) override
+\mbox{\Hypertarget{class_scattering_convex_abac99b0f9e1bff5ae4bd70e389af1d02}\label{class_scattering_convex_abac99b0f9e1bff5ae4bd70e389af1d02}} 
+void {\bfseries Select\+Visible\+Facets} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{class_array}{Array}}$<$ \mbox{\hyperlink{class_facet}{Facet}} $\ast$$>$ \&facets) override
 \item 
-\mbox{\Hypertarget{class_scattering_convex_a4a2db66ffa5fa5c9190bd1f509ff02cc}\label{class_scattering_convex_a4a2db66ffa5fa5c9190bd1f509ff02cc}} 
-void {\bfseries Split\+Beams\+By\+Facet} (\mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams)
+\mbox{\Hypertarget{class_scattering_convex_a5714390716541272ef5da8889c77258f}\label{class_scattering_convex_a5714390716541272ef5da8889c77258f}} 
+void {\bfseries Push\+Beams\+To\+Buffer} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, \mbox{\hyperlink{class_splitting}{Splitting}} \&splitting, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams)
 \end{DoxyCompactItemize}
 \subsection*{Additional Inherited Members}
-
-
-\subsection{Member Function Documentation}
-\mbox{\Hypertarget{class_scattering_convex_acb8aa7121ffd9dfb7bf1d51a0d68e93a}\label{class_scattering_convex_acb8aa7121ffd9dfb7bf1d51a0d68e93a}} 
-\index{Scattering\+Convex@{Scattering\+Convex}!Split\+Light\+To\+Beams@{Split\+Light\+To\+Beams}}
-\index{Split\+Light\+To\+Beams@{Split\+Light\+To\+Beams}!Scattering\+Convex@{Scattering\+Convex}}
-\subsubsection{\texorpdfstring{Split\+Light\+To\+Beams()}{SplitLightToBeams()}}
-{\footnotesize\ttfamily void Scattering\+Convex\+::\+Split\+Light\+To\+Beams (\begin{DoxyParamCaption}\item[{std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&}]{scattered\+Beams }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
-
-beam is not incident to this facet 
-
-Implements \mbox{\hyperlink{class_scattering}{Scattering}}.
-
 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}

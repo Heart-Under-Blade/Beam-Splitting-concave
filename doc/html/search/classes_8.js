@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['join',['Join',['../struct_clipper_lib_1_1_join.html',1,'ClipperLib']]]
+  ['light',['Light',['../class_light.html',1,'']]],
+  ['lightfacetchecker',['LightFacetChecker',['../class_light_facet_checker.html',1,'']]]
 ];

@@ -5,11 +5,14 @@
 
 void NormalIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
 {
-	const Point3f &dir = (beam.isInside) ? beam.direction
-										 : -beam.direction;
+	splitter.inBeam.direction = (beam.isInside) ? -beam.direction
+												: beam.direction;
 
-	splitter.inBeam.SetLight(-dir, beam.polarizationBasis);
-	splitter.outBeam.SetLight(dir, beam.polarizationBasis);
+	splitter.outBeam.direction = (beam.isInside) ? beam.direction
+												 : -beam.direction;
+
+	splitter.inBeam.polarizationBasis = beam.polarizationBasis;
+	splitter.outBeam.polarizationBasis = beam.polarizationBasis;
 
 #ifdef _DEBUG // DEB
 	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
@@ -19,8 +22,8 @@ void NormalIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
 
 void NormalIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter) const
 {
-	splitter.inBeam.J = beam.J;
-	splitter.outBeam.J = beam.J;
+	splitter.inBeam.Jones = beam.Jones;
+	splitter.outBeam.Jones = beam.Jones;
 
 	complex f;
 

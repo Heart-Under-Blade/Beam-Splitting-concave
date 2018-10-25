@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: PhisBeam Class Reference</title>
+<title>Modified Beam-Splitting: PhisBeam Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,9 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Modified Beam-Splitting
    </div>
+   <div id="projectbrief">The simulator of light scattering for crystals.</div>
   </td>
  </tr>
  </tbody>
@@ -71,15 +72,15 @@ $(function() {
 <div class="dynheader">
 Inheritance diagram for PhisBeam:</div>
 <div class="dyncontent">
- <div class="center">
-  <img src="class_phis_beam.png" usemap="#PhisBeam_map" alt=""/>
-  <map id="PhisBeam_map" name="PhisBeam_map">
-<area href="class_beam.html" alt="Beam" shape="rect" coords="77,56,144,80"/>
-<area href="class_polygon.html" title="The Polygon struct Convex polygon. " alt="Polygon" shape="rect" coords="0,0,67,24"/>
-<area href="class_light.html" alt="Light" shape="rect" coords="77,0,144,24"/>
-<area href="class_track.html" alt="Track" shape="rect" coords="154,0,221,24"/>
-</map>
- </div></div>
+<div class="center"><img src="class_phis_beam__inherit__graph.png" border="0" usemap="#_phis_beam_inherit__map" alt="Inheritance graph"/></div>
+<!-- MAP 0 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<div class="dynheader">
+Collaboration diagram for PhisBeam:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_phis_beam__coll__graph.png" border="0" usemap="#_phis_beam_coll__map" alt="Collaboration graph"/></div>
+<!-- MAP 1 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -88,30 +89,22 @@ double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <tr class="memdesc:a31d260d43669ed31679cb41f95ca2056"><td class="mdescLeft">&#160;</td><td class="mdescRight">optical path of beam <br /></td></tr>
 <tr class="separator:a31d260d43669ed31679cb41f95ca2056"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_class_beam"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_class_beam')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="class_beam.html">Beam</a></td></tr>
-<tr class="memitem:a17dc5762614f2586d61d1bd3f52a8645 inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a17dc5762614f2586d61d1bd3f52a8645"></a>
-<a class="el" href="class_matrix2x2c.html">Matrix2x2c</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a17dc5762614f2586d61d1bd3f52a8645">J</a></td></tr>
-<tr class="memdesc:a17dc5762614f2586d61d1bd3f52a8645 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">Jones matrix of beam. <br /></td></tr>
-<tr class="separator:a17dc5762614f2586d61d1bd3f52a8645 inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f3f0cba366e2762398a6f58a2e55a02 inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a9f3f0cba366e2762398a6f58a2e55a02"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a9f3f0cba366e2762398a6f58a2e55a02">act</a></td></tr>
-<tr class="memdesc:a9f3f0cba366e2762398a6f58a2e55a02 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">number of preview reflections <br /></td></tr>
-<tr class="separator:a9f3f0cba366e2762398a6f58a2e55a02 inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d17c3816a24da6cdbd933a32dea711c inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a0d17c3816a24da6cdbd933a32dea711c"></a>
-<a class="el" href="class_facet.html">Facet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a0d17c3816a24da6cdbd933a32dea711c">facet</a></td></tr>
-<tr class="memdesc:a0d17c3816a24da6cdbd933a32dea711c inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">last incident facet <br /></td></tr>
-<tr class="separator:a0d17c3816a24da6cdbd933a32dea711c inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a823d6dda3dc96dd2382e41647bda0268 inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a823d6dda3dc96dd2382e41647bda0268"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a823d6dda3dc96dd2382e41647bda0268">isInside</a></td></tr>
-<tr class="memdesc:a823d6dda3dc96dd2382e41647bda0268 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">beam state towards the particle (inside or outside) <br /></td></tr>
-<tr class="separator:a823d6dda3dc96dd2382e41647bda0268 inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b914eb95bb720ef405edfb80bda3c41 inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a9b914eb95bb720ef405edfb80bda3c41"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a9b914eb95bb720ef405edfb80bda3c41">opticalPath</a></td></tr>
-<tr class="memdesc:a9b914eb95bb720ef405edfb80bda3c41 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">optical path of beam <br /></td></tr>
+<tr class="memdesc:a9b914eb95bb720ef405edfb80bda3c41 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optical path of beam. <br /></td></tr>
 <tr class="separator:a9b914eb95bb720ef405edfb80bda3c41 inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2640aeff4f9d38ff8c6da5cabda0b070 inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a2640aeff4f9d38ff8c6da5cabda0b070"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a2640aeff4f9d38ff8c6da5cabda0b070">front</a></td></tr>
-<tr class="memdesc:a2640aeff4f9d38ff8c6da5cabda0b070 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">current position of phase front from Ax+By+Cz+D=0 (where D is front) <br /></td></tr>
+<tr class="memdesc:a2640aeff4f9d38ff8c6da5cabda0b070 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current position of phase front from Ax+By+Cz+D=0 (where D is front) <br /></td></tr>
 <tr class="separator:a2640aeff4f9d38ff8c6da5cabda0b070 inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86c9a07440dc286729261c86bd83e05b inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a86c9a07440dc286729261c86bd83e05b"></a>
+<a class="el" href="class_matrix2x2c.html">Matrix2x2c</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a86c9a07440dc286729261c86bd83e05b">Jones</a></td></tr>
+<tr class="memdesc:a86c9a07440dc286729261c86bd83e05b inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight">Jones matrix of beam. <br /></td></tr>
+<tr class="separator:a86c9a07440dc286729261c86bd83e05b inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a823d6dda3dc96dd2382e41647bda0268 inherit pub_attribs_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a823d6dda3dc96dd2382e41647bda0268"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_beam.html#a823d6dda3dc96dd2382e41647bda0268">isInside</a></td></tr>
+<tr class="memdesc:a823d6dda3dc96dd2382e41647bda0268 inherit pub_attribs_class_beam"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_beam.html" title="A plane-parallel optical beam that is created by act of reflection / refraction when a light incident...">Beam</a> state towards the particle (inside or outside) <br /></td></tr>
+<tr class="separator:a823d6dda3dc96dd2382e41647bda0268 inherit pub_attribs_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_class_polygon"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_class_polygon')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="class_polygon.html">Polygon</a></td></tr>
 <tr class="memitem:a5e9924cf3d12df34b38dc75707c05254 inherit pub_attribs_class_polygon"><td class="memItemLeft" align="right" valign="top"><a id="a5e9924cf3d12df34b38dc75707c05254"></a>
 <a class="el" href="struct_point3f.html">Point3f</a>&#160;</td><td class="memItemRight" valign="bottom"><b>arr</b> [MAX_VERTEX_NUM]</td></tr>
@@ -128,10 +121,19 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>nVertices</b> = 0</td>
 <tr class="separator:a7a8f39612eb3949f754817a5fe843ac5 inherit pub_attribs_class_light"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_class_track"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_class_track')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="class_track.html">Track</a></td></tr>
 <tr class="memitem:a04d6f364003aa9e8cd212df0dbb2447f inherit pub_attribs_class_track"><td class="memItemLeft" align="right" valign="top"><a id="a04d6f364003aa9e8cd212df0dbb2447f"></a>
-<a class="el" href="class_big_integer.html">IdType</a>&#160;</td><td class="memItemRight" valign="bottom"><b>id</b> = 0</td></tr>
+<a class="el" href="class_big_integer.html">IdType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_track.html#a04d6f364003aa9e8cd212df0dbb2447f">id</a></td></tr>
+<tr class="memdesc:a04d6f364003aa9e8cd212df0dbb2447f inherit pub_attribs_class_track"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unique id of beam calculated by facet ids. <br /></td></tr>
 <tr class="separator:a04d6f364003aa9e8cd212df0dbb2447f inherit pub_attribs_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a1bcdb52e5765ac6d91e62f26a51df0 inherit pub_attribs_class_track"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_track.html#a9a1bcdb52e5765ac6d91e62f26a51df0">locations</a></td></tr>
 <tr class="separator:a9a1bcdb52e5765ac6d91e62f26a51df0 inherit pub_attribs_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a677ef64963f95925017853f2657722c7 inherit pub_attribs_class_track"><td class="memItemLeft" align="right" valign="top"><a id="a677ef64963f95925017853f2657722c7"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_track.html#a677ef64963f95925017853f2657722c7">actNo</a></td></tr>
+<tr class="memdesc:a677ef64963f95925017853f2657722c7 inherit pub_attribs_class_track"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current r/r act number. <br /></td></tr>
+<tr class="separator:a677ef64963f95925017853f2657722c7 inherit pub_attribs_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5529af7dae62559eb396deca64db430 inherit pub_attribs_class_track"><td class="memItemLeft" align="right" valign="top"><a id="aa5529af7dae62559eb396deca64db430"></a>
+<a class="el" href="class_facet.html">Facet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_track.html#aa5529af7dae62559eb396deca64db430">facet</a></td></tr>
+<tr class="memdesc:aa5529af7dae62559eb396deca64db430 inherit pub_attribs_class_track"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last incident facet of the <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>. <br /></td></tr>
+<tr class="separator:aa5529af7dae62559eb396deca64db430 inherit pub_attribs_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -151,12 +153,6 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a1d64711b13ffc63640f88a8134d74635 inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a1d64711b13ffc63640f88a8134d74635"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetPolygon</b> (const <a class="el" href="class_polygon.html">Polygon</a> &amp;other)</td></tr>
 <tr class="separator:a1d64711b13ffc63640f88a8134d74635 inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a704233632d400ba7d6fa2135e87110e9 inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a704233632d400ba7d6fa2135e87110e9"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetLight</b> (const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;dir, const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;polarBasis)</td></tr>
-<tr class="separator:a704233632d400ba7d6fa2135e87110e9 inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04d2568a66519b691169ad34de1a9dc5 inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a04d2568a66519b691169ad34de1a9dc5"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetLight</b> (const <a class="el" href="class_light.html">Light</a> &amp;other)</td></tr>
-<tr class="separator:a04d2568a66519b691169ad34de1a9dc5 inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b3e47e4c2f90f1c8f779ef76a19ea04 inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a9b3e47e4c2f90f1c8f779ef76a19ea04"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Clear</b> ()</td></tr>
 <tr class="separator:a9b3e47e4c2f90f1c8f779ef76a19ea04 inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,9 +174,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>CopyTrack</b> (const 
 <tr class="memitem:af5dbd7b4282b858982753eac9872c741 inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="af5dbd7b4282b858982753eac9872c741"></a>
 <a class="el" href="class_beam.html">Beam</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="class_beam.html">Beam</a> &amp;&amp;other)</td></tr>
 <tr class="separator:af5dbd7b4282b858982753eac9872c741 inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac330cf4dff292a294912b4ef0a3cd54a inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="ac330cf4dff292a294912b4ef0a3cd54a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetTracingParams</b> (<a class="el" href="class_facet.html">Facet</a> *fac, int actN, bool isIn)</td></tr>
-<tr class="separator:ac330cf4dff292a294912b4ef0a3cd54a inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26b413c65c1040a843bd438e68728ca7 inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a26b413c65c1040a843bd438e68728ca7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetLocation</b> (bool isIn)</td></tr>
+<tr class="separator:a26b413c65c1040a843bd438e68728ca7 inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2213010326ea833a80eb7c611559a1bb inherit pub_methods_class_beam"><td class="memItemLeft" align="right" valign="top"><a id="a2213010326ea833a80eb7c611559a1bb"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>MultiplyJonesMatrix</b> (const <a class="el" href="classcomplex.html">complex</a> &amp;f1, const <a class="el" href="classcomplex.html">complex</a> &amp;f2)</td></tr>
 <tr class="separator:a2213010326ea833a80eb7c611559a1bb inherit pub_methods_class_beam"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -217,9 +213,15 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>Area</b> () const</
 <a class="el" href="struct_point3f.html">Point3f</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Normal</b> () const</td></tr>
 <tr class="separator:a2b1fae8937c3b44cce5022d2eee61f31 inherit pub_methods_class_polygon"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_track"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_track')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_track.html">Track</a></td></tr>
-<tr class="memitem:a0e023ede0704dab14c1bfbac164a8f73 inherit pub_methods_class_track"><td class="memItemLeft" align="right" valign="top"><a id="a0e023ede0704dab14c1bfbac164a8f73"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInsideOnAct</b> (int act) const</td></tr>
-<tr class="separator:a0e023ede0704dab14c1bfbac164a8f73 inherit pub_methods_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4df6f946922339d5f9f64d4b6a0ce27c inherit pub_methods_class_track"><td class="memItemLeft" align="right" valign="top"><a id="a4df6f946922339d5f9f64d4b6a0ce27c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Update</b> (<a class="el" href="class_facet.html">Facet</a> *face)</td></tr>
+<tr class="separator:a4df6f946922339d5f9f64d4b6a0ce27c inherit pub_methods_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa8ecb5618ed9ecefab2ea5f0e755d44 inherit pub_methods_class_track"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_track.html#afa8ecb5618ed9ecefab2ea5f0e755d44">IsInsideOnAct</a> (int iAct) const</td></tr>
+<tr class="memdesc:afa8ecb5618ed9ecefab2ea5f0e755d44 inherit pub_methods_class_track"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shows where the <a class="el" href="class_beam.html" title="A plane-parallel optical beam that is created by act of reflection / refraction when a light incident...">Beam</a> is located towards the <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a> inside or outside.  <a href="class_track.html#afa8ecb5618ed9ecefab2ea5f0e755d44">More...</a><br /></td></tr>
+<tr class="separator:afa8ecb5618ed9ecefab2ea5f0e755d44 inherit pub_methods_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9152f9a092de15ac7e92cf7120222eb inherit pub_methods_class_track"><td class="memItemLeft" align="right" valign="top"><a id="aa9152f9a092de15ac7e92cf7120222eb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>RecomputeTrackId</b> (int facetId, int nFacets)</td></tr>
+<tr class="separator:aa9152f9a092de15ac7e92cf7120222eb inherit pub_methods_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c9b01364289589a2dfaf4a865a88cf1 inherit pub_methods_class_track"><td class="memItemLeft" align="right" valign="top"><a id="a5c9b01364289589a2dfaf4a865a88cf1"></a>
 <a class="el" href="class_track.html">Track</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="class_track.html">Track</a> &amp;other)</td></tr>
 <tr class="separator:a5c9b01364289589a2dfaf4a865a88cf1 inherit pub_methods_class_track"><td class="memSeparator" colspan="2">&#160;</td></tr>

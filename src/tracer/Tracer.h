@@ -27,12 +27,8 @@ struct AngleRange
 class Tracer
 {
 public:
-	Tracer(Particle *particle, int nActs, const std::string &resultFileName);
+	Tracer(Particle *particle, int maxActNo, const std::string &resultFileName);
 	~Tracer();
-
-	// REF: delete?
-	void TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
-						const Tracks &tracks, double wave);
 
 	void SetHandler(Handler *handler);
 
@@ -41,17 +37,17 @@ public:
 	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
 	Light m_incidentLight;
+
 protected:
+	Particle *m_particle;
 	Handler *m_handler;
 	Scattering *m_scattering;
-	Particle *m_particle;
 
 	double m_incomingEnergy;
 	double m_outcomingEnergy;
 
 	std::string m_resultDirName;
 	double m_wavelength;
-	Symmetry m_symmetry;
 	std::string m_summary;
 	time_t m_startTime;
 
@@ -64,6 +60,5 @@ protected:
 	void OutputOrientationToLog(int i, int j, std::ostream &logfile);
 
 private:
-	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Conus &bsCone, int groupID);
 	void SetIncidentLight(Particle *particle);
 };

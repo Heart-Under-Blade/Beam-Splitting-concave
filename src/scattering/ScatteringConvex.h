@@ -5,11 +5,11 @@
 class ScatteringConvex : public Scattering
 {
 public:
-	ScatteringConvex(Particle *particle, Light *incidentLight,
-					 bool isOpticalPath, int nActs);
-protected:
-	void SplitBeams(std::vector<Beam> &scatteredBeams) override;
-	void SplitLightToBeams(std::vector<Beam> &scatteredBeams) override;
+	ScatteringConvex(Particle *particle, const Light &incidentLight, int maxActNo);
 
-	void SplitBeamByFacets(Beam &beam, std::vector<Beam> &scatteredBeams);
+protected:
+	void SplitOriginBeam(std::vector<Beam> &scatteredBeams) override;
+	void SelectVisibleFacets(const Beam &beam, Array<Facet *> &facets) override;
+	void PushBeamsToBuffer(Facet *facet, Splitting &splitting,
+						   std::vector<Beam> &scatteredBeams);
 };

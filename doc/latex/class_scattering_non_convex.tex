@@ -4,35 +4,97 @@
 
 {\ttfamily \#include $<$Scattering\+Non\+Convex.\+h$>$}
 
-Inheritance diagram for Scattering\+Non\+Convex\+:\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[height=2.000000cm]{class_scattering_non_convex}
-\end{center}
-\end{figure}
+
+
+Inheritance diagram for Scattering\+Non\+Convex\+:
+% FIG 0
+
+
+Collaboration diagram for Scattering\+Non\+Convex\+:
+% FIG 1
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{class_scattering_non_convex_a5f3c70da9700ae22364603289182bb1c}\label{class_scattering_non_convex_a5f3c70da9700ae22364603289182bb1c}} 
-{\bfseries Scattering\+Non\+Convex} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, bool is\+Optical\+Path, int n\+Acts)
+\mbox{\Hypertarget{class_scattering_non_convex_adad46e80a1c7fc4627201bb82791b1ae}\label{class_scattering_non_convex_adad46e80a1c7fc4627201bb82791b1ae}} 
+{\bfseries Scattering\+Non\+Convex} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, const \mbox{\hyperlink{class_light}{Light}} \&incident\+Light, int max\+Act\+No)
 \end{DoxyCompactItemize}
 \subsection*{Protected Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{class_scattering_non_convex_a7190966638776aecf57152da1cc2c566}\label{class_scattering_non_convex_a7190966638776aecf57152da1cc2c566}} 
-void {\bfseries Split\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scaterred\+Beams) override
+\mbox{\Hypertarget{class_scattering_non_convex_afcfbb0b23b87e3ee40ae0af796ddeb99}\label{class_scattering_non_convex_afcfbb0b23b87e3ee40ae0af796ddeb99}} 
+void {\bfseries Split\+Origin\+Beam} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams) override
 \item 
-\mbox{\Hypertarget{class_scattering_non_convex_a4af996add762e6e0a79f2dfdaf22c6f8}\label{class_scattering_non_convex_a4af996add762e6e0a79f2dfdaf22c6f8}} 
-void {\bfseries Split\+Light\+To\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&) override
+void \mbox{\hyperlink{class_scattering_non_convex_a574f2c4d503c6751f374e37e632f584a}{Release\+Beam}} (\mbox{\hyperlink{class_beam}{Beam}} \&beam) override
+\begin{DoxyCompactList}\small\item\em Final handling of beam and throwing it out of the \mbox{\hyperlink{class_particle}{Particle}}. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_scattering_non_convex_aeda4103d997bc16e155fcc8281a51b05}{Is\+Terminal\+Act}} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam) override
+\begin{DoxyCompactList}\small\item\em Checks if beam has been to release out of \mbox{\hyperlink{class_particle}{Particle}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_non_convex_af4a5cf6ea90e373d223b1a0c1992e9b1}\label{class_scattering_non_convex_af4a5cf6ea90e373d223b1a0c1992e9b1}} 
+bool {\bfseries is\+Terminal\+Facet} (int index, \mbox{\hyperlink{class_array}{Array}}$<$ \mbox{\hyperlink{class_facet}{Facet}} $\ast$$>$ \&facets) override
 \item 
-\mbox{\Hypertarget{class_scattering_non_convex_a1c771582d9be525919a4ca4abe3a150d}\label{class_scattering_non_convex_a1c771582d9be525919a4ca4abe3a150d}} 
-bool {\bfseries Find\+Rest\+Of\+Beam\+Shape} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\mbox{\Hypertarget{class_scattering_non_convex_a88c35057f13a659987a69974b56c9e96}\label{class_scattering_non_convex_a88c35057f13a659987a69974b56c9e96}} 
+void {\bfseries Push\+Beams\+To\+Buffer} (\mbox{\hyperlink{class_beam}{Beam}} \&parent\+Beam, \mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, bool has\+Out\+Beam) override
+\item 
+\mbox{\Hypertarget{class_scattering_non_convex_ad3d5352614da4088536b1b07c2c46888}\label{class_scattering_non_convex_ad3d5352614da4088536b1b07c2c46888}} 
+void {\bfseries Select\+Visible\+Facets} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{class_array}{Array}}$<$ \mbox{\hyperlink{class_facet}{Facet}} $\ast$$>$ \&facets) override
+\item 
+\mbox{\Hypertarget{class_scattering_non_convex_a1967c71c7e887a2837e5bf98e7d077c0}\label{class_scattering_non_convex_a1967c71c7e887a2837e5bf98e7d077c0}} 
+void {\bfseries Push\+Beam\+To\+Buffer} (\mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{class_polygon_array}{Polygon\+Array}} \&beam\+Parts, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams)
 \end{DoxyCompactItemize}
 \subsection*{Additional Inherited Members}
 
 
 \subsection{Detailed Description}
 N\+O\+TE\+: пучки выходят со случайно ориентированным порядком вершин 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_scattering_non_convex_aeda4103d997bc16e155fcc8281a51b05}\label{class_scattering_non_convex_aeda4103d997bc16e155fcc8281a51b05}} 
+\index{Scattering\+Non\+Convex@{Scattering\+Non\+Convex}!Is\+Terminal\+Act@{Is\+Terminal\+Act}}
+\index{Is\+Terminal\+Act@{Is\+Terminal\+Act}!Scattering\+Non\+Convex@{Scattering\+Non\+Convex}}
+\subsubsection{\texorpdfstring{Is\+Terminal\+Act()}{IsTerminalAct()}}
+{\footnotesize\ttfamily bool Scattering\+Non\+Convex\+::\+Is\+Terminal\+Act (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_beam}{Beam}} \&}]{beam }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Checks if beam has been to release out of \mbox{\hyperlink{class_particle}{Particle}}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em beam} & checked beam \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if beam has been to release, false otherwise 
+\end{DoxyReturn}
+
+
+Reimplemented from \mbox{\hyperlink{class_scattering_abe93cd1898e52b1601c96735020454fe}{Scattering}}.
+
+Here is the call graph for this function\+:
+% FIG 2
+\mbox{\Hypertarget{class_scattering_non_convex_a574f2c4d503c6751f374e37e632f584a}\label{class_scattering_non_convex_a574f2c4d503c6751f374e37e632f584a}} 
+\index{Scattering\+Non\+Convex@{Scattering\+Non\+Convex}!Release\+Beam@{Release\+Beam}}
+\index{Release\+Beam@{Release\+Beam}!Scattering\+Non\+Convex@{Scattering\+Non\+Convex}}
+\subsubsection{\texorpdfstring{Release\+Beam()}{ReleaseBeam()}}
+{\footnotesize\ttfamily void Scattering\+Non\+Convex\+::\+Release\+Beam (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_beam}{Beam}} \&}]{beam }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Final handling of beam and throwing it out of the \mbox{\hyperlink{class_particle}{Particle}}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em beam} & throwed beam \\
+\hline
+{\em scattered\+Beams} & output buffer \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \mbox{\hyperlink{class_scattering_a6fa2a9f952577d5310d8a8e617f2c8f8}{Scattering}}.
+
+Here is the call graph for this function\+:
+% FIG 3
+
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 

@@ -27,7 +27,7 @@ void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &beam,
     complex cv = (splitter.cosA - tmp1)/(tmp1 + splitter.cosA);
     complex ch = (tmp0 - sq)/(tmp0 + sq);
 
-	splitter.inBeam.J = beam.J;
+	splitter.inBeam.Jones = beam.Jones;
     splitter.inBeam.MultiplyJonesMatrix(cv, ch);
 }
 

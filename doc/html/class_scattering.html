@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Scattering Class Reference</title>
+<title>Modified Beam-Splitting: Scattering Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,9 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Modified Beam-Splitting
    </div>
+   <div id="projectbrief">The simulator of light scattering for crystals.</div>
   </td>
  </tr>
  </tbody>
@@ -70,115 +71,242 @@ $(function() {
 <div class="title">Scattering Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Produce a set of beams from a light that incident on a <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>.  
+ <a href="class_scattering.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="_scattering_8h_source.html">Scattering.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for Scattering:</div>
 <div class="dyncontent">
- <div class="center">
-  <img src="class_scattering.png" usemap="#Scattering_map" alt=""/>
-  <map id="Scattering_map" name="Scattering_map">
-<area href="class_scattering_convex.html" alt="ScatteringConvex" shape="rect" coords="0,56,135,80"/>
-<area href="class_scattering_non_convex.html" alt="ScatteringNonConvex" shape="rect" coords="145,56,280,80"/>
-</map>
- </div></div>
+<div class="center"><img src="class_scattering__inherit__graph.png" border="0" usemap="#_scattering_inherit__map" alt="Inheritance graph"/></div>
+<!-- MAP 0 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<div class="dynheader">
+Collaboration diagram for Scattering:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_scattering__coll__graph.png" border="0" usemap="#_scattering_coll__map" alt="Collaboration graph"/></div>
+<!-- MAP 1 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac71a8e1647ec322a7673a8d17d4bf771"><td class="memItemLeft" align="right" valign="top"><a id="ac71a8e1647ec322a7673a8d17d4bf771"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Scattering</b> (<a class="el" href="class_particle.html">Particle</a> *particle, <a class="el" href="class_light.html">Light</a> *incidentLight, bool isOpticalPath, int nActs)</td></tr>
-<tr class="separator:ac71a8e1647ec322a7673a8d17d4bf771"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab428bc4f6c26d02bcf7044e653cdf523"><td class="memItemLeft" align="right" valign="top"><a id="ab428bc4f6c26d02bcf7044e653cdf523"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>ScatterLight</b> (std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; &amp;scaterredBeams)</td></tr>
+<tr class="memitem:aa7c9e78a57111fd2cbf858f1c453283f"><td class="memItemLeft" align="right" valign="top"><a id="aa7c9e78a57111fd2cbf858f1c453283f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Scattering</b> (<a class="el" href="class_particle.html">Particle</a> *particle, const <a class="el" href="class_light.html">Light</a> &amp;incidentLight, int maxActNo)</td></tr>
+<tr class="separator:aa7c9e78a57111fd2cbf858f1c453283f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab428bc4f6c26d02bcf7044e653cdf523"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#ab428bc4f6c26d02bcf7044e653cdf523">ScatterLight</a> (std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; &amp;scaterredBeams)</td></tr>
+<tr class="memdesc:ab428bc4f6c26d02bcf7044e653cdf523"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tranform incident light into beams after throwing the <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>.  <a href="#ab428bc4f6c26d02bcf7044e653cdf523">More...</a><br /></td></tr>
 <tr class="separator:ab428bc4f6c26d02bcf7044e653cdf523"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6e04f119afe24a685dcc3db8fc3831d"><td class="memItemLeft" align="right" valign="top"><a id="ad6e04f119afe24a685dcc3db8fc3831d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>RotateParticle</b> (const <a class="el" href="class_angle.html">Angle</a> &amp;angle)</td></tr>
-<tr class="separator:ad6e04f119afe24a685dcc3db8fc3831d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47ef76beb93ec117c2f10c7cf7f07152"><td class="memItemLeft" align="right" valign="top"><a id="a47ef76beb93ec117c2f10c7cf7f07152"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>GetIncedentEnergy</b> () const</td></tr>
-<tr class="separator:a47ef76beb93ec117c2f10c7cf7f07152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb9b9c16fc45f08a0a2b1bdaa14fdb9a"><td class="memItemLeft" align="right" valign="top"><a id="afb9b9c16fc45f08a0a2b1bdaa14fdb9a"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>GetIncidentEnergy</b> () const</td></tr>
+<tr class="separator:afb9b9c16fc45f08a0a2b1bdaa14fdb9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac628a914ca4f93914df8cc3e64b03636"><td class="memItemLeft" align="right" valign="top"><a id="ac628a914ca4f93914df8cc3e64b03636"></a>
 <a class="el" href="struct_optical_path.html">OpticalPath</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ComputeOpticalPath</b> (const <a class="el" href="class_beam.html">Beam</a> &amp;beam, const <a class="el" href="struct_point3f.html">Point3f</a> &amp;startPoint, std::vector&lt; int &gt; track)</td></tr>
 <tr class="separator:ac628a914ca4f93914df8cc3e64b03636"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac099d494af981dc3577888f2878ddcc0"><td class="memItemLeft" align="right" valign="top"><a id="ac099d494af981dc3577888f2878ddcc0"></a>
-<a class="el" href="class_particle.html">Particle</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>GetParticle</b> () const</td></tr>
-<tr class="separator:ac099d494af981dc3577888f2878ddcc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a781dd840b4d4e70db1e86a4d12420cec"><td class="memItemLeft" align="right" valign="top"><a id="a781dd840b4d4e70db1e86a4d12420cec"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>SplitLightToBeams</b> (std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; &amp;scatteredBeams)=0</td></tr>
-<tr class="separator:a781dd840b4d4e70db1e86a4d12420cec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a785c2bb1080e9cd0cdf00c75ac82299c"><td class="memItemLeft" align="right" valign="top"><a id="a785c2bb1080e9cd0cdf00c75ac82299c"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>ScatterBeams</b> (std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; &amp;scatteredBeams)=0</td></tr>
-<tr class="separator:a785c2bb1080e9cd0cdf00c75ac82299c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac5a9e79817c487d63f422a9abb529b45"><td class="memItemLeft" align="right" valign="top"><a id="ac5a9e79817c487d63f422a9abb529b45"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>ComputeOpticalParams</b> (const <a class="el" href="class_incidence.html">Incidence</a> &amp;incidence, const <a class="el" href="class_beam.html">Beam</a> &amp;incidentBeam)</td></tr>
-<tr class="separator:ac5a9e79817c487d63f422a9abb529b45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad22434637775b6f2eb881419935316a"><td class="memItemLeft" align="right" valign="top"><a id="aad22434637775b6f2eb881419935316a"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetOpticalBeamParams</b> (<a class="el" href="class_facet.html">Facet</a> *facet, <a class="el" href="class_beam.html">Beam</a> beam)</td></tr>
-<tr class="separator:aad22434637775b6f2eb881419935316a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b891bd6dcd276e42f2697cf6cd35f2b"><td class="memItemLeft" align="right" valign="top"><a id="a4b891bd6dcd276e42f2697cf6cd35f2b"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>SplitOriginBeam</b> (std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; &amp;scatteredBeams)=0</td></tr>
+<tr class="separator:a4b891bd6dcd276e42f2697cf6cd35f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fa2a9f952577d5310d8a8e617f2c8f8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#a6fa2a9f952577d5310d8a8e617f2c8f8">ReleaseBeam</a> (<a class="el" href="class_beam.html">Beam</a> &amp;beam)</td></tr>
+<tr class="memdesc:a6fa2a9f952577d5310d8a8e617f2c8f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Final handling of beam and throwing it out of the <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>.  <a href="#a6fa2a9f952577d5310d8a8e617f2c8f8">More...</a><br /></td></tr>
+<tr class="separator:a6fa2a9f952577d5310d8a8e617f2c8f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe93cd1898e52b1601c96735020454fe"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#abe93cd1898e52b1601c96735020454fe">IsTerminalAct</a> (const <a class="el" href="class_beam.html">Beam</a> &amp;beam)</td></tr>
+<tr class="memdesc:abe93cd1898e52b1601c96735020454fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if beam has been to release out of <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>.  <a href="#abe93cd1898e52b1601c96735020454fe">More...</a><br /></td></tr>
+<tr class="separator:abe93cd1898e52b1601c96735020454fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9223cd083c3567785d7aa6cf1c48264f"><td class="memItemLeft" align="right" valign="top"><a id="a9223cd083c3567785d7aa6cf1c48264f"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isTerminalFacet</b> (int index, <a class="el" href="class_array.html">Array</a>&lt; <a class="el" href="class_facet.html">Facet</a> *&gt; &amp;facets)</td></tr>
+<tr class="separator:a9223cd083c3567785d7aa6cf1c48264f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e69b875202c73dfff77d7c4e7f9cc2a"><td class="memItemLeft" align="right" valign="top"><a id="a3e69b875202c73dfff77d7c4e7f9cc2a"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>SelectVisibleFacets</b> (const <a class="el" href="class_beam.html">Beam</a> &amp;beam, <a class="el" href="class_array.html">Array</a>&lt; <a class="el" href="class_facet.html">Facet</a> *&gt; &amp;facets)=0</td></tr>
+<tr class="separator:a3e69b875202c73dfff77d7c4e7f9cc2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c8b0bcf34e7b810fdc589130adec1d6"><td class="memItemLeft" align="right" valign="top"><a id="a8c8b0bcf34e7b810fdc589130adec1d6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>PushBeamsToBuffer</b> (<a class="el" href="class_beam.html">Beam</a> &amp;parentBeam, <a class="el" href="class_facet.html">Facet</a> *facet, bool hasOutBeam)</td></tr>
+<tr class="separator:a8c8b0bcf34e7b810fdc589130adec1d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee7284ceaca09534124e9a204897745c"><td class="memItemLeft" align="right" valign="top"><a id="aee7284ceaca09534124e9a204897745c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SplitSecondaryBeams</b> (std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; &amp;scatteredBeams)</td></tr>
+<tr class="separator:aee7284ceaca09534124e9a204897745c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a122537e571cab317861d6dd37a4ce5bf"><td class="memItemLeft" align="right" valign="top"><a id="a122537e571cab317861d6dd37a4ce5bf"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SplitBeamByVisibleFacets</b> (<a class="el" href="class_beam.html">Beam</a> &amp;beam)</td></tr>
+<tr class="separator:a122537e571cab317861d6dd37a4ce5bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6ca3dd6451a0d0976ba593cdf68c0f4"><td class="memItemLeft" align="right" valign="top"><a id="ad6ca3dd6451a0d0976ba593cdf68c0f4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>FindVisibleFacets</b> (const <a class="el" href="class_beam.html">Beam</a> &amp;beam, <a class="el" href="class_facet_checker.html">FacetChecker</a> &amp;checker, int begin, int end, <a class="el" href="class_array.html">Array</a>&lt; <a class="el" href="class_facet.html">Facet</a> *&gt; &amp;facets)</td></tr>
+<tr class="separator:ad6ca3dd6451a0d0976ba593cdf68c0f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac80e5b8c758fcf6c04d6af47b7c87a56"><td class="memItemLeft" align="right" valign="top"><a id="ac80e5b8c758fcf6c04d6af47b7c87a56"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>ComputeOpticalBeamParams</b> (<a class="el" href="class_facet.html">Facet</a> *facet, <a class="el" href="class_beam.html">Beam</a> beam)</td></tr>
+<tr class="separator:ac80e5b8c758fcf6c04d6af47b7c87a56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abdf7a6563ec37996654fa59ab99bab3f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#abdf7a6563ec37996654fa59ab99bab3f">SetPolygonByFacet</a> (<a class="el" href="class_facet.html">Facet</a> *facet, <a class="el" href="class_polygon.html">Polygon</a> &amp;polygon) const</td></tr>
 <tr class="separator:abdf7a6563ec37996654fa59ab99bab3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe93cd1898e52b1601c96735020454fe"><td class="memItemLeft" align="right" valign="top"><a id="abe93cd1898e52b1601c96735020454fe"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsTerminalAct</b> (const <a class="el" href="class_beam.html">Beam</a> &amp;beam)</td></tr>
-<tr class="separator:abe93cd1898e52b1601c96735020454fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a104a9e3ee72b4449d239f29303556811"><td class="memItemLeft" align="right" valign="top"><a id="a104a9e3ee72b4449d239f29303556811"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>ComputePolarisationParams</b> (const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;dir, const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;facetNormal, <a class="el" href="class_beam.html">Beam</a> &amp;beam)</td></tr>
-<tr class="separator:a104a9e3ee72b4449d239f29303556811"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acccb70145215368218d90cf4bd93b63b"><td class="memItemLeft" align="right" valign="top"><a id="acccb70145215368218d90cf4bd93b63b"></a>
 <a class="el" href="struct_point3f.html">Point3f</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ComputeBeamDirection</b> (const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;oldDir, const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;normal, bool isIn1, bool isIn2)</td></tr>
 <tr class="separator:acccb70145215368218d90cf4bd93b63b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1b11b96eaa2a09c4595f4d0f65c5dbe"><td class="memItemLeft" align="right" valign="top"><a id="ac1b11b96eaa2a09c4595f4d0f65c5dbe"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>ComputeFacetEnergy</b> (const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;facetNormal, const <a class="el" href="class_polygon.html">Polygon</a> &amp;lightedPolygon)</td></tr>
 <tr class="separator:ac1b11b96eaa2a09c4595f4d0f65c5dbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d95065ea7cee053cd7a6bc7540896f6"><td class="memItemLeft" align="right" valign="top"><a id="a8d95065ea7cee053cd7a6bc7540896f6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>PushBeamToTree</b> (<a class="el" href="class_beam.html">Beam</a> &amp;beam, <a class="el" href="class_facet.html">Facet</a> *facet, int level, bool isIn)</td></tr>
-<tr class="separator:a8d95065ea7cee053cd7a6bc7540896f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1059cb7f6c1951fdf44bb5ed25a95be4"><td class="memItemLeft" align="right" valign="top"><a id="a1059cb7f6c1951fdf44bb5ed25a95be4"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>PushBeamToTree</b> (<a class="el" href="class_beam.html">Beam</a> &amp;beam, const <a class="el" href="class_beam.html">Beam</a> &amp;oldBeam, const <a class="el" href="class_big_integer.html">IdType</a> &amp;newId, <a class="el" href="class_facet.html">Facet</a> *facet, bool isIn)</td></tr>
-<tr class="separator:a1059cb7f6c1951fdf44bb5ed25a95be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7384cc5c2328ab37d7235a3b858eede0"><td class="memItemLeft" align="right" valign="top"><a id="a7384cc5c2328ab37d7235a3b858eede0"></a>
-<a class="el" href="class_big_integer.html">IdType</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RecomputeTrackId</b> (const <a class="el" href="class_big_integer.html">IdType</a> &amp;oldId, int facetId)</td></tr>
-<tr class="separator:a7384cc5c2328ab37d7235a3b858eede0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a005cde1e87267a9e4c009958d6ee311a"><td class="memItemLeft" align="right" valign="top"><a id="a005cde1e87267a9e4c009958d6ee311a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>PushBeamToTree</b> (<a class="el" href="class_beam.html">Beam</a> &amp;beam)</td></tr>
+<tr class="separator:a005cde1e87267a9e4c009958d6ee311a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacb21df97d1762f127b78da0cb2471a2"><td class="memItemLeft" align="right" valign="top"><a id="aacb21df97d1762f127b78da0cb2471a2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>CreateOriginBeam</b> (const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;dir, const <a class="el" href="struct_point3f.html">Vector3f</a> &amp;basis)</td></tr>
+<tr class="separator:aacb21df97d1762f127b78da0cb2471a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:aabab038d88c737bb87dd777175b9d541"><td class="memItemLeft" align="right" valign="top"><a id="aabab038d88c737bb87dd777175b9d541"></a>
 <a class="el" href="class_particle.html">Particle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#aabab038d88c737bb87dd777175b9d541">m_particle</a></td></tr>
-<tr class="memdesc:aabab038d88c737bb87dd777175b9d541"><td class="mdescLeft">&#160;</td><td class="mdescRight">scattering particle (crystal) <br /></td></tr>
+<tr class="memdesc:aabab038d88c737bb87dd777175b9d541"><td class="mdescLeft">&#160;</td><td class="mdescRight">The crystal for a light scattering. <br /></td></tr>
 <tr class="separator:aabab038d88c737bb87dd777175b9d541"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a208510c2d17cdcf221d372ef09441c61"><td class="memItemLeft" align="right" valign="top"><a id="a208510c2d17cdcf221d372ef09441c61"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#a208510c2d17cdcf221d372ef09441c61">m_maxActNo</a></td></tr>
+<tr class="memdesc:a208510c2d17cdcf221d372ef09441c61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximal number of reflection/refraction acts. <br /></td></tr>
+<tr class="separator:a208510c2d17cdcf221d372ef09441c61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4535b7a8928911c533fb4f6f026e75d"><td class="memItemLeft" align="right" valign="top"><a id="aa4535b7a8928911c533fb4f6f026e75d"></a>
 <a class="el" href="class_splitting.html">Splitting</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_splitting</b></td></tr>
 <tr class="separator:aa4535b7a8928911c533fb4f6f026e75d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad606af7cb9ada7951ab591d648fb9bbc"><td class="memItemLeft" align="right" valign="top"><a id="ad606af7cb9ada7951ab591d648fb9bbc"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>m_nActsMax</b></td></tr>
-<tr class="separator:ad606af7cb9ada7951ab591d648fb9bbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a82f0c3297cbde80cd091a503428f2dc5"><td class="memItemLeft" align="right" valign="top"><a id="a82f0c3297cbde80cd091a503428f2dc5"></a>
-<a class="el" href="class_beam.html">Beam</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_originBeam</b></td></tr>
+<tr class="memitem:a807c34a5a7fdf1cf3bb9939b06d1d063"><td class="memItemLeft" align="right" valign="top"><a id="a807c34a5a7fdf1cf3bb9939b06d1d063"></a>
+<a class="el" href="class_light_facet_checker.html">LightFacetChecker</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_lightChecker</b></td></tr>
+<tr class="separator:a807c34a5a7fdf1cf3bb9939b06d1d063"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad211279d6de0e1e825a44c28927b6acc"><td class="memItemLeft" align="right" valign="top"><a id="ad211279d6de0e1e825a44c28927b6acc"></a>
+<a class="el" href="class_beam_facet_checker.html">BeamFacetChecker</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_beamChecker</b></td></tr>
+<tr class="separator:ad211279d6de0e1e825a44c28927b6acc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82f0c3297cbde80cd091a503428f2dc5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_beam.html">Beam</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#a82f0c3297cbde80cd091a503428f2dc5">m_originBeam</a></td></tr>
 <tr class="separator:a82f0c3297cbde80cd091a503428f2dc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afc1ba0bd9bfe75cd35c389899d091ef7"><td class="memItemLeft" align="right" valign="top"><a id="afc1ba0bd9bfe75cd35c389899d091ef7"></a>
-<a class="el" href="class_beam.html">Beam</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#afc1ba0bd9bfe75cd35c389899d091ef7">m_tracingBeams</a> [MAX_BEAM_REFL_NUM]</td></tr>
-<tr class="memdesc:afc1ba0bd9bfe75cd35c389899d091ef7"><td class="mdescLeft">&#160;</td><td class="mdescRight">tree of beams (works like stack) <br /></td></tr>
-<tr class="separator:afc1ba0bd9bfe75cd35c389899d091ef7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adac874d581f21d2e90eb8004e50f3086"><td class="memItemLeft" align="right" valign="top"><a id="adac874d581f21d2e90eb8004e50f3086"></a>
+<a class="el" href="class_beam.html">Beam</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scattering.html#adac874d581f21d2e90eb8004e50f3086">m_propagatingBeams</a> [MAX_BEAM_NUM]</td></tr>
+<tr class="memdesc:adac874d581f21d2e90eb8004e50f3086"><td class="mdescLeft">&#160;</td><td class="mdescRight">Beams that are waiting for the next r/r act. <br /></td></tr>
+<tr class="separator:adac874d581f21d2e90eb8004e50f3086"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb62197742a6ee9e1b9c3e988a4a89ee"><td class="memItemLeft" align="right" valign="top"><a id="adb62197742a6ee9e1b9c3e988a4a89ee"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>m_treeSize</b></td></tr>
 <tr class="separator:adb62197742a6ee9e1b9c3e988a4a89ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac35fa41714a7784304eead96b8186532"><td class="memItemLeft" align="right" valign="top"><a id="ac35fa41714a7784304eead96b8186532"></a>
+std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>m_scatteredBeams</b></td></tr>
+<tr class="separator:ac35fa41714a7784304eead96b8186532"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a80cb232adf041261fe02811c5cdfd5"><td class="memItemLeft" align="right" valign="top"><a id="a7a80cb232adf041261fe02811c5cdfd5"></a>
+<a class="el" href="class_array.html">Array</a>&lt; <a class="el" href="class_facet.html">Facet</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>m_visibleFacets</b></td></tr>
+<tr class="separator:a7a80cb232adf041261fe02811c5cdfd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a698c33191f5e87477b37b27e36bca0a2"><td class="memItemLeft" align="right" valign="top"><a id="a698c33191f5e87477b37b27e36bca0a2"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>m_incidentEnergy</b></td></tr>
 <tr class="separator:a698c33191f5e87477b37b27e36bca0a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a172f9184deb0e131762f21cd33a02788"><td class="memItemLeft" align="right" valign="top"><a id="a172f9184deb0e131762f21cd33a02788"></a>
 const double&#160;</td><td class="memItemRight" valign="bottom"><b>EPS_BEAM_ENERGY</b> = 2e-12</td></tr>
 <tr class="separator:a172f9184deb0e131762f21cd33a02788"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f471d07fae2b3c9eede14e9ea543f50"><td class="memItemLeft" align="right" valign="top"><a id="a3f471d07fae2b3c9eede14e9ea543f50"></a>
-<a class="el" href="class_regular_incidence.html">RegularIncidence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_regularIncidence</b></td></tr>
-<tr class="separator:a3f471d07fae2b3c9eede14e9ea543f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a42d796c6e0ca51fd73022a4f54e457f5"><td class="memItemLeft" align="right" valign="top"><a id="a42d796c6e0ca51fd73022a4f54e457f5"></a>
-<a class="el" href="class_normal_incidence.html">NormalIncidence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_normalIncidence</b></td></tr>
-<tr class="separator:a42d796c6e0ca51fd73022a4f54e457f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7dc66db9ff2cf273cd19676f69cdae3a"><td class="memItemLeft" align="right" valign="top"><a id="a7dc66db9ff2cf273cd19676f69cdae3a"></a>
-<a class="el" href="class_complete_reflection_incidence.html">CompleteReflectionIncidence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_completeReflectionIncidence</b></td></tr>
-<tr class="separator:a7dc66db9ff2cf273cd19676f69cdae3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Produce a set of beams from a light that incident on a <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="abe93cd1898e52b1601c96735020454fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe93cd1898e52b1601c96735020454fe">&#9670;&nbsp;</a></span>IsTerminalAct()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Scattering::IsTerminalAct </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_beam.html">Beam</a> &amp;&#160;</td>
+          <td class="paramname"><em>beam</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if beam has been to release out of <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">beam</td><td>checked beam </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if beam has been to release, false otherwise </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_scattering_non_convex.html#aeda4103d997bc16e155fcc8281a51b05">ScatteringNonConvex</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_scattering_abe93cd1898e52b1601c96735020454fe_icgraph.png" border="0" usemap="#class_scattering_abe93cd1898e52b1601c96735020454fe_icgraph" alt=""/></div>
+<!-- MAP 2 -->
+</div>
+
+</div>
+</div>
+<a id="a6fa2a9f952577d5310d8a8e617f2c8f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fa2a9f952577d5310d8a8e617f2c8f8">&#9670;&nbsp;</a></span>ReleaseBeam()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Scattering::ReleaseBeam </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_beam.html">Beam</a> &amp;&#160;</td>
+          <td class="paramname"><em>beam</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Final handling of beam and throwing it out of the <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">beam</td><td>throwed beam </td></tr>
+    <tr><td class="paramname">scatteredBeams</td><td>output buffer </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Reimplemented in <a class="el" href="class_scattering_non_convex.html#a574f2c4d503c6751f374e37e632f584a">ScatteringNonConvex</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_scattering_a6fa2a9f952577d5310d8a8e617f2c8f8_icgraph.png" border="0" usemap="#class_scattering_a6fa2a9f952577d5310d8a8e617f2c8f8_icgraph" alt=""/></div>
+<!-- MAP 3 -->
+</div>
+
+</div>
+</div>
+<a id="ab428bc4f6c26d02bcf7044e653cdf523"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab428bc4f6c26d02bcf7044e653cdf523">&#9670;&nbsp;</a></span>ScatterLight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Scattering::ScatterLight </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="class_beam.html">Beam</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>scaterredBeams</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tranform incident light into beams after throwing the <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">scaterredBeams</td><td>result beams </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="abdf7a6563ec37996654fa59ab99bab3f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abdf7a6563ec37996654fa59ab99bab3f">&#9670;&nbsp;</a></span>SetPolygonByFacet()</h2>
 
@@ -213,6 +341,30 @@ const double&#160;</td><td class="memItemRight" valign="bottom"><b>EPS_BEAM_ENER
 </table>
 </div><div class="memdoc">
 <p>NOTE: Result beams are ordered in inverse direction </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a82f0c3297cbde80cd091a503428f2dc5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82f0c3297cbde80cd091a503428f2dc5">&#9670;&nbsp;</a></span>m_originBeam</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_beam.html">Beam</a> Scattering::m_originBeam</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The first beam that incident on a <a class="el" href="class_particle.html" title="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. ">Particle</a>. It has no boundaries (i.e. <a class="el" href="class_polygon.html" title="Polygon consisted of 3-coordinate vertices. ">Polygon</a> is empty) </p>
 
 </div>
 </div>

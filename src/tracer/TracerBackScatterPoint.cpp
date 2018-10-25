@@ -14,7 +14,7 @@ TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, int reflNum,
 void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
 								   const Tracks &tracks, double wave)
 {
-	size_t nGroups = tracks.size();
+	int nGroups = tracks.size();
 
 	m_wavelength = wave;
 	CalcTimer timer;
@@ -44,21 +44,28 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	OutputStartTime(timer);
 
-	double beta, gamma;
+	Orientation angle;
 
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
 		m_incomingEnergy = 0;
 		OutputProgress(betaRange.number, ++count, timer);
 
-		beta = betaRange.min + betaRange.step*i;
+		angle.beta = betaRange.min + betaRange.step*i;
 
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
-			gamma = gammaRange.min + gammaRange.step*j;
-			m_scattering->ScatterLight(beta, gamma, outBeams);
-
-			m_incomingEnergy += m_scattering->GetIncedentEnergy();
+			angle.gamma = gammaRange.min + gammaRange.step*j;
+#ifdef _DEBUG // DEB
+//			angle.beta = Angle::DegToRad(179.34);
+//			angle.gamma = Angle::DegToRad(37);
+#endif
+			m_particle->Rotate(angle);
+			m_scattering->ScatterLight(outBeams);
+#ifdef _DEBUG // DEB
+			m_particle->Output();
+#endif
+			m_incomingEnergy += m_scattering->GetIncidentEnergy();
 
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
@@ -72,7 +79,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 			}
 		}
 
-		double degBeta = RadToDeg(beta);
+		double degBeta = Orientation::RadToDeg(angle.beta);
 
 		// REF: remove static casts
 		static_cast<HandlerBackScatterPoint*>
@@ -89,7 +96,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	if (isOutputGroups)
 	{
-		for (size_t group = 0; group < nGroups; ++group)
+		for (int group = 0; group < nGroups; ++group)
 		{
 			ofstream &file = *(resFiles.GetGroupFile(group));
 			file.close();
@@ -106,8 +113,8 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 string TracerBackScatterPoint::GetTableHead(const AngleRange &range)
 {
 	return to_string(range.number) + ' '
-			+ to_string(RadToDeg(range.max)) + ' '
-			+ to_string(RadToDeg(range.step)) + '\n'
+			+ to_string(Orientation::RadToDeg(range.max)) + ' '
+			+ to_string(Orientation::RadToDeg(range.step)) + '\n'
 			+ "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44"
 			+ '\n';
 }
@@ -131,7 +138,7 @@ void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
 													const string &subdir,
 													const string &prefix)
 {
-	for (size_t i = 0; i < tracks.size(); ++i)
+	for (int i = 0; i < tracks.size(); ++i)
 	{
 		string groupName = tracks[i].CreateGroupName();
 		string filename = prefix + groupName;
@@ -139,9 +146,9 @@ void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
 	}
 }
 
-void TracerBackScatterPoint::AllocGroupMatrices(vector<Arr2D> &mtrcs, size_t maxGroupID)
+void TracerBackScatterPoint::AllocGroupMatrices(vector<Arr2D> &mtrcs, int maxGroupID)
 {
-	for (size_t i = 0; i < maxGroupID; ++i)
+	for (int i = 0; i < maxGroupID; ++i)
 	{
 		Arr2D m(1, 1, 4, 4);
 		mtrcs.push_back(m);

@@ -27,8 +27,8 @@ void RegularIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
 
 void RegularIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter) const
 {
-	splitter.inBeam.J = beam.J;
-	splitter.outBeam.J = beam.J;
+	splitter.inBeam.Jones = beam.Jones;
+	splitter.outBeam.Jones = beam.Jones;
 
 	if (beam.isInside)
 	{

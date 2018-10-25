@@ -9,7 +9,5 @@ var searchData=
   ['pointcontribution',['PointContribution',['../class_point_contribution.html',1,'']]],
   ['pointposition',['PointPosition',['../struct_point_position.html',1,'']]],
   ['polygon',['Polygon',['../class_polygon.html',1,'']]],
-  ['polygonarray',['PolygonArray',['../class_polygon_array.html',1,'']]],
-  ['polynode',['PolyNode',['../class_clipper_lib_1_1_poly_node.html',1,'ClipperLib']]],
-  ['polytree',['PolyTree',['../class_clipper_lib_1_1_poly_tree.html',1,'ClipperLib']]]
+  ['polygonarray',['PolygonArray',['../class_polygon_array.html',1,'']]]
 ];

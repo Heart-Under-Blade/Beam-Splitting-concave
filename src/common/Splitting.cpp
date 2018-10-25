@@ -5,7 +5,7 @@
 #define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00		0.99999999998254670756866631966593		//1 - cos(89.99999999)
 
-void Splitting::ComputeRiParams(const complex &ri)
+Splitting::Splitting(const complex &ri)
 {
 	m_ri = ri;
 	double re = real(m_ri);
@@ -19,6 +19,8 @@ void Splitting::ComputeParams(const Point3f &dir, const Vector3f &normal,
 							  bool isInside)
 {
 	m_hasOutBeam = true;
+	m_normal = normal;
+	cosA = Point3f::DotProduct(m_normal, dir);
 
 	if (cosA > EPS_COS_00)
 	{
@@ -26,8 +28,6 @@ void Splitting::ComputeParams(const Point3f &dir, const Vector3f &normal,
 	}
 	else
 	{
-		m_normal = normal;
-		cosA = Point3f::DotProduct(m_normal, dir);
 		r = dir/cosA - m_normal;
 
 		if (isInside)

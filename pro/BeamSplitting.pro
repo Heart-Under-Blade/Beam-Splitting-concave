@@ -1,7 +1,6 @@
 TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
-#CONFIG -= qt
 
 DESTDIR = ../bin
 
@@ -14,42 +13,20 @@ CONFIG(release, debug|release): {
     TARGET = mbs
 }
 
-CONFIG(debug,	debug|release): {
+CONFIG(debug, debug|release): {
 	DEFINES += _DEBUG
     TARGET = mbs_d
 }
 
-INCLUDEPATH += \
-	../src \
-	../src/math \
-	../src/common \
-	../src/particle \
-	../src/geometry \
-	../src/scattering \
-    ../src/tracer \
-    ../src/incidence \
-	../src/bigint
-
-SOURCES += \
-	../src/*.cpp \
-	../src/math/*.cpp \
-	../src/particle/*.cpp \
-	../src/geometry/*.cpp \
-	../src/common/*.cpp \
-	../src/scattering/*.cpp \
-    ../src/incidence/*.cpp \
-    ../src/bigint/*.cc
-
-HEADERS += \
-	../src/*.h \
-	../src/math/*.hpp \
-	../src/math/*.h \
-	../src/particle/*.h \
-	../src/geometry/*.h \
-	../src/common/*.h \
-	../src/scattering/*.h \
-    ../src/incidence/*.h \
-    ../src/bigint/*.hh
-
 DISTFILES += \
     *.qmodel
+
+# Insert string below to include source files in your project
+SRC = ../src
+
+SOURCES += \
+    ../src/main.cpp
+
+include(MBS.pri)
+
+#message($$SOURCES)

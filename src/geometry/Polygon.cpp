@@ -32,6 +32,33 @@ Polygon::Polygon(Polygon &&other)
 	other.nVertices = 0;
 }
 
+void Polygon::AddVertex(const Point3f &v)
+{
+	arr[nVertices++] = v;
+}
+
+void Polygon::InsertVertex(int index, const Point3f &v)
+{
+	++nVertices;
+
+	for (int i = nVertices-1; i > index; --i)
+	{
+		arr[i] = arr[i-1];
+	}
+
+	arr[index] = v;
+}
+
+void Polygon::DeleteVertex(int index)
+{
+	for (int i = nVertices-1; i > index; --i)
+	{
+		arr[i-1] = arr[i];
+	}
+
+	--nVertices;
+}
+
 Polygon &Polygon::operator =(const Polygon &other)
 {
 	if (this != &other)
@@ -66,20 +93,18 @@ Polygon &Polygon::operator = (Polygon &&other)
 
 std::ostream &operator <<(std::ostream &os, const Polygon &beam)
 {
-	using namespace std;
-
-	os << "polygon: {" << endl;
-
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		os << "\t" << i << ": "
-		   << beam.arr[i].cx << ", "
-		   << beam.arr[i].cy << ", "
-		   << beam.arr[i].cz << ", "
-		   << beam.arr[i].d_param << endl;
+		os /*<< "\t"*/
+		   << beam.arr[i].cx << " "
+		   << beam.arr[i].cy << " "
+		   << beam.arr[i].cz << " " << std::endl;
 	}
 
-	os << "}" << endl << endl;
+	os << beam.arr[0].cx << " "
+	   << beam.arr[0].cy << " "
+	   << beam.arr[0].cz << " " << std::endl;
+
 	return os;
 }
 
@@ -103,6 +128,14 @@ double Polygon::Area() const
 
 Point3f Polygon::Center() const
 {
+#ifdef _DEBUG // DEB
+	if (nVertices == 0)
+	{
+		std::cerr << "ERROR! Polygon is empty." << std::endl
+				  << __FILE__ << ", " << __FUNCTION__ << std::endl;
+		throw std::exception();
+	}
+#endif
 	Point3f p(0, 0, 0);
 
 	for (int i = 0; i < nVertices; ++i)

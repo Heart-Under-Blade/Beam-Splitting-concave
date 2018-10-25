@@ -28,12 +28,6 @@ INPUT(
 ./debug\PhisBeam.o
 ./debug\ScatteringFiles.o
 ./debug\Splitting.o
-./debug\Tracer.o
-./debug\TracerBackScatterPoint.o
-./debug\TracerGO.o
-./debug\TracerPO.o
-./debug\Tracks.o
-./debug\trash.o
 ./debug\Scattering.o
 ./debug\ScatteringConvex.o
 ./debug\ScatteringNonConvex.o
@@ -41,6 +35,12 @@ INPUT(
 ./debug\Incidence.o
 ./debug\NormalIncidence.o
 ./debug\RegularIncidence.o
+./debug\Tracer.o
+./debug\TracerBackScatterPoint.o
+./debug\TracerGO.o
+./debug\TracerPO.o
+./debug\Tracks.o
+./debug\trash.o
 ./debug\BigInteger.o
 ./debug\BigIntegerAlgorithms.o
 ./debug\BigIntegerUtils.o

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Tracks Class Reference</title>
+<title>Modified Beam-Splitting: Tracks Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,9 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Modified Beam-Splitting
    </div>
+   <div id="projectbrief">The simulator of light scattering for crystals.</div>
   </td>
  </tr>
  </tbody>
@@ -73,11 +74,15 @@ $(function() {
 <div class="dynheader">
 Inheritance diagram for Tracks:</div>
 <div class="dyncontent">
- <div class="center">
-  <img src="class_tracks.png" usemap="#Tracks_map" alt=""/>
-  <map id="Tracks_map" name="Tracks_map">
-</map>
- </div></div>
+<div class="center"><img src="class_tracks__inherit__graph.png" border="0" usemap="#_tracks_inherit__map" alt="Inheritance graph"/></div>
+<!-- MAP 0 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<div class="dynheader">
+Collaboration diagram for Tracks:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_tracks__coll__graph.png" border="0" usemap="#_tracks_coll__map" alt="Collaboration graph"/></div>
+<!-- MAP 1 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -93,18 +98,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>ImportTracks</b> (int
 <tr class="memitem:aed07786d2b9af54a341ca8322d39d91c"><td class="memItemLeft" align="right" valign="top"><a id="aed07786d2b9af54a341ca8322d39d91c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>RecoverTrack</b> (const <a class="el" href="class_beam.html">Beam</a> &amp;beam, std::vector&lt; int &gt; &amp;track)</td></tr>
 <tr class="separator:aed07786d2b9af54a341ca8322d39d91c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71e296927bcac5f60bff87c37c71e1db"><td class="memItemLeft" align="right" valign="top"><a id="a71e296927bcac5f60bff87c37c71e1db"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>FindGroup</b> (const long long &amp;trackID) const</td></tr>
-<tr class="separator:a71e296927bcac5f60bff87c37c71e1db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a750266ba1e6ffc39554bda29a41a1801"><td class="memItemLeft" align="right" valign="top"><a id="a750266ba1e6ffc39554bda29a41a1801"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>RecoverTrack</b> (int nFacets, const <a class="el" href="class_beam.html">Beam</a> &amp;beam, std::vector&lt; int &gt; &amp;track)</td></tr>
+<tr class="separator:a750266ba1e6ffc39554bda29a41a1801"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf66ef556b4523971ccebe04a28d7f7b"><td class="memItemLeft" align="right" valign="top"><a id="aaf66ef556b4523971ccebe04a28d7f7b"></a>
 static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>TrackToStr</b> (const std::vector&lt; int &gt; &amp;track)</td></tr>
 <tr class="separator:aaf66ef556b4523971ccebe04a28d7f7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a122cf0fd15ee1c23e58a01d483974985"><td class="memItemLeft" align="right" valign="top"><a id="a122cf0fd15ee1c23e58a01d483974985"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>RecoverTrack</b> (const <a class="el" href="class_beam.html">Beam</a> &amp;beam, int facetNum, std::vector&lt; int &gt; &amp;track)</td></tr>
-<tr class="separator:a122cf0fd15ee1c23e58a01d483974985"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -113,9 +115,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>shouldComputeTracksOn
 <tr class="separator:a66cb4ec9a2db84d0abecb7ea327dffdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>common/<a class="el" href="_tracks_8h_source.html">Tracks.h</a></li>
-<li>tracing/<a class="el" href="_tracing_8h_source.html">Tracing.h</a></li>
-<li>common/Tracks.cpp</li>
+<li>tracer/<a class="el" href="_tracks_8h_source.html">Tracks.h</a></li>
+<li>tracer/Tracks.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

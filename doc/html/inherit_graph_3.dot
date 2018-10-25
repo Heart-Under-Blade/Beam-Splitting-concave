@@ -1,0 +1,7 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="Arr2D",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_arr2_d.html",tooltip="The array with (N-rows x M-columns) dimensions of small real-value matrixes with (n x m) dimensions..."];
+}

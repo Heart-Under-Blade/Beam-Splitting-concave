@@ -147,7 +147,7 @@ matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 //	double ddd = m[0][0];
 //	m_tracks->RecoverTrack(beam, track);
 #endif
-	matrix m = Mueller(beam.J);
+	matrix m = Mueller(beam.Jones);
 
 	if (zenAng < 180 && zenAng > 0)
 	{
@@ -351,7 +351,7 @@ void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 					 << path.internal << ' '
 					 << sum/ps.size() << ' '
 					 << maxPath - minPath << ' '
-					 << beam.act << ' '
+					 << beam.actNo << ' '
 					 << beam.nVertices << ' '
 					 << Tracks::TrackToStr(track)
 					 << endl;
@@ -376,7 +376,7 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 			int ggg = 0;
 #endif
 		double abs = exp(m_cAbs*path.internal);
-		beam.J *= abs;
+		beam.Jones *= abs;
 	}
 }
 
@@ -386,10 +386,20 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
+#ifdef _DEBUG // DEB
+		if (beam.id == 4221971)
+		{
+			std::vector<int> tr;
+			Tracks::RecoverTrack(m_particle->nElems, beam, tr);
+			int ooo = 0;
+		}
+
+		m_logFile << beam.id << endl;
+#endif
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion
-		if (m_hasAbsorbtion && beam.act > 0)
+		if (m_hasAbsorbtion && beam.actNo > 0)
 		{
 			ApplyAbsorbtion(beam);
 		}
@@ -518,7 +528,7 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 				// OPT: вышеописанные параметры можно вычислить один раз и занести в массив
 
 				matrixC jones(0, 0);
-				matrixC fnJones = ComputeFnJones(beam.J, center, vr, projLenght);
+				matrixC fnJones = ComputeFnJones(beam.Jones, center, vr, projLenght);
 				ApplyDiffraction(beam, beamBasis, vf, vr, fnJones, jones);
 				J[groupId].insert(i, j, jones);
 			}
@@ -652,12 +662,12 @@ void HandlerPO::WriteMatricesToFile(string &destName)
 
 	for (int t = 0; t <= m_conus.thetaCount; ++t)
 	{
-		double tt = Angle::RadToDeg(t*m_conus.dTheta);
+		double tt = Orientation::RadToDeg(t*m_conus.dTheta);
 
 		for (int p = 0; p <= m_conus.phiCount; ++p)
 		{
 			double fi = -((double)p)*m_conus.dPhi;
-			double degPhi = Angle::RadToDeg(-fi);
+			double degPhi = Orientation::RadToDeg(-fi);
 			outFile << endl << tt << " " << degPhi << " ";
 
 			matrix m = M(p, t);
@@ -685,8 +695,8 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 	{
 #ifdef _DEBUG // DEB
 		++c;
-		vector<int> tr;
-		m_tracks->RecoverTrack(beam, tr);
+//		vector<int> tr;
+//		m_tracks->RecoverTrack(beam, tr);
 #endif
 
 		if (con20 && beam.direction.cz < BEAM_DIR_LIM)
@@ -711,7 +721,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		int zenith = round((acos(beam.direction.cz)*SPHERE_RING_NUM)/M_PI);
 #endif
 		// absorbtion
-		if (m_hasAbsorbtion && beam.act > 0)
+		if (m_hasAbsorbtion && beam.actNo > 0)
 		{
 			ApplyAbsorbtion(beam);
 		}
@@ -723,7 +733,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		double projLenght = beam.opticalPath + Point3f::DotProduct(center, beam.direction);
 
 		matrixC jones(2, 2);
-		matrixC fnJones = ComputeFnJones(beam.J, center, vr, projLenght);
+		matrixC fnJones = ComputeFnJones(beam.Jones, center, vr, projLenght);
 		ApplyDiffraction(beam, beamBasis, vf, vr, fnJones, jones);
 
 		// correction

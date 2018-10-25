@@ -6,7 +6,7 @@ HollowColumn::HollowColumn(const complex &refrIndex, const Size &size,
 						   double cavityAngle)
 	: Column(18, refrIndex, size, true)
 {
-	double angleD = Angle::DegToRad(cavityAngle);
+	double angleD = Orientation::DegToRad(cavityAngle);
 	double r = m_size.diameter/2;
 	m_cavityDept = (r*sin(angleD))/cos(angleD);
 

@@ -11,8 +11,9 @@
 class Splitting
 {
 public:
+	Splitting(const complex &ri);
+
 	Incidence *GetIncidence() const;
-	void ComputeRiParams(const complex &ri); //REF: переместить в конструктор
 
 	void ComputeParams(const Point3f &dir, const Vector3f &normal,
 					   bool isInside);
@@ -50,12 +51,11 @@ public:
 	Point3f r;
 	double reRiEff;
 	double s;
-	bool m_isOpticalPath;
 
 	Beam inBeam;
 	Beam outBeam;
 
-	complex m_ri;	///< Refractive index
+	complex m_ri;	///< Refractive index of a Particle
 
 	Point3f m_normal;
 	Incidence *m_incidence;
@@ -74,6 +74,7 @@ private:
 	CompleteReflectionIncidence		m_completeReflectionIncidence;
 };
 
+
 class FacetChecker
 {
 public:
@@ -91,7 +92,6 @@ public:
 		}
 	}
 };
-
 
 class LightFacetChecker : public FacetChecker
 {

@@ -89,8 +89,8 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.IsCatched("b"))
 		{
-			min = Angle::DegToRad(parser.GetDoubleValue(key, 0));
-			max = Angle::DegToRad(parser.GetDoubleValue(key, 1));
+			min = Orientation::DegToRad(parser.GetDoubleValue(key, 0));
+			max = Orientation::DegToRad(parser.GetDoubleValue(key, 1));
 		}
 		else
 		{
@@ -104,8 +104,8 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 
 		if (parser.IsCatched("g"))
 		{
-			min = Angle::DegToRad(parser.GetDoubleValue(key, 0));
-			max = Angle::DegToRad(parser.GetDoubleValue(key, 1));
+			min = Orientation::DegToRad(parser.GetDoubleValue(key, 0));
+			max = Orientation::DegToRad(parser.GetDoubleValue(key, 1));
 		}
 		else
 		{
@@ -168,11 +168,11 @@ int main(int argc, const char* argv[])
 			particle = new RegularColumn(refrIndex, size);
 			break;
 		case ParticleType::Bullet:
-			sup = (size.diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
+			sup = (size.diameter*sqrt(3)*tan(Orientation::DegToRad(62)))/4;
 			particle = new Bullet(refrIndex, size, sup);
 			break;
 		case ParticleType::BulletRosette:
-			sup = (size.diameter*sqrt(3)*tan(Angle::DegToRad(62)))/4;
+			sup = (size.diameter*sqrt(3)*tan(Orientation::DegToRad(62)))/4;
 			particle = new BulletRosette(refrIndex, size, sup);
 			break;
 		case ParticleType::DistortedColumn:

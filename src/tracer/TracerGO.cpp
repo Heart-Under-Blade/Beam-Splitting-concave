@@ -3,8 +3,8 @@
 
 using namespace std;
 
-TracerGO::TracerGO(Particle *particle, int reflNum, const std::string &resultFileName)
-	: Tracer(particle, reflNum, resultFileName)
+TracerGO::TracerGO(Particle *particle, int maxActNo, const std::string &resultFileName)
+	: Tracer(particle, maxActNo, resultFileName)
 {
 }
 
@@ -14,27 +14,30 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
 #endif
-
-	vector<Beam> outBeams;
-	double beta, gamma;
+	vector<Beam> scatteredBeams;
+	Orientation angle;
 
 	CalcTimer timer;
 	OutputStartTime(timer);
 
 	for (int i = 0; i < betaRange.number; ++i)
 	{
-		beta = (i + 0.5)*betaRange.step;
+		angle.beta = (i + 0.5)*betaRange.step;
 
 		for (int j = 0; j < gammaRange.number; ++j)
 		{
-			gamma = (j + 0.5)*gammaRange.step;
-
-			m_scattering->ScatterLight(beta, gamma, outBeams);
-			m_handler->HandleBeams(outBeams);
-			outBeams.clear();
+			angle.gamma = (j + 0.5)*gammaRange.step;
+#ifdef _DEBUG // DEB
+//			angle.beta = Angle::DegToRad(179.34);
+//			angle.gamma = Angle::DegToRad(37);
+#endif
+			m_particle->Rotate(angle);
+			m_scattering->ScatterLight(scatteredBeams);
+			m_handler->HandleBeams(scatteredBeams);
+			scatteredBeams.clear();
 
 #ifdef _CHECK_ENERGY_BALANCE
-			m_incomingEnergy += m_scattering->GetIncedentEnergy()*sin(beta);
+			m_incomingEnergy += m_scattering->GetIncidentEnergy()*sin(angle.beta);
 #endif
 //			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
@@ -54,11 +57,14 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 
 void TracerGO::TraceFixed(const double &beta, const double &gamma)
 {
-	double b = DegToRad(beta);
-	double g = DegToRad(gamma);
+	Orientation angle;
+	angle.beta = Orientation::DegToRad(beta);
+	angle.gamma = Orientation::DegToRad(gamma);
 
 	vector<Beam> outBeams;
-	m_scattering->ScatterLight(b, g, outBeams);
+	m_particle->Rotate(angle);
+	m_scattering->ScatterLight(outBeams);
+//	m_particle->Output();
 	m_handler->HandleBeams(outBeams);
 	outBeams.clear();
 
@@ -70,7 +76,7 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma)
 
 double TracerGO::CalcNorm(long long orNum)
 {
-	double &symBeta = m_symmetry.beta;
+	const double &symBeta = m_particle->GetSymmetry().beta;
 	double tmp = (/*isRandom*/true) ? symBeta : 1.0;
 	double dBeta = -(cos(symBeta) - cos(0));
 	return tmp/(orNum*dBeta);

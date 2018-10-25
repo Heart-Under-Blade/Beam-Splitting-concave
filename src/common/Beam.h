@@ -19,15 +19,34 @@ public:
 class Track
 {
 public:
-	IdType id = 0;
-	int locations;		///< each bit of variable represents location of beam after an r/r act from left to right
-						///< "0" when beam location is "inside" and "1" if it's "outside"
+	Track()
+	{
+		id = 0;
+		actNo = -1;
+		locations = 0;
+	}
 
-	bool IsInsideOnAct(int act) const
+	void Update(Facet *face)
+	{
+		facet = face;
+		++actNo;
+	}
+
+	/**
+	 * @brief Shows where the Beam is located towards the Particle inside or outside
+	 * @param iAct r/r act number
+	 * @return true if beam location is "inside" on r/r act, otherwise returns false
+	 */
+	bool IsInsideOnAct(int iAct) const
 	{
 		int mask = 1;
-		mask <<= act;
+		mask <<= iAct;
 		return !(locations & mask);
+	}
+
+	void RecomputeTrackId(int facetId, int nFacets)
+	{
+		id = (id + (facetId + 1)) * (nFacets + 1);
 	}
 
 	Track & operator = (const Track &other)
@@ -36,12 +55,38 @@ public:
 		{
 			id = other.id;
 			locations = other.locations;
+			actNo = other.actNo;
+			facet = other.facet;
+#ifdef _DEBUG // DEB
+			pols = other.pols;
+			dirs = other.dirs;
+			ops = other.ops;
+#endif
 		}
 
 		return *this;
 	}
+
+public:
+	IdType id; ///< Unique id of beam calculated by facet ids
+	int locations;	///< Every bit of the variable represents location of beam
+					///< after an r/r act from the right to the left
+					///< "0" when beam location is "inside" and "1" if it's "outside"
+
+	int actNo; ///< Current r/r act number
+	Facet *facet; ///< Last incident facet of the Particle
+
+#ifdef _DEBUG // DEB
+	std::vector<Point3f> dirs;
+	std::vector<double> ops;
+	std::vector<Polygon> pols;
+#endif
 };
 
+/**
+ * @brief A plane-parallel optical beam that is created by
+ * act of reflection / refraction when a light incidents on a Particle.
+ */
 class Beam : public Polygon, public Light, public Track
 {
 public:
@@ -52,9 +97,7 @@ public:
 
 	Vector3f RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 
-	void SetPolygon(const Polygon &other);
-	void SetLight(const Vector3f &dir, const Vector3f &polarBasis);
-	void SetLight(const Light &other);
+	void SetPolygon(const Polygon &other); // REF: мб просто искользовать "="?
 	void Clear();
 	void AddOpticalPath(double path);
 	void CopyTrack(const Track &other);
@@ -64,35 +107,30 @@ public:
 	Beam & operator = (const Light &other);
 	Beam & operator = (Beam &&other);
 
-	void SetTracingParams(Facet *fac, int actN, bool isIn);
+	void SetLocation(bool isIn);
 
 	void MultiplyJonesMatrix(const complex &f1, const complex &f2);
 	void RotateJMatrix(const Vector3f &newBasis);
 
-	// REF: перенести в PhisBeam
+	// REF: перенести в Diffractor
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
 
+	/**
+	 * @brief Outputs beam params. Use it with std::cout or std::ofstream
+	 * @param os
+	 * @param beam
+	 * @return
+	 */
 	friend std::ostream & operator << (std::ostream &os, const Beam &beam);
 
-	// REF: рассмотреть схему, где у пучка будет много полигонов
-
 public:
-	Matrix2x2c J;		///< Jones matrix of beam
-	int act;			///< number of preview reflections
-	Facet *facet;		///< last incident facet
+	// REF: перенести в private
+	double opticalPath;	///< Optical path of beam
+	double front;		///< Current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
-	bool isInside; 		///< beam state towards the particle (inside or outside)
-
-	// REF: перенести в PhisBeam
-	double opticalPath;	///< optical path of beam
-	double front;		///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
-
-#ifdef _DEBUG // DEB
-	std::vector<Polygon> pols;
-	std::vector<Point3f> dirs;
-	std::vector<double> ops;
-#endif
+	Matrix2x2c Jones;	///< Jones matrix of beam
+	bool isInside; 		///< Beam state towards the particle (inside or outside)
 
 private:
 	void GetSpherical(double &fi, double &teta) const;

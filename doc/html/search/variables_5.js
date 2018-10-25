@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['j',['J',['../class_beam.html#a17dc5762614f2586d61d1bd3f52a8645',1,'Beam']]]
+  ['jones',['Jones',['../class_beam.html#a86c9a07440dc286729261c86bd83e05b',1,'Beam']]]
 ];

@@ -20,8 +20,8 @@ DistortedColumn::DistortedColumn(const complex &refrIndex, const Size &size,
 
 void DistortedColumn::DistortBases(double angle)
 {
-    double tilt = Angle::DegToRad(15);
-    double tanA = tan(Angle::DegToRad(angle));
+    double tilt = Orientation::DegToRad(15);
+    double tanA = tan(Orientation::DegToRad(angle));
 	double k = m_size.diameter/2 * tanA;
 
 	double h[6];

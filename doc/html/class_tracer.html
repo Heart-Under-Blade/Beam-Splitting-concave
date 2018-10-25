@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Tracer Class Reference</title>
+<title>Modified Beam-Splitting: Tracer Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,9 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Modified Beam-Splitting
    </div>
+   <div id="projectbrief">The simulator of light scattering for crystals.</div>
   </td>
  </tr>
  </tbody>
@@ -74,43 +75,21 @@ $(function() {
 <div class="dynheader">
 Inheritance diagram for Tracer:</div>
 <div class="dyncontent">
- <div class="center">
-  <img src="class_tracer.png" usemap="#Tracer_map" alt=""/>
-  <map id="Tracer_map" name="Tracer_map">
-<area href="class_tracer_g_o.html" alt="TracerGO" shape="rect" coords="0,56,146,80"/>
-<area href="class_tracer_g_o.html" alt="TracerGO" shape="rect" coords="156,56,302,80"/>
-<area href="class_tracer_p_o.html" alt="TracerPO" shape="rect" coords="312,56,458,80"/>
-<area href="class_tracer_p_o.html" alt="TracerPO" shape="rect" coords="624,56,770,80"/>
-<area href="class_tracer_back_scatter_point.html" alt="TracerBackScatterPoint" shape="rect" coords="234,112,380,136"/>
-<area href="class_tracer_back_scatter_point.html" alt="TracerBackScatterPoint" shape="rect" coords="390,112,536,136"/>
-<area href="class_tracer_back_scatter_point.html" alt="TracerBackScatterPoint" shape="rect" coords="546,112,692,136"/>
-<area href="class_tracer_back_scatter_point.html" alt="TracerBackScatterPoint" shape="rect" coords="702,112,848,136"/>
-</map>
- </div></div>
+<div class="center"><img src="class_tracer__inherit__graph.png" border="0" usemap="#_tracer_inherit__map" alt="Inheritance graph"/></div>
+<!-- MAP 0 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<div class="dynheader">
+Collaboration diagram for Tracer:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_tracer__coll__graph.png" border="0" usemap="#_tracer_coll__map" alt="Collaboration graph"/></div>
+<!-- MAP 1 -->
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac11f0a7aad59fe661a3f351eecfca756"><td class="memItemLeft" align="right" valign="top"><a id="ac11f0a7aad59fe661a3f351eecfca756"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Tracer</b> (<a class="el" href="class_particle.html">Particle</a> *particle, int nActs, const std::string &amp;resultFileName)</td></tr>
-<tr class="separator:ac11f0a7aad59fe661a3f351eecfca756"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aacf21b3b3123155380f9d77ed643c2c8"><td class="memItemLeft" align="right" valign="top"><a id="aacf21b3b3123155380f9d77ed643c2c8"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>TraceRandomPO2</b> (int betaNumber, int gammaNumber, const <a class="el" href="struct_conus.html">Conus</a> &amp;bsCone, const <a class="el" href="class_tracks.html">Tracks</a> &amp;tracks, double wave)</td></tr>
-<tr class="separator:aacf21b3b3123155380f9d77ed643c2c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c7f40458880967ff1cd9ca8e265eeaa"><td class="memItemLeft" align="right" valign="top"><a id="a7c7f40458880967ff1cd9ca8e265eeaa"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetHandler</b> (<a class="el" href="class_handler.html">Handler</a> *handler)</td></tr>
-<tr class="separator:a7c7f40458880967ff1cd9ca8e265eeaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac78ce79d165b541348b8eb250a325e38"><td class="memItemLeft" align="right" valign="top"><a id="ac78ce79d165b541348b8eb250a325e38"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetIsOutputGroups</b> (bool value)</td></tr>
-<tr class="separator:ac78ce79d165b541348b8eb250a325e38"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85c4978cd9b9d38ee25d489f9358e2bc"><td class="memItemLeft" align="right" valign="top"><a id="a85c4978cd9b9d38ee25d489f9358e2bc"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>OutputStatisticsPO</b> (<a class="el" href="class_calc_timer.html">CalcTimer</a> &amp;timer, long long orNumber, const std::string &amp;path)</td></tr>
-<tr class="separator:a85c4978cd9b9d38ee25d489f9358e2bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac11f0a7aad59fe661a3f351eecfca756"><td class="memItemLeft" align="right" valign="top"><a id="ac11f0a7aad59fe661a3f351eecfca756"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Tracer</b> (<a class="el" href="class_particle.html">Particle</a> *particle, int nActs, const std::string &amp;resultFileName)</td></tr>
-<tr class="separator:ac11f0a7aad59fe661a3f351eecfca756"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aacf21b3b3123155380f9d77ed643c2c8"><td class="memItemLeft" align="right" valign="top"><a id="aacf21b3b3123155380f9d77ed643c2c8"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>TraceRandomPO2</b> (int betaNumber, int gammaNumber, const <a class="el" href="struct_conus.html">Conus</a> &amp;bsCone, const <a class="el" href="class_tracks.html">Tracks</a> &amp;tracks, double wave)</td></tr>
-<tr class="separator:aacf21b3b3123155380f9d77ed643c2c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab99221c418f17833ac39c5d7d35936bd"><td class="memItemLeft" align="right" valign="top"><a id="ab99221c418f17833ac39c5d7d35936bd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Tracer</b> (<a class="el" href="class_particle.html">Particle</a> *particle, int maxActNo, const std::string &amp;resultFileName)</td></tr>
+<tr class="separator:ab99221c418f17833ac39c5d7d35936bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c7f40458880967ff1cd9ca8e265eeaa"><td class="memItemLeft" align="right" valign="top"><a id="a7c7f40458880967ff1cd9ca8e265eeaa"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetHandler</b> (<a class="el" href="class_handler.html">Handler</a> *handler)</td></tr>
 <tr class="separator:a7c7f40458880967ff1cd9ca8e265eeaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,24 +117,18 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>OutputProgress</b> (i
 <tr class="memitem:a83143f902694a20b395fcb5868055640"><td class="memItemLeft" align="right" valign="top"><a id="a83143f902694a20b395fcb5868055640"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>OutputOrientationToLog</b> (int i, int j, std::ostream &amp;logfile)</td></tr>
 <tr class="separator:a83143f902694a20b395fcb5868055640"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e63f88ff2b5a510ae8f9894b50b1113"><td class="memItemLeft" align="right" valign="top"><a id="a0e63f88ff2b5a510ae8f9894b50b1113"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>OutputStartTime</b> (<a class="el" href="class_calc_timer.html">CalcTimer</a> &amp;timer)</td></tr>
-<tr class="separator:a0e63f88ff2b5a510ae8f9894b50b1113"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae64f2f145478e965db421f95ecc41de1"><td class="memItemLeft" align="right" valign="top"><a id="ae64f2f145478e965db421f95ecc41de1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>OutputProgress</b> (int betaNumber, long long count, <a class="el" href="class_calc_timer.html">CalcTimer</a> &amp;timer)</td></tr>
-<tr class="separator:ae64f2f145478e965db421f95ecc41de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a83143f902694a20b395fcb5868055640"><td class="memItemLeft" align="right" valign="top"><a id="a83143f902694a20b395fcb5868055640"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>OutputOrientationToLog</b> (int i, int j, std::ostream &amp;logfile)</td></tr>
-<tr class="separator:a83143f902694a20b395fcb5868055640"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:af655d478c9abc81008b06ff236854fc5"><td class="memItemLeft" align="right" valign="top"><a id="af655d478c9abc81008b06ff236854fc5"></a>
+<tr class="memitem:a1053837fa4c97fdeec8ea4397921209e"><td class="memItemLeft" align="right" valign="top"><a id="a1053837fa4c97fdeec8ea4397921209e"></a>
+<a class="el" href="class_particle.html">Particle</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_particle</b></td></tr>
+<tr class="separator:a1053837fa4c97fdeec8ea4397921209e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60e4a42a32f2b3cf928403b44bd214e7"><td class="memItemLeft" align="right" valign="top"><a id="a60e4a42a32f2b3cf928403b44bd214e7"></a>
 <a class="el" href="class_handler.html">Handler</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_handler</b></td></tr>
-<tr class="separator:af655d478c9abc81008b06ff236854fc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67c34aa36cbd336bc0c5f984428b3859"><td class="memItemLeft" align="right" valign="top"><a id="a67c34aa36cbd336bc0c5f984428b3859"></a>
+<tr class="separator:a60e4a42a32f2b3cf928403b44bd214e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19bfa6da3a9bf2b40e001a99598d1f46"><td class="memItemLeft" align="right" valign="top"><a id="a19bfa6da3a9bf2b40e001a99598d1f46"></a>
 <a class="el" href="class_scattering.html">Scattering</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_scattering</b></td></tr>
-<tr class="separator:a67c34aa36cbd336bc0c5f984428b3859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a19bfa6da3a9bf2b40e001a99598d1f46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3756356e40ed07a654df3935b7531ab"><td class="memItemLeft" align="right" valign="top"><a id="ab3756356e40ed07a654df3935b7531ab"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>m_incomingEnergy</b></td></tr>
 <tr class="separator:ab3756356e40ed07a654df3935b7531ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,9 +141,6 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>m_resultDirNam
 <tr class="memitem:a08936f3fe9cd42c0d5eab497c701fb68"><td class="memItemLeft" align="right" valign="top"><a id="a08936f3fe9cd42c0d5eab497c701fb68"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>m_wavelength</b></td></tr>
 <tr class="separator:a08936f3fe9cd42c0d5eab497c701fb68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad385e51055f6465868bbdd1e2bdba13b"><td class="memItemLeft" align="right" valign="top"><a id="ad385e51055f6465868bbdd1e2bdba13b"></a>
-<a class="el" href="class_orientation.html">Symmetry</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_symmetry</b></td></tr>
-<tr class="separator:ad385e51055f6465868bbdd1e2bdba13b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a051998c8471ebe0a0a26823b5f21f31c"><td class="memItemLeft" align="right" valign="top"><a id="a051998c8471ebe0a0a26823b5f21f31c"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>m_summary</b></td></tr>
 <tr class="separator:a051998c8471ebe0a0a26823b5f21f31c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,13 +150,10 @@ time_t&#160;</td><td class="memItemRight" valign="bottom"><b>m_startTime</b></td
 <tr class="memitem:a5bb5e8c120182d824c89738f185065e5"><td class="memItemLeft" align="right" valign="top"><a id="a5bb5e8c120182d824c89738f185065e5"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isOutputGroups</b> = false</td></tr>
 <tr class="separator:a5bb5e8c120182d824c89738f185065e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1053837fa4c97fdeec8ea4397921209e"><td class="memItemLeft" align="right" valign="top"><a id="a1053837fa4c97fdeec8ea4397921209e"></a>
-<a class="el" href="class_particle.html">Particle</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_particle</b></td></tr>
-<tr class="separator:a1053837fa4c97fdeec8ea4397921209e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>common/<a class="el" href="common_2_tracer_8h_source.html">Tracer.h</a></li>
-<li>common/Tracer.cpp</li>
+<li>tracer/<a class="el" href="_tracer_8h_source.html">Tracer.h</a></li>
+<li>tracer/Tracer.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

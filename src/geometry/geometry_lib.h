@@ -10,16 +10,6 @@
 
 class Facet;
 
-class Orientation
-{
-public:
-	double beta;
-	double gamma;
-	double alpha;
-};
-
-typedef Orientation Symmetry;
-
 template <class T>
 class Array
 {
@@ -42,19 +32,20 @@ public:
 };
 
 /**
- * @brief Three Euler angles. The units (degrees or radians) is defined by yours
- * i.e. if you consider units of this object as degrees from beginning
- * then you can call ToRadian() to convert angles of the object from degrees to radians.
+ * The units (degrees or radians)
+ * is defined by yours i.e. if you consider units of this object
+ * as degrees from beginning then you can call ToRadian() to convert angles
+ * of the object from degrees to radians.
  */
-class Angle
+class Angle3d
 {
 public:
 	double alpha;
 	double beta;
 	double gamma;
 
-	Angle() {}
-	Angle(double a, double b, double g)
+	Angle3d() {}
+	Angle3d(double a, double b, double g)
 	{
 		alpha = a;
 		beta = b;
@@ -91,6 +82,8 @@ public:
 		return (rad*180)/M_PI;
 	}
 };
+
+typedef Angle3d Orientation;
 
 typedef Point3f Vector3f;
 typedef Point3d Vector3d;
