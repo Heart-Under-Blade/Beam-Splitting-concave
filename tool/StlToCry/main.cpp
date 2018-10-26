@@ -4,6 +4,7 @@
 #include <cstring>
 #include <float.h>
 #include <limits.h>
+#include <iomanip>
 
 #include "Facet.h"
 #include "Particle.h"
@@ -170,9 +171,9 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 	}
 }
 
-void OutputFacets(const std::vector<Facet> &facets)
+void OutputCrystal(const std::vector<Facet> &facets)
 {
-	std::string outFile = "out.dat";
+	std::string outFile = "cry.dat";
 	std::ofstream ofile(outFile, std::ios::out);
 
 	if (!ofile.is_open())
@@ -183,6 +184,10 @@ void OutputFacets(const std::vector<Facet> &facets)
 
 	for (const Facet &facet : facets)
 	{
+#ifdef _DEBUG // DEB
+		if (facet.Area() < 3)
+			continue;
+#endif
 		ofile << facet << std::endl;
 	}
 
@@ -193,9 +198,13 @@ bool IsConvex(const Facet &merged)
 {
 	double dp1, dp2;
 	int i1, i2;
-	Vector3f v1 = merged.arr[1] - merged.arr[0];
-	Vector3f v2 = merged.arr[2] - merged.arr[0];
-	dp1 = Vector3f::DotProduct(v1, v2);
+	Vector3f v1, v2;
+
+	Vector3f n = merged.Normal();
+
+	v1 = merged.arr[1] - merged.arr[0];
+	v2 = merged.arr[2] - merged.arr[0];
+	dp1 = Vector3f::DotProduct(Vector3f::CrossProduct(v1, v2), n);
 
 	for (int i = 1; i < merged.nVertices; ++i)
 	{
@@ -215,9 +224,9 @@ bool IsConvex(const Facet &merged)
 			i2 = i + 2;
 		}
 
-		Vector3f v1 = merged.arr[i1] - merged.arr[i];
-		Vector3f v2 = merged.arr[i2] - merged.arr[i];
-		dp2 = Vector3f::DotProduct(v1, v2);
+		v1 = merged.arr[i1] - merged.arr[i];
+		v2 = merged.arr[i2] - merged.arr[i];
+		dp2 = Vector3f::DotProduct(Vector3f::CrossProduct(v1, v2), n);
 
 		if (dp2*dp1 < 0)
 		{
@@ -243,7 +252,6 @@ void MergeTriangles(std::vector<Facet> &rest, Facet &convex)
 	convex = merged;
 	rest = triangles;
 
-	int f = 0;
 	while (!triangles.empty())
 	{
 		bool isAdded = false;
@@ -252,14 +260,6 @@ void MergeTriangles(std::vector<Facet> &rest, Facet &convex)
 		{
 			const Facet &triangle = triangles[i];
 			Array<int> points;
-
-//			if (merged.nVertices == 82)
-//			{
-//				std::vector<Facet> dd;
-//				dd.push_back(merged);
-//				OutputFacets(dd);
-//				int fff = 0;
-//			}
 
 			if (FindEqualPoints(merged, triangle, points))
 			{
@@ -271,6 +271,13 @@ void MergeTriangles(std::vector<Facet> &rest, Facet &convex)
 
 				if (IsConvex(merged))
 				{
+#ifdef _DEBUG // DEB
+					if (merged.nVertices == 26)
+					{
+//						OutputCrystal(std::vector<Facet>{merged});
+						int fff = 0;
+					}
+#endif
 					convex = merged;
 					rest = triangles;
 				}
@@ -287,16 +294,9 @@ void MergeTriangles(std::vector<Facet> &rest, Facet &convex)
 	}
 }
 
-int main()
+void MergeCrystal(std::vector<Facet> triangles,
+				 std::vector<Facet> &mergedFacets)
 {
-	std::string filename = "particle.stl";
-	std::vector<Facet> triangles;
-	ReadStl(filename, triangles);
-
-//	OutputFacets(triangles);
-
-	std::vector<Facet> mergedFacets;
-
 	while (!triangles.empty())
 	{
 		std::vector<Facet> oneFacetTriangles;
@@ -331,7 +331,98 @@ int main()
 			mergedFacets.push_back(merged);
 		}
 	}
+}
 
-	OutputFacets(mergedFacets);
-	int fff = 0;
+void Triangulate(const std::vector<Facet> &crystal,
+				 std::vector<Facet> &triangles)
+{
+	for (const Facet &facet : crystal)
+	{
+		if (facet.nVertices == 3) // facet is already triangle
+		{
+			triangles.push_back(facet);
+		}
+		else // divide facet into triangles
+		{
+			for (int i = 1; i+1 < facet.nVertices; ++i)
+			{
+				Facet triangle;
+				triangle.AddVertex(facet.arr[0]); // base vertex
+				triangle.AddVertex(facet.arr[i]);
+				triangle.AddVertex(facet.arr[i+1]);
+				triangles.push_back(triangle);
+			}
+		}
+	}
+}
+
+void WriteStl(const std::vector<Facet> &triangles)
+{
+	std::string outFile = "crystal.stl";
+	std::ofstream ofile(outFile, std::ios::out);
+
+	if (!ofile.is_open())
+	{
+		std::cerr << "File \"" << outFile << "\" is not found" << std::endl;
+		throw std::exception();
+	}
+
+	ofile << std::setprecision(6) << std::scientific;
+
+	int offset = 3;
+
+	int nSpaces = offset;
+	ofile << "solid HOLDER" << std::endl;
+
+	for (const Facet &facet : triangles)
+	{
+		const Point3f &n = facet.Normal();
+		ofile << std::string(nSpaces, ' ') << "facet normal "
+			  << n.point[0] << ' '
+			  << n.point[1] << ' '
+			  << n.point[2] << std::endl;
+
+		nSpaces += offset;
+		ofile << std::string(nSpaces, ' ') << "outer loop" << std::endl;
+
+		nSpaces += offset;
+
+		for (int i = 0; i < facet.nVertices; ++i)
+		{
+			ofile << std::string(nSpaces, ' ') << "vertex "
+				  << facet.arr[i].point[0] << ' '
+				  << facet.arr[i].point[1] << ' '
+				  << facet.arr[i].point[2] << std::endl;
+		}
+
+		nSpaces -= offset;
+		ofile << std::string(nSpaces, ' ') << "endloop" << std::endl;
+
+		nSpaces -= offset;
+		ofile << std::string(nSpaces, ' ') << "endfacet" << std::endl;
+	}
+
+	ofile << "endsolid" << std::endl;
+	ofile.close();
+}
+
+int main()
+{
+	std::string filename = "particle.stl";
+	std::vector<Facet> triangles;
+	ReadStl(filename, triangles);
+
+//	OutputFacets(triangles);
+
+	std::vector<Facet> crystal;
+	MergeCrystal(triangles, crystal);
+
+	OutputCrystal(crystal);
+
+	triangles.clear();
+	Triangulate(crystal, triangles);
+
+	WriteStl(triangles);
+
+	return 0;
 }
