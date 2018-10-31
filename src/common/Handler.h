@@ -175,6 +175,7 @@ protected:
 	void ApplyAbsorbtion(Beam &beam);
 	double BeamCrossSection(const Beam &beam) const;
 	void OutputPaths(const Beam &beam, const OpticalPath &path);
+	OpticalPath ComputeOpticalPath(const Beam &beam);
 
 protected:
 	Scattering *m_scattering;

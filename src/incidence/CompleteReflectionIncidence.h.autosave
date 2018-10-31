@@ -1,11 +1,11 @@
 #pragma once
 
-#include "RegularIncidence.h"
+#include "Incidence.h"
 
 class Beam;
 class Splitting;
 
-class CompleteReflectionIncidence : public RegularIncidence
+class CompleteReflectionIncidence : public Incidence
 {
 public:
 	static void ComputeDirections(Beam &beam, Splitting &splitter);

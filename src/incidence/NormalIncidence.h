@@ -1,13 +1,10 @@
 #pragma once
 
-#include "Incidence.h"
+#include "RegularIncidence.h"
 
-class Beam;
-class Splitting;
-
-class NormalIncidence : public Incidence
+class NormalIncidence : public RegularIncidence
 {
 public:
-	virtual void ComputeDirections(Beam &beam, Splitting &splitter) const override;
-	virtual void ComputeJonesMatrices(Beam &beam, Splitting &splitter) const override;
+	static void ComputeDirections(Beam &beam, Splitting &splitter);
+	static void ComputeJonesMatrices(Beam &beam, Splitting &splitter);
 };

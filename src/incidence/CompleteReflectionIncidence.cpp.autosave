@@ -6,7 +6,7 @@
 void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
 													Splitting &splitter)
 {
-	splitter.ComputePolarisationParams(beam);
+	beam.RotateJones(splitter.m_normal);
 	splitter.ComputeReflectedDirection(splitter.internal.direction);
 	splitter.internal.polarizationBasis = beam.polarizationBasis;
 #ifdef _DEBUG // DEB

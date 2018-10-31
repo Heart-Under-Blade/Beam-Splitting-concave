@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Beam.h"
-
-class Splitting;
+#include "Splitting.h"
 
 class Incidence
 {

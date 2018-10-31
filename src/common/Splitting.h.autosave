@@ -26,8 +26,6 @@ public:
 	void ComputeParams(const Vector3f &dir, const Vector3f &normal,
 					   bool isInside);
 
-	void ComputePolarisationParams(Beam &beam);
-
 	void ComputeReflectedDirection(Vector3f &dir) const
 	{
 		dir = r - m_normal;
