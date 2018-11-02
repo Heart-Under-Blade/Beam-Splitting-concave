@@ -79,7 +79,7 @@ public:
 #ifdef _DEBUG // DEB
 	std::vector<Point3f> dirs;
 	std::vector<double> ops;
-	std::vector<Polygon> pols;
+	std::vector<Polygon1> pols;
 #endif
 };
 
@@ -87,23 +87,23 @@ public:
  * @brief A plane-parallel optical beam that is created by
  * act of reflection / refraction when a light incidents on a Particle.
  */
-class Beam : public Polygon, public Light, public Track
+class Beam : public Polygon1, public Light, public Track
 {
 public:
 	Beam();
 	Beam(const Beam &other);
-	Beam(const Polygon &other);
+	Beam(const Polygon1 &other);
 	Beam(Beam &&other);
 
 	Vector3f RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 
-	void SetPolygon(const Polygon &other); // REF: мб просто искользовать "="?
+	void SetPolygon(const Polygon1 &other); // REF: мб просто искользовать "="?
 	void Clear();
 	void AddOpticalPath(double path);
 	void CopyTrack(const Track &other);
 
 	Beam & operator = (const Beam &other);
-	Beam & operator = (const Polygon &other);
+	Beam & operator = (const Polygon1 &other);
 	Beam & operator = (const Light &other);
 	Beam & operator = (Beam &&other);
 
@@ -115,6 +115,8 @@ public:
 	// REF: перенести в Diffractor
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
+
+	void GetSpherical(double &fi, double &teta) const;
 
 	/**
 	 * @brief Outputs beam params. Use it with std::cout or std::ofstream
@@ -133,7 +135,6 @@ public:
 	bool isInside; 		///< Beam state towards the particle (inside or outside)
 
 private:
-	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
 	void SetDefault(Beam &other);
 };

@@ -8,6 +8,8 @@ class ScatteringNonConvex : public Scattering
 public:
 	ScatteringNonConvex(Particle *particle, const Light &incidentLight, int maxActNo);
 
+	void SelectOriginVisibleFacets(Array<Facet*> &facets) override;
+
 protected:
 	void SplitOriginBeam(std::vector<Beam> &scatteredBeams) override;
 
@@ -37,11 +39,11 @@ private:
 	 * @param beamDir beam direction
 	 * @return index of the closest vertex in the beam polygon
 	 */
-	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir) const;
+	int FindClosestVertex(const Polygon1 &facet, const Point3f &beamDir) const;
 
 	bool FindRestOfBeamShape(Facet *facet, const Beam &beam, PolygonArray &rest);
 
-	double CalcMinDistanceToFacet(Polygon *facet, const Point3f &beamDir);
+	double CalcMinDistanceToFacet(Polygon1 *facet, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, Array<Facet*> &facets); ///< use 'Fast sort' algorithm
 
 	bool FindLightedFacetPolygon(const Array<Facet*> &facets, int nCheckedFacets,
@@ -51,7 +53,7 @@ private:
 						 const PolygonArray &polygons,
 						 std::vector<Beam> &scatteredBeams);
 
-	void CutPolygonByFacets(const Polygon &pol,
+	void CutPolygonByFacets(const Polygon1 &pol,
 							const Array<Facet*> &facets, int size,
 							const Vector3f &polNormal, const Vector3f &clipNormal,
 							const Vector3f &dir, PolygonArray &pols);

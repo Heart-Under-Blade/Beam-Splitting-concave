@@ -54,6 +54,9 @@ public:
 	double GetIncidentEnergy() const;
 	OpticalPath ComputeOpticalPath(const Beam &beam, const Point3f &startPoint,
 								   std::vector<int> track);
+
+	virtual void SelectOriginVisibleFacets(Array<Facet*> &facets);
+
 protected:
 	Particle *m_particle;	///< The crystal for a light scattering
 	int m_maxActNo;			///< Maximal number of reflection/refraction acts
@@ -104,13 +107,13 @@ protected:
 
 	bool ComputeOpticalBeamParams(Facet *facet, Beam beam);
 
-	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;
+	void SetPolygonByFacet(Facet *facet, Polygon1 &polygon) const;
 
 	Point3f ComputeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
 								bool isIn1, bool isIn2);
 
 	void ComputeFacetEnergy(const Vector3f &facetNormal,
-							const Polygon &lightedPolygon);
+							const Polygon1 &lightedPolygon);
 
 	void PushBeamToTree(Beam &beam);
 	void CreateOriginBeam(const Vector3f &dir, const Vector3f &basis);

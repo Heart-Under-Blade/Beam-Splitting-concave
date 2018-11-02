@@ -6,7 +6,7 @@
 #define in_normal normal[0]
 #define ex_normal normal[1]
 
-class Facet : public Polygon
+class Facet : public Polygon1
 {
 public:
 	Facet();

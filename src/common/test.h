@@ -24,9 +24,9 @@ void outputParticle(Particle &particle)
 		{
 			Point3f p = particle.GetActualFacet(i)->arr[j];
 			std::cout << "("
-					  << p.point[0] << ", "
-					  << p.point[1] << ", "
-					  << p.point[2]
+					  << p.coordinates[0] << ", "
+					  << p.coordinates[1] << ", "
+					  << p.coordinates[2]
 					  << "), ";
 		}
 
@@ -39,9 +39,9 @@ void outputParticle(Particle &particle)
 	{
 		std::cout << i << ": ";
 		std::cout << "("
-				  << particle.GetActualFacet(i)->in_normal.cx << ", "
-				  << particle.GetActualFacet(i)->in_normal.cy << ", "
-				  << particle.GetActualFacet(i)->in_normal.cz
+				  << particle.GetActualFacet(i)->in_normal.coordinates[0] << ", "
+				  << particle.GetActualFacet(i)->in_normal.coordinates[1] << ", "
+				  << particle.GetActualFacet(i)->in_normal.coordinates[2]
 				  << "), ";
 		std::cout << std::endl;
 	}
@@ -56,9 +56,9 @@ void toFile(Particle &particle)
 		for (int j = 0; j < particle.GetActualFacet(i)->nVertices; ++j)
 		{
 			Point3f p = particle.GetActualFacet(i)->arr[j];
-			M << p.point[0] << ' '
-							<< p.point[1] << ' '
-							<< p.point[2];
+			M << p.coordinates[0] << ' '
+							<< p.coordinates[1] << ' '
+							<< p.coordinates[2];
 			M << std::endl;
 		}
 

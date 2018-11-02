@@ -105,7 +105,7 @@ void Scattering::FindVisibleFacets(const Beam &beam, FacetChecker &checker,
 }
 
 void Scattering::ComputeFacetEnergy(const Vector3f &facetNormal,
-									const Polygon &lightedPolygon)
+									const Polygon1 &lightedPolygon)
 {
 	double cosA = Point3f::DotProduct(m_originBeam.direction, facetNormal);
 	m_incidentEnergy += lightedPolygon.Area() * cosA;
@@ -135,7 +135,7 @@ bool Scattering::IsTerminalAct(const Beam &beam)
 }
 
 /** NOTE: Result beams are ordered in inverse direction */
-void Scattering::SetPolygonByFacet(Facet *facet, Polygon &polygon) const
+void Scattering::SetPolygonByFacet(Facet *facet, Polygon1 &polygon) const
 {
 	int size = facet->nVertices;
 	polygon.nVertices = size;
@@ -237,6 +237,11 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 	return path;
 }
 
+void Scattering::SelectOriginVisibleFacets(Array<Facet*> &facets)
+{
+	FindVisibleFacets(m_originBeam, m_lightChecker, 0, m_particle->nElems, facets);
+}
+
 void Scattering::ReleaseBeam(Beam &beam)
 {
 	beam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
@@ -255,7 +260,7 @@ void Scattering::SplitBeamByVisibleFacets(Beam &beam)
 		if (i == 9)
 			int fff = 0;
 #endif
-		Polygon beamShape;
+		Polygon1 beamShape;
 		bool isIntersected = Geometry::IncidentBeamToFacet(facet, beam, beam.isInside,
 														   beam.direction, beamShape);
 		if (isIntersected)

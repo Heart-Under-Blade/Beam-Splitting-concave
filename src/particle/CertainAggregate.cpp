@@ -346,9 +346,9 @@ void CertainAggregate::Resize(double sizeIndex)
 	{
 		for (int j = 0; j < elems[i].origin.nVertices; ++j)
 		{
-			elems[i].origin.arr[j].cx *= sizeIndex;
-			elems[i].origin.arr[j].cy *= sizeIndex;
-			elems[i].origin.arr[j].cz *= sizeIndex;
+			elems[i].origin.arr[j].coordinates[0] *= sizeIndex;
+			elems[i].origin.arr[j].coordinates[1] *= sizeIndex;
+			elems[i].origin.arr[j].coordinates[2] *= sizeIndex;
 		}
 	}
 }

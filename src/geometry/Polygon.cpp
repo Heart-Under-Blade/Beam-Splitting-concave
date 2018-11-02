@@ -3,14 +3,14 @@
 
 #define EPS_NORMAL 0.1
 
-Polygon::Polygon()
+Polygon1::Polygon1()
 {
 
 }
 
-Polygon::Polygon(int size) : nVertices(size) {}
+Polygon1::Polygon1(int size) : nVertices(size) {}
 
-Polygon::Polygon(const Polygon &other)
+Polygon1::Polygon1(const Polygon1 &other)
 {
 	nVertices = other.nVertices;
 
@@ -20,7 +20,7 @@ Polygon::Polygon(const Polygon &other)
 	}
 }
 
-Polygon::Polygon(Polygon &&other)
+Polygon1::Polygon1(Polygon1 &&other)
 {
 	nVertices = other.nVertices;
 
@@ -32,12 +32,12 @@ Polygon::Polygon(Polygon &&other)
 	other.nVertices = 0;
 }
 
-void Polygon::AddVertex(const Point3f &v)
+void Polygon1::AddVertex(const Point3f &v)
 {
 	arr[nVertices++] = v;
 }
 
-void Polygon::InsertVertex(int index, const Point3f &v)
+void Polygon1::InsertVertex(int index, const Point3f &v)
 {
 	++nVertices;
 
@@ -49,7 +49,7 @@ void Polygon::InsertVertex(int index, const Point3f &v)
 	arr[index] = v;
 }
 
-void Polygon::DeleteVertex(int index)
+void Polygon1::DeleteVertex(int index)
 {
 	for (int i = nVertices-1; i > index; --i)
 	{
@@ -59,7 +59,7 @@ void Polygon::DeleteVertex(int index)
 	--nVertices;
 }
 
-Polygon &Polygon::operator =(const Polygon &other)
+Polygon1 &Polygon1::operator =(const Polygon1 &other)
 {
 	if (this != &other)
 	{
@@ -74,7 +74,7 @@ Polygon &Polygon::operator =(const Polygon &other)
 	return *this;
 }
 
-Polygon &Polygon::operator = (Polygon &&other)
+Polygon1 &Polygon1::operator = (Polygon1 &&other)
 {
 	if (this != &other)
 	{
@@ -91,24 +91,24 @@ Polygon &Polygon::operator = (Polygon &&other)
 	return *this;
 }
 
-std::ostream &operator <<(std::ostream &os, const Polygon &beam)
+std::ostream &operator <<(std::ostream &os, const Polygon1 &beam)
 {
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
 		os /*<< "\t"*/
-		   << beam.arr[i].cx << " "
-		   << beam.arr[i].cy << " "
-		   << beam.arr[i].cz << " " << std::endl;
+		   << beam.arr[i].coordinates[0] << " "
+		   << beam.arr[i].coordinates[1] << " "
+		   << beam.arr[i].coordinates[2] << " " << std::endl;
 	}
 
-	os << beam.arr[0].cx << " "
-	   << beam.arr[0].cy << " "
-	   << beam.arr[0].cz << " " << std::endl;
+	os << beam.arr[0].coordinates[0] << " "
+	   << beam.arr[0].coordinates[1] << " "
+	   << beam.arr[0].coordinates[2] << " " << std::endl;
 
 	return os;
 }
 
-double Polygon::Area() const
+double Polygon1::Area() const
 {
 	double square = 0;
 	const Point3f &basePoint = arr[0];
@@ -126,7 +126,7 @@ double Polygon::Area() const
 	return square/2.0;
 }
 
-Point3f Polygon::Center() const
+Point3f Polygon1::Center() const
 {
 #ifdef _DEBUG // DEB
 	if (nVertices == 0)
@@ -146,7 +146,7 @@ Point3f Polygon::Center() const
 	return p/nVertices;
 }
 
-Point3f Polygon::Normal() const
+Point3f Polygon1::Normal() const
 {
 	Point3f normal;
 
@@ -165,7 +165,7 @@ Point3f Polygon::Normal() const
 		Point3f::Normalize(normal);
 		++count;
 	}
-	while (isnan(normal.cx) && count < nVertices);
+	while (isnan(normal.coordinates[0]) && count < nVertices);
 
 	return normal;
 }

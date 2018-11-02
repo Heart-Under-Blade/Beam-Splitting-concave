@@ -77,7 +77,7 @@ double Splitting::ComputeEffectiveReRi() const
 	return (m_cRiRe + sqrt(m_cRiRe2 + m_cRiIm/(cosA*cosA)))/2.0;
 }
 
-void Splitting::SetBeams(const Polygon &beamShape)
+void Splitting::SetBeams(const Polygon1 &beamShape)
 {
 	inBeam.Clear();
 	inBeam.SetPolygon(beamShape);

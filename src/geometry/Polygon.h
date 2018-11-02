@@ -17,25 +17,25 @@
 /**
  * @brief Polygon consisted of 3-coordinate vertices
  */
-class Polygon
+class Polygon1
 {
 public:
 	Point3f arr[MAX_VERTEX_NUM];
 	int nVertices = 0;
 
-	Polygon();
-	explicit Polygon(int nVertices);
-	Polygon(const Polygon &other);
-	Polygon(Polygon &&other);
+	Polygon1();
+	explicit Polygon1(int nVertices);
+	Polygon1(const Polygon1 &other);
+	Polygon1(Polygon1 &&other);
 
 	void AddVertex(const Point3f &v);
 
 	void InsertVertex(int index, const Point3f &v);
 	void DeleteVertex(int index);
 
-	Polygon & operator = (const Polygon &other);
-	Polygon & operator = (Polygon &&other);
-	friend std::ostream & operator << (std::ostream &os, const Polygon &beam);
+	Polygon1 & operator = (const Polygon1 &other);
+	Polygon1 & operator = (Polygon1 &&other);
+	friend std::ostream & operator << (std::ostream &os, const Polygon1 &beam);
 
 	double Area() const;
 	Point3f Center() const;
@@ -45,15 +45,15 @@ public:
 class PolygonArray
 {
 public:
-	Polygon arr[MAX_POLYGON_NUM];
+	Polygon1 arr[MAX_POLYGON_NUM];
 	int size = 0;
 
-	void Push(const Polygon &p)
+	void Push(const Polygon1 &p)
 	{
 		arr[size++] = p;
 	}
 
-	Polygon &Pop()
+	Polygon1 &Pop()
 	{
 		return arr[--size];
 	}

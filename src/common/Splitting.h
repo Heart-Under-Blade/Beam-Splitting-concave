@@ -32,7 +32,7 @@ public:
 		Point3f::Normalize(dir); // REF, OPT: нужно ли это нормализовать всегда?
 	}
 
-	void SetBeams(const Polygon &beamShape);
+	void SetBeams(const Polygon1 &beamShape);
 	void SetNormal(const Point3f &normal);
 
 	bool HasOutBeam();

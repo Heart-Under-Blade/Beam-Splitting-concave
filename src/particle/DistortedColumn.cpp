@@ -36,7 +36,7 @@ void DistortedColumn::DistortBases(double angle)
 
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[0].origin.arr[i].cz += h[i];
-		elems[7].origin.arr[endPointIndex-i].cz += h[i];
+		elems[0].origin.arr[i].coordinates[2] += h[i];
+		elems[7].origin.arr[endPointIndex-i].coordinates[2] += h[i];
 	}
 }

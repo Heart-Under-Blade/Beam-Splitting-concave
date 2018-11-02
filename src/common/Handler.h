@@ -171,9 +171,10 @@ public:
 
 	Light *m_incidentLight;
 
+	static double BeamCrossSection(const Beam &beam);
+
 protected:
 	void ApplyAbsorbtion(Beam &beam);
-	double BeamCrossSection(const Beam &beam) const;
 	void OutputPaths(const Beam &beam, const OpticalPath &path);
 
 protected:

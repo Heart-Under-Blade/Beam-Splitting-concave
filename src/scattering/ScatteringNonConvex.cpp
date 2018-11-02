@@ -24,12 +24,17 @@ ScatteringNonConvex::ScatteringNonConvex(Particle *particle,
 {
 }
 
+void ScatteringNonConvex::SelectOriginVisibleFacets(Array<Facet*> &facets)
+{
+	FindVisibleFacets(m_originBeam, m_lightChecker, 0, m_particle->nElems,
+					  facets);
+	SortFacetsByDistance(m_originBeam.direction, facets);
+}
+
 void ScatteringNonConvex::SplitOriginBeam(std::vector<Beam> &scatteredBeams)
 {
 	m_visibleFacets.nElems = 0;
-	FindVisibleFacets(m_originBeam, m_lightChecker, 0, m_particle->nElems,
-					  m_visibleFacets);
-	SortFacetsByDistance(m_originBeam.direction, m_visibleFacets);
+	SelectOriginVisibleFacets(m_visibleFacets);
 
 	for (int i = 0; i < m_visibleFacets.nElems; ++i)
 	{
@@ -160,7 +165,7 @@ bool ScatteringNonConvex::FindLightedFacetPolygon(const Array<Facet*> &facets,
 	return pols.size != 0;
 }
 
-void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
+void ScatteringNonConvex::CutPolygonByFacets(const Polygon1 &pol,
 											 const Array<Facet*> &facets, int size,
 											 const Vector3f &polNormal,
 											 const Vector3f &clipNormal,
@@ -177,8 +182,8 @@ void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
 
 		while (pols.size != 0)
 		{
-			const Polygon &subj = pols.Pop();
-			const Polygon &clip = *facets.elems[i];
+			const Polygon1 &subj = pols.Pop();
+			const Polygon1 &clip = *facets.elems[i];
 
 			/// REF: объединить 2 первых аргумента и 2 вторых
 			Geometry::DifferPolygons(subj, polNormal, clip, clipNormal,
@@ -315,7 +320,7 @@ void ScatteringNonConvex::SortFacetsByDistance(const Vector3f &beamDir,
 	}
 }
 
-int ScatteringNonConvex::FindClosestVertex(const Polygon &facet,
+int ScatteringNonConvex::FindClosestVertex(const Polygon1 &facet,
 										   const Point3f &beamDir) const
 {
 	int closest = 0;
@@ -432,7 +437,7 @@ void ScatteringNonConvex::SortFacets(const Point3f &beamDir, Array<Facet*> &face
 	}
 }
 
-double ScatteringNonConvex::CalcMinDistanceToFacet(Polygon *facet,
+double ScatteringNonConvex::CalcMinDistanceToFacet(Polygon1 *facet,
 												   const Point3f &beamDir)
 {
 	double dist = FLT_MAX;

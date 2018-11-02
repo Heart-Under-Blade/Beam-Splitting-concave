@@ -3,114 +3,114 @@
 
 Point3f::Point3f(float x, float y, float z)
 {
-    point[0] = x;
-    point[1] = y;
-    point[2] = z;
+	coordinates[0] = x;
+	coordinates[1] = y;
+	coordinates[2] = z;
 }
 
 Point3f::Point3f(float x, float y, float z, float d)
 {
-    point[0] = x;
-    point[1] = y;
-    point[2] = z;
-    point[3] = d;
+	coordinates[0] = x;
+	coordinates[1] = y;
+	coordinates[2] = z;
+	coordinates[3] = d;
 }
 
 Point3f::Point3f(const Point3f &other)
 {
-    point[0] = other.point[0];
-    point[1] = other.point[1];
-    point[2] = other.point[2];
+	coordinates[0] = other.coordinates[0];
+	coordinates[1] = other.coordinates[1];
+	coordinates[2] = other.coordinates[2];
 }
 
 Point3f &Point3f::operator = (const Point3f &other)
 {
-    point[0] = other.point[0];
-    point[1] = other.point[1];
-    point[2] = other.point[2];
+	coordinates[0] = other.coordinates[0];
+	coordinates[1] = other.coordinates[1];
+	coordinates[2] = other.coordinates[2];
 
     return *this;
 }
 
 Point3f Point3f::operator * (double value) const
 {
-    return Point3f(point[0] * value,
-            point[1] * value,
-            point[2] * value);
+	return Point3f(coordinates[0] * value,
+			coordinates[1] * value,
+			coordinates[2] * value);
 }
 
 Point3f Point3f::operator / (double value) const
 {
-    return Point3f(point[0] / value,
-            point[1] / value,
-            point[2] / value);
+	return Point3f(coordinates[0] / value,
+			coordinates[1] / value,
+			coordinates[2] / value);
 }
 
 Point3f Point3f::operator + (const Point3f &value) const
 {
-    return Point3f(point[0] + value.point[0],
-            point[1] + value.point[1],
-            point[2] + value.point[2]);
+	return Point3f(coordinates[0] + value.coordinates[0],
+			coordinates[1] + value.coordinates[1],
+			coordinates[2] + value.coordinates[2]);
 }
 
 Point3f Point3f::operator += (double value)
 {
-    return *this = Point3f(point[0] + value,
-            point[1] + value,
-            point[2] + value);
+	return *this = Point3f(coordinates[0] + value,
+			coordinates[1] + value,
+			coordinates[2] + value);
 }
 
 Point3f Point3f::operator - () const
 {
-	return Point3f(-point[0], -point[1], -point[2], -point[3]);
+	return Point3f(-coordinates[0], -coordinates[1], -coordinates[2], -coordinates[3]);
 }
 
 float Point3f::DotProduct(const Point3f &v1, const Point3f &v2)
 {
-	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
-	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
+	__m128 _v1 = _mm_setr_ps(v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
+	__m128 _v2 = _mm_setr_ps(v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
 	__m128 _dp0 = _mm_dp_ps(_v1, _v2, MASK_FULL);
 	return _dp0[0];
 }
 
 void Point3f::CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
 {
-	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
-	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
+	__m128 _v1 = _mm_setr_ps(v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
+	__m128 _v2 = _mm_setr_ps(v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
 	__m128 _cp = _cross_product(_v1, _v2);
 
-	res.cx = _cp[0];
-	res.cy = _cp[1];
-	res.cz = _cp[2];
+	res.coordinates[0] = _cp[0];
+	res.coordinates[1] = _cp[1];
+	res.coordinates[2] = _cp[2];
 }
 
 Point3f Point3f::CrossProduct(const Point3f &v1, const Point3f &v2)
 {
-	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
-	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
+	__m128 _v1 = _mm_setr_ps(v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
+	__m128 _v2 = _mm_setr_ps(v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
 	__m128 _cp = _cross_product(_v1, _v2);
 
 	Point3f res;
-	res.cx = _cp[0];
-	res.cy = _cp[1];
-	res.cz = _cp[2];
+	res.coordinates[0] = _cp[0];
+	res.coordinates[1] = _cp[1];
+	res.coordinates[2] = _cp[2];
 
 	return res;
 }
 
 double Point3f::Norm(const Point3f &point)
 {
-	return	  point.cx * point.cx
-			+ point.cy * point.cy
-			+ point.cz * point.cz;
+	return	  point.coordinates[0] * point.coordinates[0]
+			+ point.coordinates[1] * point.coordinates[1]
+			+ point.coordinates[2] * point.coordinates[2];
 }
 
 void Point3f::Normalize(Point3f &v)
 {
 	double lenght = sqrt(Norm(v));
-	v.cx /= lenght;
-	v.cy /= lenght;
-	v.cz /= lenght;
+	v.coordinates[0] /= lenght;
+	v.coordinates[1] /= lenght;
+	v.coordinates[2] /= lenght;
 }
 
 double Point3f::Length(const Point3f &v)
@@ -120,14 +120,14 @@ double Point3f::Length(const Point3f &v)
 
 bool Point3f::IsEqualTo(const Point3f &other, float eps) const
 {
-	return (fabs(point[0] - other.point[0]) +
-			fabs(point[1] - other.point[1]) +
-			fabs(point[2] - other.point[2]))/3 < eps;
+	return (fabs(coordinates[0] - other.coordinates[0]) +
+			fabs(coordinates[1] - other.coordinates[1]) +
+			fabs(coordinates[2] - other.coordinates[2]))/3 < eps;
 }
 
 Point3f Point3f::operator - (const Point3f &value) const
 {
-    return Point3f(point[0] - value.point[0],
-            point[1] - value.point[1],
-            point[2] - value.point[2]);
+	return Point3f(coordinates[0] - value.coordinates[0],
+			coordinates[1] - value.coordinates[1],
+			coordinates[2] - value.coordinates[2]);
 }

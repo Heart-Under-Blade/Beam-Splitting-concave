@@ -40,7 +40,7 @@ void ScatteringConvex::PushBeamsToBuffer(Facet *facet, Splitting &splitting,
 void ScatteringConvex::SplitOriginBeam(std::vector<Beam> &scatteredBeams)
 {
 	m_visibleFacets.nElems = 0;
-	FindVisibleFacets(m_originBeam, m_lightChecker, 0, m_particle->nElems, m_visibleFacets);
+	SelectOriginVisibleFacets(m_visibleFacets);
 
 	for (int i = 0; i < m_visibleFacets.nElems; ++i)
 	{
