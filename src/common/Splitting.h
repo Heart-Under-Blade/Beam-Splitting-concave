@@ -8,6 +8,14 @@
 
 #define EPS_ORTO_FACET 0.0001
 
+template <class T>
+class SplittedBeams
+{
+public:
+	T internal;
+	T external;
+};
+
 class Splitting
 {
 public:
@@ -15,7 +23,7 @@ public:
 
 	Incidence *GetIncidence() const;
 
-	void ComputeParams(const Point3f &dir, const Vector3f &normal,
+	void ComputeParams(const Vector3f &dir, const Vector3f &normal,
 					   bool isInside);
 
 	void ComputePolarisationParams(Beam &beam);
@@ -38,12 +46,6 @@ public:
 	bool HasOutBeam();
 	double ComputeEffectiveReRi() const;
 
-	double ComputeIncidentOpticalPath(const Point3f &direction,
-									  const Point3f &facetPoint);
-	double ComputeOutgoingOpticalPath(const Beam &beam);
-	double ComputeSegmentOpticalPath(const Beam &beam,
-									 const Point3f &facetPoint) const;
-
 	complex GetRi() const;
 
 public:
@@ -52,15 +54,12 @@ public:
 	double reRiEff;
 	double s;
 
-	Beam inBeam;
-	Beam outBeam;
+	SplittedBeams beams;
 
 	complex m_ri;	///< Refractive index of a Particle
 
 	Point3f m_normal;
 	Incidence *m_incidence;
-
-	const double FAR_ZONE_DISTANCE = 10000.0; ///< Distance from the center of coordinate system to the "far zone"
 
 private:
 	bool m_hasOutBeam;

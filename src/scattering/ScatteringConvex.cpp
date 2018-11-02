@@ -13,27 +13,27 @@ void ScatteringConvex::PushBeamsToBuffer(Facet *facet, Splitting &splitting,
 	tr.Update(facet);
 	tr.RecomputeTrackId(0, facet->index);
 
-	splitting.outBeam.CopyTrack(tr);
-	splitting.outBeam.SetLocation(false);
-	scatteredBeams.push_back(splitting.outBeam);
+	splitting.external.CopyTrack(tr);
+	splitting.external.SetLocation(false);
+	scatteredBeams.push_back(splitting.external);
 
-	splitting.inBeam.CopyTrack(tr);
-	splitting.inBeam.SetLocation(true);
+	splitting.internal.CopyTrack(tr);
+	splitting.internal.SetLocation(true);
 
-	if (IsTerminalAct(splitting.inBeam))
+	if (IsTerminalAct(splitting.internal))
 	{
-		if (!splitting.inBeam.isInside)
+		if (!splitting.internal.isInside)
 		{
-			ReleaseBeam(splitting.inBeam);
+			ReleaseBeam(splitting.internal);
 		}
 	}
 	else
 	{
-		PushBeamToTree(splitting.inBeam);
+		PushBeamToTree(splitting.internal);
 	}
 
 #ifdef _CHECK_ENERGY_BALANCE
-	ComputeFacetEnergy(facet->in_normal, m_splitting.outBeam);
+	ComputeFacetEnergy(facet->in_normal, m_splitting.external);
 #endif
 }
 

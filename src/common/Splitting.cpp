@@ -15,7 +15,7 @@ Splitting::Splitting(const complex &ri)
 	m_cRiIm = 4*re*re*im;
 }
 
-void Splitting::ComputeParams(const Point3f &dir, const Vector3f &normal,
+void Splitting::ComputeParams(const Vector3f &dir, const Vector3f &normal,
 							  bool isInside)
 {
 	m_hasOutBeam = true;
@@ -24,7 +24,7 @@ void Splitting::ComputeParams(const Point3f &dir, const Vector3f &normal,
 
 	if (cosA > EPS_COS_00)
 	{
-		m_incidence = new NormalIncidence();
+		m_incidence = &m_normalIncidence;
 	}
 	else
 	{
@@ -38,16 +38,16 @@ void Splitting::ComputeParams(const Point3f &dir, const Vector3f &normal,
 			if (s < DBL_EPSILON)
 			{
 				m_hasOutBeam = false;
-				m_incidence = new CompleteReflectionIncidence();
+				m_incidence = &m_completeReflectionIncidence;
 			}
 			else
 			{
-				m_incidence = new RegularIncidence();
+				m_incidence = &m_regularIncidence;
 			}
 		}
 		else
 		{
-			m_incidence = new RegularIncidence();
+			m_incidence = &m_regularIncidence;
 
 			double cosA2 = cosA * cosA;
 			double tmp = m_cRiRe + cosA2 - 1.0;
@@ -68,8 +68,7 @@ void Splitting::ComputePolarisationParams(Beam &beam)
 	Point3f newBasis = (beam.isInside) ? Point3f::CrossProduct(m_normal, beam.direction)
 									   : Point3f::CrossProduct(m_normal, -beam.direction);
 	Point3f::Normalize(newBasis);
-	beam.RotateJMatrix(newBasis);
-	beam.polarizationBasis = newBasis;
+	beam.RotateJones(newBasis);
 }
 
 double Splitting::ComputeEffectiveReRi() const
@@ -79,14 +78,14 @@ double Splitting::ComputeEffectiveReRi() const
 
 void Splitting::SetBeams(const Polygon1 &beamShape)
 {
-	inBeam.Clear();
-	inBeam.SetPolygon(beamShape);
+	internal.Clear();
+	internal.SetPolygon(beamShape);
 
-	outBeam.Clear();
-	outBeam.SetPolygon(beamShape);
+	external.Clear();
+	external.SetPolygon(beamShape);
 
 #ifdef _DEBUG // DEB
-	inBeam.pols.push_back(beamShape);
+	internal.pols.push_back(beamShape);
 	outBeam.pols.push_back(beamShape);
 #endif
 }
@@ -99,50 +98,6 @@ void Splitting::SetNormal(const Point3f &normal)
 bool Splitting::HasOutBeam()
 {
 	return m_hasOutBeam;
-}
-
-double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &facetPoint) const
-{
-	double tmp = Point3d::DotProduct(beam.direction, facetPoint);
-	double path = fabs(tmp + beam.front); // refractive index of external media = 1
-
-#ifdef _DEBUG // DEB
-//	if (tmp + beam.front < 0)
-//		int fff = 0;
-	Point3f dd = beam.Center();
-	Point3f pd = beam.Center() + (beam.direction * 10);
-
-	/* ПРоверка на нахождения плоскости за пучком
-	 * REF: вынести в случай невыпуклых частиц, т.к. характерно только для них */
-	double cosB = Point3d::DotProduct(Point3d::Normalize(facetPoint - beam.Center()), beam.direction);
-#else
-	Vector3f vectorToCenter = facetPoint - beam.Center();
-	Point3f::Normalize(vectorToCenter);
-	double cosB = Point3f::DotProduct(vectorToCenter, beam.direction);
-#endif
-
-	if (cosB < 0 && beam.isInside)
-	{
-		path = -path;
-	}
-
-	if (beam.isInside)
-	{
-		path *= sqrt(reRiEff);
-	}
-
-	return path;
-}
-
-double Splitting::ComputeIncidentOpticalPath(const Point3f &direction,
-											 const Point3f &facetPoint)
-{
-	return FAR_ZONE_DISTANCE + Point3f::DotProduct(direction, facetPoint);
-}
-
-double Splitting::ComputeOutgoingOpticalPath(const Beam &beam)
-{
-	return FAR_ZONE_DISTANCE + beam.front;
 }
 
 complex Splitting::GetRi() const

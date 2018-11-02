@@ -358,20 +358,22 @@ void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 	}
 }
 
-void Handler::ApplyAbsorbtion(Beam &beam)
+OpticalPath Handler::ComputeOpticalPath(const Beam &beam)
 {
 	vector<int> track;
 	m_tracks->RecoverTrack(beam, track);
-
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-	OpticalPath path = m_scattering->ComputeOpticalPath(beam, beam.Center(),
-														track);
+	return m_scattering->ComputeOpticalPath(beam, beam.Center(), track);
+}
+
+void Handler::ApplyAbsorbtion(Beam &beam)
+{
+	auto path = ComputeOpticalPath(beam);
 
 	if (path.internal > DBL_EPSILON)
 	{
-//		OutputPaths(beam, path);
-
 #ifdef _DEBUG // DEB
+//		OutputPaths(beam, path);
 		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
 			int ggg = 0;
 #endif
@@ -506,7 +508,9 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 							 m_incidentLight->polarizationBasis);
 
 		Point3f center = beam.Center();
-		double projLenght = beam.opticalPath + Point3f::DotProduct(center, beam.direction);
+
+		auto path = ComputeOpticalPath(beam);
+		double projLenght = path.GetTotal() + Point3f::DotProduct(center, beam.direction);
 
 		Point3f beamBasis = Point3f::CrossProduct(beam.polarizationBasis, beam.direction);
 		beamBasis = beamBasis/Point3f::Length(beamBasis); // basis of beam
@@ -730,7 +734,8 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		beamBasis = beamBasis/Point3f::Length(beamBasis);
 
 		Point3f center = beam.Center();
-		double projLenght = beam.opticalPath + Point3f::DotProduct(center, beam.direction);
+		auto path = ComputeOpticalPath(beam);
+		double projLenght = path.GetTotal() + Point3f::DotProduct(center, beam.direction);
 
 		matrixC jones(2, 2);
 		matrixC fnJones = ComputeFnJones(beam.Jones, center, vr, projLenght);

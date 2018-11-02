@@ -60,7 +60,6 @@ public:
 #ifdef _DEBUG // DEB
 			pols = other.pols;
 			dirs = other.dirs;
-			ops = other.ops;
 #endif
 		}
 
@@ -78,7 +77,6 @@ public:
 
 #ifdef _DEBUG // DEB
 	std::vector<Point3f> dirs;
-	std::vector<double> ops;
 	std::vector<Polygon1> pols;
 #endif
 };
@@ -98,8 +96,7 @@ public:
 	Vector3f RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 
 	void SetPolygon(const Polygon1 &other); // REF: мб просто искользовать "="?
-	void Clear();
-	void AddOpticalPath(double path);
+	virtual void Clear();
 	void CopyTrack(const Track &other);
 
 	Beam & operator = (const Beam &other);
@@ -110,7 +107,7 @@ public:
 	void SetLocation(bool isIn);
 
 	void MultiplyJonesMatrix(const complex &f1, const complex &f2);
-	void RotateJMatrix(const Vector3f &newBasis);
+	void RotateJones(const Vector3f &normal);
 
 	// REF: перенести в Diffractor
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
@@ -127,14 +124,11 @@ public:
 	friend std::ostream & operator << (std::ostream &os, const Beam &beam);
 
 public:
-	// REF: перенести в private
-	double opticalPath;	///< Optical path of beam
-	double front;		///< Current position of phase front from Ax+By+Cz+D=0 (where D is front)
-
 	Matrix2x2c Jones;	///< Jones matrix of beam
 	bool isInside; 		///< Beam state towards the particle (inside or outside)
 
 private:
-	void Copy(const Beam &other);
 	void SetDefault(Beam &other);
+	void Copy(const Beam &other);
 };
+

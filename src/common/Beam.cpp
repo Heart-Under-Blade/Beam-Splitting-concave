@@ -46,7 +46,6 @@ Point3d Proj(const Point3d& _r, const Point3d &pnt)
 
 Beam::Beam()
 {
-	opticalPath = 0;
 	polarizationBasis = Vector3f(0, 1, 0);
 }
 
@@ -54,8 +53,6 @@ void Beam::Copy(const Beam &other)
 {
 	Track::operator=(other);
 
-	opticalPath = other.opticalPath;
-	front = other.front;
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
 
@@ -104,7 +101,7 @@ Vector3f Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 		}
 	}
 
-	RotateJMatrix(newBasis);
+	RotateJones(newBasis);
 	return newBasis;
 }
 
@@ -121,7 +118,7 @@ void Beam::GetSpherical(double &fi, double &teta) const
 		return;
 	}
 
-	if (fabs(z - 1.0) < DBL_EPSILON) // bacward
+	if (fabs(z - 1.0) < DBL_EPSILON) // backward
 	{
 		fi = 0;
 		teta = 0;
@@ -175,8 +172,6 @@ Beam &Beam::operator = (const Light &other)
 
 void Beam::SetDefault(Beam &other)
 {
-	other.opticalPath = 0;
-	other.front = 0;
 	other.direction = Vector3f(0, 0, 0);
 	other.polarizationBasis = Vector3f(0, 0, 0);
 
@@ -376,8 +371,12 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	return one*wavelength*s/SQR(M_2PI);
 }
 
-void Beam::RotateJMatrix(const Vector3f &newBasis)
+void Beam::RotateJones(const Vector3f &normal)
 {
+	Point3f newBasis = (isInside) ? Point3f::CrossProduct(normal, direction)
+								  : Point3f::CrossProduct(normal, -direction);
+	Point3f::Normalize(newBasis);
+
 	const double eps = 1e2 * FLT_EPSILON/*DBL_EPSILON*/; // acceptable precision
 	double cs = Point3f::DotProduct(newBasis, polarizationBasis);
 
@@ -416,6 +415,8 @@ void Beam::RotateJMatrix(const Vector3f &newBasis)
 			Jones.m12 = b01;
 		}
 	}
+
+	polarizationBasis = newBasis;
 }
 
 void Beam::SetPolygon(const Polygon1 &other)
@@ -431,20 +432,11 @@ void Beam::SetPolygon(const Polygon1 &other)
 void Beam::Clear()
 {
 	locations = 0;
-	opticalPath = 0;
 	polarizationBasis = Vector3f(0, 1, 0);
-}
-
-void Beam::AddOpticalPath(double path)
-{
-	opticalPath += path;
-	front = Point3f::DotProduct(-direction, Center());
-#ifdef _DEBUG // DEB
-	ops.push_back(path);
-#endif
 }
 
 void Beam::CopyTrack(const Track &other)
 {
 	Track::operator=(other);
 }
+

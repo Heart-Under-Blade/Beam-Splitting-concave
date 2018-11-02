@@ -176,6 +176,7 @@ public:
 protected:
 	void ApplyAbsorbtion(Beam &beam);
 	void OutputPaths(const Beam &beam, const OpticalPath &path);
+	OpticalPath ComputeOpticalPath(const Beam &beam);
 
 protected:
 	Scattering *m_scattering;

@@ -4,18 +4,19 @@
 #include "Splitting.h"
 
 void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
-													Splitting &splitter) const
+													Splitting &splitter)
 {
 	splitter.ComputePolarisationParams(beam);
-	splitter.ComputeReflectedDirection(splitter.inBeam.direction);
-	splitter.inBeam.polarizationBasis = beam.polarizationBasis;
+	splitter.ComputeReflectedDirection(splitter.internal.direction);
+	splitter.internal.polarizationBasis = beam.polarizationBasis;
 #ifdef _DEBUG // DEB
-	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
+	splitter.internal.dirs.push_back(splitter.internal.direction);
 #endif
 }
 
-void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &beam,
-													   Splitting &splitter) const
+void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
+													   SplittedBeams<Beam> &beams,
+													   Splitting &splitter)
 {
     const double bf = splitter.reRiEff*(1.0 - splitter.cosA*splitter.cosA) - 1.0;
     double im = (bf > 0) ? sqrt(bf) : 0;
@@ -27,30 +28,31 @@ void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &beam,
     complex cv = (splitter.cosA - tmp1)/(tmp1 + splitter.cosA);
     complex ch = (tmp0 - sq)/(tmp0 + sq);
 
-	splitter.inBeam.Jones = beam.Jones;
-    splitter.inBeam.MultiplyJonesMatrix(cv, ch);
+	beams.internal.Jones = parentBeam.Jones;
+	beams.internal.MultiplyJonesMatrix(cv, ch);
 }
 
-void CompleteReflectionIncidence::ComputeOpticalPaths(const Beam &incidentBeam,
-                                                      Splitting &splitter) const
+void CompleteReflectionIncidence::ComputeOpticalPaths(const PathedBeam &incidentBeam,
+													  SplittedBeams<PathedBeam> &beams,
+													  Splitting &splitter)
 {
 	if (incidentBeam.opticalPath < FLT_EPSILON)
 	{
-		Point3f p = splitter.inBeam.Center();
-		double path = splitter.ComputeIncidentOpticalPath(incidentBeam.direction, p);
-		splitter.inBeam.opticalPath = 0;
-		splitter.inBeam.AddOpticalPath(path);
+		Point3f p = beams.internal.Center();
+		double path = incidentBeam.ComputeIncidentOpticalPath(incidentBeam.direction, p);
+		beams.internal.opticalPath = 0;
+		beams.internal.AddOpticalPath(path);
 	}
 	else
 	{
-		double path = splitter.ComputeSegmentOpticalPath(incidentBeam,
-														 splitter.inBeam.Center());
+		double path = incidentBeam.ComputeSegmentOpticalPath(splitter.reRiEff,
+														 beams.internal.Center());
 		path += incidentBeam.opticalPath;
 #ifdef _DEBUG // DEB
-		splitter.inBeam.ops = incidentBeam.ops;
-		splitter.inBeam.ops.push_back(path);
+		splitter.internal.ops = incidentBeam.ops;
+		splitter.internal.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
-		splitter.inBeam.AddOpticalPath(path);
+		beams.internal.AddOpticalPath(path);
 	}
 }

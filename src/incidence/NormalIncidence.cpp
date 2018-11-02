@@ -3,44 +3,44 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void NormalIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
+void NormalIncidence::ComputeDirections(Beam &beam, Splitting &splitter)
 {
-	splitter.inBeam.direction = (beam.isInside) ? -beam.direction
+	splitter.internal.direction = (beam.isInside) ? -beam.direction
 												: beam.direction;
 
-	splitter.outBeam.direction = (beam.isInside) ? beam.direction
+	splitter.external.direction = (beam.isInside) ? beam.direction
 												 : -beam.direction;
 
-	splitter.inBeam.polarizationBasis = beam.polarizationBasis;
-	splitter.outBeam.polarizationBasis = beam.polarizationBasis;
+	splitter.internal.polarizationBasis = beam.polarizationBasis;
+	splitter.external.polarizationBasis = beam.polarizationBasis;
 
 #ifdef _DEBUG // DEB
-	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
+	splitter.internal.dirs.push_back(splitter.internal.direction);
 	splitter.outBeam.dirs.push_back(splitter.outBeam.direction);
 #endif
 }
 
-void NormalIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter) const
+void NormalIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter)
 {
-	splitter.inBeam.Jones = beam.Jones;
-	splitter.outBeam.Jones = beam.Jones;
+	splitter.internal.Jones = beam.Jones;
+	splitter.external.Jones = beam.Jones;
 
 	complex f;
 
 	if (beam.isInside)
 	{
 		f = (2.0 * splitter.m_ri)/(1.0 + splitter.m_ri); // OPT: вынести целиком
-		splitter.outBeam.MultiplyJonesMatrix(f, f);
+		splitter.external.MultiplyJonesMatrix(f, f);
 
 		f = (1.0 - splitter.m_ri)/(1.0 + splitter.m_ri); // OPT: вынести целиком
-		splitter.inBeam.MultiplyJonesMatrix(f, -f);
+		splitter.internal.MultiplyJonesMatrix(f, -f);
 	}
 	else
 	{
 		f = 2.0/(splitter.m_ri + 1.0); // OPT: вынести целиком
-		splitter.outBeam.MultiplyJonesMatrix(f, f);
+		splitter.external.MultiplyJonesMatrix(f, f);
 
 		f = (splitter.m_ri - 1.0)/(splitter.m_ri + 1.0); // OPT: вынести целиком
-		splitter.inBeam.MultiplyJonesMatrix(f, -f);
+		splitter.internal.MultiplyJonesMatrix(f, -f);
 	}
 }

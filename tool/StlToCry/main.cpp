@@ -10,7 +10,7 @@
 #include "Particle.h"
 
 #define NRM_EPS 10*FLT_EPSILON
-#define PNT_EPS FLT_EPSILON
+#define PNT_EPS 10*FLT_EPSILON
 
 using namespace std;
 
@@ -171,7 +171,7 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 	}
 }
 
-void OutputCrystal(const std::vector<Facet> &facets)
+void WriteCry(std::vector<Facet> &facets)
 {
 	std::string outFile = "cry.dat";
 	std::ofstream ofile(outFile, std::ios::out);
@@ -182,15 +182,46 @@ void OutputCrystal(const std::vector<Facet> &facets)
 		throw std::exception();
 	}
 
-	for (const Facet &facet : facets)
-	{
+	ofile << 0 << std::endl
+		  << 0 << std::endl
+          << 180 << ' ' << 360 << std::endl << std::endl;
+
+//	Point3f center(0, 0, 0);
+
+//	for (Facet &facet : facets)
+//	{
+//		center = center + facet.Center();
+//	}
+
+//	center = center/facets.size();
+
+	for (Facet &facet : facets)
+    {
+//		const Point3f n = facet.Normal();
+
+//		if (Point3f::DotProduct(facet.Center()-center, n) > 0)
+//		{
+//			for (int i = 0; i < facet.nVertices/2; ++i)
+//			{
+//				Point3f buf = facet.arr[i];
+//				facet.arr[i] = facet.arr[(facet.nVertices-1)-i];
+//				facet.arr[(facet.nVertices-1)-i] = buf;
+//			}
+//		}
+
+//		ofile << center.point[0] << ' ' << center.point[1] << ' ' << center.point[2] << endl
+//								 << n.point[0] << ' '
+//								 << n.point[1] << ' '
+//								 << n.point[2] << endl ;
 #ifdef _DEBUG // DEB
-		if (facet.Area() < 3)
-			continue;
+//		if (facet.Area() < 3)
+//			continue;
 #endif
 		ofile << facet << std::endl;
 	}
 
+//	center = center/facets.size();
+//	ofile << center.point[0] << ' ' << center.point[1] << ' ' << center.point[2] << endl;
 	ofile.close();
 }
 
@@ -283,7 +314,6 @@ void MergeTriangles(std::vector<Facet> &rest, Facet &convex)
 				}
 
 				isAdded = true;
-				break;
 			}
 		}
 
@@ -406,6 +436,106 @@ void WriteStl(const std::vector<Facet> &triangles)
 	ofile.close();
 }
 
+void WriteNat(const std::vector<Facet> &crystal)
+{
+	std::string crystalName = "Crystal1";
+	std::string outFile = "nat.dat";
+	std::ofstream ofile(outFile, std::ios::out);
+
+	if (!ofile.is_open())
+	{
+		std::cerr << "File \"" << outFile << "\" is not found" << std::endl;
+		throw std::exception();
+	}
+
+	ofile << std::setprecision(10);
+
+	int maxNVertices = 0;
+	int maxNVertInFacet = 0;
+
+	for (const Facet &f : crystal)
+	{
+		maxNVertices += f.nVertices;
+
+		if (f.nVertices > maxNVertInFacet)
+		{
+			maxNVertInFacet = f.nVertices;
+		}
+	}
+
+	ofile << "class " << crystalName <<  ": public Crystal {\n\
+	double tt, ps, fi; // orientation of prizm\n\
+	double w = 100;       // sizes of prizm: radius and semiheight\n\
+	double __fastcall Second(void) { return this->w; }\n\
+	double __fastcall Third(void) { throw \" Prizm::Third(): Error! \"; }\n\
+	double __fastcall Forth(void) { throw \" Prizm::Forth(): Error! \"; }\n\
+public:\n\
+	// constructor and destructor\n\
+	__fastcall " << crystalName <<  "(const complex& r) :\n\
+	" << crystalName <<  "(r," << maxNVertices << ',' << crystal.size() << ','
+						<< maxNVertInFacet << "), tt(0), ps(0), fi(0) \n\
+	{ this->SetVertices(); this->SetFacets(); }\n\
+	virtual __fastcall ~TypeCrystal(void) {}\n\
+	// parameters\n\
+	double __fastcall  First(void)  { return this->w; }\n\
+	void   __fastcall  SetVertices(void); // sets vertices of prizm\n\
+	void   __fastcall  SetFacets(void); // sets facets of prizm\n\
+};\n\
+\n\
+\n\
+void __fastcall " << crystalName <<  "::SetVertices(void)\n\
+{\n";
+
+	 int vertexCount = 0;
+
+	 for (int i = 0; i < crystal.size(); ++i)
+	 {
+		 for (int j = 0; j < crystal[i].nVertices; ++j)
+		 {
+			 const Point3f &p = crystal[i].arr[j];
+			 ofile << "\tthis->p[" << vertexCount++ << "] = Point3d(" << p.point[0] << ", " << p.point[1] << ", " << p.point[2] << ");" << std::endl;
+		 }
+	 }
+
+	 ofile << "Point3d cnt = CenterOfGravity();\n\
+			  for (int i=0; i<this->M; i++)\n\
+			  this->p[i] -= cnt;\n\
+}\n\
+\n\
+\n\
+void __fastcall " << crystalName <<  "::SetFacets(void)\n\
+{\n\
+\tint* q;   // the basal facets:";
+
+	vertexCount = 0;
+
+	for (int i = 0; i < crystal.size(); ++i)
+	{
+		ofile << "\n\tq=this->Gr[" << i << "]; ";
+		int first = vertexCount;
+
+		for (int j = 0; j <= maxNVertInFacet; ++j)
+		{
+			if (j == crystal[i].nVertices)
+			{
+				ofile << "q[" << j << "]=" << first << "; ";
+			}
+			else if (j > crystal[i].nVertices)
+			{
+				ofile << "q[" << j << "]=" << -1 << "; ";
+			}
+			else
+			{
+				ofile << "q[" << j << "]=" << vertexCount++ << "; ";
+			}
+		}
+	}
+
+	ofile << "\n}\n";
+
+	ofile.close();
+}
+
 int main()
 {
 	std::string filename = "particle.stl";
@@ -417,7 +547,8 @@ int main()
 	std::vector<Facet> crystal;
 	MergeCrystal(triangles, crystal);
 
-	OutputCrystal(crystal);
+	WriteCry(crystal);
+    WriteNat(crystal);
 
 	triangles.clear();
 	Triangulate(crystal, triangles);

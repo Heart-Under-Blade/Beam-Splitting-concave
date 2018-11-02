@@ -70,13 +70,13 @@ void ScatteringNonConvex::PushBeamsToTree(Facet *facet, Splitting &splitting,
 	beamTrack.pols.push_back(polygons.arr[0]);
 #endif
 
-	splitting.inBeam.CopyTrack(beamTrack);
-	splitting.inBeam.SetLocation(true);
-	PushBeamToBuffer(splitting.inBeam, polygons, scatteredBeams);
+	splitting.internal.CopyTrack(beamTrack);
+	splitting.internal.SetLocation(true);
+	PushBeamToBuffer(splitting.internal, polygons, scatteredBeams);
 
-	splitting.outBeam.CopyTrack(beamTrack);
-	splitting.outBeam.SetLocation(false);
-	PushBeamToBuffer(splitting.outBeam, polygons, scatteredBeams);
+	splitting.external.CopyTrack(beamTrack);
+	splitting.external.SetLocation(false);
+	PushBeamToBuffer(splitting.external, polygons, scatteredBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
 	for (int j = 0; j < polygons.size; ++j)
@@ -108,7 +108,7 @@ void ScatteringNonConvex::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 	Scattering::PushBeamsToBuffer(parentBeam, facet, hasOutBeam);
 
 	m_differenceBuffer.Clear();
-	bool isSwallowed = FindRestOfBeamShape(facet, parentBeam, m_differenceBuffer);
+	bool isOverlayed = FindRestOfBeamShape(facet, parentBeam, m_differenceBuffer);
 
 	m_isDivided = m_differenceBuffer.size > CLIP_RESULT_SINGLE;
 
@@ -121,7 +121,7 @@ void ScatteringNonConvex::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 	{
 		parentBeam = m_differenceBuffer.arr[0];
 	}
-	else if (isSwallowed) // beam is totally swalowed by facet
+	else if (isOverlayed) // beam is totally overlayed by facet
 	{
 		parentBeam.nVertices = 0;
 	}
