@@ -9,9 +9,12 @@
 #define _CHECK_ENERGY_BALANCE // energy conversation of input and output beams outputs in file
 
 #include <string>
+#include <vector>
 
 void EraseConsoleLine(int lenght);
 
 std::string CreateFolder(std::string &name); // returned path to folder and created folder name
 std::string CreateDir(const std::string &name);
 std::string CreateUniqueFileName(const std::string &filename);
+std::vector<std::string> FindFiles(const std::string &mask);
+std::string CutSubstring(const std::string &str, const std::string &sub);

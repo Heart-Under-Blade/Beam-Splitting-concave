@@ -1,5 +1,5 @@
 #include "HollowColumn.h"
-#include "global.h"
+#include "common.h"
 #include <algorithm>
 
 HollowColumn::HollowColumn(const complex &refrIndex, const Size &size,

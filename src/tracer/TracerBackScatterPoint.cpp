@@ -1,5 +1,5 @@
 #include "TracerBackScatterPoint.h"
-#include "global.h"
+#include "common.h"
 #include "ScatteringFiles.h"
 #include <iostream>
 

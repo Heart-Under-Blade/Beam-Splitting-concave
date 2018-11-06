@@ -3,7 +3,7 @@
 #include <ostream>
 #include <iostream>
 #include <assert.h>
-#include "global.h"
+#include "common.h"
 #include "macro.h"
 //#ifdef _TRACK_ALLOW
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);

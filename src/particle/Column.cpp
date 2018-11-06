@@ -1,5 +1,5 @@
 #include "Column.h"
-#include "global.h"
+#include "common.h"
 #include <algorithm>
 
 Column::Column() {}

@@ -1,8 +1,10 @@
 #include "Particle.h"
+#include "common.h"
+
 #include <fstream>
 #include <iostream>
 #include <cstring>
-#include "global.h"
+
 
 Particle::Particle()
 {

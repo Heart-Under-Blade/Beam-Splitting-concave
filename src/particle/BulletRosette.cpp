@@ -1,6 +1,6 @@
 #include "BulletRosette.h"
 #include "Bullet.h"
-#include "global.h"
+#include "common.h"
 
 BulletRosette::BulletRosette()
 {

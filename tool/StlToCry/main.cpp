@@ -8,8 +8,9 @@
 
 #include "Facet.h"
 #include "Particle.h"
+#include "common.h"
 
-#define NRM_EPS 10*FLT_EPSILON
+#define NRM_EPS 0.01
 #define PNT_EPS 10*FLT_EPSILON
 
 using namespace std;
@@ -47,8 +48,14 @@ void ReadStl(const std::string &filename, std::vector<Facet> &triangles)
 	pfile.getline(buff, bufSize); // skip first line "solid HOLDER"
 	pfile.getline(buff, bufSize);
 
-	while (std::string(buff) != "endsolid")
+	while (std::strncmp(buff, "endsolid", bufSize) < 0)
 	{
+		if (std::string(buff) == "")
+		{
+			pfile.getline(buff, bufSize); // skip empty line
+			continue;
+		}
+
 		Facet facet;
 
 		// read normal
@@ -151,6 +158,13 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 
 		int place = (points.elems[0] == merged.nVertices-1) ? 0
 															: points.elems[0] + 1;
+
+		if ((points.elems[0] == 0 && points.elems[2] == merged.nVertices-1) ||
+				(points.elems[0] == merged.nVertices-1 && points.elems[2] == 0))
+		{
+			place = merged.nVertices;
+		}
+
 		merged.InsertVertex(place, checking.arr[pointToInsert]);
 #ifdef _DEBUG // DEB
 		if (merged.nVertices > 200)
@@ -171,10 +185,9 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 	}
 }
 
-void WriteCry(std::vector<Facet> &facets)
+void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
 {
-	std::string outFile = "cry.dat";
-	std::ofstream ofile(outFile, std::ios::out);
+	std::ofstream ofile(outFile + ".dat", std::ios::out);
 
 	if (!ofile.is_open())
 	{
@@ -184,7 +197,7 @@ void WriteCry(std::vector<Facet> &facets)
 
 	ofile << 0 << std::endl
 		  << 0 << std::endl
-		  << 360 << ' ' << 360 << std::endl << std::endl;
+		  << 180 << ' ' << 360 << std::endl << std::endl;
 
 //	Point3f center(0, 0, 0);
 
@@ -217,7 +230,7 @@ void WriteCry(std::vector<Facet> &facets)
 //		if (facet.Area() < 3)
 //			continue;
 #endif
-		ofile << facet << std::endl;
+		ofile << facet /*<< facet.arr[0]*/ << std::endl;
 	}
 
 //	center = center/facets.size();
@@ -323,14 +336,14 @@ void MergeCrystal(std::vector<Facet> triangles,
 	while (!triangles.empty())
 	{
 		std::vector<Facet> oneFacetTriangles;
-		Point3f normal = triangles[0].ex_normal;
+		Point3f normal = triangles[0].Normal();
 		double d1 = -Point3f::DotProduct(triangles[0].arr[0], -normal);
 
 		for (int i = 0; i < triangles.size(); ++i)
 		{
 			const Facet &checking = triangles[i];
 
-			if (normal.IsEqualTo(checking.ex_normal, NRM_EPS))
+			if (normal.IsEqualTo(checking.Normal(), NRM_EPS))
 			{
 				double d2 = -Point3f::DotProduct(checking.arr[0], -normal);
 
@@ -379,10 +392,9 @@ void Triangulate(const std::vector<Facet> &crystal,
 	}
 }
 
-void WriteStl(const std::vector<Facet> &triangles)
+void WriteStl(const std::vector<Facet> &triangles, const std::string &outFile)
 {
-	std::string outFile = "crystal.stl";
-	std::ofstream ofile(outFile, std::ios::out);
+	std::ofstream ofile(outFile + ".stl", std::ios::out);
 
 	if (!ofile.is_open())
 	{
@@ -429,11 +441,10 @@ void WriteStl(const std::vector<Facet> &triangles)
 	ofile.close();
 }
 
-void WriteNat(const std::vector<Facet> &crystal)
+void WriteNat(const std::vector<Facet> &crystal, const std::string &outFile)
 {
-	std::string crystalName = "Crystal1";
-	std::string outFile = "nat.dat";
-	std::ofstream ofile(outFile, std::ios::out);
+	std::string crystalName = outFile;
+	std::ofstream ofile(outFile + ".dat", std::ios::out);
 
 	if (!ofile.is_open())
 	{
@@ -531,22 +542,36 @@ void __fastcall " << crystalName <<  "::SetFacets(void)\n\
 
 int main()
 {
-	std::string filename = "particle.stl";
-	std::vector<Facet> triangles;
-	ReadStl(filename, triangles);
+	std::vector<std::string> filelist = FindFiles("data/*.stl");
+	std::string	dir = CreateDir("out");
 
-//	OutputFacets(triangles);
+	for (auto filename : filelist)
+	{
+//		std::string filename = "particle.stl";
+		std::vector<Facet> triangles;
+		ReadStl("data/" + filename, triangles);
 
-	std::vector<Facet> crystal;
-	MergeCrystal(triangles, crystal);
+		if (triangles.empty())
+		{
+			continue;
+		}
 
-	WriteCry(crystal);
-	WriteNat(crystal);
+		filename = CutSubstring(filename, ".stl");
+		filename = dir + filename;
+		//	OutputFacets(triangles);
 
-	triangles.clear();
-	Triangulate(crystal, triangles);
+		std::vector<Facet> crystal;
+		MergeCrystal(triangles, crystal);
 
-	WriteStl(triangles);
+		WriteCry(crystal, filename + "_mbs");
+		WriteNat(crystal, filename + "_nat");
 
+		triangles.clear();
+		Triangulate(crystal, triangles);
+
+		WriteStl(triangles, filename);
+	}
+
+	std::cout << "Done." << std::endl << "Press <Enter> to exit...";
 	return 0;
 }

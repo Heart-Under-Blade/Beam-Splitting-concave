@@ -65,6 +65,12 @@ Point3f Point3f::operator - () const
 	return Point3f(-point[0], -point[1], -point[2], -point[3]);
 }
 
+std::ostream &operator <<(std::ostream &os, const Point3f &p)
+{
+	os << p.point[0] << " " << p.point[1] << " " << p.point[2];
+	return os;
+}
+
 float Point3f::DotProduct(const Point3f &v1, const Point3f &v2)
 {
 	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);

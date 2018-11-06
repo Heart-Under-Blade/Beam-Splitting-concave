@@ -1,5 +1,5 @@
 #include "HexagonalAggregate.h"
-#include "global.h"
+#include "common.h"
 
 HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &size,
 									   int particleNumber)

@@ -1,6 +1,6 @@
 #include "CertainAggregate.h"
 #include "Point.h"
-#include "global.h"
+#include "common.h"
 
 CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	: Particle(64, refrIndex, true)

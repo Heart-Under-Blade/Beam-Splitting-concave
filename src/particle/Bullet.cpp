@@ -1,5 +1,5 @@
 #include "Bullet.h"
-#include "global.h"
+#include "common.h"
 
 Bullet::Bullet()
 {

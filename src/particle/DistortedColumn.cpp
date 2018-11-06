@@ -1,5 +1,5 @@
 #include "DistortedColumn.h"
-#include "global.h"
+#include "common.h"
 #include <iostream>
 
 DistortedColumn::DistortedColumn(const complex &refrIndex, const Size &size,
