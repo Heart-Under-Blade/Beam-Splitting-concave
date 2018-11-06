@@ -95,15 +95,8 @@ std::ostream &operator <<(std::ostream &os, const Polygon &beam)
 {
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		os /*<< "\t"*/
-		   << beam.arr[i].cx << " "
-		   << beam.arr[i].cy << " "
-		   << beam.arr[i].cz << " " << std::endl;
+		os << beam.arr[i] << std::endl;
 	}
-
-	os << beam.arr[0].cx << " "
-	   << beam.arr[0].cy << " "
-	   << beam.arr[0].cz << " " << std::endl;
 
 	return os;
 }
