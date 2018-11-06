@@ -5,7 +5,8 @@
 class RegularIncidence : public Incidence
 {
 public:
-	virtual void ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams,
-								   Splitting &splitter) const override;
-	virtual void ComputeJonesMatrices(Beam &beam, Splitting &splitter) const override;
+	void ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams,
+						   Splitting &splitter) const;
+	void ComputeJonesMatrices(Beam &beam, SplittedBeams<Beam> &beams,
+							  Splitting &splitter) const;
 };

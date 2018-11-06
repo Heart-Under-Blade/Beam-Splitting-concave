@@ -3,14 +3,14 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
+void CompleteReflectionIncidence::ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams,
 													Splitting &splitter)
 {
 	splitter.ComputePolarisationParams(beam);
-	splitter.ComputeReflectedDirection(splitter.internal.direction);
-	splitter.internal.polarizationBasis = beam.polarizationBasis;
+	splitter.ComputeReflectedDirection(beams.internal.direction);
+	beams.internal.polarizationBasis = beam.polarizationBasis;
 #ifdef _DEBUG // DEB
-	splitter.internal.dirs.push_back(splitter.internal.direction);
+	beams.internal.dirs.push_back(beams.internal.direction);
 #endif
 }
 
@@ -34,7 +34,7 @@ void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
 
 void CompleteReflectionIncidence::ComputeOpticalPaths(const PathedBeam &incidentBeam,
 													  SplittedBeams<PathedBeam> &beams,
-													  Splitting &splitter)
+													  Splitting &splitter) const
 {
 	if (incidentBeam.opticalPath < FLT_EPSILON)
 	{
@@ -49,8 +49,8 @@ void CompleteReflectionIncidence::ComputeOpticalPaths(const PathedBeam &incident
 														 beams.internal.Center());
 		path += incidentBeam.opticalPath;
 #ifdef _DEBUG // DEB
-		splitter.internal.ops = incidentBeam.ops;
-		splitter.internal.ops.push_back(path);
+		beams.internal.ops = incidentBeam.ops;
+		beams.internal.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
 		beams.internal.AddOpticalPath(path);

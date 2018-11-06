@@ -54,7 +54,7 @@ public:
 	double reRiEff;
 	double s;
 
-	SplittedBeams beams;
+	SplittedBeams<Beam> beams;
 
 	complex m_ri;	///< Refractive index of a Particle
 

@@ -1,18 +1,16 @@
 #pragma once
 
-#include "RegularIncidence.h"
+#include "Incidence.h"
 
-class Beam;
-class Splitting;
-
-class CompleteReflectionIncidence : public RegularIncidence
+class CompleteReflectionIncidence : public Incidence
 {
 public:
-	static void ComputeDirections(Beam &beam, Splitting &splitter);
-	static void ComputeJonesMatrices(Beam &parentBeam, SplittedBeams<Beam> &beams,
-									  Splitting &splitter);
+	void ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams,
+						   Splitting &splitter) const override;
+	void ComputeJonesMatrices(Beam &parentBeam, SplittedBeams<Beam> &beams,
+							  Splitting &splitter) const override;
 
-	static void ComputeOpticalPaths(const PathedBeam &incidentBeam,
-									SplittedBeams<PathedBeam> &beams,
-									Splitting &splitter);
+	void ComputeOpticalPaths(const PathedBeam &incidentBeam,
+							 SplittedBeams<PathedBeam> &beams,
+							 Splitting &splitter) const override;
 };
