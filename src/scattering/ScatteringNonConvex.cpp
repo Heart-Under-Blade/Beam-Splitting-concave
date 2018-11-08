@@ -45,7 +45,7 @@ void ScatteringNonConvex::SplitOriginBeam(std::vector<Beam> &scatteredBeams)
 		{
 			Facet *facet = m_visibleFacets.elems[i];
 
-			m_splitting.SetBeams(*facet);
+			m_splitting.beams.SetBeams(*facet);
 			ComputeOpticalBeamParams(facet, m_originBeam);
 			PushBeamsToTree(facet, m_splitting, m_intersectionBuffer,
 							scatteredBeams);
@@ -53,9 +53,9 @@ void ScatteringNonConvex::SplitOriginBeam(std::vector<Beam> &scatteredBeams)
 	}
 
 #ifdef _DEBUG // DEB
-	Beam b = m_propagatingBeams[18];
-	m_propagatingBeams[18] = m_propagatingBeams[17];
-	m_propagatingBeams[17] = b;
+//	Beam b = m_propagatingBeams[18];
+//	m_propagatingBeams[18] = m_propagatingBeams[17];
+//	m_propagatingBeams[17] = b;
 #endif
 }
 
@@ -70,13 +70,13 @@ void ScatteringNonConvex::PushBeamsToTree(Facet *facet, Splitting &splitting,
 	beamTrack.pols.push_back(polygons.arr[0]);
 #endif
 
-	splitting.internal.CopyTrack(beamTrack);
-	splitting.internal.SetLocation(true);
-	PushBeamToBuffer(splitting.internal, polygons, scatteredBeams);
+	splitting.beams.internal.CopyTrack(beamTrack);
+	splitting.beams.internal.SetLocation(true);
+	PushBeamToBuffer(splitting.beams.internal, polygons, scatteredBeams);
 
-	splitting.external.CopyTrack(beamTrack);
-	splitting.external.SetLocation(false);
-	PushBeamToBuffer(splitting.external, polygons, scatteredBeams);
+	splitting.beams.external.CopyTrack(beamTrack);
+	splitting.beams.external.SetLocation(false);
+	PushBeamToBuffer(splitting.beams.external, polygons, scatteredBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
 	for (int j = 0; j < polygons.size; ++j)
@@ -210,14 +210,17 @@ void ScatteringNonConvex::ReleaseBeam(Beam &beam)
 		m_intersectionBuffer.Clear();
 		CutPolygonByFacets(beam, m_visibleFacets, m_visibleFacets.nElems, n1, n2,
 						   -beam.direction, m_intersectionBuffer);
-		Beam tmp = beam;
-		double path = m_splitting.ComputeOutgoingOpticalPath(tmp); // добираем оптический путь
+		PathedBeam tmp(beam);
+		double path = tmp.ComputeOutgoingOpticalPath(); // добираем оптический путь
 		tmp.opticalPath += path;
-#ifdef _DEBUG // DEB
-		tmp.ops.push_back(path);
+#ifdef MODE_FIXED_OR
+		tmp.pols.pop_back();
 #endif
 		for (int i = 0; i < m_intersectionBuffer.size; ++i)
 		{
+#ifdef MODE_FIXED_OR
+			tmp.pols.push_back(tmp);
+#endif
 			tmp.SetPolygon(m_intersectionBuffer.arr[i]);
 			m_scatteredBeams->push_back(tmp);
 		}
@@ -478,6 +481,13 @@ void ScatteringNonConvex::PushBeamPartsToBuffer(const Beam &beam,
 	{
 		tmp = parts.arr[i];
 		assert(m_treeSize < MAX_BEAM_NUM);
+#ifdef MODE_FIXED_OR
+		if (!m_isDivided)
+		{
+			tmp.dirs.push_back(tmp.direction);
+			tmp.pols.push_back(tmp);
+		}
+#endif
 		m_propagatingBeams[m_treeSize++] = tmp;
 	}
 }

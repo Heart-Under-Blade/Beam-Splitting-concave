@@ -5,6 +5,8 @@
 class NormalIncidence : public RegularIncidence
 {
 public:
-	static void ComputeDirections(Beam &beam, Splitting &splitter);
-	static void ComputeJonesMatrices(Beam &beam, Splitting &splitter);
+	void ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams,
+						   Splitting &splitter) const;
+	void ComputeJonesMatrices(Beam &beam, SplittedBeams<Beam> &beams,
+							  Splitting &splitter) const;
 };

@@ -179,10 +179,7 @@ void Beam::SetDefault(Beam &other)
 	other.actNo = 0;
 	other.isInside = false;
 	other.locations = 0;
-
-#ifdef _TRACK_ALLOW
 	other.id = 0;
-#endif
 }
 
 Beam &Beam::operator = (Beam &&other)

@@ -30,7 +30,7 @@ Facet *Particle::GetActualFacet(int i)
 	return &elems[i].actual;
 }
 
-void Particle::SetFromFile(const std::string &filename)
+void Particle::SetFromFile(const std::string &filename, double sizeIndex)
 {
 	std::ifstream pfile(filename, std::ios::in);
 
@@ -44,7 +44,7 @@ void Particle::SetFromFile(const std::string &filename)
 	char *buff = (char*)malloc(sizeof(char) * bufSize);
 
 	nElems = 0;
-	Facet &facet = elems[nElems++].origin;
+	Facet *facet = &elems[nElems++].origin;
 
 	char *ptr, *trash;
 
@@ -69,12 +69,16 @@ void Particle::SetFromFile(const std::string &filename)
 
 	while (!pfile.eof()) // read vertices of facets
 	{
+#ifdef _DEBUG // DEB
+		if (nElems == 35)
+			int ff = 0;
+#endif
 		pfile.getline(buff, bufSize);
 		ptr = strtok(buff, " ");
 
 		if (strlen(buff) == 0)
 		{
-			facet = elems[nElems++].origin;
+			facet = &elems[nElems++].origin;
 			continue;
 		}
 
@@ -82,11 +86,12 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
-			facet.arr[facet.nVertices].coordinates[c_i++] = strtod(ptr, &trash);
+			double value = strtod(ptr, &trash);
+			facet->arr[facet->nVertices].coordinates[c_i++] = value * sizeIndex;
 			ptr = strtok(NULL, " ");
 		}
 
-		++(facet.nVertices);
+		++(facet->nVertices);
 	}
 
 	pfile.close();
@@ -164,7 +169,7 @@ void Particle::Concate(const std::vector<Particle> &parts)
 	isAggregated = true;
 }
 
-double Particle::GetRotationRadius() const
+double Particle::ComputeRotationRadius() const
 {
 	Point3f p0(0, 0, 0);
 

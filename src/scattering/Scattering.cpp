@@ -36,6 +36,13 @@ void Scattering::CreateOriginBeam(const Vector3f &dir, const Vector3f &basis)
 	m_originBeam.isInside = false;
 	m_originBeam.facet = new Facet();
 	m_originBeam.facet->index = -1;
+
+#ifdef MODE_FIXED_OR
+	Polygon1 pol;
+	Point3f p = m_originBeam.direction * m_particle->ComputeRotationRadius()*2;
+	pol.AddVertex(p);
+	m_originBeam.pols.push_back(pol);
+#endif
 }
 
 void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
@@ -52,18 +59,10 @@ void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
 
 void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 {
-#ifdef _DEBUG // DEB
-	int count = 0;
-#endif
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_propagatingBeams[--m_treeSize];
-#ifdef _DEBUG // DEB
-		++count;
-		if (beam.id == 1142698)
-			int ffgf = 0;
-//		cout << count << endl;
-#endif
+
 		SplitBeamByVisibleFacets(beam);
 
 		if (IsTerminalAct(beam))
@@ -75,17 +74,13 @@ void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 
 bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
 {
-#ifdef _DEBUG // DEB
-	m_splitting.internal.pols = beam.pols;
-	m_splitting.outBeam.pols = beam.pols;
-#endif
 	const Vector3f &normal = facet->normal[beam.isInside];
 	m_splitting.ComputeParams(beam.direction, normal, beam.isInside);
 
 	Incidence *incidence = m_splitting.GetIncidence();
-	incidence->ComputeDirections(beam, m_splitting);
-	incidence->ComputeJonesMatrices(beam, m_splitting);
-	incidence->ComputeOpticalPaths(beam, m_splitting);
+	incidence->ComputeDirections(beam, m_splitting.beams, m_splitting);
+	incidence->ComputeJonesMatrices(beam, m_splitting.beams, m_splitting);
+//	incidence->ComputeOpticalPaths(beam, m_splitting);
 
 	return m_splitting.HasOutBeam();
 }
@@ -122,8 +117,9 @@ void Scattering::PushBeamToTree(Beam &beam)
 	}
 	else
 	{
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 		beam.dirs.push_back(beam.direction);
+		beam.pols.push_back(beam);
 #endif
 		m_propagatingBeams[m_treeSize++] = beam;
 	}
@@ -223,13 +219,13 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 
 #ifdef _DEBUG // DEB
 //	path *= real(m_splitting.GetRi());
-	Point3f nFar1 = m_originBeam.direction;
-	Point3f nFar2 = -beam.direction;
-	double dd1 = m_splitting.FAR_ZONE_DISTANCE + Point3f::DotProduct(p2, nFar1);
-	double dd2 = fabs(Point3f::DotProduct(startPoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+//	Point3f nFar1 = m_originBeam.direction;
+//	Point3f nFar2 = -beam.direction;
+//	double dd1 = m_splitting.FAR_ZONE_DISTANCE + Point3f::DotProduct(p2, nFar1);
+//	double dd2 = fabs(Point3f::DotProduct(startPoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
 
-	path.external += dd1;
-	path.external += dd2;
+//	path.external += dd1;
+//	path.external += dd2;
 
 //	if (fabs(path.GetTotal() - beam.opticalPath) > 1)
 //		int ff = 0;
@@ -244,7 +240,8 @@ void Scattering::SelectOriginVisibleFacets(Array<Facet*> &facets)
 
 void Scattering::ReleaseBeam(Beam &beam)
 {
-	beam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
+	PathedBeam b(beam);
+	b.opticalPath += b.ComputeOutgoingOpticalPath(); // добираем оптический путь
 	m_scatteredBeams->push_back(beam);
 }
 
@@ -256,16 +253,13 @@ void Scattering::SplitBeamByVisibleFacets(Beam &beam)
 	for (int i = 0; !isTerminalFacet(i, visibleFacets); ++i)
 	{
 		Facet *facet = visibleFacets.elems[i];
-#ifdef _DEBUG // DEB
-		if (i == 9)
-			int fff = 0;
-#endif
+
 		Polygon1 beamShape;
 		bool isIntersected = Geometry::IncidentBeamToFacet(facet, beam, beam.isInside,
 														   beam.direction, beamShape);
 		if (isIntersected)
 		{
-			m_splitting.SetBeams(beamShape);
+			m_splitting.beams.SetBeams(beamShape);
 			bool hasOutBeam = ComputeOpticalBeamParams(facet, beam);
 			PushBeamsToBuffer(beam, facet, hasOutBeam);
 		}
@@ -284,24 +278,16 @@ void Scattering::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 	tr.Update(facet);
 	tr.RecomputeTrackId(facet->index, m_particle->nElems);
 
-#ifdef _DEBUG // DEB
-	if (tr.id == 4222009)
-		int fff = 0;
-#endif
-	m_splitting.internal.CopyTrack(tr);
-	m_splitting.internal.SetLocation(true);
-#ifdef _DEBUG // DEB
-	m_splitting.internal.dirs = parentBeam.dirs;
-#endif
-	PushBeamToTree(m_splitting.internal);
+	m_splitting.beams.internal.CopyTrack(tr);
+	m_splitting.beams.internal.SetLocation(true);
+
+	PushBeamToTree(m_splitting.beams.internal);
 
 	if (hasOutBeam)
 	{
-		m_splitting.external.CopyTrack(tr);
-		m_splitting.external.SetLocation(false);
-#ifdef _DEBUG // DEB
-		m_splitting.outBeam.dirs = parentBeam.dirs;
-#endif
-		PushBeamToTree(m_splitting.external);
+		m_splitting.beams.external.CopyTrack(tr);
+		m_splitting.beams.external.SetLocation(false);
+
+		PushBeamToTree(m_splitting.beams.external);
 	}
 }

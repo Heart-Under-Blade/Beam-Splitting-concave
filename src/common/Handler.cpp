@@ -130,23 +130,11 @@ void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
 	double cross = BeamCrossSection(beam);
 	double area = cross*m_sinAngle;
-#ifdef _DEBUG // DEB
-//	vector<int> track;
-	double ddd = m[0][0];
-//	Tracks::RecoverTrack(beam, 8, track);
-#endif
-//	double dd = ddd + 1;
-//	double d = ddd + 2;
 	m *= area;
 }
 
 matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 {
-#ifdef _DEBUG // DEB
-//	vector<int> track;
-//	double ddd = m[0][0];
-//	m_tracks->RecoverTrack(beam, track);
-#endif
 	matrix m = Mueller(beam.Jones);
 
 	if (zenAng < 180 && zenAng > 0)
@@ -374,8 +362,8 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 	{
 #ifdef _DEBUG // DEB
 //		OutputPaths(beam, path);
-		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
-			int ggg = 0;
+//		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
+//			int ggg = 0;
 #endif
 		double abs = exp(m_cAbs*path.internal);
 		beam.Jones *= abs;

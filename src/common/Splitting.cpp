@@ -63,31 +63,9 @@ void Splitting::ComputeParams(const Vector3f &dir, const Vector3f &normal,
 	}
 }
 
-void Splitting::ComputePolarisationParams(Beam &beam)
-{
-	Point3f newBasis = (beam.isInside) ? Point3f::CrossProduct(m_normal, beam.direction)
-									   : Point3f::CrossProduct(m_normal, -beam.direction);
-	Point3f::Normalize(newBasis);
-	beam.RotateJones(newBasis);
-}
-
 double Splitting::ComputeEffectiveReRi() const
 {
 	return (m_cRiRe + sqrt(m_cRiRe2 + m_cRiIm/(cosA*cosA)))/2.0;
-}
-
-void Splitting::SetBeams(const Polygon1 &beamShape)
-{
-	internal.Clear();
-	internal.SetPolygon(beamShape);
-
-	external.Clear();
-	external.SetPolygon(beamShape);
-
-#ifdef _DEBUG // DEB
-	internal.pols.push_back(beamShape);
-	outBeam.pols.push_back(beamShape);
-#endif
 }
 
 void Splitting::SetNormal(const Point3f &normal)

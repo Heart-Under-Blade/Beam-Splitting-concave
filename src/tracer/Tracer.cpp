@@ -39,7 +39,7 @@ void Tracer::SetIncidentLight(Particle *particle)
 	m_incidentLight.direction = Point3f(0, 0, -1);
 	m_incidentLight.polarizationBasis = Point3f(0, 1, 0);
 
-	Point3f point = m_incidentLight.direction * particle->GetRotationRadius();
+	Point3f point = m_incidentLight.direction * particle->ComputeRotationRadius();
 	m_incidentLight.direction.d_param = Point3f::DotProduct(point, m_incidentLight.direction);
 }
 

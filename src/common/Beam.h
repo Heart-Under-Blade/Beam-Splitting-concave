@@ -9,6 +9,28 @@
 #include "Facet.h"
 #include "Tracks.h"
 
+template <class T>
+class SplittedBeams
+{
+public:
+	T internal;
+	T external;
+
+	void SetBeams(const Polygon1 &beamShape)
+	{
+		internal.Clear();
+		internal.SetPolygon(beamShape);
+
+		external.Clear();
+		external.SetPolygon(beamShape);
+
+#ifdef MODE_FIXED_OR
+		internal.pols.push_back(beamShape);
+		external.pols.push_back(beamShape);
+#endif
+	}
+};
+
 class Light
 {
 public:
@@ -57,7 +79,7 @@ public:
 			locations = other.locations;
 			actNo = other.actNo;
 			facet = other.facet;
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 			pols = other.pols;
 			dirs = other.dirs;
 #endif
@@ -75,7 +97,7 @@ public:
 	int actNo; ///< Current r/r act number
 	Facet *facet; ///< Last incident facet of the Particle
 
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 	std::vector<Point3f> dirs;
 	std::vector<Polygon1> pols;
 #endif

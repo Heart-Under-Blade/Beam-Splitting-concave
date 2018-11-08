@@ -25,7 +25,7 @@ public:
 	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
 	Facet *GetActualFacet(int i);
-	void SetFromFile(const std::string &filename);
+	void SetFromFile(const std::string &filename, double sizeIndex = 1);
 
 	void Rotate(const Orientation &angle);
 	void Move(float dx, float dy, float dz);
@@ -38,7 +38,7 @@ public:
 	 * @return The distance from beginning of the center of coordinate system
 	 * to the farthest point of particle.
 	 */
-	double GetRotationRadius() const;
+	double ComputeRotationRadius() const;
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);

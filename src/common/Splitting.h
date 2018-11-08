@@ -8,14 +8,6 @@
 
 #define EPS_ORTO_FACET 0.0001
 
-template <class T>
-class SplittedBeams
-{
-public:
-	T internal;
-	T external;
-};
-
 class Splitting
 {
 public:
@@ -25,8 +17,6 @@ public:
 
 	void ComputeParams(const Vector3f &dir, const Vector3f &normal,
 					   bool isInside);
-
-	void ComputePolarisationParams(Beam &beam);
 
 	void ComputeReflectedDirection(Vector3f &dir) const
 	{
@@ -40,7 +30,6 @@ public:
 		Point3f::Normalize(dir); // REF, OPT: нужно ли это нормализовать всегда?
 	}
 
-	void SetBeams(const Polygon1 &beamShape);
 	void SetNormal(const Point3f &normal);
 
 	bool HasOutBeam();
@@ -54,7 +43,7 @@ public:
 	double reRiEff;
 	double s;
 
-	SplittedBeams beams;
+	SplittedBeams<Beam> beams;
 
 	complex m_ri;	///< Refractive index of a Particle
 

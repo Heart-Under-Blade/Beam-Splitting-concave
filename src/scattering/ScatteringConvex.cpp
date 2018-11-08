@@ -13,27 +13,23 @@ void ScatteringConvex::PushBeamsToBuffer(Facet *facet, Splitting &splitting,
 	tr.Update(facet);
 	tr.RecomputeTrackId(0, facet->index);
 
-	splitting.external.CopyTrack(tr);
-	splitting.external.SetLocation(false);
-	scatteredBeams.push_back(splitting.external);
+	auto &beams = splitting.beams;
+	beams.external.CopyTrack(tr);
+	beams.external.SetLocation(false);
 
-	splitting.internal.CopyTrack(tr);
-	splitting.internal.SetLocation(true);
+#ifdef MODE_FIXED_OR
+	beams.external.dirs.push_back(beams.external.direction);
+	beams.external.pols.push_back(beams.external);
+#endif
+	scatteredBeams.push_back(beams.external);
 
-	if (IsTerminalAct(splitting.internal))
-	{
-		if (!splitting.internal.isInside)
-		{
-			ReleaseBeam(splitting.internal);
-		}
-	}
-	else
-	{
-		PushBeamToTree(splitting.internal);
-	}
+	beams.internal.CopyTrack(tr);
+	beams.internal.SetLocation(true);
+
+	PushBeamToTree(beams.internal);
 
 #ifdef _CHECK_ENERGY_BALANCE
-	ComputeFacetEnergy(facet->in_normal, m_splitting.external);
+	ComputeFacetEnergy(facet->in_normal, m_splitting.beams.external);
 #endif
 }
 
@@ -46,7 +42,7 @@ void ScatteringConvex::SplitOriginBeam(std::vector<Beam> &scatteredBeams)
 	{
 		Facet *facet = m_visibleFacets.elems[i];
 
-		m_splitting.SetBeams(*facet);
+		m_splitting.beams.SetBeams(*facet);
 		ComputeOpticalBeamParams(facet, m_originBeam);
 		PushBeamsToBuffer(facet, m_splitting, scatteredBeams);
 	}
