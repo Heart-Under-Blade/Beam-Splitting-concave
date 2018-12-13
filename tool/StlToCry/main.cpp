@@ -11,6 +11,7 @@
 #include "common.h"
 
 #define NRM_EPS 0.01
+#define SIZE_INDEX 1
 #define PNT_EPS 10*FLT_EPSILON
 
 using namespace std;
@@ -562,6 +563,14 @@ int main()
 
 		std::vector<Facet> crystal;
 		MergeCrystal(triangles, crystal);
+
+		for (Facet &facet : crystal)
+		{
+			for (int i = 0; i < facet.nVertices; ++i)
+			{
+				facet.arr[i] = facet.arr[i]*SIZE_INDEX;
+			}
+		}
 
 		WriteCry(crystal, filename + "_mbs");
 		WriteNat(crystal, filename + "_nat");
