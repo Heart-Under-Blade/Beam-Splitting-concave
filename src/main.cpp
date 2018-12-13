@@ -6,16 +6,16 @@
 
 #include "CalcTimer.h"
 #include "macro.h"
-#include "test.h"
 
 #include "Mueller.hpp"
 #include "RegularColumn.h"
 #include "HollowColumn.h"
+#include "HexagonalAggregate.h"
 #include "CertainAggregate.h"
 #include "Bullet.h"
 #include "BulletRosette.h"
 #include "DistortedColumn.h"
-#include "global.h"
+#include "common.h"
 #include "Beam.h"
 #include "PhysMtr.hpp"
 #include "TracerGO.h"
