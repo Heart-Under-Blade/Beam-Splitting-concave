@@ -258,7 +258,8 @@ protected:
 	double BeamCrossSection(const Beam &beam) const;
 	matrix ComputeMueller(int zenAng, Beam &beam);
 	void RotateMuller(const Point3f &dir, matrix &bf);
-	void AverageOverAlpha(int EDF, double norm, ContributionGO &contrib);
+	void AverageOverAlpha(int EDF, double norm, ContributionGO &contrib,
+						  const std::string &destDir);
 
 	void WriteToFile(ContributionGO &contrib, double norm,
 					 const std::string &filename);
@@ -267,7 +268,7 @@ protected:
 	Point3f CalcK(std::vector<int> &tr);
 
 private:
-	void ExtractPeaks(double *b, double *f, double norm);
+	void ExtractPeaks(double *b, double *f, double norm, const std::string &destDir);
 };
 
 

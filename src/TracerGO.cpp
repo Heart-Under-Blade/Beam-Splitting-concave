@@ -50,6 +50,10 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	m_handler->SetNormIndex(norm);
 
 	m_outcomingEnergy = ((HandlerGO*)m_handler)->ComputeTotalScatteringEnergy();
+
+	std::string dir = CreateFolder(m_resultDirName);
+	m_resultDirName = dir + m_resultDirName + '\\' + m_resultDirName;
+
 	m_handler->WriteMatricesToFile(m_resultDirName);
 	OutputSummary(orNum, m_outcomingEnergy, norm, timer);
 }

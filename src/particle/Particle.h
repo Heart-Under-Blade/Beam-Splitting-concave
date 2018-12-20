@@ -32,6 +32,7 @@ public:
 	void Rotate(double beta, double gamma, double alpha);
 	void Move(float dx, float dy, float dz);
 	void Fix();
+	void Resize(double size);
 
 	void Concate(const std::vector<Particle> &parts);
 
@@ -73,7 +74,9 @@ protected:
 	void SetDefaultNormals();
 	void SetDefaultCenters();
 	void Reset();
+	void Scale(double ratio);
 	void SetSymmetry(double beta, double gamma, double alpha = 0);
+
 	virtual void SetFacetParams() {}
 
 private:

@@ -41,10 +41,11 @@ HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, float wavelength)
 	m_logFile << setprecision(numeric_limits<long double>::digits10 + 1);
 }
 
-void HandlerGO::ExtractPeaks(double *b, double *f, double norm)
+void HandlerGO::ExtractPeaks(double *b, double *f, double norm,
+							 const std::string &destDir)
 {
-	std::ofstream bck("back.dat", std::ios::out);
-	std::ofstream frw("forward.dat", std::ios::out);
+	std::ofstream bck(destDir + "_back.dat", std::ios::out);
+	std::ofstream frw(destDir + "_forward.dat", std::ios::out);
 	frw << "M11 M22/M11 M33/M11 M44/M11";
 	bck << "M11 M22/M11 M33/M11 M44/M11";
 
@@ -76,7 +77,8 @@ void HandlerGO::ExtractPeaks(double *b, double *f, double norm)
 	frw.close();
 }
 
-void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib)
+void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib,
+								 const std::string &destDir)
 {
 	//Analytical averaging over alpha angle
 	double b[3], f[3];
@@ -91,7 +93,7 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib)
 	// Extracting the forward and backward peak in a separate file if needed
 	if (EDF)
 	{
-		ExtractPeaks(b, f, norm);
+		ExtractPeaks(b, f, norm, destDir);
 	}
 	else
 	{
@@ -179,7 +181,10 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 	string name = CreateUniqueFileName(filename);
 	ofstream allFile(name, std::ios::out);
 
-	allFile << "tetta M11 M12/M11 M21/M11 M22/M11 M33/M11 M34/M11 M43/M11 M44/M11";
+	allFile << "tetta M11 M12/M11 M13/M11 M14/M11 "\
+				"M21/M11 M22/M11 M23/M11 M24/M11 "\
+				"M31/M11 M32/M11 M33/M11 M34/M11 "\
+				"M41/M11 M42/M11 M43/M11 M44/M11";
 
 	for (int j = SPHERE_RING_NUM; j >= 0; j--)
 	{
@@ -196,13 +201,18 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 
 		matrix bf = contrib.muellers(0, j);
 
+#ifdef _DEBUG // DEB
+		double dd = bf[0][0];
+		cout << sn;
+#endif
+
 		if (bf[0][0] <= DBL_EPSILON)
 		{
 			allFile << " 0 0 0 0 0 0 0 0";
 		}
 		else
 		{
-			allFile << ' ' << bf[0][0]*norm/(2.0*M_PI*sn)
+			allFile << ' ' << bf[0][0]*norm/(M_2PI*sn)
 					<< ' ' << bf[0][1]/bf[0][0]
 					<< ' ' << bf[0][2]/bf[0][0] // usually = 0
 					<< ' ' << bf[0][3]/bf[0][0] // usually = 0
@@ -337,6 +347,9 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
+#ifdef _DEBUG // DEB
+		m_logFile << beam.id << endl;
+#endif
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion
@@ -373,6 +386,10 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
+#ifdef _DEBUG // DEB
+		std::vector<int> tr;
+		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+#endif
 		int groupId = m_tracks->FindGroupByTrackId(beam.id);
 
 		if (groupId >= 0 || !m_tracks->shouldComputeTracksOnly)
@@ -392,8 +409,8 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 
 void HandlerTracksGO::WriteMatricesToFile(string &destName)
 {
-	string dir = CreateFolder(destName);
-	dir += destName + "\\";
+//	string dir = CreateFolder(destName);
+//	dir += destName + "\\";
 
 	for (size_t i = 0; i < m_tracksContrib.size(); ++i)
 	{
@@ -401,19 +418,18 @@ void HandlerTracksGO::WriteMatricesToFile(string &destName)
 		{
 			string subname = (*m_tracks)[i].CreateGroupName();
 //			AverageOverAlpha(true, m_normIndex, m_tracksContrib[i]);
-			WriteToFile(m_tracksContrib[i], m_normIndex, dir + subname);
+			WriteToFile(m_tracksContrib[i], m_normIndex, destName + '_' +  subname);
 		}
 	}
 
-	AverageOverAlpha(true, m_normIndex, m_totalContrib);
-	WriteToFile(m_totalContrib, m_normIndex, dir + destName + "_all");
+	AverageOverAlpha(true, m_normIndex, m_totalContrib, destName);
+	WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
 }
 
 void HandlerTotalGO::WriteMatricesToFile(string &destName)
 {
-	destName += "_all";
-	AverageOverAlpha(true, m_normIndex, m_totalContrib);
-	WriteToFile(m_totalContrib, m_normIndex, destName);
+	AverageOverAlpha(true, m_normIndex, m_totalContrib, destName);
+	WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
 }
 
 HandlerPO::HandlerPO(Particle *particle, Light *incidentLight, float wavelength)

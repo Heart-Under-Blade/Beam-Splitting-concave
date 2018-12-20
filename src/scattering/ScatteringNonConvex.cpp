@@ -366,11 +366,13 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 #endif
 	while (m_treeSize != 0)
 	{
-#ifdef _DEBUG // DEB
-	++count;
-#endif
 		Beam beam = m_beamTree[--m_treeSize];
 
+#ifdef _DEBUG // DEB
+	++count;
+		if (beam.id == 1142698)
+			int ffgf = 0;
+#endif
 		if (!IsTerminalAct(beam)) // REF, OPT: перенести проверку во все места, где пучок закидывается в дерево, чтобы пучки заранее не закидывались в него
 		{
 			IntArray facetIds;
@@ -648,6 +650,10 @@ void ScatteringNonConvex::PushBeamPartsToTree(const Beam &beam,
 	for (unsigned i = 0; i < parts.size; ++i)
 	{
 		tmp = parts.arr[i];
+#ifdef _DEBUG // DEB
+	if (tmp.id == 222205)
+		int fff = 0;
+#endif
 		assert(m_treeSize < MAX_BEAM_REFL_NUM);
 		m_beamTree[m_treeSize++] = tmp;
 	}
@@ -659,6 +665,11 @@ void ScatteringNonConvex::PushBeamToTree(Beam &beam, const Beam &oldBeam,
 										 Location loc)
 {
 	beam.id = newId;
+
+#ifdef _DEBUG // DEB
+	if (beam.id == 21711433)
+		int fff = 0;
+#endif
 	beam.locations = oldBeam.locations;
 #ifdef _DEBUG // DEB
 	beam.dirs = oldBeam.dirs;
@@ -690,12 +701,12 @@ if (beam.lastFacetId==0 && facetId==6)
 
 	auto newId = RecomputeTrackId(beam.id, facetId);
 
+	PushBeamToTree(inBeam, beam, newId, facetId, Location::In);
+
 	if (hasOutBeam)
 	{
 		PushBeamToTree(outBeam, beam, newId, facetId, Location::Out);
 	}
-
-	PushBeamToTree(inBeam, beam, newId, facetId, Location::In);
 
 	m_polygonBuffer.Clear();
 	CutBeamByFacet(facet, beam, m_polygonBuffer);
@@ -710,6 +721,10 @@ if (beam.lastFacetId==0 && facetId==6)
 	else if (m_polygonBuffer.size == CLIP_RESULT_SINGLE)
 	{
 		beam = m_polygonBuffer.arr[0];
+#ifdef _DEBUG // DEB
+		if (beam.id == 222205)
+			int ffgf = 0;
+#endif
 	}
 
 	return isDivided;

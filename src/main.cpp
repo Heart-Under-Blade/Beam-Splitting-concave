@@ -52,6 +52,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("ri", 2); // refractive index (Re and Im parts)
 	parser.AddRule("n", 1); // number of internal reflection
 	parser.AddRule("pf", zero, true); // particle (filename)
+	parser.AddRule("rs", 1, true, "pf"); // resize particle (new size)
 	parser.AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
 	parser.AddRule("random", 2, true); // random orientarion (beta number, gamma number)
 	parser.AddRule("go", 0, true); // geometrical optics method
@@ -125,7 +126,7 @@ int main(int argc, const char* argv[])
 {
 	if (argc <= 1) // no arguments
 	{
-		cout << endl << "No arguments. Press any key to exit...";
+		cout << "No arguments. Press any key to exit..." << endl;
 		getchar();
 		return 1;
 	}
@@ -144,12 +145,22 @@ int main(int argc, const char* argv[])
 
 	Particle *particle = nullptr;
 
+	cout << "Particle: ";
+
 	if (args.IsCatched("pf"))
 	{
 		std::string filename = args.GetStringValue("p");
 		particle = new Particle();
 		particle->SetFromFile(filename);
 		particle->SetRefractiveIndex(complex(refrIndex));
+
+		cout << "from file: " << filename << endl;
+
+		if (args.IsCatched("rs"))
+		{
+			double newSize = args.GetDoubleValue("rs");
+			particle->Resize(newSize);
+		}
 	}
 	else
 	{
@@ -195,14 +206,26 @@ int main(int argc, const char* argv[])
 		}
 	}
 
+	cout << "Refractive index: " << re;
+
+	if (fabs(im) < DBL_EPSILON)
+	{
+		cout << " + i" << im;
+	}
+
+	cout << endl;
+
 	particle->Output();
 
 	int reflNum = args.GetDoubleValue("n");
+	cout << "Number of secondary reflections: " << reflNum << endl;
+
 	string dirName = (args.IsCatched("o")) ? args.GetStringValue("o")
-												: "M";
+										   : "M";
 	bool isOutputGroups = args.IsCatched("gr");
 	double wave = args.IsCatched("w") ? args.GetDoubleValue("w")
 									  : 0;
+	cout << "Wavelength (um): " << wave << endl;
 
 	if (args.IsCatched("tr"))
 	{
@@ -211,10 +234,15 @@ int main(int argc, const char* argv[])
 		trackGroups.shouldComputeTracksOnly = !args.IsCatched("all");
 	}
 
+	cout << "Method: ";
 	if (args.IsCatched("po"))
 	{
+		cout << "Physical optics";
+
 		if (args.IsCatched("fixed"))
 		{
+			cout << ", fixed orientation" << endl;
+
 			Conus bsCone = SetCone(args);
 
 			double beta  = args.GetDoubleValue("fixed", 0);
@@ -233,6 +261,7 @@ int main(int argc, const char* argv[])
 		}
 		else if (args.IsCatched("random"))
 		{
+			cout << ", random orientation" << endl;
 			AngleRange beta = GetRange(args, "b", particle);
 			AngleRange gamma = GetRange(args, "g", particle);
 
@@ -278,6 +307,8 @@ int main(int argc, const char* argv[])
 	}
 	else // go
 	{
+		cout << "Geometrical optics" << endl;
+
 		TracerGO tracer(particle, reflNum, dirName);
 		tracer.SetIsOutputGroups(isOutputGroups);
 
@@ -298,14 +329,18 @@ int main(int argc, const char* argv[])
 
 		if (args.IsCatched("fixed"))
 		{
+			cout << ", fixed orientation, ";
 			double beta  = args.GetDoubleValue("fixed", 0);
 			double gamma = args.GetDoubleValue("fixed", 1);
+			cout << "zenith " << beta << "°, azimuth " << gamma << "°" << endl;
 			tracer.TraceFixed(beta, gamma);
 		}
 		else if (args.IsCatched("random"))
 		{
+			cout << ", random orientation, ";
 			AngleRange beta = GetRange(args, "b", particle);
 			AngleRange gamma = GetRange(args, "g", particle);
+			cout << "grid: " << beta.number << "x" << gamma.number << endl;
 			tracer.TraceRandom(beta, gamma);
 		}
 
