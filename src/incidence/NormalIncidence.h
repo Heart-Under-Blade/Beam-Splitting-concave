@@ -2,9 +2,13 @@
 
 #include "RegularIncidence.h"
 
-class NormalIncidence : public RegularIncidence
+class NormalIncidence : public Incidence
 {
 public:
-	static void ComputeDirections(Beam &beam, Splitting &splitter);
-	static void ComputeJonesMatrices(Beam &beam, Splitting &splitter);
+	NormalIncidence(const complex &ri);
+
+	void ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams);
+	void ComputeJonesMatrices(Beam &beam, SplittedBeams<Beam> &beams);
+private:
+	complex fresnels[4];
 };

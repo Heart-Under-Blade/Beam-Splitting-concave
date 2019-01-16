@@ -374,8 +374,8 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 	{
 #ifdef _DEBUG // DEB
 //		OutputPaths(beam, path);
-		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
-			int ggg = 0;
+//		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
+//			int ggg = 0;
 #endif
 		double abs = exp(m_cAbs*path.internal);
 		beam.Jones *= abs;

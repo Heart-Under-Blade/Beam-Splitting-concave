@@ -3,20 +3,25 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void RegularIncidence::ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams,
-										 Splitting &splitter) const
+RegularIncidence::RegularIncidence(const complex &ri)
+	: Incidence(ri)
 {
-	beam.RotateJones(splitter.m_normal);
+}
+
+void RegularIncidence::ComputeDirections(Beam &beam,
+										 SplittedBeams<Beam> &beams) const
+{
+	beam.RotateJones(m_normal);
 
 	if (beam.isInside)
 	{
-		splitter.ComputeReflectedDirection(beams.internal.direction);
-		splitter.ComputeRefractedDirection(beams.external.direction);
+		ComputeReflectedDirection(beams.internal.direction);
+		ComputeRefractedDirection(beams.external.direction);
 	}
 	else
 	{
-		splitter.ComputeReflectedDirection(beams.external.direction);
-		splitter.ComputeRefractedDirection(beams.internal.direction);
+		ComputeReflectedDirection(beams.external.direction);
+		ComputeRefractedDirection(beams.internal.direction);
 	}
 #ifdef _DEBUG // DEB
 	beams.internal.dirs.push_back(beams.internal.direction);
@@ -26,52 +31,50 @@ void RegularIncidence::ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams,
 	beams.external.polarizationBasis = beam.polarizationBasis;
 }
 
-void RegularIncidence::ComputeJonesMatrices(Beam &beam, SplittedBeams<Beam> &beams,
-											Splitting &splitter)
+void RegularIncidence::ComputeJonesMatrices(Beam &beam,
+											SplittedBeams<Beam> &beams) const
 {
 	beams.internal.Jones = beam.Jones;
 	beams.external.Jones = beam.Jones;
 
 	if (beam.isInside)
 	{
-		double cosG = Point3f::DotProduct(splitter.m_normal,
-										  beams.external.direction);
+		double cosG = Point3f::DotProduct(normal, beams.external.direction);
 
-		complex tmp0 = splitter.m_ri * splitter.cosA;
-		complex tmp1 = splitter.m_ri * cosG;
+		complex tmp0 = m_ri * cosA;
+		complex tmp1 = m_ri * cosG;
 
-		complex Tv0 = tmp1 + splitter.cosA;
+		complex Tv0 = tmp1 + cosA;
 		complex Th0 = tmp0 + cosG;
 
 		complex tmp = 2.0 * tmp0;
 		beams.external.MultiplyJonesMatrix(tmp/Tv0, tmp/Th0);
 
-		complex Tv = splitter.cosA - tmp1;
+		complex Tv = cosA - tmp1;
 		complex Th = tmp0 - cosG;
 		beams.internal.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
 	}
 	else
 	{
-		double cosB = Point3f::DotProduct(splitter.m_normal, splitter.internal.direction);
+		double cosB = Point3f::DotProduct(normal, beams.internal.direction);
 
-		complex tmp0 = splitter.m_ri * splitter.cosA;
-		complex tmp1 = splitter.m_ri * cosB;
+		complex tmp0 = m_ri * cosA;
+		complex tmp1 = m_ri * cosB;
 
 		complex Tv0 = tmp0 + cosB;
-		complex Th0 = tmp1 + splitter.cosA;
+		complex Th0 = tmp1 + cosA;
 
 		complex Tv = tmp0 - cosB;
-		complex Th = splitter.cosA - tmp1;
+		complex Th = cosA - tmp1;
 		beams.external.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
 
-		double cos2A = 2.0*splitter.cosA;
+		double cos2A = 2.0*cosA;
 		beams.internal.MultiplyJonesMatrix(cos2A/Tv0, cos2A/Th0);
 	}
 }
 
 void Incidence::ComputeOpticalPaths(const PathedBeam &parentBeam,
-									SplittedBeams<PathedBeam> &beams,
-									Splitting &splitter) const
+									SplittedBeams<PathedBeam> &beams) const
 {
 	if (parentBeam.opticalPath < FLT_EPSILON)
 	{
@@ -82,11 +85,11 @@ void Incidence::ComputeOpticalPaths(const PathedBeam &parentBeam,
 	}
 	else
 	{
-		double path = parentBeam.ComputeSegmentOpticalPath(splitter.reRiEff,
-													 beams.internal.Center());
+		double path = parentBeam.ComputeSegmentOpticalPath(reRiEff,
+														   beams.internal.Center());
 #ifdef _DEBUG // DEB
-		splitter.internal.ops = beam.ops;
-		splitter.outBeam.ops = beam.ops;
+		beams.internal.ops = parentBeam.ops;
+		beams.external.ops = parentBeam.ops;
 #endif
 		path += parentBeam.opticalPath;
 		beams.internal.AddOpticalPath(path);

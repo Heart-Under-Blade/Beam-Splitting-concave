@@ -76,8 +76,8 @@ void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
 {
 #ifdef _DEBUG // DEB
-	m_splitting.internal.pols = beam.pols;
-	m_splitting.outBeam.pols = beam.pols;
+	m_splitting.beams.internal.pols = beam.pols;
+	m_splitting.beams.external.pols = beam.pols;
 #endif
 	const Vector3f &normal = facet->normal[beam.isInside];
 	m_splitting.ComputeParams(beam.direction, normal, beam.isInside);
@@ -283,20 +283,20 @@ void Scattering::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 	if (tr.id == 4222009)
 		int fff = 0;
 #endif
-	m_splitting.internal.CopyTrack(tr);
-	m_splitting.internal.SetLocation(true);
+	m_splitting.beams.internal.CopyTrack(tr);
+	m_splitting.beams.internal.SetLocation(true);
 #ifdef _DEBUG // DEB
-	m_splitting.internal.dirs = parentBeam.dirs;
+	m_splitting.beams.internal.dirs = parentBeam.dirs;
 #endif
-	PushBeamToTree(m_splitting.internal);
+	PushBeamToTree(m_splitting.beams.internal);
 
 	if (hasOutBeam)
 	{
-		m_splitting.external.CopyTrack(tr);
-		m_splitting.external.SetLocation(false);
+		m_splitting.beams.external.CopyTrack(tr);
+		m_splitting.beams.external.SetLocation(false);
 #ifdef _DEBUG // DEB
-		m_splitting.outBeam.dirs = parentBeam.dirs;
+		m_splitting.beams.external.dirs = parentBeam.dirs;
 #endif
-		PushBeamToTree(m_splitting.external);
+		PushBeamToTree(m_splitting.beams.external);
 	}
 }

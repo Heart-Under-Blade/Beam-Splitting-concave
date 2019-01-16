@@ -46,7 +46,7 @@ void Particle::SetFromFile(const std::string &filename)
 	char *buff = (char*)malloc(sizeof(char) * bufSize);
 
 	nElems = 0;
-	Facet &facet = elems[nElems++].origin;
+	Facet *facet = &(elems[nElems++].origin);
 
 	char *ptr, *trash;
 
@@ -76,7 +76,7 @@ void Particle::SetFromFile(const std::string &filename)
 
 		if (strlen(buff) == 0)
 		{
-			facet = elems[nElems++].origin;
+			facet = &(elems[nElems++].origin);
 			continue;
 		}
 
@@ -84,11 +84,11 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
-			facet.arr[facet.nVertices].point[c_i++] = strtod(ptr, &trash);
+			facet->arr[facet->nVertices].point[c_i++] = strtod(ptr, &trash);
 			ptr = strtok(NULL, " ");
 		}
 
-		++(facet.nVertices);
+		++(facet->nVertices);
 	}
 
 	pfile.close();

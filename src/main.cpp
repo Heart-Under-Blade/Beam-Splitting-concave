@@ -87,7 +87,7 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 	{
 		number = parser.GetIntValue("random", 0);
 
-		if (parser.IsCatched("b"))
+		if (parser.IsCatched(key))
 		{
 			min = Orientation::DegToRad(parser.GetDoubleValue(key, 0));
 			max = Orientation::DegToRad(parser.GetDoubleValue(key, 1));
@@ -102,7 +102,7 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 	{
 		number = parser.GetIntValue("random", 1);
 
-		if (parser.IsCatched("g"))
+		if (parser.IsCatched(key))
 		{
 			min = Orientation::DegToRad(parser.GetDoubleValue(key, 0));
 			max = Orientation::DegToRad(parser.GetDoubleValue(key, 1));
@@ -203,7 +203,7 @@ int main(int argc, const char* argv[])
 
 	int reflNum = args.GetDoubleValue("n");
 	string dirName = (args.IsCatched("o")) ? args.GetStringValue("o")
-												: "M";
+										   : "M";
 	bool isOutputGroups = args.IsCatched("gr");
 	double wave = args.IsCatched("w") ? args.GetDoubleValue("w")
 									  : 0;

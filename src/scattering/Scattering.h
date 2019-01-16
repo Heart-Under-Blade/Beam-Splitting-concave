@@ -38,7 +38,7 @@ struct OpticalPath
 };
 
 /**
- * @brief Produce a set of beams from a light that incident on a Particle.
+ * @brief Transform light that incidents on a Particle to set of beams.
  */
 class Scattering
 {

@@ -40,12 +40,12 @@ double PathedBeam::ComputeSegmentOpticalPath(const double &reRiEff,
 #ifdef _DEBUG // DEB
 //	if (tmp + front < 0)
 //		int fff = 0;
-	Point3f dd = beam.Center();
-	Point3f pd = beam.Center() + (beam.direction * 10);
+	Point3f dd = Center();
+	Point3f pd = Center() + (direction * 10);
 
 	/* ПРоверка на нахождения плоскости за пучком
 	 * REF: вынести в случай невыпуклых частиц, т.к. характерно только для них */
-	double cosB = Point3d::DotProduct(Point3d::Normalize(facetPoint - beam.Center()), beam.direction);
+	double cosB = Point3d::DotProduct(Point3d::Normalize(facetPoint - Center()), direction);
 #else
 	Vector3f vectorToCenter = facetPoint - Center();
 	Point3f::Normalize(vectorToCenter);
