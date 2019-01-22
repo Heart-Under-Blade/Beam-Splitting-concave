@@ -76,22 +76,22 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma)
 
 double TracerGO::CalcNorm(long long orNum)
 {
-	return 1.0/(double)orNum;
-	/*
+//	return 1.0/(double)orNum;
+
 	double &symBeta = m_symmetry.beta;
 
 	if (symBeta < M_PI - FLT_EPSILON) //
 	{
 		double tmp = symBeta;
 		double dBeta = -(cos(symBeta));
-		double ddd = cos(0);
 		dBeta -= cos(0);
+		dBeta = (dBeta < 0) ? -dBeta : dBeta;
 		return tmp/(orNum*dBeta);
 	}
 	else // otherwise the result becomes 'inf'
 	{
 		return 1;
-	}*/
+	}
 }
 
 void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &timer)
@@ -108,12 +108,15 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 			+ "\nTotal scattering energy = " + to_string(D_tot);
 
 #ifdef _CHECK_ENERGY_BALANCE
-	double normEnergy = m_incomingEnergy * NRM;
-	double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
+	const double normEnergy = m_incomingEnergy * NRM;
+	const double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
+	const double parArea = m_particle->Area()/4;
 
 	m_summary += "\nTotal incoming energy = " + to_string(normEnergy)
+			+ " must be equal to " + to_string(parArea) + " (S/4)"
 			+ "\nTotal outcoming energy = " + to_string(m_outcomingEnergy)
-			+ "\nEnergy passed = " + to_string(passedEnergy) + '%';
+			+ "\nEnergy passed = " + to_string(passedEnergy) + '%'
+			+ "\nNorm index = " + to_string(NRM);
 #endif
 
 	// out << "\nAveraged cross section = " << incomingEnergy*NRM;

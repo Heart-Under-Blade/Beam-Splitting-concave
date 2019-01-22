@@ -197,6 +197,18 @@ double Particle::GetRotationRadius() const
 	return radius;
 }
 
+double Particle::Area()
+{
+	double area = 0;
+
+	for (int i = 0; i < nFacets; ++i)
+	{
+		area += facets[i].Area();
+	}
+
+	return area;
+}
+
 const complex &Particle::GetRefractiveIndex() const
 {
 	return m_refractiveIndex;

@@ -43,6 +43,12 @@ public:
 	 */
 	double GetRotationRadius() const;
 
+	/**
+	 * @brief A sum of areas of each facet of the particle
+	 * @return value of area
+	 */
+	double Area();
+
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 
