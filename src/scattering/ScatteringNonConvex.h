@@ -3,13 +3,17 @@
 #include "Scattering.h"
 
 /** NOTE: пучки выходят со случайно ориентированным порядком вершин */
+
+/**
+ * @brief Provide methods for non-convex type of particles.
+ */
 class ScatteringNonConvex : public Scattering
 {
 public:
 	ScatteringNonConvex(Particle *particle, const Light &incidentLight, int maxActNo);
 
 protected:
-	void SplitOriginBeam(std::vector<Beam> &scatteredBeams) override;
+	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;
 
 	void ReleaseBeam(Beam &beam) override;
 	bool IsTerminalAct(const Beam &beam) override;
@@ -47,7 +51,7 @@ private:
 	bool FindLightedFacetPolygon(const Array<Facet*> &facets, int nCheckedFacets,
 								 PolygonArray &pols);
 
-	void PushBeamsToTree(Facet *facet, Splitting &splitting,
+	void PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,
 						 const PolygonArray &polygons,
 						 std::vector<Beam> &scatteredBeams);
 

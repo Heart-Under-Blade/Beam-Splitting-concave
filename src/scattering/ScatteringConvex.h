@@ -8,8 +8,8 @@ public:
 	ScatteringConvex(Particle *particle, const Light &incidentLight, int maxActNo);
 
 protected:
-	void SplitOriginBeam(std::vector<Beam> &scatteredBeams) override;
+	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;
 	void SelectVisibleFacets(const Beam &beam, Array<Facet *> &facets) override;
-	void PushBeamsToBuffer(Facet *facet, Splitting &splitting,
+	void PushBeamsToBuffer(Facet *facet, BeamPair<Beam> &beams,
 						   std::vector<Beam> &scatteredBeams);
 };

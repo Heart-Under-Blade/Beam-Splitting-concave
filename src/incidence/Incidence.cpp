@@ -1,12 +1,16 @@
 #include "Incidence.h"
 
-Incidence::Incidence(const complex &ri)
-	: m_ri(ri)
+Incidence::Incidence()
 {
 }
 
+void Incidence::SetSplitting(Splitting *splitting)
+{
+	m_splitting = splitting;
+}
+
 void Incidence::ComputeOpticalPaths(const PathedBeam &beam,
-									SplittedBeams<PathedBeam> &beams) const
+									BeamPair<PathedBeam> &beams) const
 {
 	if (beam.opticalPath < FLT_EPSILON)
 	{
@@ -17,7 +21,7 @@ void Incidence::ComputeOpticalPaths(const PathedBeam &beam,
 	}
 	else
 	{
-		double path = beam.ComputeSegmentOpticalPath(reRiEff,
+		double path = beam.ComputeSegmentOpticalPath(m_splitting->reRiEff,
 													 beams.internal.Center());
 #ifdef _DEBUG // DEB
 		beams.internal.ops = beam.ops;

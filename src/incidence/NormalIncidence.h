@@ -5,10 +5,11 @@
 class NormalIncidence : public Incidence
 {
 public:
-	NormalIncidence(const complex &ri);
+	NormalIncidence();
+	void SetSplitting(Splitting *splitting);
 
-	void ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams);
-	void ComputeJonesMatrices(Beam &beam, SplittedBeams<Beam> &beams);
+	void ComputeDirections(Beam &beam, BeamPair<Beam> &beams);
+	void ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams);
 private:
 	complex fresnels[4];
 };

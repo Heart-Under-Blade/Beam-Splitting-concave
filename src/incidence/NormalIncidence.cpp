@@ -3,17 +3,21 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-NormalIncidence::NormalIncidence(const complex &ri)
-	: Incidence(ri)
+NormalIncidence::NormalIncidence()
 {
-	complex tmp = (m_ri + 1.0);
-	fresnels[0] = (2.0 * m_ri)/tmp;
-	fresnels[1] = (1.0 - m_ri)/tmp;
-	fresnels[2] = 2.0/tmp;
-	fresnels[3] = (m_ri - 1.0)/tmp;
 }
 
-void NormalIncidence::ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams)
+void NormalIncidence::SetSplitting(Splitting *splitting)
+{
+	Incidence::SetSplitting(splitting);
+	complex tmp = (m_splitting->m_ri + 1.0);
+	fresnels[0] = (2.0 * m_splitting->m_ri)/tmp;
+	fresnels[1] = (1.0 - m_splitting->m_ri)/tmp;
+	fresnels[2] = 2.0/tmp;
+	fresnels[3] = (m_splitting->m_ri - 1.0)/tmp;
+}
+
+void NormalIncidence::ComputeDirections(Beam &beam, BeamPair<Beam> &beams)
 {
 	beams.internal.direction = (beam.isInside) ? -beam.direction
 												: beam.direction;
@@ -30,7 +34,7 @@ void NormalIncidence::ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams)
 #endif
 }
 
-void NormalIncidence::ComputeJonesMatrices(Beam &beam, SplittedBeams<Beam> &beams)
+void NormalIncidence::ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams)
 {
 	beams.internal.Jones = beam.Jones;
 	beams.external.Jones = beam.Jones;

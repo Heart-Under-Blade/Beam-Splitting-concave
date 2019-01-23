@@ -3,15 +3,14 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-CompleteReflectionIncidence::CompleteReflectionIncidence(const complex &ri)
-	: Incidence(ri)
+CompleteReflectionIncidence::CompleteReflectionIncidence()
 {
 }
 
 void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
-													SplittedBeams<Beam> &beams) const
+													BeamPair<Beam> &beams) const
 {
-	ComputeReflectedDirection(beams.internal.direction);
+	m_splitting->ComputeReflectedDirection(beams.internal.direction);
 	beams.internal.polarizationBasis = beam.polarizationBasis;
 #ifdef _DEBUG // DEB
 	beams.internal.dirs.push_back(beams.internal.direction);
@@ -19,16 +18,16 @@ void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
 }
 
 void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
-													   SplittedBeams<Beam> &beams) const
+													   BeamPair<Beam> &beams) const
 {
-	const double bf = reRiEff*(1.0 - cosA2) - 1.0;
+	const double bf = m_splitting->reRiEff*(1.0 - m_splitting->cosA2) - 1.0;
     double im = (bf > 0) ? sqrt(bf) : 0;
 
     const complex sq(0, im);
-	complex tmp0 = m_ri * cosA;
-	complex tmp1 = m_ri * sq;
+	complex tmp0 = m_splitting->m_ri * m_splitting->cosA;
+	complex tmp1 = m_splitting->m_ri * sq;
 
-	complex cv = (cosA - tmp1)/(tmp1 + cosA);
+	complex cv = (m_splitting->cosA - tmp1)/(tmp1 + m_splitting->cosA);
     complex ch = (tmp0 - sq)/(tmp0 + sq);
 
 	beams.internal.Jones = parentBeam.Jones;
@@ -36,7 +35,7 @@ void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
 }
 
 void CompleteReflectionIncidence::ComputeOpticalPaths(const PathedBeam &incidentBeam,
-													  SplittedBeams<PathedBeam> &beams) const
+													  BeamPair<PathedBeam> &beams) const
 {
 	if (incidentBeam.opticalPath < FLT_EPSILON)
 	{
@@ -47,7 +46,7 @@ void CompleteReflectionIncidence::ComputeOpticalPaths(const PathedBeam &incident
 	}
 	else
 	{
-		double path = incidentBeam.ComputeSegmentOpticalPath(reRiEff,
+		double path = incidentBeam.ComputeSegmentOpticalPath(m_splitting->reRiEff,
 															 beams.internal.Center());
 		path += incidentBeam.opticalPath;
 #ifdef _DEBUG // DEB

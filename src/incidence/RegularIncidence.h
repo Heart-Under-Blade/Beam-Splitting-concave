@@ -5,9 +5,7 @@
 class RegularIncidence : public Incidence
 {
 public:
-	RegularIncidence(const complex &m_ri);
-	void ComputeDirections(Beam &beam, SplittedBeams<Beam> &beams) const;
-	void ComputeJonesMatrices(Beam &beam, SplittedBeams<Beam> &beams) const;
-
-	Point3f normal;
+	RegularIncidence();
+	void ComputeDirections(Beam &beam, BeamPair<Beam> &beams) const;
+	void ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams) const;
 };
