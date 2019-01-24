@@ -136,13 +136,13 @@ public:
 		forward.Fill(0);
 	}
 
-	void AddMueller(int angle, const matrix &m)
+	void AddMueller(float fAngle, int angle, const matrix &m)
 	{
-		if (angle >= 180)
+		if (fAngle >= 180-FLT_EPSILON)
 		{
 			forward += m;
 		}
-		else if (angle <= 0)
+		else if (fAngle <= FLT_EPSILON)
 		{
 			back += m;
 		}
@@ -256,7 +256,7 @@ protected:
 
 protected:
 	double BeamCrossSection(const Beam &beam) const;
-	matrix ComputeMueller(int zenAng, Beam &beam);
+	matrix ComputeMueller(float zenAng, Beam &beam);
 	void RotateMuller(const Point3f &dir, matrix &bf);
 	void AverageOverAlpha(int EDF, double norm, ContributionGO &contrib,
 						  const std::string &destDir);
