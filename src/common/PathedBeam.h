@@ -9,6 +9,7 @@ class PathedBeam : public Beam
 {
 public:
 	PathedBeam();
+	PathedBeam(const Beam &beam);
 
 	void Clear();
 	void AddOpticalPath(double path);
@@ -19,6 +20,7 @@ public:
 	double ComputeSegmentOpticalPath(const double &reRiEff,
 									 const Point3f &facetPoint) const;
 
+	PathedBeam & operator = (const Beam &other);
 	PathedBeam & operator = (const PathedBeam &other);
 	PathedBeam & operator = (PathedBeam &&other);
 

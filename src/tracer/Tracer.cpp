@@ -9,55 +9,56 @@
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 //#endif
 
-#include "ScatteringConvex.h"
-#include "ScatteringNonConvex.h"
-
 using namespace std;
 
-Tracer::Tracer(Particle *particle, int maxActNo, const string &resultFileName)
+LightTracer::LightTracer(Particle *particle, Scattering *scattering,
+						 const string &resultFileName)
 	: m_particle(particle),
-	  m_resultDirName(resultFileName)
-{
-	SetIncidentLight(particle);
-
-	if (particle->IsNonConvex())
-	{
-		m_scattering = new ScatteringNonConvex(particle, m_incidentLight, maxActNo);
-	}
-	else
-	{
-		m_scattering = new ScatteringConvex(particle, m_incidentLight, maxActNo);
-	}
-}
-
-Tracer::~Tracer()
+	  m_resultDirName(resultFileName),
+	  m_scattering(scattering)
 {
 }
 
-void Tracer::SetIncidentLight(Particle *particle)
+LightTracer::~LightTracer()
 {
-	m_incidentLight.direction = Point3f(0, 0, -1);
-	m_incidentLight.polarizationBasis = Point3f(0, 1, 0);
-
-	Point3f point = m_incidentLight.direction * particle->GetRotationRadius();
-	m_incidentLight.direction.d_param = Point3f::DotProduct(point, m_incidentLight.direction);
 }
 
-void Tracer::OutputOrientationToLog(int i, int j, ostream &logfile)
+void LightTracer::TraceFixed(const Angle3d &orientation)
+{
+	Angle3d orient = orientation.ToRadian();
+
+	vector<Beam> outBeams;
+	m_particle->Rotate(orient);
+	m_scattering->ScatterLight(outBeams);
+//	m_particle->Output();
+	m_handler->HandleBeams(outBeams);
+	outBeams.clear();
+
+//	double D_tot = CalcTotalScatteringEnergy();
+
+	m_handler->WriteMatricesToFile(m_resultDirName);
+//	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
+}
+
+void LightTracer::TraceRandom(const AngleRange &/*betaRange*/,
+							  const AngleRange &/*gammaRange*/)
+{
+}
+
+void LightTracer::OutputOrientationToLog(int i, int j, ostream &logfile)
 {
 	logfile << "i: " << i << ", j: " << j << endl;
 	logfile.flush();
 }
 
-void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
+void LightTracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
 {
 	EraseConsoleLine(50);
 	cout << (count*100)/(betaNumber+1) << '%'
 		 << '\t' << timer.Elapsed();
 }
 
-
-void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
+void LightTracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -82,18 +83,18 @@ void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const stri
 	cout << m_summary;
 }
 
-void Tracer::SetIsOutputGroups(bool value)
+void LightTracer::SetIsOutputGroups(bool value)
 {
 	isOutputGroups = value;
 }
 
-void Tracer::OutputStartTime(CalcTimer &timer)
+void LightTracer::OutputStartTime(CalcTimer &timer)
 {
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 }
 
-void Tracer::SetHandler(Handler *handler)
+void LightTracer::SetHandler(Handler *handler)
 {
 	m_handler = handler;
 	m_handler->SetScattering(m_scattering);

@@ -5,6 +5,11 @@ PathedBeam::PathedBeam()
 	opticalPath = 0;
 }
 
+PathedBeam::PathedBeam(const Beam &beam)
+	: Beam(beam)
+{
+}
+
 void PathedBeam::Clear()
 {
 	Beam::Clear();
@@ -63,6 +68,11 @@ double PathedBeam::ComputeSegmentOpticalPath(const double &reRiEff,
 	}
 
 	return path;
+}
+
+PathedBeam &PathedBeam::operator =(const Beam &other)
+{
+	Beam::operator=(other);
 }
 
 PathedBeam &PathedBeam::operator =(const PathedBeam &other)

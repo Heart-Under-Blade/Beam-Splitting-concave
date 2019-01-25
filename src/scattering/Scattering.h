@@ -41,7 +41,7 @@ struct OpticalPath
 };
 
 /**
- * @brief Transform light that incidents on a Particle to set of beams.
+ * @brief Transform a light that incidents on a Particle to a set of beams.
  */
 class Scattering
 {
@@ -53,7 +53,7 @@ public:
 	 * @brief Tranform incident light into beams after throwing the Particle
 	 * @param scaterredBeams result beams
 	 */
-	void ScatterLight(std::vector<Beam> &scaterredBeams);
+	void ScatterLight(std::vector<Beam> &scatteredBeams);
 
 	double GetIncidentEnergy() const;
 
@@ -66,6 +66,9 @@ public:
 	 */
 	OpticalPath ComputeOpticalPath(const Beam &beam, const Point3f &startPoint,
 								   std::vector<int> track);
+
+	virtual void SelectOriginVisibleFacets(Array<Facet*> &facets);
+
 protected:
 	Particle *m_particle;	///< The crystal for a light scattering
 	int m_maxActNo;			///< Maximal number of reflection/refraction acts

@@ -32,7 +32,7 @@ Facet *Particle::GetActualFacet(int i)
 	return &elems[i].actual;
 }
 
-void Particle::SetFromFile(const std::string &filename)
+void Particle::SetFromFile(const std::string &filename, double sizeIndex)
 {
 	std::ifstream pfile(filename, std::ios::in);
 
@@ -71,6 +71,10 @@ void Particle::SetFromFile(const std::string &filename)
 
 	while (!pfile.eof()) // read vertices of facets
 	{
+#ifdef _DEBUG // DEB
+		if (nElems == 35)
+			int ff = 0;
+#endif
 		pfile.getline(buff, bufSize);
 		ptr = strtok(buff, " ");
 
@@ -84,7 +88,8 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
-			facet->arr[facet->nVertices].point[c_i++] = strtod(ptr, &trash);
+			double value = strtod(ptr, &trash);
+			facet->arr[facet->nVertices].coordinates[c_i++] = value * sizeIndex;
 			ptr = strtok(NULL, " ");
 		}
 
@@ -115,10 +120,10 @@ void Particle::SetFromFile(const std::string &filename)
 	}
 }
 
-void Particle::Rotate(const Orientation &angle)
+void Particle::Rotate(const Angle3d &orientation)
 {
-	rotAngle = angle;
-	SetRotateMatrix();
+	rotAngle = orientation;
+	m_rotator.SetRotationAngle(rotAngle);
 
 	// REF: слить всё в один цикл
 	for (int i = 0; i < nElems; ++i)
@@ -127,11 +132,11 @@ void Particle::Rotate(const Orientation &angle)
 
 		for (int j = 0; j < facet.origin.nVertices; ++j)
 		{
-			RotatePoint(facet.origin.arr[j], facet.actual.arr[j]);
+			m_rotator.RotatePoint(facet.origin.arr[j], facet.actual.arr[j]);
 		}
 
 		// centers
-		RotatePoint(facet.origin.center, facet.actual.center);
+		m_rotator.RotatePoint(facet.origin.center, facet.actual.center);
 	}
 
 	RotateNormals();
@@ -166,7 +171,7 @@ void Particle::Concate(const std::vector<Particle> &parts)
 	isAggregated = true;
 }
 
-double Particle::GetRotationRadius() const
+double Particle::ComputeRotationRadius() const
 {
 	Point3f p0(0, 0, 0);
 
@@ -228,9 +233,9 @@ void Particle::Output()
 		for (int j = 0; j < facet.nVertices; ++j)
 		{
 			Point3f p = facet.arr[j];
-			M << p.point[0] << ' '
-							<< p.point[1] << ' '
-							<< p.point[2] << ' '
+			M << p.coordinates[0] << ' '
+							<< p.coordinates[1] << ' '
+							<< p.coordinates[2] << ' '
 							<< i ;
 			M << std::endl;
 		}
@@ -270,38 +275,12 @@ void Particle::SetDefaultCenters()
 	}
 }
 
-void Particle::SetRotateMatrix()
-{
-	double cosA, cosB, cosG,
-			sinA, sinB, sinG;
-
-	sincos(rotAngle.alpha, &sinA, &cosA);
-	sincos(rotAngle.beta,  &sinB, &cosB);
-	sincos(rotAngle.gamma, &sinG, &cosG);
-
-	double cosAcosB = cosA*cosB;
-	double sinAcosG = sinA*cosG;
-	double sinAsinG = sinA*sinG;
-
-	m_rotMatrix[0][0] = cosAcosB*cosG - sinAsinG;
-	m_rotMatrix[1][0] = sinAcosG*cosB + cosA*sinG;
-	m_rotMatrix[2][0] = -sinB*cosG;
-
-	m_rotMatrix[0][1] = -(cosAcosB*sinG + sinAcosG);
-	m_rotMatrix[1][1] = cosA*cosG - sinAsinG*cosB;
-	m_rotMatrix[2][1] = sinB*sinG;
-
-	m_rotMatrix[0][2] = cosA*sinB;
-	m_rotMatrix[1][2] = sinA*sinB;
-	m_rotMatrix[2][2] = cosB;
-}
-
 void Particle::RotateNormals()
 {
 	for (int i = 0; i < nElems; ++i)
 	{
 		auto &facet = elems[i];
-		RotatePoint(facet.origin.in_normal, facet.actual.in_normal);
+		m_rotator.RotatePoint(facet.origin.in_normal, facet.actual.in_normal);
 	}
 
 	SetDParams();
@@ -322,13 +301,6 @@ void Particle::SetDParams()
 		double d = Point3f::DotProduct(facet.arr[0], facet.in_normal);
 		facet.in_normal.d_param = -d;
 	}
-}
-
-void Particle::RotatePoint(const Point3f &point, Point3f &result)
-{
-	result.cx = point.cx*m_rotMatrix[0][0] + point.cy*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];
-	result.cy = point.cx*m_rotMatrix[1][0] + point.cy*m_rotMatrix[1][1] + point.cz*m_rotMatrix[1][2];
-	result.cz = point.cx*m_rotMatrix[2][0] + point.cy*m_rotMatrix[2][1] + point.cz*m_rotMatrix[2][2];
 }
 
 void Particle::SetSymmetry(double beta, double gamma, double alpha)

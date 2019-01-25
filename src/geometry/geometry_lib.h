@@ -7,6 +7,7 @@
 #define CLIP_RESULT_SINGLE 1
 
 #define MAX_FACET_NUM 256
+#define ROT_MTR_RANK 3
 
 class Facet;
 
@@ -62,6 +63,13 @@ public:
 		gamma = DegToRad(gamma);
 	}
 
+	Angle3d ToRadian() const
+	{
+		Angle3d angle = *this;
+		angle.ToRadian();
+		return angle;
+	}
+
 	/**
 	 * @brief Convert angles to degrees
 	 */
@@ -82,8 +90,6 @@ public:
 		return (rad*180)/M_PI;
 	}
 };
-
-typedef Angle3d Orientation;
 
 typedef Point3f Vector3f;
 typedef Point3d Vector3d;

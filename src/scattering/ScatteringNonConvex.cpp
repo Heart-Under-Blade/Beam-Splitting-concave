@@ -24,6 +24,10 @@ ScatteringNonConvex::ScatteringNonConvex(Particle *particle,
 {
 }
 
+ScatteringNonConvex::~ScatteringNonConvex()
+{
+}
+
 void ScatteringNonConvex::SplitOriginalBeam(std::vector<Beam> &externalBeams)
 {
 	m_visibleFacets.nElems = 0;
@@ -48,9 +52,9 @@ void ScatteringNonConvex::SplitOriginalBeam(std::vector<Beam> &externalBeams)
 	}
 
 #ifdef _DEBUG // DEB
-	Beam b = m_propagatingBeams[18];
-	m_propagatingBeams[18] = m_propagatingBeams[17];
-	m_propagatingBeams[17] = b;
+//	Beam b = m_propagatingBeams[18];
+//	m_propagatingBeams[18] = m_propagatingBeams[17];
+//	m_propagatingBeams[17] = b;
 #endif
 }
 
@@ -64,7 +68,6 @@ void ScatteringNonConvex::PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,
 #ifdef _DEBUG // DEB
 	beamTrack.pols.push_back(polygons.arr[0]);
 #endif
-
 	beams.internal.CopyTrack(beamTrack);
 	beams.internal.SetLocation(true);
 	PushBeamToBuffer(beams.internal, polygons, scatteredBeams);
@@ -213,6 +216,9 @@ void ScatteringNonConvex::ReleaseBeam(Beam &beam)
 #endif
 		for (int i = 0; i < m_intersectionBuffer.size; ++i)
 		{
+#ifdef MODE_FIXED_OR
+			tmp.pols.push_back(tmp);
+#endif
 			tmp.SetPolygon(m_intersectionBuffer.arr[i]);
 			m_scatteredBeams->push_back(tmp);
 		}
@@ -473,6 +479,13 @@ void ScatteringNonConvex::PushBeamPartsToBuffer(const Beam &beam,
 	{
 		tmp = parts.arr[i];
 		assert(m_treeSize < MAX_BEAM_NUM);
+#ifdef MODE_FIXED_OR
+		if (!m_isDivided)
+		{
+			tmp.dirs.push_back(tmp.direction);
+			tmp.pols.push_back(tmp);
+		}
+#endif
 		m_propagatingBeams[m_treeSize++] = tmp;
 	}
 }

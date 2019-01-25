@@ -24,19 +24,34 @@ struct AngleRange
 	}
 };
 
-class Tracer
+/**
+ * @brief Scatters the light on a particle, collect result beams and handle them
+ */
+class LightTracer
 {
 public:
-	Tracer(Particle *particle, int maxActNo, const std::string &resultFileName);
-	~Tracer();
+	LightTracer(Particle *particle, Scattering *scattering,
+				const std::string &resultFileName);
+	~LightTracer();
+
+	/**
+	 * @brief Trace a light on a random oriented particle rotated by given angle ranges
+	 * @param zenithRange range for rotation of particle by zinith angle
+	 * @param azimuthRange range for rotation of particle by azimuth angle
+	 */
+	virtual void TraceRandom(const AngleRange &zenithRange,
+							 const AngleRange &azimuthRange);
+	/**
+	 * @brief Trace a light on a fixed orienteted particle with given orientation
+	 * @param orientation value of a particle orientation
+	 */
+	void TraceFixed(const Angle3d &orientation);
 
 	void SetHandler(Handler *handler);
 
 	void SetIsOutputGroups(bool value);// REF: заменить
 
 	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
-
-	Light m_incidentLight;
 
 protected:
 	Particle *m_particle;

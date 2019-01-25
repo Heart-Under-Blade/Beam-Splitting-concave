@@ -158,7 +158,7 @@ Point3f Polygon::Normal() const
 		Point3f::Normalize(normal);
 		++count;
 	}
-	while (isnan(normal.cx) && count < nVertices);
+	while (isnan(normal.coordinates[0]) && count < nVertices);
 
 	return normal;
 }

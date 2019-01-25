@@ -17,7 +17,7 @@ struct Conus
 		: radius(radius), phiCount(phiCount), thetaCount(thetaCount)
 	{
 		dPhi = M_2PI/(phiCount+1);
-		dTheta = Orientation::DegToRad(radius)/thetaCount;
+		dTheta = Angle3d::DegToRad(radius)/thetaCount;
 	}
 
 	double radius;
@@ -170,19 +170,20 @@ public:
 	void SetNormIndex(double normIndex);
 
 	Light *m_incidentLight;
+	Tracks *m_tracks;
+	float m_wavelength;
+
+	static double BeamCrossSection(const Beam &beam);
 
 protected:
 	void ApplyAbsorbtion(Beam &beam);
-	double BeamCrossSection(const Beam &beam) const;
 	void OutputPaths(const Beam &beam, const OpticalPath &path);
 	OpticalPath ComputeOpticalPath(const Beam &beam);
 
 protected:
 	Scattering *m_scattering;
-	Tracks *m_tracks;
 
 	Particle *m_particle;
-	float m_wavelength;
 	bool m_hasAbsorbtion;
 	double m_normIndex;
 	std::ofstream m_logFile;

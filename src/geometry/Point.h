@@ -4,18 +4,14 @@
 #include <iostream>
 
 // short access for Point3f
-#define cx		point[0]
-#define cy		point[1]
-#define cz		point[2]
-#define d_param point[3]
+#define d_param coordinates[3]
 
 /**
- * @brief The Point3 struct
- * 3D coordinate point
+ * @brief A 3-dimentional point
  */
 struct Point3f
 {
-    float point[4]; /// coordinates
+	float coordinates[4];
 
     Point3f() {}
     Point3f(float x, float y, float z);
@@ -37,7 +33,7 @@ struct Point3f
     static float DotProduct(const Point3f &v1, const Point3f &v2);
     static void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
     static Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
-    static double Norm(const Point3f &point);
+	static double Norm(const Point3f &coordinates);
     static void Normalize(Point3f &v);
 	static double Length(const Point3f &v);
 
@@ -55,9 +51,9 @@ struct Point3d
 
     Point3d(const Point3f &other)
     {
-        x = other.cx;
-        y = other.cy;
-        z = other.cz;
+		x = other.coordinates[0];
+		y = other.coordinates[1];
+		z = other.coordinates[2];
         d = other.d_param;
     }
 

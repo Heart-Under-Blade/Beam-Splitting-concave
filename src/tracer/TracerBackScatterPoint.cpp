@@ -5,18 +5,18 @@
 
 using namespace std;
 
-TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, int reflNum,
+TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, Scattering *scattering,
 											   const std::string &resultFileName)
-	: TracerPO(particle, reflNum, resultFileName)
+	: TracerPO(particle, scattering, resultFileName)
 {
 }
 
-void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
-								   const Tracks &tracks, double wave)
+void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
+										 const AngleRange &gammaRange)
 {
-	int nGroups = tracks.size();
+	int nGroups = m_handler->m_tracks->size();
 
-	m_wavelength = wave;
+	m_wavelength = m_handler->m_wavelength;
 	CalcTimer timer;
 	long long count = 0;
 
@@ -28,14 +28,14 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	ScatteringFiles resFiles(dir, m_resultDirName, tableHead);
 	CreateDir(fulldir + "res");
-	CreateResultFiles(resFiles, tracks, "res");
+	CreateResultFiles(resFiles, m_handler->m_tracks, "res");
 
 	vector<Arr2D> groupResultM;
 	AllocGroupMatrices(groupResultM, nGroups);
 
 	ScatteringFiles corFiles(dir, m_resultDirName, tableHead);
 	CreateDir(fulldir + "cor");
-	CreateResultFiles(corFiles, tracks, "cor", "cor_");
+	CreateResultFiles(corFiles, m_handler->m_tracks, "cor", "cor_");
 
 	vector<Arr2D> groupResultM_cor;
 	AllocGroupMatrices(groupResultM_cor, nGroups);
@@ -44,7 +44,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	OutputStartTime(timer);
 
-	Orientation angle;
+	Angle3d angle;
 
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
@@ -79,7 +79,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 			}
 		}
 
-		double degBeta = Orientation::RadToDeg(angle.beta);
+		double degBeta = Angle3d::RadToDeg(angle.beta);
 
 		// REF: remove static casts
 		static_cast<HandlerBackScatterPoint*>
@@ -113,13 +113,14 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 string TracerBackScatterPoint::GetTableHead(const AngleRange &range)
 {
 	return to_string(range.number) + ' '
-			+ to_string(Orientation::RadToDeg(range.max)) + ' '
-			+ to_string(Orientation::RadToDeg(range.step)) + '\n'
+			+ to_string(Angle3d::RadToDeg(range.max)) + ' '
+			+ to_string(Angle3d::RadToDeg(range.step)) + '\n'
 			+ "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44"
 			+ '\n';
 }
 
-void TracerBackScatterPoint::CreateResultFiles(ScatteringFiles &files, const Tracks &tracks,
+void TracerBackScatterPoint::CreateResultFiles(ScatteringFiles &files,
+											   Tracks *tracks,
 											   const string &subdir,
 											   const string &prefix)
 {
@@ -129,18 +130,18 @@ void TracerBackScatterPoint::CreateResultFiles(ScatteringFiles &files, const Tra
 
 	if (isOutputGroups)
 	{
-		CreateGroupResultFiles(tracks, files, subdir, prefix);
+		CreateGroupResultFiles(files, tracks, subdir, prefix);
 	}
 }
 
-void TracerBackScatterPoint::CreateGroupResultFiles(const Tracks &tracks,
-													ScatteringFiles &files,
+void TracerBackScatterPoint::CreateGroupResultFiles(ScatteringFiles &files,
+													Tracks *tracks,
 													const string &subdir,
 													const string &prefix)
 {
-	for (int i = 0; i < tracks.size(); ++i)
+	for (int i = 0; i < tracks->size(); ++i)
 	{
-		string groupName = tracks[i].CreateGroupName();
+		string groupName = (*tracks)[i].CreateGroupName();
 		string filename = prefix + groupName;
 		files.CreateGroupFile(subdir, filename);
 	}

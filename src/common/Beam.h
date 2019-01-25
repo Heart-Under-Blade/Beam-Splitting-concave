@@ -9,6 +9,28 @@
 #include "Facet.h"
 #include "Tracks.h"
 
+template <class T>
+class SplittedBeams
+{
+public:
+	T internal;
+	T external;
+
+	void SetBeams(const Polygon &beamShape)
+	{
+		internal.Clear();
+		internal.SetPolygon(beamShape);
+
+		external.Clear();
+		external.SetPolygon(beamShape);
+
+#ifdef MODE_FIXED_OR
+		internal.pols.push_back(beamShape);
+		external.pols.push_back(beamShape);
+#endif
+	}
+};
+
 class Light
 {
 public:
@@ -57,7 +79,7 @@ public:
 			locations = other.locations;
 			actNo = other.actNo;
 			facet = other.facet;
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 			pols = other.pols;
 			dirs = other.dirs;
 #endif
@@ -75,7 +97,7 @@ public:
 	int actNo; ///< Current r/r act number
 	Facet *facet; ///< Last incident facet of the Particle
 
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 	std::vector<Point3f> dirs;
 	std::vector<Polygon> pols;
 #endif
@@ -113,6 +135,8 @@ public:
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
 
+	void GetSpherical(double &fi, double &teta) const;
+
 	/**
 	 * @brief Outputs beam params. Use it with std::cout or std::ofstream
 	 * @param os
@@ -126,7 +150,6 @@ public:
 	bool isInside; 		///< Beam state towards the particle (inside or outside)
 
 private:
-	void GetSpherical(double &fi, double &teta) const;
 	void SetDefault(Beam &other);
 	void Copy(const Beam &other);
 };

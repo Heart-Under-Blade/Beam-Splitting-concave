@@ -1,13 +1,12 @@
 #pragma once
 
 #include <math.h>
+#include <vector>
 
 #include "compl.hpp"
 #include "geometry_lib.h"
 #include "Facet.h"
-#include <vector>
-
-#define ROT_MTR_RANK 3
+#include "Rotator.h"
 
 struct ParticleFacet
 {
@@ -26,9 +25,9 @@ public:
 	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
 	Facet *GetActualFacet(int i);
-	void SetFromFile(const std::string &filename);
+	void SetFromFile(const std::string &filename, double sizeIndex = 1);
 
-	void Rotate(const Orientation &angle);
+	void Rotate(const Angle3d &orientation);
 	void Move(float dx, float dy, float dz);
 	void Fix();
 
@@ -39,7 +38,7 @@ public:
 	 * @return The distance from beginning of the center of coordinate system
 	 * to the farthest point of particle.
 	 */
-	double GetRotationRadius() const;
+	double ComputeRotationRadius() const;
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
@@ -52,7 +51,7 @@ public:
 
 public:
 	bool isAggregated = false;
-	Orientation rotAngle;
+	Angle3d rotAngle;
 
 protected:
 	Angle3d m_symmetry;		///< angle of particle symmetry
@@ -70,13 +69,9 @@ protected:
 private:
 	void SetDParams();
 	void RotateNormals();
-	void RotatePoint(const Point3f &point, Point3f &result);
-	void SetRotateMatrix();
-	void ReadSymmetry(const int bufSize, char *trash, char *buff,
-					  std::ifstream pfile, char *ptr);
 	void SetFacetIndices();
 
 private:
-	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
+	LocalRotator m_rotator;
 };
 

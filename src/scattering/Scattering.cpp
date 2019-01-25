@@ -55,18 +55,10 @@ void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
 
 void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 {
-#ifdef _DEBUG // DEB
-	int count = 0;
-#endif
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_propagatingBeams[--m_treeSize];
-#ifdef _DEBUG // DEB
-		++count;
-		if (beam.id == 1142698)
-			int ffgf = 0;
-//		cout << count << endl;
-#endif
+
 		SplitBeamByVisibleFacets(beam);
 
 		if (IsTerminalAct(beam))
@@ -145,8 +137,9 @@ void Scattering::PushBeamToTree(Beam &beam)
 	}
 	else
 	{
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 		beam.dirs.push_back(beam.direction);
+		beam.pols.push_back(beam);
 #endif
 		m_propagatingBeams[m_treeSize++] = beam;
 	}
@@ -260,6 +253,11 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 	return path;
 }
 
+void Scattering::SelectOriginVisibleFacets(Array<Facet*> &facets)
+{
+	FindVisibleFacets(m_originalBeam, m_lightChecker, 0, m_particle->nElems, facets);
+}
+
 void Scattering::ReleaseBeam(Beam &beam)
 {
 //	beam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
@@ -274,10 +272,7 @@ void Scattering::SplitBeamByVisibleFacets(Beam &beam)
 	for (int i = 0; !isTerminalFacet(i, visibleFacets); ++i)
 	{
 		Facet *facet = visibleFacets.elems[i];
-#ifdef _DEBUG // DEB
-		if (i == 9)
-			int fff = 0;
-#endif
+
 		Polygon beamShape;
 		bool isIntersected = Geometry::IncidentBeamToFacet(facet, beam, beam.isInside,
 														   beam.direction, beamShape);

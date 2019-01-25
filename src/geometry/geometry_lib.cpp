@@ -25,7 +25,7 @@ void Geometry::DifferPolygons(const Polygon &subject, const Vector3f &subjNormal
 		return;
 	}
 
-	__m128 _clip_normal = _mm_setr_ps(clipNormal.cx, clipNormal.cy, clipNormal.cz, 0.0);
+	__m128 _clip_normal = _mm_setr_ps(clipNormal.coordinates[0], clipNormal.coordinates[1], clipNormal.coordinates[2], 0.0);
 
 	int clipSize = clip.nVertices;
 	__m128 _diff_pol[MAX_VERTEX_NUM];
@@ -35,7 +35,7 @@ void Geometry::DifferPolygons(const Polygon &subject, const Vector3f &subjNormal
 
 	for (int i = 0; i < subject.nVertices; ++i)
 	{
-		_subject[i] = _mm_load_ps(subject.arr[i].point);
+		_subject[i] = _mm_load_ps(subject.arr[i].coordinates);
 	}
 
 	__m128 *_subj = _buffer;
@@ -140,7 +140,7 @@ bool Geometry::IncidentBeamToFacet(Facet *facet, const Polygon &beamPol,
 		return false;
 	}
 
-	__m128 _normal_to_facet = _mm_setr_ps(-normal.cx, -normal.cy, -normal.cz, 0.0);
+	__m128 _normal_to_facet = _mm_setr_ps(-normal.coordinates[0], -normal.coordinates[1], -normal.coordinates[2], 0.0);
 	__m128 *_output_ptr = _output_points;
 	int outputSize = beamPol.nVertices;
 
@@ -153,13 +153,13 @@ bool Geometry::IncidentBeamToFacet(Facet *facet, const Polygon &beamPol,
 	bool isInsideE, isInsideS;
 
 	Point3f p2 = facet->arr[facet->nVertices-1];
-	_p2 = _mm_load_ps(p2.point);
+	_p2 = _mm_load_ps(p2.coordinates);
 
 	for (int i = 0; i < facet->nVertices; ++i)
 	{
 		_p1 = _p2;
 		p2 = facet->arr[i];
-		_p2 = _mm_load_ps(p2.point);
+		_p2 = _mm_load_ps(p2.coordinates);
 
 		bufferSize = outputSize;
 		outputSize = 0;
@@ -214,8 +214,8 @@ bool Geometry::IncidentBeamToFacet(Facet *facet, const Polygon &beamPol,
 bool Geometry::ProjectPolygonToPlane(const Polygon &polygon, const Vector3f &dir,
 									 const Point3f &normal, __m128 *_projection)
 {
-	__m128 _normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
-	__m128 _direction = _mm_setr_ps(dir.cx, dir.cy, dir.cz, 0.0);
+	__m128 _normal = _mm_setr_ps(normal.coordinates[0], normal.coordinates[1], normal.coordinates[2], 0.0);
+	__m128 _direction = _mm_setr_ps(dir.coordinates[0], dir.coordinates[1], dir.coordinates[2], 0.0);
 
 	__m128 _d_param = _mm_set_ps1(normal.d_param);
 	__m128 _dp0 = _mm_dp_ps(_direction, _normal, MASK_FULL);
@@ -231,7 +231,7 @@ bool Geometry::ProjectPolygonToPlane(const Polygon &polygon, const Vector3f &dir
 	for (int i = 0; i < polygon.nVertices; ++i)
 	{
 		const Point3f &p = polygon.arr[i];
-		__m128 _point = _mm_setr_ps(p.cx, p.cy, p.cz, 0.0);
+		__m128 _point = _mm_setr_ps(p.coordinates[0], p.coordinates[1], p.coordinates[2], 0.0);
 		__m128 _dp1 = _mm_dp_ps(_point, _normal, MASK_FULL);
 		__m128 _add = _mm_add_ps(_dp1, _d_param);
 		__m128 _t = _mm_div_ps(_add, _dp0);
@@ -263,9 +263,9 @@ void Geometry::RefineOutputPolygon(__m128 *_output_points, int outputSize,
 
 		if (res != 0)
 		{
-			p.cx = _output_points[i][0];
-			p.cy = _output_points[i][1];
-			p.cz = _output_points[i][2];
+			p.coordinates[0] = _output_points[i][0];
+			p.coordinates[1] = _output_points[i][1];
+			p.coordinates[2] = _output_points[i][2];
 			polygon.arr[polygon.nVertices++] = p;
 		}
 

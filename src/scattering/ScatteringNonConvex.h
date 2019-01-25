@@ -11,6 +11,7 @@ class ScatteringNonConvex : public Scattering
 {
 public:
 	ScatteringNonConvex(Particle *particle, const Light &incidentLight, int maxActNo);
+	~ScatteringNonConvex();
 
 protected:
 	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;

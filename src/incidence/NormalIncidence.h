@@ -10,6 +10,7 @@ public:
 
 	void ComputeDirections(Beam &beam, BeamPair<Beam> &beams);
 	void ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams);
+
 private:
 	complex fresnels[4];
 };

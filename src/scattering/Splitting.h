@@ -24,7 +24,7 @@ public:
 
 
 /**
- * @brief Defines type of incidence and sets splitting params
+ * @brief Defines a type of incidence and beam directions
  */
 class Splitting
 {

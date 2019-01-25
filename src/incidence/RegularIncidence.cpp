@@ -22,10 +22,7 @@ void RegularIncidence::ComputeDirections(Beam &beam,
 		m_splitting->ComputeReflectedDirection(beams.external.direction);
 		m_splitting->ComputeRefractedDirection(beams.internal.direction);
 	}
-#ifdef _DEBUG // DEB
-	beams.internal.dirs.push_back(beams.internal.direction);
-	beams.external.dirs.push_back(beams.external.direction);
-#endif
+
 	beams.internal.polarizationBasis = beam.polarizationBasis;
 	beams.external.polarizationBasis = beam.polarizationBasis;
 }
