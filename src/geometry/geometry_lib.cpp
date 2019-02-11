@@ -1,5 +1,6 @@
 #include <math.h>
 #include "Particle.h"
+#include "Intersection.h"
 #include "intrinsic/intrinsics.h"
 
 float DotProduct(const Vector3f &v1, const Vector3f &v2)
@@ -45,6 +46,22 @@ void CrossProduct(const Vector3f &v1, const Vector3f &v2, Vector3f &res)
 	res.cx = _cp[0];
 	res.cy = _cp[1];
 	res.cz = _cp[2];
+}
+
+Point3f IntersectVectors(const Point3f &c1, const Point3f &c2,
+						 const Point3f &v1, const Point3f &v2,
+						 const Point3f &normalToFacet, bool isOk)
+{
+	__m128 _c1 = _mm_setr_ps(c1.cx, c1.cy, c1.cz, 0.0);
+	__m128 _c2 = _mm_setr_ps(c2.cx, c2.cy, c2.cz, 0.0);
+	__m128 _v1 = _mm_setr_ps(v1.cx, v1.cy, v1.cz, 0.0);
+	__m128 _v2 = _mm_setr_ps(v2.cx, v2.cy, v2.cz, 0.0);
+	__m128 _en = _mm_setr_ps(normalToFacet.cx,
+							 normalToFacet.cy,
+							 normalToFacet.cz, 0.0);
+
+	__m128 _x = intersect_iv(_c1, _c2, _v1, _v2, _en, isOk);
+	return Point3f(_x[0], _x[1], _x[2]);
 }
 
 // REF: try to move to Point3f

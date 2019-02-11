@@ -1,0 +1,75 @@
+#pragma once
+
+#include "geometry_lib.h"
+#include <vector>
+#include <list>
+
+/**
+ * @brief One of the base points for creating Voronoi lattice
+ */
+struct Site
+{
+	Point3f point;
+	std::vector<Vector3f> planeNormals;
+	std::vector<Point3f> centers; ///< Centers of planes
+};
+
+struct PointPair
+{
+	Point3f first;
+	Point3f second;
+};
+
+/**
+ * @brief A 3D geometrical cubical lattice created by using of Voronoi
+ * tesselation.
+ * Consists of arbitrary formed particles (cells) connected each other with
+ * common facets.
+ */
+class VoronoiLattice
+{
+public:
+	/**
+	 * @brief VoronoiLattice constructor. Generates a random Voronoi lattice
+	 * with the central point in (0, 0, 0). Minimum point is
+	 * (-latticeSize/2, -latticeSize/2, -latticeSize/2), maximum is
+	 * (latticeSize/2, latticeSize/2, latticeSize/2).
+	 * @param latticeSize size of the one dimention of the lattice in given
+	 * units
+	 * @param splitRatio number of divisions of the one dimention of lattice.
+	 * The number of cells is splitRatio*splitRatio*splitRatio
+	 */
+	VoronoiLattice(double latticeSize, double splitRatio);
+
+private:
+	std::vector<Site> m_sites; ///<
+	double m_size; ///< Lattice size
+
+	/**
+	 * @brief Generates sites of the lattice
+	 * @param latticeSize size of the lattice in given units
+	 * @param splitRatio
+	 */
+	void GenerateSites(double latticeSize, double splitRatio);
+	void DefineFacetPlanes(int siteIndex);
+
+	void DefineFacetEdgeVectors(const Site &site, int planeIndex,
+								std::vector<PointPair> &edgeVectors);
+	void DefineIntersectionPoints(const std::vector<PointPair> &edgeVectors,
+							 const Vector3f &planeNormal,
+							 std::list<Point3f> &intersectPoints);
+
+	/**
+	 * @brief Remove intersection points are situated in space in front of each
+	 * plane of the current site
+	 * @param siteIndex index of the current site
+	 * @param points intersection points that become vertices of the facet
+	 */
+	void RemoveOutlinePoints(int siteIndex, std::list<Point3f> &points);
+
+	void RemoveDuplicatedPoints(std::list<Point3f> &points);
+	void RemoveRedundantPoints(std::list<Point3f> &points);
+
+	void OrderPoints(std::list<Point3f> &points,
+					 const Vector3f &planeNormal) const;
+};

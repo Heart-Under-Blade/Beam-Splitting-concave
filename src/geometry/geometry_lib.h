@@ -200,6 +200,9 @@ float DotProduct(const Vector3f &v1, const Vector3f &v2);
 double DotProductD(const Vector3d &v1, const Vector3d &v2);
 void CrossProduct(const Vector3f &v1, const Vector3f &v2, Vector3f &res);
 Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
+Point3f IntersectVectors(const Point3f &c1, const Point3f &c2,
+						 const Point3f &v1, const Point3f &v2,
+						 const Point3f &normalToFacet, bool isOk);
 
 double Norm(const Vector3f &point);
 void Normalize(Vector3f &v);

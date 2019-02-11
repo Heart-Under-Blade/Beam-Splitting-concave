@@ -307,7 +307,7 @@ int main(int argc, const char* argv[])
 	}
 	else // go
 	{
-		cout << "Geometrical optics" << endl;
+		cout << "Geometrical optics";
 
 		TracerGO tracer(particle, reflNum, dirName);
 		tracer.SetIsOutputGroups(isOutputGroups);

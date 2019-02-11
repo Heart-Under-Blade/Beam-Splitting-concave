@@ -308,7 +308,6 @@ void Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection)
 
 	const Point3f &normal1 = (beam.location == Location::In) ? m_facets[facetID].in_normal
 															: m_facets[facetID].ex_normal;
-
 	bool isProjected = ProjectToFacetPlane(beam, beam.direction, normal1,
 										   _output_points);
 	if (!isProjected)

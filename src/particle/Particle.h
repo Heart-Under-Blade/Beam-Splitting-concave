@@ -49,6 +49,8 @@ public:
 	 */
 	double Area();
 
+	double ComputeMaximalDimention() const;
+
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 

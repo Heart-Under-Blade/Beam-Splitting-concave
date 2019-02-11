@@ -150,8 +150,8 @@ void Particle::Scale(double ratio)
 
 void Particle::Resize(double size)
 {
-	double radius = GetRotationRadius();
-	double ratio = size/radius*2;
+	double dMax = ComputeMaximalDimention();
+	double ratio = size/dMax;
 	Scale(ratio);
 	Reset();
 }
@@ -195,6 +195,33 @@ double Particle::GetRotationRadius() const
 	}
 
 	return radius;
+}
+
+double Particle::ComputeMaximalDimention() const
+{
+	double Dmax = 0;
+	double newDmax;
+
+	for (int i = 0; i < nFacets; ++i)
+	{
+		for (int j = 0; j < facets[i].size; ++j)
+		{
+			for (int k = 0; k < nFacets; ++k)
+			{
+				for (int m = 0; m < defaultFacets[k].size; ++m)
+				{
+					newDmax = Length(defaultFacets[i].arr[j] - defaultFacets[k].arr[m]);
+
+					if (newDmax > Dmax)
+					{
+						Dmax = newDmax;
+					}
+				}
+			}
+		}
+	}
+
+	return Dmax;
 }
 
 double Particle::Area()

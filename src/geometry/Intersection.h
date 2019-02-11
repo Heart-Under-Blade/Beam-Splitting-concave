@@ -71,6 +71,37 @@ inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
 	return _mm_sub_ps(_a1, _mul);
 }
 
+inline __m128 intersect_iv(__m128 _a1, __m128 _b1, __m128 _v_a, __m128 _v_b,
+						   __m128 _normal_to_facet, bool &ok)
+{
+	// normal of new plane
+	__m128 _normal_to_line = _cross_product(_v_b, _normal_to_facet);
+	__m128 _normal_n = _normalize(_normal_to_line);
+
+	// intersection vector and new plane
+	__m128 _dp0 = _mm_dp_ps(_v_a, _normal_n, MASK_FULL);
+
+	__m128 _sign_mask = _mm_set1_ps(-0.f);
+	__m128 _abs_dp = _mm_andnot_ps(_sign_mask, _dp0);
+
+	if (_abs_dp[0] < EPS_INTERSECT)
+	{
+		ok = false;
+		return _dp0;
+	}
+
+	__m128 _dp1 = _mm_dp_ps(_a1, _normal_n, MASK_FULL);
+	__m128 m_d_param = _mm_dp_ps(_b1, _normal_n, MASK_FULL);
+
+	__m128 _add = _mm_sub_ps(_dp1, m_d_param);
+	__m128 _t = _mm_div_ps(_add, _dp0);
+
+	__m128 _mul = _mm_mul_ps(_t, _v_a);
+
+	ok = true;
+	return _mm_sub_ps(_a1, _mul);
+}
+
 void computeIntersection(const Point3f &s, const Point3f &e,
 						 const Point3f &p1, const Point3f &p2, const Point3f &normal,
 						 Point3f &x);

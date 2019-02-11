@@ -358,8 +358,8 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 			ApplyAbsorbtion(beam);
 		}
 
-		const float &z = beam.direction.cz;
-		int zenith = round((acos(z)*SPHERE_RING_NUM)/M_PI);
+		const float &z = (acos(beam.direction.cz)*SPHERE_RING_NUM)/M_PI;
+		int zenith = round(z);
 		matrix m = ComputeMueller(zenith, beam);
 #ifdef _DEBUG // DEB
 		double ddd = m[0][0];

@@ -80,17 +80,16 @@ double TracerGO::CalcNorm(long long orNum)
 
 	double &symBeta = m_symmetry.beta;
 
-	if (symBeta < M_PI - FLT_EPSILON) //
+//	if (symBeta < M_PI - FLT_EPSILON) //
 	{
 		double tmp = symBeta;
-		double dBeta = -(cos(symBeta));
-		dBeta -= cos(0);
-		dBeta = (dBeta < 0) ? -dBeta : dBeta;
+		double dBeta = -(cos(symBeta) - 1);
+//		dBeta = (dBeta < 0) ? -dBeta : dBeta;
 		return tmp/(orNum*dBeta);
 	}
-	else // otherwise the result becomes 'inf'
+//	else // otherwise the result becomes 'inf'
 	{
-		return 1;
+//		return 1;
 	}
 }
 
@@ -110,7 +109,7 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 #ifdef _CHECK_ENERGY_BALANCE
 	const double normEnergy = m_incomingEnergy * NRM;
 	const double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
-	const double parArea = m_particle->Area()/4;
+	const double parArea = m_particle->Area()/4.0;
 
 	m_summary += "\nTotal incoming energy = " + to_string(normEnergy)
 			+ " must be equal to " + to_string(parArea) + " (S/4)"
