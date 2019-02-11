@@ -61,10 +61,10 @@ void Particle::SetFromFile(const std::string &filename, double sizeIndex)
 		pfile.getline(buff, bufSize);
 
 		ptr = strtok(buff, " ");
-		m_symmetry.beta = Angle3d::DegToRad(strtod(ptr, &trash));
+		m_symmetry.zenith = Orientation::DegToRad(strtod(ptr, &trash));
 
 		ptr = strtok(NULL, " ");
-		m_symmetry.gamma = Angle3d::DegToRad(strtod(ptr, &trash));
+		m_symmetry.azimuth = Orientation::DegToRad(strtod(ptr, &trash));
 	}
 
 	pfile.getline(buff, bufSize); // skip empty line
@@ -120,7 +120,7 @@ void Particle::SetFromFile(const std::string &filename, double sizeIndex)
 	}
 }
 
-void Particle::Rotate(const Angle3d &orientation)
+void Particle::Rotate(const Orientation &orientation)
 {
 	rotAngle = orientation;
 	m_rotator.SetRotationAngle(rotAngle);
@@ -196,12 +196,43 @@ double Particle::ComputeRotationRadius() const
 	return radius;
 }
 
+double Particle::ComputeDmax() const
+{
+	double Dmax = 0;
+	double newDmax;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		const Facet &facet = elems[i].actual;
+
+		for (int j = 0; j < facet.nVertices; ++j)
+		{
+			for (int k = 0; k < nElems; ++k)
+			{
+				const Facet &facet = elems[k].actual;
+
+				for (int m = 0; m < facet.nVertices; ++m)
+				{
+					newDmax = Point3f::Length(facet.arr[j] - facet.arr[m]);
+
+					if (newDmax > Dmax)
+					{
+						Dmax = newDmax;
+					}
+				}
+			}
+		}
+	}
+
+	return Dmax;
+}
+
 const complex &Particle::GetRefractiveIndex() const
 {
 	return m_refractiveIndex;
 }
 
-const Angle3d &Particle::GetSymmetry() const
+const Orientation &Particle::GetSymmetry() const
 {
 	return m_symmetry;
 }
@@ -303,9 +334,8 @@ void Particle::SetDParams()
 	}
 }
 
-void Particle::SetSymmetry(double beta, double gamma, double alpha)
+void Particle::SetSymmetry(double beta, double gamma)
 {
-	m_symmetry.beta = beta;
-	m_symmetry.gamma = gamma;
-	m_symmetry.alpha = alpha;
+	m_symmetry.zenith = beta;
+	m_symmetry.azimuth = gamma;
 }

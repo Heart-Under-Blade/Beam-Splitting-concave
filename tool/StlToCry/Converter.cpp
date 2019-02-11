@@ -63,11 +63,11 @@ Point3f Converter::ReadVertex(char *buff, char *ptr, char *trash)
 	ptr = strtok(buff, " "); // skip "vertex" word
 
 	ptr = strtok(NULL, " ");
-	p.cx = strtod(ptr, &trash);
+	p.coordinates[0] = strtod(ptr, &trash);
 	ptr = strtok(NULL, " ");
-	p.cy = strtod(ptr, &trash);
+	p.coordinates[1] = strtod(ptr, &trash);
 	ptr = strtok(NULL, " ");
-	p.cz = strtod(ptr, &trash);
+	p.coordinates[2] = strtod(ptr, &trash);
 
 	return p;
 }
@@ -110,11 +110,11 @@ void Converter::ReadStl(const std::string &filename, std::vector<Facet> &triangl
 		ptr = strtok(NULL, " "); // skip "normal" word
 
 		ptr = strtok(NULL, " ");
-		facet.ex_normal.cx = strtod(ptr, &trash);
+		facet.ex_normal.coordinates[0] = strtod(ptr, &trash);
 		ptr = strtok(NULL, " ");
-		facet.ex_normal.cy = strtod(ptr, &trash);
+		facet.ex_normal.coordinates[1] = strtod(ptr, &trash);
 		ptr = strtok(NULL, " ");
-		facet.ex_normal.cz = strtod(ptr, &trash);
+		facet.ex_normal.coordinates[2] = strtod(ptr, &trash);
 
 		// read vertices
 		pfile.getline(buff, bufSize); // skip "outer loop" line
@@ -398,9 +398,9 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 	{
 		const Point3f &n = facet.Normal();
 		ofile << std::string(nSpaces, ' ') << "facet normal "
-			  << n.point[0] << ' '
-			  << n.point[1] << ' '
-			  << n.point[2] << std::endl;
+			  << n.coordinates[0] << ' '
+			  << n.coordinates[1] << ' '
+			  << n.coordinates[2] << std::endl;
 
 		nSpaces += offset;
 		ofile << std::string(nSpaces, ' ') << "outer loop" << std::endl;
@@ -410,9 +410,9 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 		for (int i = 0; i < facet.nVertices; ++i)
 		{
 			ofile << std::string(nSpaces, ' ') << "vertex "
-				  << facet.arr[i].point[0] << ' '
-				  << facet.arr[i].point[1] << ' '
-				  << facet.arr[i].point[2] << std::endl;
+				  << facet.arr[i].coordinates[0] << ' '
+				  << facet.arr[i].coordinates[1] << ' '
+				  << facet.arr[i].coordinates[2] << std::endl;
 		}
 
 		nSpaces -= offset;
@@ -483,7 +483,11 @@ void __fastcall " << crystalName <<  "::SetVertices(void)\n\
 		 for (int j = 0; j < crystal[i].nVertices; ++j)
 		 {
 			 const Point3f &p = crystal[i].arr[j];
-			 ofile << "\tthis->p[" << vertexCount++ << "] = Point3d(" << p.point[0] << ", " << p.point[1] << ", " << p.point[2] << ");" << std::endl;
+			 ofile << "\tthis->p[" << vertexCount++ << "] = Point3d("
+				   << p.coordinates[0] << ", "
+				   << p.coordinates[1] << ", "
+				   << p.coordinates[2]
+				   << ");" << std::endl;
 		 }
 	 }
 

@@ -45,7 +45,7 @@ void PO::test_Absorption()
 	incidentLight.direction.d_param = Point3f::DotProduct(point, incidentLight.direction);
 
 	vector<Beam> outBeams;
-	pt->Rotate(Angle3d(0, Angle3d::DegToRad(179.34), Angle3d::DegToRad(37)));
+	pt->Rotate(Orientation(0, Orientation::DegToRad(179.34), Orientation::DegToRad(37)));
 //	sc->RotateParticle(Angle(0, 179.34, 37));
 	sc->ScatterLight(outBeams);
 

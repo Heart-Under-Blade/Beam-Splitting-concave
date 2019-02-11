@@ -27,7 +27,7 @@ public:
 	Facet *GetActualFacet(int i);
 	void SetFromFile(const std::string &filename, double sizeIndex = 1);
 
-	void Rotate(const Angle3d &orientation);
+	void Rotate(const Orientation &orientation);
 	void Move(float dx, float dy, float dz);
 	void Fix();
 
@@ -40,10 +40,12 @@ public:
 	 */
 	double ComputeRotationRadius() const;
 
+	double ComputeDmax() const;
+
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 
-	const Angle3d &GetSymmetry() const;
+	const Orientation &GetSymmetry() const;
 	virtual void GetParticalFacetIdRange(Facet */*id*/, int &/*begin*/, int &/*end*/) const {}
 
 	bool IsNonConvex() const;
@@ -51,10 +53,10 @@ public:
 
 public:
 	bool isAggregated = false;
-	Angle3d rotAngle;
+	Orientation rotAngle;
 
 protected:
-	Angle3d m_symmetry;		///< angle of particle symmetry
+	Orientation m_symmetry;		///< angle of particle symmetry
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 	bool m_isNonConvex;
@@ -63,7 +65,7 @@ protected:
 	void SetDefaultNormals();
 	void SetDefaultCenters();
 	void Reset();
-	void SetSymmetry(double beta, double gamma, double alpha = 0);
+	void SetSymmetry(double beta, double gamma);
 	virtual void SetFacetParams() {}
 
 private:

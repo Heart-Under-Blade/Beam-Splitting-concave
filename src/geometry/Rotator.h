@@ -8,7 +8,7 @@
 class Rotator
 {
 public:
-    virtual void SetRotationAngle(const Angle3d &angle) = 0;
+    virtual void SetRotationAngle(const Orientation &angle) = 0;
     void RotatePoint(const Point3f &point, Point3f &result);
 
 protected:
@@ -18,11 +18,11 @@ protected:
 class LocalRotator : public Rotator
 {
 public:
-    void SetRotationAngle(const Angle3d &angle);
+    void SetRotationAngle(const Orientation &angle);
 };
 
 class GlobalRotator : public Rotator
 {
 public:
-    void SetRotationAngle(const Angle3d &angle) override;
+    void SetRotationAngle(const Orientation &angle) override;
 };

@@ -1,6 +1,7 @@
 #include "BulletRosette.h"
 #include "Bullet.h"
 #include "common.h"
+#include "geometry_lib.h"
 
 BulletRosette::BulletRosette()
 {
@@ -27,7 +28,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(Angle3d(0, Angle3d::DegToRad(90), 0));
+		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -36,7 +37,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(Angle3d(0, Angle3d::DegToRad(180), 0));
+		b.Rotate(Orientation(0, Orientation::DegToRad(180)));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -45,7 +46,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(Angle3d(0, Angle3d::DegToRad(270), 0));
+		b.Rotate(Orientation(0, Orientation::DegToRad(270)));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -54,9 +55,9 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(Angle3d(0, Angle3d::DegToRad(90), 0));
+		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
 		b.Fix();
-		b.Rotate(Angle3d(Angle3d::DegToRad(90), 0, 0));
+		b.Rotate(Orientation(Orientation::DegToRad(90), 0));
 		b.Fix();
 		bullets.push_back(b);
 	}
@@ -65,9 +66,9 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.Fix();
-		b.Rotate(Angle3d(0, Angle3d::DegToRad(90), 0));
+		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
 		b.Fix();
-		b.Rotate(Angle3d(Angle3d::DegToRad(270), 0, 0));
+		b.Rotate(Orientation(Orientation::DegToRad(270), 0));
 		b.Fix();
 		bullets.push_back(b);
 	}

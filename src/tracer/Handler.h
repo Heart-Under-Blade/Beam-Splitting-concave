@@ -17,7 +17,7 @@ struct Conus
 		: radius(radius), phiCount(phiCount), thetaCount(thetaCount)
 	{
 		dPhi = M_2PI/(phiCount+1);
-		dTheta = Angle3d::DegToRad(radius)/thetaCount;
+		dTheta = Orientation::DegToRad(radius)/thetaCount;
 	}
 
 	double radius;

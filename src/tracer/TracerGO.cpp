@@ -17,18 +17,18 @@ void TracerGO::TraceRandom(const AngleRange &zenithRange,
 	m_outcomingEnergy = 0;
 #endif
 	vector<Beam> beams;
-	Angle3d orientation;
+	Orientation orientation;
 
 	CalcTimer timer;
 	OutputStartTime(timer);
 
 	for (int i = 0; i < zenithRange.number; ++i)
 	{
-		orientation.beta = (i + 0.5)*zenithRange.step;
+		orientation.zenith = (i + 0.5)*zenithRange.step;
 
 		for (int j = 0; j < azimuthRange.number; ++j)
 		{
-			orientation.gamma = (j + 0.5)*azimuthRange.step;
+			orientation.azimuth = (j + 0.5)*azimuthRange.step;
 #ifdef _DEBUG // DEB
 //			angle.beta = Angle::DegToRad(179.34);
 //			angle.gamma = Angle::DegToRad(37);
@@ -39,7 +39,7 @@ void TracerGO::TraceRandom(const AngleRange &zenithRange,
 			beams.clear();
 
 #ifdef _CHECK_ENERGY_BALANCE
-			m_incomingEnergy += m_scattering->GetIncidentEnergy()*sin(orientation.beta);
+			m_incomingEnergy += m_scattering->GetIncidentEnergy()*sin(orientation.zenith);
 #endif
 //			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
@@ -59,7 +59,7 @@ void TracerGO::TraceRandom(const AngleRange &zenithRange,
 
 double TracerGO::CalcNorm(long long orNum)
 {
-	const double &symZenith = m_particle->GetSymmetry().beta;
+	const double &symZenith = m_particle->GetSymmetry().zenith;
 	double tmp = (/*isRandom*/true) ? symZenith : 1.0;
 	double dBeta = -(cos(symZenith) - cos(0));
 	return tmp/(orNum*dBeta);

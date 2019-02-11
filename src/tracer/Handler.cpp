@@ -372,7 +372,7 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 
 void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 {
-	m_sinAngle = sin(m_particle->rotAngle.beta);
+	m_sinAngle = sin(m_particle->rotAngle.zenith);
 
 	for (Beam &beam : beams)
 	{
@@ -417,7 +417,7 @@ HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float
 
 void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 {
-	m_sinAngle = sin(m_particle->rotAngle.beta);
+	m_sinAngle = sin(m_particle->rotAngle.zenith);
 
 	for (Beam &beam : beams)
 	{
@@ -654,12 +654,12 @@ void HandlerPO::WriteMatricesToFile(string &destName)
 
 	for (int t = 0; t <= m_conus.thetaCount; ++t)
 	{
-		double tt = Angle3d::RadToDeg(t*m_conus.dTheta);
+		double tt = Orientation::RadToDeg(t*m_conus.dTheta);
 
 		for (int p = 0; p <= m_conus.phiCount; ++p)
 		{
 			double fi = -((double)p)*m_conus.dPhi;
-			double degPhi = Angle3d::RadToDeg(-fi);
+			double degPhi = Orientation::RadToDeg(-fi);
 			outFile << endl << tt << " " << degPhi << " ";
 
 			matrix m = M(p, t);

@@ -5,24 +5,7 @@
 #include "Mueller.hpp"
 #include "BigInteger.hh"
 #include "Handler.h"
-
-struct AngleRange
-{
-	double min;
-	double max;
-	int number;
-	double norm;
-	double step;
-
-	AngleRange(double _min, double _max, int _number)
-		: number(_number)
-	{
-		min = _min;
-		max = _max;
-		norm = max - min;
-		step = norm/number;
-	}
-};
+#include "ArgumentParser.h"
 
 /**
  * @brief Scatters the light on a particle, collect result beams and handle them
@@ -45,7 +28,7 @@ public:
 	 * @brief Trace a light on a fixed orienteted particle with given orientation
 	 * @param orientation value of a particle orientation
 	 */
-	void TraceFixed(const Angle3d &orientation);
+	void TraceFixed(const Orientation &orientation);
 
 	void SetHandler(Handler *handler);
 

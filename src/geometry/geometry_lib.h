@@ -32,25 +32,18 @@ public:
 	T last;
 };
 
-/**
- * The units (degrees or radians)
- * is defined by yours i.e. if you consider units of this object
- * as degrees from beginning then you can call ToRadian() to convert angles
- * of the object from degrees to radians.
- */
-class Angle3d
+class Orientation
 {
 public:
-	double alpha;
-	double beta;
-	double gamma;
+	double zenith;
+	double azimuth;
 
-	Angle3d() {}
-	Angle3d(double a, double b, double g)
+	Orientation() {}
+
+	Orientation(double b, double g)
 	{
-		alpha = a;
-		beta = b;
-		gamma = g;
+		zenith = b;
+		azimuth = g;
 	}
 
 	/**
@@ -58,14 +51,13 @@ public:
 	 */
 	void ToRadian()
 	{
-		alpha = DegToRad(alpha);
-		beta = DegToRad(beta);
-		gamma = DegToRad(gamma);
+		zenith = DegToRad(zenith);
+		azimuth = DegToRad(azimuth);
 	}
 
-	Angle3d ToRadian() const
+	Orientation ToRadian() const
 	{
-		Angle3d angle = *this;
+		Orientation angle = *this;
 		angle.ToRadian();
 		return angle;
 	}
@@ -75,9 +67,8 @@ public:
 	 */
 	void ToDegree()
 	{
-		alpha = RadToDeg(alpha);
-		beta = RadToDeg(beta);
-		gamma = RadToDeg(gamma);
+		zenith = RadToDeg(zenith);
+		azimuth = RadToDeg(azimuth);
 	}
 
 	static double DegToRad(double deg)
