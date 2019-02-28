@@ -300,7 +300,7 @@ int ScatteringNonConvex::FindClosestVertex(const Polygon &facet, const Point3f &
 {
 	int closest = 0;
 
-	for (unsigned i = 1; i < facet.size; ++i)
+	for (unsigned i = 1; i < facet.nVertices; ++i)
 	{
 		Point3f v = facet.arr[closest] - facet.arr[i];
 		double cosVD = DotProduct(v, beamDir);
@@ -332,14 +332,14 @@ void ScatteringNonConvex::CutBeamByFacet(const Facet &facet, Beam &beam,
 
 	if (result.size == 0) // beam is totaly swallowed by facet
 	{
-		beam.size = 0;
+		beam.nVertices = 0;
 	}
 }
 
 bool ScatteringNonConvex::IsOutgoingBeam(Beam &incidentBeam)
 {
 	return (incidentBeam.location == Location::Out
-			&& incidentBeam.size != 0); // OPT: replace each other
+			&& incidentBeam.nVertices != 0); // OPT: replace each other
 }
 
 int ScatteringNonConvex::FindFacetId(int facetId, const IntArray &arr)
@@ -390,7 +390,7 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 				Polygon intersection;
 				Intersect(facetId, beam, intersection);
 
-				if (intersection.size >= MIN_VERTEX_NUM)
+				if (intersection.nVertices >= MIN_VERTEX_NUM)
 				{
 					isDivided = SplitBeamByFacet(intersection, facetId, beam);
 				}
@@ -618,7 +618,7 @@ double ScatteringNonConvex::CalcMinDistanceToFacet(const Polygon &facet,
 	Point3f dir = -beamDir;
 	double dp = DotProduct(dir, beamDir);
 
-	for (int i = 0; i < facet.size; ++i)
+	for (int i = 0; i < facet.nVertices; ++i)
 	{
 		/// REF: заменить на сущ. фуyкцию ProjectPointToPlane
 		// measure dist
@@ -716,7 +716,7 @@ if (beam.lastFacetId==0 && facetId==6)
 	if (isDivided)
 	{	// beam had divided by facet
 		PushBeamPartsToTree(beam, m_polygonBuffer);
-		beam.size = 0;
+		beam.nVertices = 0;
 	}
 	else if (m_polygonBuffer.size == CLIP_RESULT_SINGLE)
 	{

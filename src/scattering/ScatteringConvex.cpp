@@ -100,7 +100,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	Intersect(facetID, incidentBeam, outBeam);
 
-	if (outBeam.size < MIN_VERTEX_NUM)
+	if (outBeam.nVertices < MIN_VERTEX_NUM)
 	{
 		return false;
 	}

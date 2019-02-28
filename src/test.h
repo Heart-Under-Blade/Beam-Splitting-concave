@@ -20,13 +20,13 @@ void outputParticle(const Particle &particle)
 	for (int i = 0; i < particle.nFacets; ++i)
 	{
 		std::cout << i << ": ";
-		for (int j = 0; j < particle.facets[i].size; ++j)
+		for (int j = 0; j < particle.facets[i].nVertices; ++j)
 		{
 			Point3f p = particle.facets[i].arr[j];
 			std::cout << "("
-					  << p.point[0] << ", "
-					  << p.point[1] << ", "
-					  << p.point[2]
+					  << p.coordinates[0] << ", "
+					  << p.coordinates[1] << ", "
+					  << p.coordinates[2]
 					  << "), ";
 		}
 
@@ -53,12 +53,12 @@ void toFile(const Particle &particle)
 
 	for (int i = 0; i < particle.nFacets; ++i)
 	{
-		for (int j = 0; j < particle.facets[i].size; ++j)
+		for (int j = 0; j < particle.facets[i].nVertices; ++j)
 		{
 			Point3f p = particle.facets[i].arr[j];
-			M << p.point[0] << ' '
-							<< p.point[1] << ' '
-							<< p.point[2];
+			M << p.coordinates[0] << ' '
+							<< p.coordinates[1] << ' '
+							<< p.coordinates[2];
 			M << std::endl;
 		}
 

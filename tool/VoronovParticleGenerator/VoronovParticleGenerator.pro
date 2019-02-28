@@ -17,13 +17,16 @@ CONFIG(debug, debug|release): {
     TARGET = vpg_d
 }
 
-INCLUDEPATH += ../../src
+INCLUDEPATH += ../../src \
+    ../StlToCry
 
 SRC = ../../src
 
 SOURCES += \
-    *.cpp
+    *.cpp \
+    ../StlToCry/Converter.cpp
 
 include(../../pro/MBS.pri)
 
-HEADERS += *.h
+HEADERS += *.h \
+    ../StlToCry/Converter.h

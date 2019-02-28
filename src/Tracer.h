@@ -41,6 +41,7 @@ public:
 	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
 	Light m_incidentLight;
+	std::string m_summary;
 protected:
 	Handler *m_handler;
 	Scattering *m_scattering;
@@ -52,7 +53,6 @@ protected:
 	std::string m_resultDirName;
 	double m_wavelength;
 	Symmetry m_symmetry;
-	std::string m_summary;
 	time_t m_startTime;
 
 	// REF: заменить

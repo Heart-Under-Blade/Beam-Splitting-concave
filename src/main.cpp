@@ -63,7 +63,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("conus", 3, true, "po"); // calculate only backscatter cone (radius, phi, theta)
 	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
 	parser.AddRule("tr", 1, true); // file with trajectories
-	parser.AddRule("all", 0, true); // calculate all trajectories
+	parser.AddRule("", 0, true); // calculate  trajectories
 	parser.AddRule("abs", zero, true, "w"); // accounting of absorbtion
 	parser.AddRule("close", 0, true); // closing of program after calculation
 	parser.AddRule("o", 1, true); // output folder name
@@ -147,6 +147,8 @@ int main(int argc, const char* argv[])
 
 	cout << "Particle: ";
 
+	std::string additionalSummary;
+
 	if (args.IsCatched("pf"))
 	{
 		std::string filename = args.GetStringValue("p");
@@ -154,13 +156,19 @@ int main(int argc, const char* argv[])
 		particle->SetFromFile(filename);
 		particle->SetRefractiveIndex(complex(refrIndex));
 
+		double origDMax = particle->ComputeMaximalDimention();
 		cout << "from file: " << filename << endl;
+		additionalSummary += "\n\nOriginal Dmax: " + std::to_string(origDMax);
 
 		if (args.IsCatched("rs"))
 		{
 			double newSize = args.GetDoubleValue("rs");
 			particle->Resize(newSize);
 		}
+
+		double newDMax = particle->ComputeMaximalDimention();
+		additionalSummary += ", new Dmax: " + std::to_string(newDMax)
+				+ ", resize factor: " + std::to_string(newDMax/origDMax) + '\n';
 	}
 	else
 	{
@@ -231,7 +239,7 @@ int main(int argc, const char* argv[])
 	{
 		string trackFileName = args.GetStringValue("tr");
 		trackGroups.ImportTracks(particle->nFacets, trackFileName);
-		trackGroups.shouldComputeTracksOnly = !args.IsCatched("all");
+		trackGroups.shouldComputeTracksOnly = !args.IsCatched("");
 	}
 
 	cout << "Method: ";
@@ -249,6 +257,7 @@ int main(int argc, const char* argv[])
 			double gamma = args.GetDoubleValue("fixed", 1);
 
 			TracerPO tracer(particle, reflNum, dirName);
+			tracer.m_summary = additionalSummary;
 
 			HandlerPO *handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 			handler->SetTracks(&trackGroups);
@@ -270,6 +279,7 @@ int main(int argc, const char* argv[])
 			if (args.IsCatched("point"))
 			{
 				TracerBackScatterPoint tracer(particle, reflNum, dirName);
+				tracer.m_summary = additionalSummary;
 
 				handler = new HandlerBackScatterPoint(particle, &tracer.m_incidentLight, wave);
 				double normIndex = gamma.step/gamma.norm;
@@ -286,6 +296,7 @@ int main(int argc, const char* argv[])
 				Conus bsCone = SetCone(args);
 
 				TracerPO tracer(particle, reflNum, dirName);
+				tracer.m_summary = additionalSummary;
 
 				handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 				handler->SetTracks(&trackGroups);
@@ -310,6 +321,7 @@ int main(int argc, const char* argv[])
 		cout << "Geometrical optics";
 
 		TracerGO tracer(particle, reflNum, dirName);
+		tracer.m_summary = additionalSummary;
 		tracer.SetIsOutputGroups(isOutputGroups);
 
 		HandlerGO *handler;

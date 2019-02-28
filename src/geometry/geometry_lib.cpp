@@ -50,7 +50,7 @@ void CrossProduct(const Vector3f &v1, const Vector3f &v2, Vector3f &res)
 
 Point3f IntersectVectors(const Point3f &c1, const Point3f &c2,
 						 const Point3f &v1, const Point3f &v2,
-						 const Point3f &normalToFacet, bool isOk)
+						 const Point3f &normalToFacet, bool &isOk)
 {
 	__m128 _c1 = _mm_setr_ps(c1.cx, c1.cy, c1.cz, 0.0);
 	__m128 _c2 = _mm_setr_ps(c2.cx, c2.cy, c2.cz, 0.0);
@@ -77,6 +77,12 @@ Point3f CrossProduct(const Point3f &v1, const Point3f &v2)
 	res.cz = _cp[2];
 
 	return res;
+}
+
+std::ostream &operator <<(std::ostream &os, const Point3f &p)
+{
+	os << p.coordinates[0] << " " << p.coordinates[1] << " " << p.coordinates[2];
+	return os;
 }
 
 // OPT:

@@ -55,7 +55,7 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	m_resultDirName = dir + m_resultDirName + '\\' + m_resultDirName;
 
 	m_handler->WriteMatricesToFile(m_resultDirName);
-	OutputSummary(orNum, m_outcomingEnergy, norm, timer);
+	OutputSummary(orNum, norm, timer);
 }
 
 void TracerGO::TraceFixed(const double &beta, const double &gamma)
@@ -93,7 +93,7 @@ double TracerGO::CalcNorm(long long orNum)
 	}
 }
 
-void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &timer)
+void TracerGO::OutputSummary(int orNumber, double NRM, CalcTimer &timer)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -103,8 +103,7 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 	m_summary += "\nStart of calculation = " + startTime
 			+ "End of calculation   = " + endTime
 			+ "\nTotal time of calculation = " + totalTime
-			+ "\nTotal number of body orientation = " + to_string(orNumber)
-			+ "\nTotal scattering energy = " + to_string(D_tot);
+			+ "\nTotal number of body orientation = " + to_string(orNumber);
 
 #ifdef _CHECK_ENERGY_BALANCE
 	const double normEnergy = m_incomingEnergy * NRM;

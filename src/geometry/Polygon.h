@@ -10,16 +10,45 @@ class Polygon
 {
 public:
 	Point3f arr[MAX_VERTEX_NUM];
-	size_t size = 0;
+	size_t nVertices = 0;
 
 	Polygon();
-	explicit Polygon(int size);
+	explicit Polygon(int nVertices);
 	Polygon(const Polygon &other);
 	Polygon(Polygon &&other);
+
+	void AddVertex(const Point3f &v);
+
+	void InsertVertex(int index, const Point3f &v)
+	{
+		++nVertices;
+
+		for (int i = nVertices-1; i > index; --i)
+		{
+			arr[i] = arr[i-1];
+		}
+
+		arr[index] = v;
+	}
+
+	void DeleteVertex(int index)
+	{
+		for (int i = nVertices-1; i > index; --i)
+		{
+			arr[i-1] = arr[i];
+		}
+
+		--nVertices;
+	}
 
 	Polygon & operator = (const Polygon &other);
 	Polygon & operator = (Polygon &&other);
 	friend std::ostream & operator << (std::ostream &os, const Polygon &beam);
+
+	void Clear()
+	{
+		nVertices = 0;
+	}
 
 	double Area() const;
 	Point3f Center() const;

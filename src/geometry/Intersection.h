@@ -71,6 +71,16 @@ inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
 	return _mm_sub_ps(_a1, _mul);
 }
 
+/**
+ * @brief Intersects two vectors laid on the same plane
+ * @param _a1 point in first vector
+ * @param _b1 point in second vector
+ * @param _v_a first vector
+ * @param _v_b second vector
+ * @param _normal_to_facet normal to plane
+ * @param ok true if vectors are not parallel
+ * @return intersection point
+ */
 inline __m128 intersect_iv(__m128 _a1, __m128 _b1, __m128 _v_a, __m128 _v_b,
 						   __m128 _normal_to_facet, bool &ok)
 {

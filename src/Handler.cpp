@@ -181,7 +181,7 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 	string name = CreateUniqueFileName(filename);
 	ofstream allFile(name, std::ios::out);
 
-	allFile << "tetta M11 M12/M11 M13/M11 M14/M11 "\
+	allFile << "tetta dS M11 M12/M11 M13/M11 M14/M11 "\
 				"M21/M11 M22/M11 M23/M11 M24/M11 "\
 				"M31/M11 M32/M11 M33/M11 M34/M11 "\
 				"M41/M11 M42/M11 M43/M11 M44/M11";
@@ -192,12 +192,12 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 		double tmp1 = (j == 0) ? -(0.25*180.0)/SPHERE_RING_NUM : 0;
 		double tmp2 = (j == (int)SPHERE_RING_NUM) ? (0.25*180.0)/SPHERE_RING_NUM : 0;
 
-		// Special case in first and last step
-		allFile << '\n' << tmp0 + tmp1 + tmp2;
-
 		double sn = (j == 0 || j == (int)SPHERE_RING_NUM)
 				? 1-cos(BIN_SIZE/2.0)
 				: (cos((j-0.5)*BIN_SIZE)-cos((j+0.5)*BIN_SIZE));
+
+		// Special case in first and last step
+		allFile << '\n' << tmp0 + tmp1 + tmp2 << ' ' << (M_2PI*sn);
 
 		matrix bf = contrib.muellers(0, j);
 
@@ -208,7 +208,7 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 
 		if (bf[0][0] <= DBL_EPSILON)
 		{
-			allFile << " 0 0 0 0 0 0 0 0";
+			allFile << " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
 		}
 		else
 		{
@@ -263,13 +263,13 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 
 	Point3f n1 = m_particle->facets[tr[0]].in_normal;
 
-	for (int i = 0; i < beam.size; ++i)
+	for (int i = 0; i < beam.nVertices; ++i)
 	{
 		double delta = Length(beam.Center() - beam.arr[i])/Length(k);
 		opticalPath += (delta*DotProduct(k, n1))/DotProduct(beam.direction, n1);
 	}
 
-	opticalPath /= beam.size;
+	opticalPath /= beam.nVertices;
 
 	return opticalPath;
 }

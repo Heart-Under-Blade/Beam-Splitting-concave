@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ostream>
+#include <math.h>
 
 #define CLIP_RESULT_SINGLE 1
 
@@ -45,14 +46,27 @@ public:
 };
 
 // short access for Point3f
-#define cx		point[0]
-#define cy		point[1]
-#define cz		point[2]
-#define d_param point[3]
+#define cx		coordinates[0]
+#define cy		coordinates[1]
+#define cz		coordinates[2]
+#define d_param coordinates[3]
 
 // short access for normals of Facet
 #define in_normal normal[0]
 #define ex_normal normal[1]
+
+template <class T>
+class Array
+{
+public:
+	T elems[MAX_FACET_NUM];
+	int nElems = 0;
+
+	void Add(T elem)
+	{
+		elems[nElems++] = elem;
+	}
+};
 
 /**
  * @brief The Point3 struct
@@ -60,79 +74,88 @@ public:
  */
 struct Point3f
 {
-	float point[4]; /// coordinates
+	float coordinates[4]; /// coordinates
 
 	Point3f() {}
 
+	bool IsEqualTo(const Point3f &other, float eps) const
+	{
+		return (fabs(coordinates[0] - other.coordinates[0]) +
+				fabs(coordinates[1] - other.coordinates[1]) +
+				fabs(coordinates[2] - other.coordinates[2]))/3 < eps;
+	}
+
 	Point3f(float x, float y, float z)
 	{
-		point[0] = x;
-		point[1] = y;
-		point[2] = z;
+		coordinates[0] = x;
+		coordinates[1] = y;
+		coordinates[2] = z;
 	}
 
 	Point3f(float x, float y, float z, float d)
 	{
-		point[0] = x;
-		point[1] = y;
-		point[2] = z;
-		point[3] = d;
+		coordinates[0] = x;
+		coordinates[1] = y;
+		coordinates[2] = z;
+		coordinates[3] = d;
 	}
+
+	friend std::ostream & operator << (std::ostream &os, const Point3f &p);
 
 	Point3f(const Point3f &other)
 	{
-		point[0] = other.point[0];
-		point[1] = other.point[1];
-		point[2] = other.point[2];
+		coordinates[0] = other.coordinates[0];
+		coordinates[1] = other.coordinates[1];
+		coordinates[2] = other.coordinates[2];
 	}
 
 	Point3f & operator = (const Point3f &other)
 	{
-		point[0] = other.point[0];
-		point[1] = other.point[1];
-		point[2] = other.point[2];
+		coordinates[0] = other.coordinates[0];
+		coordinates[1] = other.coordinates[1];
+		coordinates[2] = other.coordinates[2];
 
 		return *this;
 	}
 
 	Point3f operator * (double value) const
 	{
-		return Point3f(point[0] * value,
-				point[1] * value,
-				point[2] * value);
+		return Point3f(coordinates[0] * value,
+				coordinates[1] * value,
+				coordinates[2] * value);
 	}
 
 	Point3f operator / (double value) const
 	{
-		return Point3f(point[0] / value,
-				point[1] / value,
-				point[2] / value);
+		return Point3f(coordinates[0] / value,
+				coordinates[1] / value,
+				coordinates[2] / value);
 	}
 
 	Point3f operator - (const Point3f &value) const
 	{
-		return Point3f(point[0] - value.point[0],
-				point[1] - value.point[1],
-				point[2] - value.point[2]);
+		return Point3f(coordinates[0] - value.coordinates[0],
+				coordinates[1] - value.coordinates[1],
+				coordinates[2] - value.coordinates[2]);
 	}
 
 	Point3f operator + (const Point3f &value) const
 	{
-		return Point3f(point[0] + value.point[0],
-				point[1] + value.point[1],
-				point[2] + value.point[2]);
+		return Point3f(coordinates[0] + value.coordinates[0],
+				coordinates[1] + value.coordinates[1],
+				coordinates[2] + value.coordinates[2]);
 	}
 
 	Point3f operator += (double value)
 	{
-		return *this = Point3f(point[0] + value,
-				point[1] + value,
-				point[2] + value);
+		return *this = Point3f(coordinates[0] + value,
+				coordinates[1] + value,
+				coordinates[2] + value);
 	}
 
 	Point3f operator - () const
 	{
-		return Point3f(-point[0], -point[1], -point[2], -point[3]);
+		return Point3f(-coordinates[0], -coordinates[1], -coordinates[2], -coordinates[3]);
 	}
 
 } __attribute__ ((aligned (16)));
@@ -202,7 +225,7 @@ void CrossProduct(const Vector3f &v1, const Vector3f &v2, Vector3f &res);
 Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
 Point3f IntersectVectors(const Point3f &c1, const Point3f &c2,
 						 const Point3f &v1, const Point3f &v2,
-						 const Point3f &normalToFacet, bool isOk);
+						 const Point3f &normalToFacet, bool &isOk);
 
 double Norm(const Vector3f &point);
 void Normalize(Vector3f &v);

@@ -5,13 +5,21 @@
 #include <list>
 
 /**
+ * @brief A plane between current site and other site
+ */
+struct OrtoPlane
+{
+	Point3f normal;  ///< Normal of planes
+	Point3f center;  ///< Center of planes
+};
+
+/**
  * @brief One of the base points for creating Voronoi lattice
  */
 struct Site
 {
 	Point3f point;
-	std::vector<Vector3f> planeNormals;
-	std::vector<Point3f> centers; ///< Centers of planes
+	std::vector<OrtoPlane> planes;
 };
 
 struct PointPair
@@ -19,6 +27,8 @@ struct PointPair
 	Point3f first;
 	Point3f second;
 };
+
+typedef std::vector<std::list<Point3f>> Cell;
 
 /**
  * @brief A 3D geometrical cubical lattice created by using of Voronoi
@@ -53,11 +63,11 @@ private:
 	void GenerateSites(double latticeSize, double splitRatio);
 	void DefineFacetPlanes(int siteIndex);
 
-	void DefineFacetEdgeVectors(const Site &site, int planeIndex,
-								std::vector<PointPair> &edgeVectors);
+	void DefineFacetEdgeLines(const Site &site, int planeIndex,
+							  std::vector<PointPair> &edgeLines);
 	void DefineIntersectionPoints(const std::vector<PointPair> &edgeVectors,
-							 const Vector3f &planeNormal,
-							 std::list<Point3f> &intersectPoints);
+								  const Vector3f &planeNormal,
+								  std::list<Point3f> &intersectPoints);
 
 	/**
 	 * @brief Remove intersection points are situated in space in front of each
@@ -72,4 +82,6 @@ private:
 
 	void OrderPoints(std::list<Point3f> &points,
 					 const Vector3f &planeNormal) const;
+	void OutputFacets(std::vector<std::list<Point3f>> &facets);
+	void FixPointsOrder(const Vector3f &normal, std::list<Point3f> &points);
 };

@@ -6,118 +6,175 @@
 #include <iterator>
 
 #include "geometry_lib.h"
+#include "Converter.h"
 
-#define EPS_OUTLINE 0.0001
+#define EPS_OUTLINE 0.8001
 #define EPS_DUPLICATE 0.003
 #define EPS_REDUNDANT 0.003
+
+void VoronoiLattice::OutputFacets(std::vector<std::list<Point3f>> &facets)
+{
+	// find max size of lists
+	int maxSize = 0;
+	for (int i = 0; i < facets.size(); ++i)
+	{
+		int newSize = facets[i].size();
+
+		if (newSize > maxSize)
+		{
+			maxSize = newSize;
+		}
+	}
+
+	std::vector<std::list<Point3f>::iterator> iters;
+	for (int i = 0; i < facets.size(); ++i)
+	{
+		iters.push_back(facets[i].begin());
+	}
+	std::ofstream file("facets.dat", std::ios::out);
+
+	for (int i = 0; i < maxSize; ++i)
+	{
+		for (int j = 0; j < facets.size(); ++j)
+		{
+			auto &it = iters[j];
+
+			if (it == facets[j].end())
+			{
+				file << "# # # # ";
+			}
+			else
+			{
+				Point3f &p = *it;
+				file << p << " # ";
+				++it;
+			}
+		}
+
+		file << std::endl;
+	}
+
+	file.close();
+}
+
+void VoronoiLattice::FixPointsOrder(const Vector3f &normal,
+									std::list<Point3f> &points)
+{
+	if (points.size() > 0)
+	{
+		Facet f;
+
+		for (auto &p : points)
+		{
+			f.AddVertex(p);
+		}
+
+		Vector3f n = f.Normal();
+
+		if (DotProduct(n, normal) < 0)
+		{
+			points.reverse();
+		}
+	}
+}
 
 VoronoiLattice::VoronoiLattice(double latticeSize, double splitRatio)
 	: m_size(latticeSize)
 {
 	GenerateSites(latticeSize, splitRatio);
 
-	for (int i = 0/*68*/; i < m_sites.size(); ++i)
-	{
-		DefineFacetPlanes(i);
-
+	std::vector<Cell> lattice;
 #ifdef _DEBUG // DEB
-		std::vector<std::list<Point3f>> outpoints;
-		std::ofstream file("log.dat", std::ios::out);
+	std::ofstream dfile("debug.dat", std::ios::out);
+#endif
+	for (int i = /*0*/13; i < 14/*m_sites.size()*/; ++i)
+//	for (int i = 0; i < m_sites.size(); ++i)
+	{
+		std::cout << "Progress: " << i << "/" << m_sites.size() << std::endl;
+
+		DefineFacetPlanes(i);
+		Cell facets;
+
+		Site &site = m_sites[i];
+#ifdef _DEBUG // DEB
+		double k = 10;
+		for (auto &p : site.planes)
+		{
+			dfile << p.center << std::endl;
+//			dfile << p.center + p.normal * k << std::endl << std::endl;
+		}
+		dfile << std::endl;
 #endif
 		// facets
-		for (int j = 0; j < m_sites[i].planeNormals.size(); ++j)
+		for (int j = 0; j < site.planes.size(); ++j)
 		{
-			std::vector<PointPair> edgeVectors;
-			DefineFacetEdgeVectors(m_sites[i], j, edgeVectors);
+			std::vector<PointPair> edgeLines;
+			DefineFacetEdgeLines(site, j, edgeLines);
+
+#ifdef _DEBUG // DEB
+			std::ofstream ffile("facet.dat", std::ios::out);
+			for (auto &pp : edgeLines)
+			{
+				Point3f b = (pp.first * k) + pp.second;
+				ffile << b << std::endl;
+				ffile << (pp.first * -k) + pp.second << std::endl << std::endl;
+			}
+//			dfile << site.point << std::endl;
+//			dfile << plane.center << std::endl;
+			ffile << std::endl;
+#endif
+			auto &normal = site.planes[j].normal;
 
 			std::list<Point3f> points;
-			DefineIntersectionPoints(edgeVectors, m_sites[i].planeNormals[j],
-									 points);
+			DefineIntersectionPoints(edgeLines, normal, points);
 
 			RemoveOutlinePoints(i, points);
 			RemoveDuplicatedPoints(points);
 			RemoveRedundantPoints(points);
-			OrderPoints(points, m_sites[i].planeNormals[j]);
+			OrderPoints(points, normal);
+//			FixPointsOrder(normal, points);
 
 #ifdef _DEBUG // DEB
-//			for (auto &i : edgeVectors)
-//			{
-//				file << i.second.point[0] << " " << i.second.point[1] << " "
-//								   << i.second.point[2] << std::endl;
-//			}
+			ffile << std::endl;
+			for (auto &pp : points)
+			{
+				ffile << pp << std::endl;
+			}
+
 			if (!points.empty())
 			{
-				outpoints.push_back(points);
-//				file << std::endl;
+				dfile << site.planes[j].center << std::endl;
+				facets.push_back(points);
 			}
+
+			ffile.close();
 #endif
 		}
+
 #ifdef _DEBUG // DEB
-		// find max size of lists
-		int maxSize = 0;
-		for (int i = 0; i < outpoints.size(); ++i)
-		{
-			int newSize = outpoints[i].size();
+		dfile.close();
 
-			if (newSize > maxSize)
-			{
-				maxSize = newSize;
-			}
-		}
+		OutputFacets(facets);
 
-		std::vector<std::list<Point3f>::iterator> iters;
-		for (int i = 0; i < outpoints.size(); ++i)
-		{
-			iters.push_back(outpoints[i].begin());
-//			bool a = iters[i] == outpoints[i].end();
-//			bool b = iters[i] == outpoints[i].begin();
-//			int sss = 0;
-		}
-
-		// outpur
-		for (int i = 0; i < maxSize; ++i)
-		{
-			for (int j = 0; j < outpoints.size(); ++j)
-			{
-				auto &it = iters[j];
-
-				if (it == outpoints[j].end())
-				{
-					file << "# # # # ";
-				}
-				else
-				{
-					Point3f &p = *it;
-					file << p.point[0] << " "
-									   << p.point[1] << " "
-									   << p.point[2] << " # ";
-					++it;
-
-//					// first point again
-//					if (it == outpoints[j].end())
-//					{
-//						auto it1 = outpoints[j].begin();
-//						file << it1->point[0] << " " << it1->point[1] << " "
-//											 << it1->point[2] << " # ";
-//					}
-				}
-			}
-
-			file << std::endl;
-		}
-
-//		for (auto &i : outpoints)
-//		{
-//			for (const auto &j : i)
-//			{
-//				file << j.point[0] << " " << j.point[1] << " "
-//								   << j.point[2] << std::endl;
-//			}
-//		}
-
-		file.close();
+		Converter converter;
+		std::vector<Facet> triangles;
+		converter.Triangulate(facets, triangles);
+		converter.WriteStl(triangles, "voronoi");
 #endif
+		lattice.push_back(facets);
 	}
+
+//	Converter converter;
+//	std::vector<Facet> triangles;
+
+//	for (auto &cell : lattice)
+//	{
+//		std::vector<Facet> facet;
+//		converter.Triangulate(cell, facet);
+//		triangles.insert(triangles.end(), facet.begin(), facet.end());
+//	}
+
+//	converter.WriteStl(triangles, "voronoi");
 }
 
 void VoronoiLattice::DefineIntersectionPoints(
@@ -135,8 +192,10 @@ void VoronoiLattice::DefineIntersectionPoints(
 							edgeVectors[i].second, edgeVectors[j].second,
 							edgeVectors[i].first, edgeVectors[j].first,
 							planeNormal, isOk);
-
-				intersectPoints.push_back(x);
+				if (isOk)
+				{
+					intersectPoints.push_back(x);
+				}
 			}
 		}
 	}
@@ -145,10 +204,10 @@ void VoronoiLattice::DefineIntersectionPoints(
 void VoronoiLattice::RemoveOutlinePoints(int siteIndex,
 										 std::list<Point3f> &points)
 {
-	for (int i = 0; i < m_sites[siteIndex].planeNormals.size(); ++i)
+	for (int i = 0; i < m_sites[siteIndex].planes.size(); ++i)
 	{
-		Point3f &n = m_sites[siteIndex].planeNormals[i];
-		Point3f &c = m_sites[siteIndex].centers[i];
+		Point3f &n = m_sites[siteIndex].planes[i].normal;
+		Point3f &c = m_sites[siteIndex].planes[i].center;
 		points.remove_if([&](Point3f p) {
 			return DotProduct(n, p-c) > EPS_OUTLINE;
 		});
@@ -188,50 +247,74 @@ void VoronoiLattice::RemoveDuplicatedPoints(std::list<Point3f> &points)
 
 void VoronoiLattice::RemoveRedundantPoints(std::list<Point3f> &points)
 {
-//	if (!points.empty())
-//	{
-//		std::vector<Point3f> _points{std::begin(points), std::end(points)};
-	Point3f pBase = points.back();
-
-	for (auto itNext = points.begin(); itNext != points.end(); ++itNext)
+	if (points.empty())
 	{
-		Vector3f vBase = *itNext - pBase;
+		return;
+	}
 
-		auto it = itNext;
-		++it;
+	std::vector<Point3f> _points{std::begin(points), std::end(points)};
 
-		do
+	for (int i = 0; i < _points.size()-1; ++i)
+	{
+		for (int j = i + 1; j < _points.size(); ++j)
 		{
-			auto itLast = (it == points.end()) ? points.begin() : it;
-			Vector3f vLast = *itLast - pBase;
-			Vector3f cp = CrossProduct(vBase, vLast);
+			Vector3f vBase = _points[j] - _points[i];
+			int k = j + 1;
 
-			if (Length(cp) < EPS_REDUNDANT)
+			while (k <= _points.size())
 			{
-				if (Length(vBase) < Length(vLast))
+				if (k == _points.size())
 				{
-					points.erase(itNext);
-					vBase = vLast;
+					if (i != 0)
+					{
+						k = 0;
+					}
+					else
+					{
+						break;
+					}
 				}
-				else
+
+				Vector3f vLast = _points[k] - _points[i];
+				Vector3f cp = CrossProduct(vBase, vLast);
+				bool isErased = Length(cp) < EPS_REDUNDANT;
+
+				if (isErased)
 				{
-					points.erase(itLast);
+					if (Length(vBase) < Length(vLast))
+					{
+						auto itNext = _points.begin();
+						std::advance(itNext, j);
+						_points.erase(itNext);
+						vBase = vLast;
+					}
+					else
+					{
+						auto itLast = _points.begin();
+						std::advance(itLast, k);
+						_points.erase(itLast);
+					}
+				}
+
+				if (k == 0)
+				{
+					break;
+				}
+
+				if (!isErased)
+				{
+					++k;
 				}
 			}
-
-			++it;
-		} while (it != points.end());
-
-		pBase = *itNext;
+		}
 	}
 
-//		points = std::list<Point3f>{std::begin(_points), std::end(_points)};
-//	}
-
-	if (points.size() < 3)
+	if (_points.size() < 3)
 	{
-		points.clear();
+		_points.clear();
 	}
+
+	points = std::list<Point3f>{std::begin(_points), std::end(_points)};
 }
 
 void VoronoiLattice::OrderPoints(std::list<Point3f> &points,
@@ -246,7 +329,7 @@ void VoronoiLattice::OrderPoints(std::list<Point3f> &points,
 		{
 			Vector3f vBase = _points[iNext] - pBase;
 
-			for (int i = iNext + 1; i < _points.size(); ++i)
+			for (int i = iNext + 1; i <= _points.size(); ++i)
 			{
 				int iLast = (i == _points.size()) ? 0 : i;
 				Vector3f vLast = _points[iLast] - pBase;
@@ -266,26 +349,39 @@ void VoronoiLattice::OrderPoints(std::list<Point3f> &points,
 	}
 }
 
-void VoronoiLattice::DefineFacetEdgeVectors(const Site &site, int planeIndex,
-											std::vector<PointPair> &edgeVectors)
+void VoronoiLattice::DefineFacetEdgeLines(const Site &site, int planeIndex,
+										  std::vector<PointPair> &edgeLines)
 {
-	for (int i = 0; i < site.planeNormals.size(); ++i)
+	auto &basePlane = site.planes[planeIndex];
+
+	for (int i = 0; i < site.planes.size(); ++i)
 	{
 		if (i != planeIndex)
 		{
-			Point3f edgeVector = CrossProduct(site.planeNormals[planeIndex],
-											  site.planeNormals[i]);
-			Point3f vector0ToEdge = CrossProduct(site.planeNormals[i],
-												 edgeVector);
-			Point3f vector1ToEdge = CrossProduct(edgeVector,
-												 site.planeNormals[planeIndex]);
+			auto &currPlane = site.planes[i];
+
+			Point3f edgeV = CrossProduct(basePlane.normal, currPlane.normal);
+
+			Point3f v0ToEdge = CrossProduct(currPlane.normal, edgeV);
+			Point3f v1ToEdge = CrossProduct(edgeV, basePlane.normal);
+
 			bool isOk = false;
-			Point3f x = IntersectVectors(site.centers[i],
-										 site.centers[planeIndex],
-										 vector0ToEdge, vector1ToEdge,
-										 edgeVector, isOk);
-			edgeVector.point[3] = -DotProduct(x, edgeVector);
-			edgeVectors.push_back(PointPair{edgeVector, x});
+			Point3f x = IntersectVectors(currPlane.center, basePlane.center,
+										 v0ToEdge, v1ToEdge,
+										 edgeV, isOk);
+			if (isOk)
+			{
+				edgeV.coordinates[3] = -DotProduct(x, edgeV);
+#ifdef _DEBUG // DEB
+				double k = 100;
+				Point3f b = (edgeV * k) + x;
+				Point3f d = (edgeV * -k) + x;
+				Point3f b1 = (v0ToEdge * k) + currPlane.center;
+				Point3f d1 = (v1ToEdge * k) + basePlane.center;
+				int fff = 0;
+#endif
+				edgeLines.push_back(PointPair{edgeV, x});
+			}
 		}
 	}
 }
@@ -301,10 +397,8 @@ void VoronoiLattice::DefineFacetPlanes(int siteIndex)
 
 			// D-param
 			Point3f center = (m_sites[siteIndex].point + m_sites[i].point)/2;
-			normal.point[3] = -DotProduct(center, normal);
-
-			m_sites[siteIndex].planeNormals.push_back(normal);
-			m_sites[siteIndex].centers.push_back(center);
+			normal.coordinates[3] = -DotProduct(center, normal);
+			m_sites[siteIndex].planes.push_back(OrtoPlane{normal, center});
 		}
 	}
 }
@@ -318,9 +412,9 @@ float RandomValueF(float from, float to)
 Point3f RandomPoint(const Point3f &from, const Point3f &to)
 {
 	Point3f p;
-	p.point[0] = RandomValueF(from.point[0], to.point[0]);
-	p.point[1] = RandomValueF(from.point[1], to.point[1]);
-	p.point[2] = RandomValueF(from.point[2], to.point[2]);
+	p.coordinates[0] = RandomValueF(from.coordinates[0], to.coordinates[0]);
+	p.coordinates[1] = RandomValueF(from.coordinates[1], to.coordinates[1]);
+	p.coordinates[2] = RandomValueF(from.coordinates[2], to.coordinates[2]);
 	return p;
 }
 
@@ -337,17 +431,17 @@ void VoronoiLattice::GenerateSites(double latticeSize, double splitRatio)
 						 min + cellSize,
 						 min + cellSize);
 
-	float &fromX = from.point[0];
-	float &fromY = from.point[1];
-	float &fromZ = from.point[2];
+	float &fromX = from.coordinates[0];
+	float &fromY = from.coordinates[1];
+	float &fromZ = from.coordinates[2];
 
-	float &toX = to.point[0];
-	float &toY = to.point[1];
-	float &toZ = to.point[2];
+	float &toX = to.coordinates[0];
+	float &toY = to.coordinates[1];
+	float &toZ = to.coordinates[2];
 
 	int i = 0;
 #ifdef _DEBUG // DEB
-	std::ofstream file("log.dat", std::ios::out);
+	std::ofstream file("sites.dat", std::ios::out);
 #endif
 	for (fromX = min, toX = min + cellSize;
 		 toX <= max;
@@ -364,8 +458,8 @@ void VoronoiLattice::GenerateSites(double latticeSize, double splitRatio)
 				Point3f p = RandomPoint(from, to);
 				m_sites[i++].point = p;
 #ifdef _DEBUG // DEB
-				file << p.point[0] << " " << p.point[1] << " "
-								   << p.point[2] << std::endl;
+				file << p.coordinates[0] << " " << p.coordinates[1] << " "
+								   << p.coordinates[2] << std::endl;
 #endif
 			}
 		}
