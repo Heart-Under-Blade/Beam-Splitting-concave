@@ -70,7 +70,7 @@ public:
 
 /**
  * @brief The Point3 struct
- * 3D coordinate point
+ * 3-coordinated point
  */
 struct Point3f
 {

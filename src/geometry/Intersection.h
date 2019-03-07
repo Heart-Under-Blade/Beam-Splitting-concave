@@ -84,7 +84,7 @@ inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
 inline __m128 intersect_iv(__m128 _a1, __m128 _b1, __m128 _v_a, __m128 _v_b,
 						   __m128 _normal_to_facet, bool &ok)
 {
-	// normal of new plane
+	// normal of new plane // OPT: try to do buffer for other variables from this
 	__m128 _normal_to_line = _cross_product(_v_b, _normal_to_facet);
 	__m128 _normal_n = _normalize(_normal_to_line);
 
