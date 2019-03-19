@@ -48,3 +48,7 @@ log.txt
 bin/btm_d.exe
 doc/macke-code-src/rt-crystal/rt-crystal.prj
 doc/macke-code-src/rt-crystal/Makefile
+tool/StlToCry - копия/main.cpp
+tool/StlToCry - копия/StlToCry.pro
+tool/StlToCry - копия/Converter.h
+tool/StlToCry - копия/Converter.cpp

@@ -4,32 +4,42 @@
 #include <vector>
 #include <list>
 
+struct EdgeLine
+{
+	Vector3f vector;
+	Point3f beginPoint;
+};
+
+typedef Point3f Intersection;
+//struct Intersection
+//{
+//	Point3f point;
+//	int firstPlaneId;
+//	int secondPlaneId;
+//};
+
+struct Cell
+{
+	int id;	///< id of site or cell
+	Point3f site;	///< base point for generated point
+	std::vector<std::list<Point3f>> facets; ///< facets of the Cell
+	std::vector<int> checkedSiteIds;	///< ids of sites that facet had already
+										/// generated for or imposible
+										/// to generate one
+};
+
+typedef std::vector<std::vector<Cell>> Matrix3x3s;
+typedef std::vector<Matrix3x3s> Matrix3x3x3s;
+
 /**
  * @brief A plane between current site and other site
  */
 struct OrthoPlane
 {
-	int id;
+	Cell *cell;
 	Point3f normal;  ///< Normal of planes
 	Point3f center;  ///< Center of planes
 };
-
-struct EdgeLine
-{
-	int planeId;
-	Vector3f vector;
-	Point3f beginPoint;
-};
-
-struct Intersection
-{
-	Point3f point;
-	int firstPlaneId;
-	int secondPlaneId;
-};
-
-typedef std::vector<std::vector<Point3f>> Matrix3x3p;
-typedef std::vector<Matrix3x3p> Matrix3x3x3p;
 
 struct SiteIndex
 {
@@ -38,29 +48,77 @@ struct SiteIndex
 	int k;
 };
 
-class SiteLattice
+class Lattice
 {
 public:
 	int sideSize;
 	int size;
+	double cellSize;
 
-	Matrix3x3x3p sites;
+	Matrix3x3x3s cells;
 
-	const Point3f &GetSite(const SiteIndex &index) const
+	std::vector<std::vector<Point3f>> ToFacets() const
 	{
-		return sites[index.i][index.j][index.k];
+		std::vector<std::vector<Point3f>> facets;
+
+		for (int i = 0; i < sideSize; ++i)
+		{
+			for (int j = 0; j < sideSize; ++j)
+			{
+				for (int k = 0; k < sideSize; ++k)
+				{
+					for (auto &f : cells[i][j][k].facets)
+					{
+						std::vector<Point3f> facet;
+
+						for (auto &p : f)
+						{
+							facet.push_back(p);
+						}
+
+						facets.push_back(facet);
+					}
+				}
+			}
+		}
+
+		return facets;
 	}
 
-	SiteLattice(double latticeSize, int splitRatio)
+	std::vector<std::vector<Point3f>> ToFacets(Cell* cell) const
 	{
-		sideSize = splitRatio;
-		size = sideSize*sideSize*sideSize;
+		std::vector<std::vector<Point3f>> facets;
 
-		double cellSize = latticeSize/sideSize;
+		for (auto &f : cell->facets)
+		{
+			std::vector<Point3f> facet;
+
+			for (auto &p : f)
+			{
+				facet.push_back(p);
+			}
+
+			facets.push_back(facet);
+		}
+
+		return facets;
+	}
+
+	const Cell &GetCell(const SiteIndex &index) const
+	{
+		return cells[index.i][index.j][index.k];
+	}
+
+	Lattice(double latticeSize, int splitRatio)
+	{
+		size = splitRatio*splitRatio*splitRatio;
+		cellSize = latticeSize/splitRatio;
 
 		// add one layer of points to make borders
-		latticeSize += cellSize * 2;
-		sideSize += 2;
+		splitRatio += 2;
+		double extendedLatticeSize = latticeSize + cellSize*2;
+
+		sideSize = splitRatio;
 
 		double min = -latticeSize/2;
 //		double max = latticeSize/2;
@@ -78,33 +136,45 @@ public:
 		float &toY = to.coordinates[1];
 		float &toZ = to.coordinates[2];
 
+		int count = 0;
+
 		for (int i = 0; i < sideSize; ++i)
 		{
-			sites.push_back(Matrix3x3p());
-			double stepX = i*cellSize;
+			cells.push_back(Matrix3x3s());
 
 			for (int j = 0; j < sideSize; ++j)
 			{
-				sites[i].push_back(std::vector<Point3f>());
-				double stepY = j*cellSize;
+				cells[i].push_back(std::vector<Cell>());
 
 				for (int k = 0; k < sideSize; ++k)
 				{
-					double stepZ = k*cellSize;
+					fromZ += cellSize;
+					toZ += cellSize;
 
-					fromX += stepX;
-					toX += stepX;
-
-					fromY += stepY;
-					toY += stepY;
-
-					fromZ += stepZ;
-					toZ += stepZ;
-
-					Point3f p = RandomPoint(from, to);
-					sites[i][j].push_back(p);
+					Cell cell;
+					cell.id = count++;
+					cell.site = RandomPoint(from, to);
+					cells[i][j].push_back(cell);
+#ifdef _DEBUG // DEB
+					if (fabs(cell.site.coordinates[0]) > extendedLatticeSize ||
+							fabs(cell.site.coordinates[1]) > extendedLatticeSize ||
+							fabs(cell.site.coordinates[2]) > extendedLatticeSize)
+						int fff = 0;
+#endif
 				}
+
+				fromZ = min;
+				toZ = min + cellSize;
+
+				fromY += cellSize;
+				toY += cellSize;
 			}
+
+			fromY = min;
+			toY = min + cellSize;
+
+			fromX += cellSize;
+			toX += cellSize;
 		}
 	}
 
@@ -125,8 +195,6 @@ private:
 	}
 
 };
-
-typedef std::vector<std::list<Point3f>> Cell;
 
 /**
  * @brief A 3D geometrical cubical lattice created by using of Voronoi
@@ -159,15 +227,13 @@ private:
 	 * @param sites generated sites
 	 */
 	void GenerateSites(double latticeSize, int splitRatio,
-					   Matrix3x3x3p &sites);
+					   Matrix3x3x3s &sites);
 
-	void DefineOrthogonalPlanes(const SiteIndex &siteIndex,
-								const SiteLattice &sites,
+	void DefineOrthogonalPlanes(const Cell &baseCell, Lattice &cells,
 								std::vector<OrthoPlane> &sitePlanes);
 
 	void DefineFacetEdgeLines(const std::vector<OrthoPlane> &sitePlanes,
-							  int planeIndex,
-							  std::vector<EdgeLine> &edgeLines);
+							  int planeNo, std::vector<EdgeLine> &edgeLines);
 
 	void DefineIntersections(const std::vector<EdgeLine> &edgeLines,
 							 const Vector3f &planeNormal,
@@ -189,7 +255,7 @@ private:
 					 std::list<Intersection> &points) const;
 
 	void OutputFacets(const std::string &filename,
-					  std::vector<std::list<Point3f>> &facets);
+					  std::vector<std::vector<Point3f>> &facets);
 	void FixPointsOrder(const Vector3f &normal, std::list<Point3f> &points);
 	bool RemoveDistantPlanes(const std::list<Intersection> &points,
 							const OrthoPlane &currentPlane,

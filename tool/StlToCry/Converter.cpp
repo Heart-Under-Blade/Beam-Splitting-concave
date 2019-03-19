@@ -399,7 +399,7 @@ void Converter::Triangulate(const std::vector<Facet> &crystal,
 	}
 }
 
-void Converter::Triangulate(const std::vector<std::list<Point3f>> &facets,
+void Converter::Triangulate(const std::vector<std::vector<Point3f>> &facets,
 							std::vector<Facet> &triangles)
 {
 	for (const auto &facet : facets)

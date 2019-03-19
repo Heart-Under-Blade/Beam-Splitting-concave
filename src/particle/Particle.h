@@ -37,11 +37,11 @@ public:
 	void Concate(const std::vector<Particle> &parts);
 
 	/**
-	 * @brief GetRotationRadius
+	 * @brief LongRadius
 	 * @return The distance from beginning of the center of coordinate system
 	 * to the farthest point of particle.
 	 */
-	double GetRotationRadius() const;
+	double LongRadius() const;
 
 	/**
 	 * @brief A sum of areas of each facet of the particle
@@ -49,13 +49,14 @@ public:
 	 */
 	double Area();
 
-	double ComputeMaximalDimention() const;
+	double MaximalDimention() const;
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 
 	const Symmetry &GetSymmetry() const;
-	virtual void GetParticalFacetIdRangeByFacetId(int /*id*/, int &/*begin*/, int &/*end*/) const {}
+	virtual void GetParticalFacetIdRangeByFacetId(
+			int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
 	bool IsConcave() const;
 

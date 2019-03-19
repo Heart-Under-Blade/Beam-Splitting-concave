@@ -20,11 +20,6 @@ double DotProductD(const Vector3d &v1, const Vector3d &v2)
 
 double Norm(const Vector3f &p)
 {
-#ifdef _DEBUG // DEB
-	double pp = p.cx * p.cx;
-	pp += p.cy * p.cy;
-	pp += p.cz * p.cz;
-#endif
 	return	  p.cx * p.cx
 			+ p.cy * p.cy
 			+ p.cz * p.cz;
@@ -81,7 +76,9 @@ Point3f CrossProduct(const Point3f &v1, const Point3f &v2)
 
 std::ostream &operator <<(std::ostream &os, const Point3f &p)
 {
-	os << p.coordinates[0] << " " << p.coordinates[1] << " " << p.coordinates[2];
+	os << p.coordinates[0]
+			<< " " << p.coordinates[1]
+			<< " " << p.coordinates[2];
 	return os;
 }
 

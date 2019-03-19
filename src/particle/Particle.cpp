@@ -150,7 +150,7 @@ void Particle::Scale(double ratio)
 
 void Particle::Resize(double size)
 {
-	double dMax = ComputeMaximalDimention();
+	double dMax = MaximalDimention();
 	double ratio = size/dMax;
 	Scale(ratio);
 	Reset();
@@ -174,7 +174,7 @@ void Particle::Concate(const std::vector<Particle> &parts)
 	isAggregated = true;
 }
 
-double Particle::GetRotationRadius() const
+double Particle::LongRadius() const
 {
 	Point3f p0(0, 0, 0);
 
@@ -197,7 +197,7 @@ double Particle::GetRotationRadius() const
 	return radius;
 }
 
-double Particle::ComputeMaximalDimention() const
+double Particle::MaximalDimention() const
 {
 	double Dmax = 0;
 	double newDmax;

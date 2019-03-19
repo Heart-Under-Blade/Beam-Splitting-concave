@@ -23,7 +23,7 @@ public:
 
 	void Triangulate(const std::vector<Facet> &crystal,
 					 std::vector<Facet> &triangles);
-	void Triangulate(const std::vector<std::list<Point3f>> &facets,
+	void Triangulate(const std::vector<std::vector<Point3f>> &facets,
 					 std::vector<Facet> &triangles);
 private:
 	Point3f ReadVertex(char *buff, char *ptr, char *trash);
