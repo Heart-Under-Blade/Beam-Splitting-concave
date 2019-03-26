@@ -3,65 +3,68 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void RegularIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
+RegularIncidence::RegularIncidence()
 {
-	splitter.ComputePolarisationParams(beam);
+}
+
+void RegularIncidence::ComputeDirections(Beam &beam,
+										 BeamPair<Beam> &beams) const
+{
+	beam.RotateJones(m_splitting->facetNormal);
 
 	if (beam.isInside)
 	{
-		splitter.ComputeReflectedDirection(splitter.inBeam.direction);
-		splitter.ComputeRefractedDirection(splitter.outBeam.direction);
+		m_splitting->ComputeReflectedDirection(beams.internal.direction);
+		m_splitting->ComputeRefractedDirection(beams.external.direction);
 	}
 	else
 	{
-		splitter.ComputeReflectedDirection(splitter.outBeam.direction);
-		splitter.ComputeRefractedDirection(splitter.inBeam.direction);
+		m_splitting->ComputeReflectedDirection(beams.external.direction);
+		m_splitting->ComputeRefractedDirection(beams.internal.direction);
 	}
-#ifdef _DEBUG // DEB
-	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
-	splitter.outBeam.dirs.push_back(splitter.outBeam.direction);
-#endif
-	splitter.inBeam.polarizationBasis = beam.polarizationBasis;
-	splitter.outBeam.polarizationBasis = beam.polarizationBasis;
+
+	beams.internal.polarizationBasis = beam.polarizationBasis;
+	beams.external.polarizationBasis = beam.polarizationBasis;
 }
 
-void RegularIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter) const
+void RegularIncidence::ComputeJonesMatrices(Beam &beam,
+											BeamPair<Beam> &beams) const
 {
-	splitter.inBeam.Jones = beam.Jones;
-	splitter.outBeam.Jones = beam.Jones;
+	beams.internal.Jones = beam.Jones;
+	beams.external.Jones = beam.Jones;
 
 	if (beam.isInside)
 	{
-		double cosG = Point3f::DotProduct(splitter.m_normal, splitter.outBeam.direction);
+		double cosG = Point3f::DotProduct(m_splitting->facetNormal, beams.external.direction);
 
-		complex tmp0 = splitter.m_ri * splitter.cosA;
-		complex tmp1 = splitter.m_ri * cosG;
+		complex tmp0 = m_splitting->m_ri * m_splitting->cosA;
+		complex tmp1 = m_splitting->m_ri * cosG;
 
-		complex Tv0 = tmp1 + splitter.cosA;
+		complex Tv0 = tmp1 + m_splitting->cosA;
 		complex Th0 = tmp0 + cosG;
 
 		complex tmp = 2.0 * tmp0;
-		splitter.outBeam.MultiplyJonesMatrix(tmp/Tv0, tmp/Th0);
+		beams.external.MultiplyJonesMatrix(tmp/Tv0, tmp/Th0);
 
-		complex Tv = splitter.cosA - tmp1;
+		complex Tv = m_splitting->cosA - tmp1;
 		complex Th = tmp0 - cosG;
-		splitter.inBeam.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
+		beams.internal.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
 	}
 	else
 	{
-		double cosB = Point3f::DotProduct(splitter.m_normal, splitter.inBeam.direction);
+		double cosB = Point3f::DotProduct(m_splitting->facetNormal, beams.internal.direction);
 
-		complex tmp0 = splitter.m_ri * splitter.cosA;
-		complex tmp1 = splitter.m_ri * cosB;
+		complex tmp0 = m_splitting->m_ri * m_splitting->cosA;
+		complex tmp1 = m_splitting->m_ri * cosB;
 
 		complex Tv0 = tmp0 + cosB;
-		complex Th0 = tmp1 + splitter.cosA;
+		complex Th0 = tmp1 + m_splitting->cosA;
 
 		complex Tv = tmp0 - cosB;
-		complex Th = splitter.cosA - tmp1;
-		splitter.outBeam.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
+		complex Th = m_splitting->cosA - tmp1;
+		beams.external.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
 
-		double cos2A = 2.0*splitter.cosA;
-		splitter.inBeam.MultiplyJonesMatrix(cos2A/Tv0, cos2A/Th0);
+		double cos2A = 2.0*m_splitting->cosA;
+		beams.internal.MultiplyJonesMatrix(cos2A/Tv0, cos2A/Th0);
 	}
 }

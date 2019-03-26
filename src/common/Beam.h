@@ -9,6 +9,28 @@
 #include "Facet.h"
 #include "Tracks.h"
 
+template <class T>
+class SplittedBeams
+{
+public:
+	T internal;
+	T external;
+
+	void SetBeams(const Polygon &beamShape)
+	{
+		internal.Clear();
+		internal.SetPolygon(beamShape);
+
+		external.Clear();
+		external.SetPolygon(beamShape);
+
+#ifdef MODE_FIXED_OR
+		internal.pols.push_back(beamShape);
+		external.pols.push_back(beamShape);
+#endif
+	}
+};
+
 class Light
 {
 public:
@@ -57,10 +79,9 @@ public:
 			locations = other.locations;
 			actNo = other.actNo;
 			facet = other.facet;
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 			pols = other.pols;
 			dirs = other.dirs;
-			ops = other.ops;
 #endif
 		}
 
@@ -76,9 +97,8 @@ public:
 	int actNo; ///< Current r/r act number
 	Facet *facet; ///< Last incident facet of the Particle
 
-#ifdef _DEBUG // DEB
+#ifdef MODE_FIXED_OR
 	std::vector<Point3f> dirs;
-	std::vector<double> ops;
 	std::vector<Polygon> pols;
 #endif
 };
@@ -98,8 +118,7 @@ public:
 	Vector3f RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 
 	void SetPolygon(const Polygon &other); // REF: мб просто искользовать "="?
-	void Clear();
-	void AddOpticalPath(double path);
+	virtual void Clear();
 	void CopyTrack(const Track &other);
 
 	Beam & operator = (const Beam &other);
@@ -110,11 +129,13 @@ public:
 	void SetLocation(bool isIn);
 
 	void MultiplyJonesMatrix(const complex &f1, const complex &f2);
-	void RotateJMatrix(const Vector3f &newBasis);
+	void RotateJones(const Vector3f &normal);
 
 	// REF: перенести в Diffractor
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
+
+	void GetSpherical(double &fi, double &teta) const;
 
 	/**
 	 * @brief Outputs beam params. Use it with std::cout or std::ofstream
@@ -125,15 +146,11 @@ public:
 	friend std::ostream & operator << (std::ostream &os, const Beam &beam);
 
 public:
-	// REF: перенести в private
-	double opticalPath;	///< Optical path of beam
-	double front;		///< Current position of phase front from Ax+By+Cz+D=0 (where D is front)
-
 	Matrix2x2c Jones;	///< Jones matrix of beam
 	bool isInside; 		///< Beam state towards the particle (inside or outside)
 
 private:
-	void GetSpherical(double &fi, double &teta) const;
-	void Copy(const Beam &other);
 	void SetDefault(Beam &other);
+	void Copy(const Beam &other);
 };
+

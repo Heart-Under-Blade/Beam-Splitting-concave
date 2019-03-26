@@ -16,8 +16,15 @@ CONFIG(debug,	debug|release): {
 }
 
 SOURCES += \
-        main.cpp
+        main.cpp Converter.cpp
+HEADERS += \
+        Converter.h
 
 SRC = ../../src
 
 include(../../pro/MBS.pri)
+
+SOURCES -= $$SRC/scattering/*.cpp $$SRC/incidence/*.cpp $$SRC/tracer/*.cpp
+HEADERS -= $$SRC/scattering/*.h $$SRC/incidence/*.h $$SRC/tracer/*.h
+
+message($$SOURCES)

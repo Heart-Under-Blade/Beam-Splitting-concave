@@ -108,7 +108,7 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib)
 	}
 }
 
-double Handler::BeamCrossSection(const Beam &beam) const
+double Handler::BeamCrossSection(const Beam &beam)
 {
 	const double eps = 1e7*DBL_EPSILON;
 
@@ -130,28 +130,16 @@ void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
 	double cross = BeamCrossSection(beam);
 	double area = cross*m_sinAngle;
-#ifdef _DEBUG // DEB
-//	vector<int> track;
-	double ddd = m[0][0];
-//	Tracks::RecoverTrack(beam, 8, track);
-#endif
-//	double dd = ddd + 1;
-//	double d = ddd + 2;
 	m *= area;
 }
 
 matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 {
-#ifdef _DEBUG // DEB
-//	vector<int> track;
-//	double ddd = m[0][0];
-//	m_tracks->RecoverTrack(beam, track);
-#endif
 	matrix m = Mueller(beam.Jones);
 
 	if (zenAng < 180 && zenAng > 0)
 	{
-		const float &y = beam.direction.cy;
+		const float &y = beam.direction.coordinates[1];
 
 		if (y*y > DBL_EPSILON)
 		{	// rotate the Mueller matrix of the beam to appropriate coordinate system
@@ -170,8 +158,8 @@ matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 
 void HandlerGO::RotateMuller(const Point3f &dir, matrix &bf)
 {
-	const float &x = dir.cx;
-	const float &y = dir.cy;
+	const float &x = dir.coordinates[0];
+	const float &y = dir.coordinates[1];
 
 	double tmp = y*y;
 	tmp = acos(x/sqrt(x*x+tmp));
@@ -263,7 +251,7 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		double delta = Point3f::Length(beam.Center() - beam.arr[i])/Point3f::Length(k);
+		double delta = Point3f::Length(beam.Center() - beam.vertices[i])/Point3f::Length(k);
 		opticalPath += (delta*Point3f::DotProduct(k, n1))/Point3f::DotProduct(beam.direction, n1);
 	}
 
@@ -335,7 +323,7 @@ void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.arr[i],
+		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.vertices[i],
 														  track);
 		ps.push_back(p0.internal);
 		sum += p0.internal;
@@ -358,22 +346,24 @@ void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 	}
 }
 
-void Handler::ApplyAbsorbtion(Beam &beam)
+OpticalPath Handler::ComputeOpticalPath(const Beam &beam)
 {
 	vector<int> track;
 	m_tracks->RecoverTrack(beam, track);
-
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-	OpticalPath path = m_scattering->ComputeOpticalPath(beam, beam.Center(),
-														track);
+	return m_scattering->ComputeOpticalPath(beam, beam.Center(), track);
+}
+
+void Handler::ApplyAbsorbtion(Beam &beam)
+{
+	auto path = ComputeOpticalPath(beam);
 
 	if (path.internal > DBL_EPSILON)
 	{
-//		OutputPaths(beam, path);
-
 #ifdef _DEBUG // DEB
-		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
-			int ggg = 0;
+//		OutputPaths(beam, path);
+//		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
+//			int ggg = 0;
 #endif
 		double abs = exp(m_cAbs*path.internal);
 		beam.Jones *= abs;
@@ -382,7 +372,7 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 
 void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 {
-	m_sinAngle = sin(m_particle->rotAngle.beta);
+	m_sinAngle = sin(m_particle->rotAngle.zenith);
 
 	for (Beam &beam : beams)
 	{
@@ -404,7 +394,7 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 			ApplyAbsorbtion(beam);
 		}
 
-		const float &z = beam.direction.cz;
+		const float &z = beam.direction.coordinates[2];
 		int zenith = round((acos(z)*SPHERE_RING_NUM)/M_PI);
 		matrix m = ComputeMueller(zenith, beam);
 #ifdef _DEBUG // DEB
@@ -427,7 +417,7 @@ HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float
 
 void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 {
-	m_sinAngle = sin(m_particle->rotAngle.beta);
+	m_sinAngle = sin(m_particle->rotAngle.zenith);
 
 	for (Beam &beam : beams)
 	{
@@ -438,7 +428,7 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 			beam.RotateSpherical(-m_incidentLight->direction,
 								 m_incidentLight->polarizationBasis);
 
-			const float &z = beam.direction.cz;
+			const float &z = beam.direction.coordinates[2];
 			int zenith = round((acos(z)*SPHERE_RING_NUM)/M_PI);
 			matrix m = ComputeMueller(zenith, beam);
 
@@ -506,7 +496,9 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 							 m_incidentLight->polarizationBasis);
 
 		Point3f center = beam.Center();
-		double projLenght = beam.opticalPath + Point3f::DotProduct(center, beam.direction);
+
+		auto path = ComputeOpticalPath(beam);
+		double projLenght = path.GetTotal() + Point3f::DotProduct(center, beam.direction);
 
 		Point3f beamBasis = Point3f::CrossProduct(beam.polarizationBasis, beam.direction);
 		beamBasis = beamBasis/Point3f::Length(beamBasis); // basis of beam
@@ -610,8 +602,8 @@ void HandlerPO::RotateJones(const Beam &beam, const Vector3f &T,
 	Vector3f NT = Point3f::CrossProduct(normal, T);
 	Vector3f NE = Point3f::CrossProduct(normal, beam.polarizationBasis);
 
-	Vector3d NTd = Vector3d(NT.cx, NT.cy, NT.cz);
-	Vector3d NPd = Vector3d(NE.cx, NE.cy, NE.cz);
+	Vector3d NTd = Vector3d(NT.coordinates[0], NT.coordinates[1], NT.coordinates[2]);
+	Vector3d NPd = Vector3d(NE.coordinates[0], NE.coordinates[1], NE.coordinates[2]);
 
 //	J[0][0] = -DotProductD(NTd, vf);
 //	J[0][1] = -DotProductD(NEd, vf);
@@ -620,10 +612,10 @@ void HandlerPO::RotateJones(const Beam &beam, const Vector3f &T,
 	Point3f DT = Point3f::CrossProduct(beam.direction, T);
 	Point3f DP = Point3f::CrossProduct(beam.direction, beam.polarizationBasis);
 
-	Point3d DTd = Point3d(DT.cx, DT.cy, DT.cz);
-	Point3d DPd = Point3d(DP.cx, DP.cy, DP.cz);
+	Point3d DTd = Point3d(DT.coordinates[0], DT.coordinates[1], DT.coordinates[2]);
+	Point3d DPd = Point3d(DP.coordinates[0], DP.coordinates[1], DP.coordinates[2]);
 
-	Point3d nd = Point3d(normal.cx, normal.cy, normal.cz);
+	Point3d nd = Point3d(normal.coordinates[0], normal.coordinates[1], normal.coordinates[2]);
 
 	Point3d cpT = Point3d::CrossProduct(vr, NTd) - Point3d::CrossProduct(vr, Point3d::CrossProduct(vr, Point3d::CrossProduct(nd, DTd)));
 	Point3d cpP = Point3d::CrossProduct(vr, NPd) - Point3d::CrossProduct(vr, Point3d::CrossProduct(vr, Point3d::CrossProduct(nd, DPd)));
@@ -699,7 +691,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 //		m_tracks->RecoverTrack(beam, tr);
 #endif
 
-		if (con20 && beam.direction.cz < BEAM_DIR_LIM)
+		if (con20 && beam.direction.coordinates[2] < BEAM_DIR_LIM)
 		{
 			continue;
 		}
@@ -718,7 +710,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 //		double area = cross*m_sinAngle;
 //		vector<int> track;
 //		double ddd = m[0][0];
-		int zenith = round((acos(beam.direction.cz)*SPHERE_RING_NUM)/M_PI);
+		int zenith = round((acos(beam.direction.coordinates[2])*SPHERE_RING_NUM)/M_PI);
 #endif
 		// absorbtion
 		if (m_hasAbsorbtion && beam.actNo > 0)
@@ -730,7 +722,8 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		beamBasis = beamBasis/Point3f::Length(beamBasis);
 
 		Point3f center = beam.Center();
-		double projLenght = beam.opticalPath + Point3f::DotProduct(center, beam.direction);
+		auto path = ComputeOpticalPath(beam);
+		double projLenght = path.GetTotal() + Point3f::DotProduct(center, beam.direction);
 
 		matrixC jones(2, 2);
 		matrixC fnJones = ComputeFnJones(beam.Jones, center, vr, projLenght);

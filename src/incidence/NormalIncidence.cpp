@@ -3,44 +3,50 @@
 #include "Beam.h"
 #include "Splitting.h"
 
-void NormalIncidence::ComputeDirections(Beam &beam, Splitting &splitter) const
+NormalIncidence::NormalIncidence()
 {
-	splitter.inBeam.direction = (beam.isInside) ? -beam.direction
+}
+
+void NormalIncidence::SetSplitting(Splitting *splitting)
+{
+	Incidence::SetSplitting(splitting);
+	complex tmp = (m_splitting->m_ri + 1.0);
+	fresnels[0] = (2.0 * m_splitting->m_ri)/tmp;
+	fresnels[1] = (1.0 - m_splitting->m_ri)/tmp;
+	fresnels[2] = 2.0/tmp;
+	fresnels[3] = (m_splitting->m_ri - 1.0)/tmp;
+}
+
+void NormalIncidence::ComputeDirections(Beam &beam, BeamPair<Beam> &beams)
+{
+	beams.internal.direction = (beam.isInside) ? -beam.direction
 												: beam.direction;
 
-	splitter.outBeam.direction = (beam.isInside) ? beam.direction
-												 : -beam.direction;
+	beams.external.direction = (beam.isInside) ? beam.direction
+											   : -beam.direction;
 
-	splitter.inBeam.polarizationBasis = beam.polarizationBasis;
-	splitter.outBeam.polarizationBasis = beam.polarizationBasis;
+	beams.internal.polarizationBasis = beam.polarizationBasis;
+	beams.external.polarizationBasis = beam.polarizationBasis;
 
 #ifdef _DEBUG // DEB
-	splitter.inBeam.dirs.push_back(splitter.inBeam.direction);
-	splitter.outBeam.dirs.push_back(splitter.outBeam.direction);
+	beams.internal.dirs.push_back(beams.internal.direction);
+	beams.external.dirs.push_back(beams.external.direction);
 #endif
 }
 
-void NormalIncidence::ComputeJonesMatrices(Beam &beam, Splitting &splitter) const
+void NormalIncidence::ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams)
 {
-	splitter.inBeam.Jones = beam.Jones;
-	splitter.outBeam.Jones = beam.Jones;
-
-	complex f;
+	beams.internal.Jones = beam.Jones;
+	beams.external.Jones = beam.Jones;
 
 	if (beam.isInside)
 	{
-		f = (2.0 * splitter.m_ri)/(1.0 + splitter.m_ri); // OPT: вынести целиком
-		splitter.outBeam.MultiplyJonesMatrix(f, f);
-
-		f = (1.0 - splitter.m_ri)/(1.0 + splitter.m_ri); // OPT: вынести целиком
-		splitter.inBeam.MultiplyJonesMatrix(f, -f);
+		beams.external.MultiplyJonesMatrix(fresnels[0], fresnels[0]);
+		beams.internal.MultiplyJonesMatrix(fresnels[1], -fresnels[1]);
 	}
 	else
 	{
-		f = 2.0/(splitter.m_ri + 1.0); // OPT: вынести целиком
-		splitter.outBeam.MultiplyJonesMatrix(f, f);
-
-		f = (splitter.m_ri - 1.0)/(splitter.m_ri + 1.0); // OPT: вынести целиком
-		splitter.inBeam.MultiplyJonesMatrix(f, -f);
+		beams.external.MultiplyJonesMatrix(fresnels[2], fresnels[2]);
+		beams.internal.MultiplyJonesMatrix(fresnels[3], -fresnels[3]);
 	}
 }

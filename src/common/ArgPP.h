@@ -166,12 +166,12 @@ private: // methods
 			}
 		}
 
-		if (valueNum != 0)
-		{
-			std::string msg = "not enough values for argument with key '"
-					+ key + "', must be " + std::to_string(valueNum) + " more";
-			Error(msg);
-		}
+//		if (valueNum != 0)
+//		{
+//			std::string msg = "not enough values for argument with key '"
+//					+ key + "', must be " + std::to_string(valueNum) + " more";
+//			Error(msg);
+//		}
 	}
 
 	void FillArg(const std::string &key, const std::string &rawArg,

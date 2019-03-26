@@ -2,17 +2,13 @@
 
 #include "Incidence.h"
 
-class Beam;
-class Splitting;
-
 class CompleteReflectionIncidence : public Incidence
 {
 public:
-	virtual void ComputeDirections(Beam &beam, Splitting &splitter) const override;
+	CompleteReflectionIncidence();
+	void ComputeDirections(Beam &beam, BeamPair<Beam> &beams) const override;
+	void ComputeJonesMatrices(Beam &parentBeam, BeamPair<Beam> &beams) const override;
 
-	virtual void ComputeJonesMatrices(Beam &beam,
-									  Splitting &splitter) const override;
-
-	void ComputeOpticalPaths(const Beam &incidentBeam,
-							 Splitting &splitter) const;
+	void ComputeOpticalPaths(const PathedBeam &incidentBeam,
+							 BeamPair<PathedBeam> &beams) const override;
 };

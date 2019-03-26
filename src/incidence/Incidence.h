@@ -1,14 +1,24 @@
 #pragma once
 
-#include "Beam.h"
+#include "PathedBeam.h"
+#include "Splitting.h"
 
-class Splitting;
-
+/**
+ * @brief Compute params of splitted beams
+ */
 class Incidence
 {
 public:
-	virtual void ComputeDirections(Beam &/*beam*/, Splitting &/*splitter*/) const {};
-	virtual void ComputeJonesMatrices(Beam &/*beam*/, Splitting &/*splitter*/) const {};
+	Incidence();
 
-    void ComputeOpticalPaths(const Beam &beam, Splitting &splitter) const;
+	void SetSplitting(Splitting *splitting);
+
+	virtual void ComputeDirections(Beam &/*beam*/, BeamPair<Beam> &/*beams*/) const {};
+	virtual void ComputeJonesMatrices(Beam &/*beam*/, BeamPair<Beam> &/*beams*/) const {};
+
+	virtual void ComputeOpticalPaths(const PathedBeam &beam,
+									 BeamPair<PathedBeam> &beams) const;
+
+protected:
+	Splitting *m_splitting;
 };

@@ -1,17 +1,16 @@
 #pragma once
 
 #include <math.h>
+#include <vector>
 
 #include "compl.hpp"
 #include "geometry_lib.h"
 #include "Facet.h"
-#include <vector>
-
-#define ROT_MTR_RANK 3
+#include "Rotator.h"
 
 struct ParticleFacet
 {
-	Facet origin; // facet with origin coordinates of points
+	Facet original; // facet with origin coordinates of points
 	Facet actual; // facet with actual coordinates of points
 };
 
@@ -26,26 +25,33 @@ public:
 	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
 	Facet *GetActualFacet(int i);
-	void SetFromFile(const std::string &filename);
+	void SetFromFile(const std::string &filename, double sizeIndex = 1,
+					 double reduceSize = -1);
 
-	void Rotate(const Orientation &angle);
+	void Rotate(const Orientation &orientation);
 	void Move(float dx, float dy, float dz);
-	void Fix();
-
+	void Scale(double ratio);
+	void Resize(double size);
 	void Concate(const std::vector<Particle> &parts);
+	void RemoveFacet(int index);
+	void CommitState();
 
 	/**
-	 * @brief GetRotationRadius
+	 * @brief ComputeRotationRadius
 	 * @return The distance from beginning of the center of coordinate system
 	 * to the farthest point of particle.
 	 */
-	double GetRotationRadius() const;
+	double ComputeRotationRadius() const;
+
+	double Area() const;
+	double MaximalDimension() const;
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 
-	const Angle3d &GetSymmetry() const;
-	virtual void GetParticalFacetIdRange(Facet */*id*/, int &/*begin*/, int &/*end*/) const {}
+	const Orientation &GetSymmetry() const;
+	virtual void GetParticalFacetIdRange(Facet */*id*/,
+										 int &/*begin*/, int &/*end*/) const {}
 
 	bool IsNonConvex() const;
 	void Output();
@@ -55,28 +61,28 @@ public:
 	Orientation rotAngle;
 
 protected:
-	Angle3d m_symmetry;		///< angle of particle symmetry
+	Orientation m_symmetry;		///< angle of particle symmetry
 
+	// REF move this to somewhere
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
+
 	bool m_isNonConvex;
 
 protected:
+	void ReduceSmallEdges(double minSize);
 	void SetDefaultNormals();
 	void SetDefaultCenters();
-	void Reset();
-	void SetSymmetry(double beta, double gamma, double alpha = 0);
+	void ResetPosition();
+	void SetSymmetry(double beta, double gamma);
 	virtual void SetFacetParams() {}
 
 private:
 	void SetDParams();
 	void RotateNormals();
-	void RotatePoint(const Point3f &point, Point3f &result);
-	void SetRotateMatrix();
-	void ReadSymmetry(const int bufSize, char *trash, char *buff,
-					  std::ifstream pfile, char *ptr);
 	void SetFacetIndices();
+	int ReduceEdge(int facetNo, int i1, int i2);
 
 private:
-	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
+	LocalRotator m_rotator;
 };
 

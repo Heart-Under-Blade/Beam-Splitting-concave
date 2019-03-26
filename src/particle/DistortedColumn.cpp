@@ -9,19 +9,19 @@ DistortedColumn::DistortedColumn(const complex &refrIndex, const Size &size,
 	SetSymmetry(M_PI/2, 2*M_PI);
 	SetFacetParams();
 
-	SetBases(elems[0].origin, elems[7].origin);
+	SetBases(elems[0].original, elems[7].original);
 	DistortBases(angle);
-	SetSides(elems[0].origin, elems[7].origin);
+	SetSides(elems[0].original, elems[7].original);
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	Reset();
+	ResetPosition();
 }
 
 void DistortedColumn::DistortBases(double angle)
 {
-    double tilt = Orientation::DegToRad(15);
-    double tanA = tan(Orientation::DegToRad(angle));
+	double tilt = Orientation::DegToRad(15);
+	double tanA = tan(Orientation::DegToRad(angle));
 	double k = m_size.diameter/2 * tanA;
 
 	double h[6];
@@ -36,7 +36,7 @@ void DistortedColumn::DistortBases(double angle)
 
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[0].origin.arr[i].cz += h[i];
-		elems[7].origin.arr[endPointIndex-i].cz += h[i];
+		elems[0].original.vertices[i].coordinates[2] += h[i];
+		elems[7].original.vertices[endPointIndex-i].coordinates[2] += h[i];
 	}
 }

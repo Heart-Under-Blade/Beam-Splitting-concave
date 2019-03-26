@@ -1,26 +1,35 @@
 #include "Incidence.h"
 
-#include "Splitting.h"
+Incidence::Incidence()
+{
+}
 
-void Incidence::ComputeOpticalPaths(const Beam &beam, Splitting &splitter) const
+void Incidence::SetSplitting(Splitting *splitting)
+{
+	m_splitting = splitting;
+}
+
+void Incidence::ComputeOpticalPaths(const PathedBeam &beam,
+									BeamPair<PathedBeam> &beams) const
 {
 	if (beam.opticalPath < FLT_EPSILON)
 	{
-		Point3f p = splitter.inBeam.Center();
-		double path = splitter.ComputeIncidentOpticalPath(beam.direction, p);
-		splitter.inBeam.AddOpticalPath(path);
-		splitter.outBeam.AddOpticalPath(path);
+		Point3f p = beams.internal.Center();
+		double path = beam.ComputeIncidentOpticalPath(beam.direction, p);
+		beams.internal.AddOpticalPath(path);
+		beams.external.AddOpticalPath(path);
 	}
 	else
 	{
-		double path = splitter.ComputeSegmentOpticalPath(beam, splitter.inBeam.Center());
+		double path = beam.ComputeSegmentOpticalPath(m_splitting->reRiEff,
+													 beams.internal.Center());
 #ifdef _DEBUG // DEB
-		splitter.inBeam.ops = beam.ops;
-		splitter.outBeam.ops = beam.ops;
+		beams.internal.ops = beam.ops;
+		beams.external.ops = beam.ops;
 #endif
 		path += beam.opticalPath;
-		splitter.inBeam.AddOpticalPath(path);
-		splitter.outBeam.AddOpticalPath(path);
+		beams.internal.AddOpticalPath(path);
+		beams.external.AddOpticalPath(path);
 	}
 }
 

@@ -1,13 +1,16 @@
 #pragma once
 
-#include "Incidence.h"
-
-class Beam;
-class Splitting;
+#include "RegularIncidence.h"
 
 class NormalIncidence : public Incidence
 {
 public:
-	virtual void ComputeDirections(Beam &beam, Splitting &splitter) const override;
-	virtual void ComputeJonesMatrices(Beam &beam, Splitting &splitter) const override;
+	NormalIncidence();
+	void SetSplitting(Splitting *splitting);
+
+	void ComputeDirections(Beam &beam, BeamPair<Beam> &beams);
+	void ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams);
+
+private:
+	complex fresnels[4];
 };

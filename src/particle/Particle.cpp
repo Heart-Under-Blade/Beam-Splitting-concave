@@ -23,6 +23,7 @@ void Particle::SetFacetIndices()
 {
 	for (int i = 0; i < MAX_FACET_NUM; ++i)
 	{
+		elems[i].original.index = i;
 		elems[i].actual.index = i;
 	}
 }
@@ -32,7 +33,8 @@ Facet *Particle::GetActualFacet(int i)
 	return &elems[i].actual;
 }
 
-void Particle::SetFromFile(const std::string &filename)
+void Particle::SetFromFile(const std::string &filename, double sizeIndex,
+						   double reduceSize)
 {
 	std::ifstream pfile(filename, std::ios::in);
 
@@ -46,7 +48,7 @@ void Particle::SetFromFile(const std::string &filename)
 	char *buff = (char*)malloc(sizeof(char) * bufSize);
 
 	nElems = 0;
-	Facet &facet = elems[nElems++].origin;
+	Facet *facet = &(elems[nElems++].original);
 
 	char *ptr, *trash;
 
@@ -61,22 +63,26 @@ void Particle::SetFromFile(const std::string &filename)
 		pfile.getline(buff, bufSize);
 
 		ptr = strtok(buff, " ");
-		m_symmetry.beta = Angle3d::DegToRad(strtod(ptr, &trash));
+		m_symmetry.zenith = Orientation::DegToRad(strtod(ptr, &trash));
 
 		ptr = strtok(NULL, " ");
-		m_symmetry.gamma = Angle3d::DegToRad(strtod(ptr, &trash));
+		m_symmetry.azimuth = Orientation::DegToRad(strtod(ptr, &trash));
 	}
 
 	pfile.getline(buff, bufSize); // skip empty line
 
 	while (!pfile.eof()) // read vertices of facets
 	{
+#ifdef _DEBUG // DEB
+		if (nElems == 35)
+			int ff = 0;
+#endif
 		pfile.getline(buff, bufSize);
 		ptr = strtok(buff, " ");
 
 		if (strlen(buff) == 0)
 		{
-			facet = elems[nElems++].origin;
+			facet = &(elems[nElems++].original);
 			continue;
 		}
 
@@ -84,66 +90,73 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
-			facet.arr[facet.nVertices].point[c_i++] = strtod(ptr, &trash);
+			double value = strtod(ptr, &trash);
+			facet->vertices[facet->nVertices].coordinates[c_i++] = value * sizeIndex;
 			ptr = strtok(NULL, " ");
 		}
 
-		++(facet.nVertices);
+		++(facet->nVertices);
 	}
 
 	pfile.close();
 
 	// correction of number of facet
-	if (elems[nElems-1].origin.nVertices == 0)
+	if (elems[nElems-1].original.nVertices == 0)
 	{
 		--nElems;
 	}
 
+	if (reduceSize > 0)
+	{
+		ReduceSmallEdges(reduceSize);
+	}
+
 	SetDefaultNormals();
-	Reset();
+	ResetPosition();
 	SetDefaultCenters();
 
 	if (IsNonConvex() || isAggregated)
 	{
 		for (int i = 0; i < nElems; ++i)
 		{
-			elems[i].origin.isOverlayedIn = true;
-			elems[i].origin.isOverlayedOut = true;
+			elems[i].original.isOverlayedIn = true;
+			elems[i].original.isOverlayedOut = true;
 			elems[i].actual.isOverlayedIn = true;
 			elems[i].actual.isOverlayedOut = true;
 		}
 	}
 }
 
-void Particle::Rotate(const Orientation &angle)
+void Particle::Rotate(const Orientation &orientation)
 {
-	rotAngle = angle;
-	SetRotateMatrix();
+	rotAngle = orientation;
+	m_rotator.SetRotationAngle(rotAngle);
 
 	// REF: слить всё в один цикл
 	for (int i = 0; i < nElems; ++i)
 	{
-		auto &facet = elems[i];
+		auto &original = elems[i].original;
+		auto &actual = elems[i].actual;
 
-		for (int j = 0; j < facet.origin.nVertices; ++j)
+		for (int j = 0; j < original.nVertices; ++j)
 		{
-			RotatePoint(facet.origin.arr[j], facet.actual.arr[j]);
+			m_rotator.RotatePoint(original.vertices[j], actual.vertices[j]);
 		}
 
 		// centers
-		RotatePoint(facet.origin.center, facet.actual.center);
+		m_rotator.RotatePoint(original.center, actual.center);
 	}
 
 	RotateNormals();
 }
 
-void Particle::Fix()
+void Particle::CommitState()
 {
 	for (int i = 0; i < nElems; ++i)
 	{
 		for (int j = 0; j < elems[i].actual.nVertices; ++j)
 		{
-			elems[i].origin.arr[j] = elems[i].actual.arr[j];
+			elems[i].original.vertices[j] = elems[i].actual.vertices[j];
 		}
 	}
 }
@@ -159,14 +172,26 @@ void Particle::Concate(const std::vector<Particle> &parts)
 
 		for (int j = 0; j < part.nElems; ++j)
 		{
-			elems[i++].origin = part.elems[j].actual;
+			elems[i++].original = part.elems[j].actual;
 		}
 	}
 
 	isAggregated = true;
 }
 
-double Particle::GetRotationRadius() const
+void Particle::RemoveFacet(int index)
+{
+	for (int i = index+1; i < nElems; ++i)
+	{
+		elems[i-1] = elems[i];
+	}
+
+	--nElems;
+
+	SetFacetIndices();
+}
+
+double Particle::ComputeRotationRadius() const
 {
 	Point3f p0(0, 0, 0);
 
@@ -178,7 +203,7 @@ double Particle::GetRotationRadius() const
 
 		for (int j = 0; j < facet.nVertices; ++j)
 		{
-			Point3f v_len = facet.arr[j] - p0;
+			Point3f v_len = facet.vertices[j] - p0;
 			double len = Point3f::Length(v_len);
 
 			if (len > radius)
@@ -191,12 +216,73 @@ double Particle::GetRotationRadius() const
 	return radius;
 }
 
+double Particle::Area() const
+{
+	double area = 0;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		area += elems[i].original.Area();
+	}
+
+	return area;
+}
+
+void Particle::Resize(double size)
+{
+	double dMax = MaximalDimension();
+	double ratio = size/dMax;
+	Scale(ratio);
+#ifdef _DEBUG // DEB
+	double dMax1 = MaximalDimension();
+#endif
+	ResetPosition();
+}
+
+void Particle::Scale(double ratio)
+{
+	for (int i = 0; i < nElems; ++i)
+	{
+		for (int j = 0; j < elems[i].original.nVertices; ++j)
+		{
+			elems[i].original.vertices[j] *= ratio;
+		}
+	}
+}
+double Particle::MaximalDimension() const
+{
+	double Dmax = 0;
+	double newDmax;
+
+	Polygon pol;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		pol.Concat(elems[i].original);
+	}
+
+	for (int i = 0; i < pol.nVertices; ++i)
+	{
+		for (int j = 0; j < pol.nVertices; ++j)
+		{
+			newDmax = Point3f::Length(pol.vertices[j] - pol.vertices[i]);
+
+			if (newDmax > Dmax)
+			{
+				Dmax = newDmax;
+			}
+		}
+	}
+
+	return Dmax;
+}
+
 const complex &Particle::GetRefractiveIndex() const
 {
 	return m_refractiveIndex;
 }
 
-const Angle3d &Particle::GetSymmetry() const
+const Orientation &Particle::GetSymmetry() const
 {
 	return m_symmetry;
 }
@@ -205,9 +291,12 @@ void Particle::Move(float dx, float dy, float dz)
 {
 	for (int i = 0; i < nElems; ++i)
 	{
-		for (int j = 0; j < elems[i].origin.nVertices; ++j)
+		auto &origin = elems[i].original;
+		auto &actual = elems[i].actual;
+
+		for (int j = 0; j < origin.nVertices; ++j)
 		{
-			elems[i].actual.arr[j] = elems[i].origin.arr[j] + Point3f(dx, dy, dz);
+			actual.vertices[j] = origin.vertices[j] + Point3f(dx, dy, dz);
 		}
 	}
 }
@@ -227,11 +316,11 @@ void Particle::Output()
 
 		for (int j = 0; j < facet.nVertices; ++j)
 		{
-			Point3f p = facet.arr[j];
-			M << p.point[0] << ' '
-							<< p.point[1] << ' '
-							<< p.point[2] << ' '
-							<< i ;
+			Point3f p = facet.vertices[j];
+			M << p.coordinates[0]
+					<< ' ' << p.coordinates[1]
+					<< ' ' << p.coordinates[2]
+					<< ' ' << i ;
 			M << std::endl;
 		}
 
@@ -239,6 +328,110 @@ void Particle::Output()
 	}
 
 	M.close();
+}
+
+int Particle::ReduceEdge(int facetNo, int i1, int i2)
+{
+	auto &p1 = elems[facetNo].original.vertices[i1];
+	auto &p2 = elems[facetNo].original.vertices[i2];
+
+	double eps = 0.001;
+	Point3f newVertex = (p2 + p1)/2;
+
+	int removedVertices = 0;
+	int sameEdgeFacetNo = -1;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		if (i != facetNo)
+		{
+			auto &facet = elems[i].original;
+			int nFoundVertices = 0;
+
+			for (int j = 0; j < facet.nVertices && nFoundVertices < 2; ++j)
+			{
+				auto &v = facet.vertices[j];
+
+				if (v.IsEqualTo(p1, eps) || v.IsEqualTo(p2, eps))
+				{
+					++nFoundVertices;
+
+					if (nFoundVertices < 2)
+					{
+						v = newVertex;
+					}
+					else
+					{
+						facet.RemoveVertex(j);
+						++removedVertices;
+						sameEdgeFacetNo = i;
+					}
+				}
+			}
+		}
+	}
+
+#ifdef _DEBUG // DEB
+	if (removedVertices != 1)
+	{
+		int fff = 0;
+	}
+#endif
+
+	elems[facetNo].original.vertices[i1] = newVertex;
+	elems[facetNo].original.RemoveVertex(i2);
+
+	return sameEdgeFacetNo;
+}
+
+void Particle::ReduceSmallEdges(double minSize)
+{
+	bool isReduced;
+
+	do
+	{
+		isReduced = false;
+
+		for (int i = 0; i < nElems; ++i)
+		{
+			auto &facet = elems[i].original;
+			int jPrev = facet.nVertices-1;
+
+			for (int j = 0; j < facet.nVertices; ++j)
+			{
+				Vector3f v = facet.vertices[j] - facet.vertices[jPrev];
+
+				if (Point3f::Length(v) < minSize)
+				{
+#ifdef _DEBUG // DEB
+					int nv = elems[i].original.nVertices;
+
+					if (nv == 1)
+						int ff = 1;
+#endif
+					int sameEdgeFacetNo = ReduceEdge(i, jPrev, j);
+					isReduced = true;
+
+					if (elems[i].original.nVertices < 3)
+					{
+						RemoveFacet(i);
+					}
+
+					if (sameEdgeFacetNo > 0)
+					{
+						if (elems[sameEdgeFacetNo].original.nVertices < 3)
+						{
+							RemoveFacet(sameEdgeFacetNo);
+						}
+					}
+
+					break;
+				}
+
+				jPrev = j;
+			}
+		}
+	} while (isReduced);
 }
 
 void Particle::SetRefractiveIndex(const complex &value)
@@ -250,15 +443,15 @@ void Particle::SetDefaultNormals()
 {
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[i].origin.SetNormal();
+		elems[i].original.SetNormal();
 	}
 }
 
-void Particle::Reset()
+void Particle::ResetPosition()
 {
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[i].actual = elems[i].origin;
+		elems[i].actual = elems[i].original;
 	}
 }
 
@@ -266,34 +459,8 @@ void Particle::SetDefaultCenters()
 {
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[i].origin.SetCenter();
+		elems[i].original.SetCenter();
 	}
-}
-
-void Particle::SetRotateMatrix()
-{
-	double cosA, cosB, cosG,
-			sinA, sinB, sinG;
-
-	sincos(rotAngle.alpha, &sinA, &cosA);
-	sincos(rotAngle.beta,  &sinB, &cosB);
-	sincos(rotAngle.gamma, &sinG, &cosG);
-
-	double cosAcosB = cosA*cosB;
-	double sinAcosG = sinA*cosG;
-	double sinAsinG = sinA*sinG;
-
-	m_rotMatrix[0][0] = cosAcosB*cosG - sinAsinG;
-	m_rotMatrix[1][0] = sinAcosG*cosB + cosA*sinG;
-	m_rotMatrix[2][0] = -sinB*cosG;
-
-	m_rotMatrix[0][1] = -(cosAcosB*sinG + sinAcosG);
-	m_rotMatrix[1][1] = cosA*cosG - sinAsinG*cosB;
-	m_rotMatrix[2][1] = sinB*sinG;
-
-	m_rotMatrix[0][2] = cosA*sinB;
-	m_rotMatrix[1][2] = sinA*sinB;
-	m_rotMatrix[2][2] = cosB;
 }
 
 void Particle::RotateNormals()
@@ -301,7 +468,7 @@ void Particle::RotateNormals()
 	for (int i = 0; i < nElems; ++i)
 	{
 		auto &facet = elems[i];
-		RotatePoint(facet.origin.in_normal, facet.actual.in_normal);
+		m_rotator.RotatePoint(facet.original.in_normal, facet.actual.in_normal);
 	}
 
 	SetDParams();
@@ -319,21 +486,13 @@ void Particle::SetDParams()
 	for (int i = 0; i < nElems; ++i)
 	{
 		Facet &facet = elems[i].actual;
-		double d = Point3f::DotProduct(facet.arr[0], facet.in_normal);
+		double d = Point3f::DotProduct(facet.vertices[0], facet.in_normal);
 		facet.in_normal.d_param = -d;
 	}
 }
 
-void Particle::RotatePoint(const Point3f &point, Point3f &result)
+void Particle::SetSymmetry(double beta, double gamma)
 {
-	result.cx = point.cx*m_rotMatrix[0][0] + point.cy*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];
-	result.cy = point.cx*m_rotMatrix[1][0] + point.cy*m_rotMatrix[1][1] + point.cz*m_rotMatrix[1][2];
-	result.cz = point.cx*m_rotMatrix[2][0] + point.cy*m_rotMatrix[2][1] + point.cz*m_rotMatrix[2][2];
-}
-
-void Particle::SetSymmetry(double beta, double gamma, double alpha)
-{
-	m_symmetry.beta = beta;
-	m_symmetry.gamma = gamma;
-	m_symmetry.alpha = alpha;
+	m_symmetry.zenith = beta;
+	m_symmetry.azimuth = gamma;
 }

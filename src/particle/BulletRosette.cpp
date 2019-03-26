@@ -1,6 +1,7 @@
 #include "BulletRosette.h"
 #include "Bullet.h"
 #include "common.h"
+#include "geometry_lib.h"
 
 BulletRosette::BulletRosette()
 {
@@ -19,56 +20,56 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	{
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
-		b.Fix();
+		b.CommitState();
 		bullets.push_back(b);
 	}
 
 	{
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
-		b.Fix();
-		b.Rotate(Orientation(0, Orientation::DegToRad(90), 0));
-		b.Fix();
+		b.CommitState();
+		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
+		b.CommitState();
 		bullets.push_back(b);
 	}
 
 	{
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
-		b.Fix();
-		b.Rotate(Orientation(0, Orientation::DegToRad(180), 0));
-		b.Fix();
+		b.CommitState();
+		b.Rotate(Orientation(0, Orientation::DegToRad(180)));
+		b.CommitState();
 		bullets.push_back(b);
 	}
 
 	{
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
-		b.Fix();
-		b.Rotate(Orientation(0, Orientation::DegToRad(270), 0));
-		b.Fix();
+		b.CommitState();
+		b.Rotate(Orientation(0, Orientation::DegToRad(270)));
+		b.CommitState();
 		bullets.push_back(b);
 	}
 
 	{
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
-		b.Fix();
-		b.Rotate(Orientation(0, Orientation::DegToRad(90), 0));
-		b.Fix();
-		b.Rotate(Orientation(Orientation::DegToRad(90), 0, 0));
-		b.Fix();
+		b.CommitState();
+		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
+		b.CommitState();
+		b.Rotate(Orientation(Orientation::DegToRad(90), 0));
+		b.CommitState();
 		bullets.push_back(b);
 	}
 
 	{
 		Bullet b(refrIndex, size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
-		b.Fix();
-		b.Rotate(Orientation(0, Orientation::DegToRad(90), 0));
-		b.Fix();
-		b.Rotate(Orientation(Orientation::DegToRad(270), 0, 0));
-		b.Fix();
+		b.CommitState();
+		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
+		b.CommitState();
+		b.Rotate(Orientation(Orientation::DegToRad(270), 0));
+		b.CommitState();
 		bullets.push_back(b);
 	}
 
@@ -76,12 +77,12 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	Reset();
+	ResetPosition();
 
 	for (int i = 0; i < nElems; ++i)
 	{
-		elems[i].origin.isOverlayedIn = true;
-		elems[i].origin.isOverlayedOut = true;
+		elems[i].original.isOverlayedIn = true;
+		elems[i].original.isOverlayedOut = true;
 		elems[i].actual.isOverlayedIn = true;
 		elems[i].actual.isOverlayedOut = true;
 	}

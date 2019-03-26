@@ -2,12 +2,10 @@
 
 #include "Incidence.h"
 
-class Beam;
-class Splitting;
-
 class RegularIncidence : public Incidence
 {
 public:
-	virtual void ComputeDirections(Beam &beam, Splitting &splitter) const override;
-	virtual void ComputeJonesMatrices(Beam &beam, Splitting &splitter) const override;
+	RegularIncidence();
+	void ComputeDirections(Beam &beam, BeamPair<Beam> &beams) const override;
+	void ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams) const override;
 };

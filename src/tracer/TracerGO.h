@@ -2,13 +2,14 @@
 
 #include "Tracer.h"
 
-class TracerGO : public Tracer
+class TracerGO : public LightTracer
 {
 public:
-	TracerGO(Particle *particle, int maxActNo, const std::string &resultFileName);
+	TracerGO(Particle *particle, Scattering *scattering,
+			 const std::string &resultFileName);
 
-	void TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange);
-	void TraceFixed(const double &beta, const double &gamma);
+	void TraceRandom(const AngleRange &zenithRange,
+					 const AngleRange &azimuthRange);
 
 protected:
 	double CalcNorm(long long orNum);
