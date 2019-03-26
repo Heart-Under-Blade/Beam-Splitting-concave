@@ -10,7 +10,7 @@
 
 struct ParticleFacet
 {
-	Facet origin; // facet with origin coordinates of points
+	Facet original; // facet with origin coordinates of points
 	Facet actual; // facet with actual coordinates of points
 };
 
@@ -25,28 +25,33 @@ public:
 	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
 	Facet *GetActualFacet(int i);
-	void SetFromFile(const std::string &filename, double sizeIndex = 1);
+	void SetFromFile(const std::string &filename, double sizeIndex = 1,
+					 double reduceSize = -1);
 
 	void Rotate(const Orientation &orientation);
 	void Move(float dx, float dy, float dz);
-	void Fix();
-
+	void Scale(double ratio);
+	void Resize(double size);
 	void Concate(const std::vector<Particle> &parts);
+	void RemoveFacet(int index);
+	void CommitState();
 
 	/**
-	 * @brief GetRotationRadius
+	 * @brief ComputeRotationRadius
 	 * @return The distance from beginning of the center of coordinate system
 	 * to the farthest point of particle.
 	 */
 	double ComputeRotationRadius() const;
 
-	double ComputeDmax() const;
+	double Area() const;
+	double MaximalDimension() const;
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 
 	const Orientation &GetSymmetry() const;
-	virtual void GetParticalFacetIdRange(Facet */*id*/, int &/*begin*/, int &/*end*/) const {}
+	virtual void GetParticalFacetIdRange(Facet */*id*/,
+										 int &/*begin*/, int &/*end*/) const {}
 
 	bool IsNonConvex() const;
 	void Output();
@@ -58,13 +63,16 @@ public:
 protected:
 	Orientation m_symmetry;		///< angle of particle symmetry
 
+	// REF move this to somewhere
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
+
 	bool m_isNonConvex;
 
 protected:
+	void ReduceSmallEdges(double minSize);
 	void SetDefaultNormals();
 	void SetDefaultCenters();
-	void Reset();
+	void ResetPosition();
 	void SetSymmetry(double beta, double gamma);
 	virtual void SetFacetParams() {}
 
@@ -72,6 +80,7 @@ private:
 	void SetDParams();
 	void RotateNormals();
 	void SetFacetIndices();
+	int ReduceEdge(int facetNo, int i1, int i2);
 
 private:
 	LocalRotator m_rotator;

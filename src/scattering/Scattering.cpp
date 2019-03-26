@@ -159,7 +159,7 @@ void Scattering::SetPolygonByFacet(Facet *facet, Polygon &polygon) const
 
 	for (int i = 0; i <= size; ++i)
 	{
-		polygon.arr[i] = facet->arr[size-i];
+		polygon.vertices[i] = facet->vertices[size-i];
 	}
 }
 

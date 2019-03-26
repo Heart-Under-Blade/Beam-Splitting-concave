@@ -266,14 +266,14 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 //	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
 //	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
 
-	Point3d p1 = Proj(n, arr[begin]) - center;
+	Point3d p1 = Proj(n, vertices[begin]) - center;
 	Point3d p2;
 
 	if (fabs(B) > fabs(A))
 	{
 		for (int i = startIndex; i != endIndex;)
 		{
-			p2 = Proj(n, arr[i]) - center;
+			p2 = Proj(n, vertices[i]) - center;
 
 			if (fabs(p1.x - p2.x) < eps1)
 			{
@@ -326,7 +326,7 @@ complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
 	{
 		for (int i = startIndex; i != endIndex;)
 		{
-			p2 = Proj(n, arr[i]) - center;
+			p2 = Proj(n, vertices[i]) - center;
 
 			if (fabs(p1.y - p2.y)<eps1)
 			{
@@ -422,7 +422,7 @@ void Beam::SetPolygon(const Polygon &other)
 
 	for (int i = 0; i < other.nVertices; ++i)
 	{
-		arr[i] = other.arr[i];
+		vertices[i] = other.vertices[i];
 	}
 }
 

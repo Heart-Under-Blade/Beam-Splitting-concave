@@ -10,8 +10,8 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 
 //  SetBases1 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = elems[0].origin;
-		Facet &baseBottom = elems[7].origin;
+		Facet &baseTop = elems[0].original;
+		Facet &baseBottom = elems[7].original;
 
 		Point3f *facet;
 
@@ -37,13 +37,13 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 		};
 
 		// top base facet
-		facet = baseTop.arr;
+		facet = baseTop.vertices;
 		SetTwoDiagonalPoints(0, halfRadius, inRadius, halfHeight + offset);
 		SetTwoDiagonalPoints(1, -halfRadius, inRadius, halfHeight + offset);
 		SetTwoDiagonalPoints(2, -radius, 0, halfHeight + offset);
 
 		// bottom base facet
-		facet = baseBottom.arr;
+		facet = baseBottom.vertices;
 		SetTwoDiagonalPoints(0, radius, 0, -halfHeight + offset);
 		SetTwoDiagonalPoints(1, halfRadius, -inRadius, -halfHeight + offset);
 		SetTwoDiagonalPoints(2, -halfRadius, -inRadius, -halfHeight + offset);
@@ -51,8 +51,8 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 
 //	SetBases2 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = elems[8].origin;
-		Facet &baseBottom = elems[15].origin;
+		Facet &baseTop = elems[8].original;
+		Facet &baseBottom = elems[15].original;
 
 		Point3f *facet;
 
@@ -78,36 +78,36 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &siz
 		};
 
 		// top base facet
-		facet = baseTop.arr;
+		facet = baseTop.vertices;
 		SetTwoDiagonalPoints(2, halfRadius, halfHeight+offset, inRadius);
 		SetTwoDiagonalPoints(1, -halfRadius, halfHeight+offset, inRadius);
 		SetTwoDiagonalPoints(0, -radius, halfHeight+offset, 0);
 
 		// bottom base facet
-		facet = baseBottom.arr;
+		facet = baseBottom.vertices;
 		SetTwoDiagonalPoints(2, radius, -halfHeight+offset, 0);
 		SetTwoDiagonalPoints(1, halfRadius, -halfHeight+offset, -inRadius);
 		SetTwoDiagonalPoints(0, -halfRadius, -halfHeight+offset, -inRadius);
 	}
 
 	SetSideFacetParams(1, 7);
-	SetSides(elems[0].origin, elems[7].origin);
+	SetSides(elems[0].original, elems[7].original);
 
 	SetSideFacetParams(9, 15);
-	SetSides(elems[8].origin, elems[15].origin);
+	SetSides(elems[8].original, elems[15].original);
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	Reset();
+	ResetPosition();
 }
 
 void HexagonalAggregate::SetFacetParams()
 {
-	elems[0].origin.nVertices = BASE_VERTEX_NUM;
-	elems[7].origin.nVertices = BASE_VERTEX_NUM;
+	elems[0].original.nVertices = BASE_VERTEX_NUM;
+	elems[7].original.nVertices = BASE_VERTEX_NUM;
 
-	elems[8].origin.nVertices = BASE_VERTEX_NUM;
-	elems[15].origin.nVertices = BASE_VERTEX_NUM;
+	elems[8].original.nVertices = BASE_VERTEX_NUM;
+	elems[15].original.nVertices = BASE_VERTEX_NUM;
 
 	elems[1].actual.isOverlayedOut = true;
 	elems[2].actual.isOverlayedOut = true;

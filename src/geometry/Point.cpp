@@ -39,6 +39,13 @@ Point3f Point3f::operator * (double value) const
 			coordinates[2] * value);
 }
 
+Point3f Point3f::operator *=(double value)
+{
+	return *this = Point3f(coordinates[0] * value,
+			coordinates[1] * value,
+			coordinates[2] * value);
+}
+
 Point3f Point3f::operator / (double value) const
 {
 	return Point3f(coordinates[0] / value,
@@ -104,11 +111,11 @@ Point3f Point3f::CrossProduct(const Point3f &v1, const Point3f &v2)
 	return res;
 }
 
-double Point3f::Norm(const Point3f &point)
+double Point3f::Norm(const Point3f &v)
 {
-	return	  point.coordinates[0] * point.coordinates[0]
-			+ point.coordinates[1] * point.coordinates[1]
-			+ point.coordinates[2] * point.coordinates[2];
+	return	  v.coordinates[0] * v.coordinates[0]
+			+ v.coordinates[1] * v.coordinates[1]
+			+ v.coordinates[2] * v.coordinates[2];
 }
 
 void Point3f::Normalize(Point3f &v)

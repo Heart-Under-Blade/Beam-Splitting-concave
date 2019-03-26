@@ -13,14 +13,14 @@ Bullet::Bullet(const complex &refrIndex, const Size &size, double peakHeight)
 	SetFacetParams();
 
 	Facet baseTop;
-	SetBases(baseTop, elems[7].origin);
-	SetSides(baseTop, elems[7].origin);
+	SetBases(baseTop, elems[7].original);
+	SetSides(baseTop, elems[7].original);
 	Point3f peak = Point3f(0, 0, m_size.height/2 + peakHeight);
-	SetPeakFacets(8, 13, baseTop.arr, peak); // top facets (triangles)
+	SetPeakFacets(8, 13, baseTop.vertices, peak); // top facets (triangles)
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	Reset();
+	ResetPosition();
 }
 
 void Bullet::SetBaseFacet(Facet &facet)
@@ -32,7 +32,7 @@ void Bullet::SetBaseFacet(Facet &facet)
 	double inRadius = (sqrt(3) * radius) / 2;
 
 	// top base facet
-	Point3f *polygon = facet.arr;
+	Point3f *polygon = facet.vertices;
 	SetTwoDiagonalPoints(0, polygon, halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(1, polygon, -halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(2, polygon, -radius, 0, halfHeight);
@@ -44,17 +44,17 @@ void Bullet::SetPeakFacets(int start, int end, const Point3f *baseFacet,
 	// base facet point indices
 	int p0 = BASE_VERTEX_NUM-1;
 	int p1 = 0;
-	elems[0].origin.arr[0] = baseFacet[p0];
-	elems[0].origin.arr[1] = baseFacet[p1];
-	elems[0].origin.arr[2] = peakPoint;
+	elems[0].original.vertices[0] = baseFacet[p0];
+	elems[0].original.vertices[1] = baseFacet[p1];
+	elems[0].original.vertices[2] = peakPoint;
 	p0 = p1;
 	++p1;
 
 	for (int i = start; i != end; ++i)
 	{
-		elems[i].origin.arr[0] = baseFacet[p0];
-		elems[i].origin.arr[1] = baseFacet[p1];
-		elems[i].origin.arr[2] = peakPoint;
+		elems[i].original.vertices[0] = baseFacet[p0];
+		elems[i].original.vertices[1] = baseFacet[p1];
+		elems[i].original.vertices[2] = peakPoint;
 		p0 = p1;
 		++p1;
 	}
@@ -68,14 +68,14 @@ void Bullet::SetFacetParams()
 		elems[i].actual.isOverlayedOut = true;
 	}
 
-	elems[0].origin.nVertices = 3;
+	elems[0].original.nVertices = 3;
 
 	for (int i = 8; i < 13; ++i)
 	{
-		elems[i].origin.nVertices = 3;
+		elems[i].original.nVertices = 3;
 	}
 
 	SetSideFacetParams(1, 7);
 
-	elems[7].origin.nVertices = BASE_VERTEX_NUM;
+	elems[7].original.nVertices = BASE_VERTEX_NUM;
 }

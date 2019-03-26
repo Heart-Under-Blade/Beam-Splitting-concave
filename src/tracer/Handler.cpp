@@ -251,7 +251,7 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		double delta = Point3f::Length(beam.Center() - beam.arr[i])/Point3f::Length(k);
+		double delta = Point3f::Length(beam.Center() - beam.vertices[i])/Point3f::Length(k);
 		opticalPath += (delta*Point3f::DotProduct(k, n1))/Point3f::DotProduct(beam.direction, n1);
 	}
 
@@ -323,7 +323,7 @@ void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
 
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.arr[i],
+		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.vertices[i],
 														  track);
 		ps.push_back(p0.internal);
 		sum += p0.internal;

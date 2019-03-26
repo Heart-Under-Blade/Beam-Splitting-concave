@@ -73,7 +73,7 @@ string CreateDir(const string &name)
 		strcpy(cdir, dirName.c_str());
 	}
 
-	strcat(cdir, "\\");
+	strcat(cdir, "/");
 	dirName = cdir;
 #else
 	dirName = name;

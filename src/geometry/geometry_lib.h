@@ -96,7 +96,7 @@ class Geometry
 public:
 	static void DifferPolygons(const Polygon &subject, const Vector3f &subjNormal,
 							   const Polygon &clip, const Vector3f &clipNormal,
-							   const Vector3f &clipDir, PolygonArray &difference);
+							   const Vector3f &clipDir, PolygonStack &difference);
 
 	static Point3f ProjectPointToPlane(const Point3f &point,
 									   const Vector3f &direction,
