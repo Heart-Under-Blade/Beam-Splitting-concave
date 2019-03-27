@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Particle.h"
-#include "global.h"
+#include "common.h"
 #include "math/compl.hpp"
 #include "JonesMatrix.h"
 #include "float.h"

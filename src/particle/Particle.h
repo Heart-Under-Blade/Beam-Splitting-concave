@@ -1,64 +1,78 @@
 #pragma once
 
 #include <math.h>
+#include <vector>
 
 #include "compl.hpp"
 #include "geometry_lib.h"
+#include "Facet.h"
+#include "Rotator.h"
 
-#define ROT_MTR_RANK 3
+struct ParticleFacet
+{
+	Facet origin; // facet with origin coordinates of points
+	Facet actual; // facet with actual coordinates of points
+};
 
 /**
- * @brief The Particle class
- * The base class inherited by other concrete particle classes.
+ * @brief The Particle class is the base class inherited by other concrete particle classes.
  * Vertices are ordered by counterclock-wise direction if you see from outside.
  */
-class Particle
+class Particle : public Array<ParticleFacet>
 {
 public:
 	Particle();
+	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
-	// TODO: допилить
-	void SetFromFile(const char *filename);
+	Facet *GetActualFacet(int i);
+	void SetFromFile(const std::string &filename, double sizeIndex = 1);
 
-	void Rotate(double beta, double gamma, double alpha);
+	void Rotate(const Angle3d &orientation);
+	void Move(float dx, float dy, float dz);
+	void Fix();
 
-	const double &GetMainSize() const;
-	const complex &GetRefractionIndex() const;
-	const Symmetry &GetSymmetry() const;
-	virtual void GetAggPartFacetIDRange(int /*id*/, int &/*begin*/, int &/*end*/) const {}
+	void Resize(double sizeIndex);
+	void Concate(const std::vector<Particle> &parts);
 
+	/**
+	 * @brief GetRotationRadius
+	 * @return The distance from beginning of the center of coordinate system
+	 * to the farthest point of particle.
+	 */
+	double ComputeRotationRadius() const;
+
+	const complex &GetRefractiveIndex() const;
+	void SetRefractiveIndex(const complex &value);
+
+	const Angle3d &GetSymmetry() const;
+	virtual void GetParticalFacetIdRange(Facet */*id*/, int &/*begin*/, int &/*end*/) const {}
+
+	bool IsNonConvex() const;
 	void Output();
 
 public:
-	Facet facets[MAX_FACET_NUM];	///< all facets of particle
-	int facetNum;					///< number of facets
-	bool isAggregate = false;
+	bool isAggregated = false;
+	Angle3d rotAngle;
 
 protected:
-	Facet defaultFacets[MAX_FACET_NUM];
-
-	double m_mainSize;			///< max size of particle (diameter or height or smth)	
-	Symmetry m_symmetry;		///< angle of particle symmetry
+	Angle3d m_symmetry;		///< angle of particle symmetry
 
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
+	bool m_isNonConvex;
 
 protected:
-	void Init(int facetCount, const complex &refrIndex, double size);
-
 	void SetDefaultNormals();
 	void SetDefaultCenters();
-	void SetActualState();
+	void Reset();
 	void SetSymmetry(double beta, double gamma, double alpha = 0);
 	virtual void SetFacetParams() {}
 
 private:
 	void SetDParams();
 	void RotateNormals();
-	void RotatePoint(const Point3f &point, Point3f &result);
-	void RotateCenters();
-	void SetRotateMatrix(double beta, double gamma, double alpha);
+	void SetFacetIndices();
 
 private:
-	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
+	LocalRotator m_rotator;
 };
 

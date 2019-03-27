@@ -1,0 +1,10 @@
+digraph "ContributionGO"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="ContributionGO",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" forward\nback" ];
+  Node2 [label="matrix",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classmatrix.html",tooltip="The array with (n-rows x m-columns) dimensions of real values. Size of the array can&#39;t be changed..."];
+  Node3 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" muellers" ];
+  Node3 [label="Arr2D",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_arr2_d.html",tooltip="The array with (N-rows x M-columns) dimensions of small real-value matrixes with (n x m) dimensions..."];
+}

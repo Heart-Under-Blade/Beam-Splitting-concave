@@ -4,13 +4,15 @@
 #include "geometry_lib.h"
 
 #define EPS_PROJECTION		0.00174532836589830883577820272085
-const float EPS_INTERSECTION = 0.02;
+#define EPS_LAYONLINE		0.05
 
-bool inside(const Point3f &x, const Point3f &p1, const Point3f &p2, const Point3f &normal);
+const float EPS_INTERSECT = 0.08;
+const float EPS_MERGE = 0.08;
+const float EPS_INSIDE = -0.06;
 
 inline bool is_inside_i(__m128 x, __m128 p1, __m128 p2, __m128 normal)
 {
-	__m128 m_eps = _mm_set_ss(-EPS_INTERSECTION);
+	__m128 m_eps = _mm_set_ss(EPS_INSIDE);
 
 	__m128 p1_p2 = _mm_sub_ps(p2, p1);
 	__m128 p1_x = _mm_sub_ps(x, p1);
@@ -29,7 +31,7 @@ inline bool is_layOnLine_i(__m128 _x, __m128 _a, __m128 _b)
 	__m128 sqr_len_ax = _mm_dp_ps(ax, ax, MASK_1LOW);
 	__m128 sqr_len_bx = _mm_dp_ps(bx, bx, MASK_1LOW);
 
-	return (sqr_len_ax[0] + sqr_len_bx[0] < sqr_len_ab[0] + EPS_IN_LINE);
+	return (sqr_len_ax[0] + sqr_len_bx[0] < sqr_len_ab[0] + sqr_len_ab[0]*EPS_LAYONLINE);
 }
 
 inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
@@ -50,7 +52,7 @@ inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
 	__m128 _sign_mask = _mm_set1_ps(-0.f);
 	__m128 _abs_dp = _mm_andnot_ps(_sign_mask, _dp0);
 
-	if (_abs_dp[0] < EPS_INTERSECTION)
+	if (_abs_dp[0] < EPS_INTERSECT)
 	{
 		ok = false;
 		return _dp0;

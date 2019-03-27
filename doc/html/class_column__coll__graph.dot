@@ -1,0 +1,27 @@
+digraph "Column"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node8 [label="Column",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node9 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="Particle",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_particle.html",tooltip="The Particle class is the base class inherited by other concrete particle classes. Vertices are ordered by counterclock-wise direction if you see from outside. "];
+  Node10 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="Array\< ParticleFacet \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_array.html"];
+  Node11 -> Node10 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" elems" ,fontname="Helvetica"];
+  Node11 [label="ParticleFacet",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct_particle_facet.html"];
+  Node12 -> Node11 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" origin\nactual" ,fontname="Helvetica"];
+  Node12 [label="Facet",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_facet.html"];
+  Node13 -> Node12 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="Polygon",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_polygon.html",tooltip="Polygon consisted of 3-coordinate vertices. "];
+  Node14 -> Node13 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" arr" ,fontname="Helvetica"];
+  Node14 [label="Point3f",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct_point3f.html",tooltip="The Point3 struct 3D coordinate point. "];
+  Node14 -> Node12 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" center\nnormal" ,fontname="Helvetica"];
+  Node15 -> Node9 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" m_refractiveIndex" ,fontname="Helvetica"];
+  Node15 [label="complex",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcomplex.html",tooltip="This class provides a complex numbers and operation with them. "];
+  Node16 -> Node9 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" m_symmetry\nrotAngle" ,fontname="Helvetica"];
+  Node16 [label="Angle3d",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_angle3d.html"];
+  Node17 -> Node8 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" m_size" ,fontname="Helvetica"];
+  Node17 [label="Size",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct_size.html"];
+  Node18 -> Node8 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" m_sideFacetIDs" ,fontname="Helvetica"];
+  Node18 [label="Couple\< int \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_couple.html"];
+}

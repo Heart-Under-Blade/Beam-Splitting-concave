@@ -1,0 +1,1 @@
+BeamSplitting -p 3 100 42.04 1 --ri 1.3116 -n 3 --random 100 200 --po -w 0.532 --point -b 178 180 -g 0 60

@@ -1,24 +1,22 @@
 #include "HexagonalAggregate.h"
-#include "global.h"
+#include "common.h"
 
-HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter, double height,
+HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &size,
 									   int particleNumber)
+	: Column(8*particleNumber, refrIndex, size, true)
 {
-	SetSize(diameter, height);
-	Init(8*particleNumber, refrIndex, m_height*2);
-
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
 
 //  SetBases1 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = defaultFacets[0];
-		Facet &baseBottom = defaultFacets[7];
+		Facet &baseTop = elems[0].origin;
+		Facet &baseBottom = elems[7].origin;
 
 		Point3f *facet;
 
-		double radius = m_diameter/2;
-		double halfHeight = m_height/2;
+		double radius = m_size.diameter/2;
+		double halfHeight = m_size.height/2;
 
 		double offset = halfHeight + radius + 1/*REF: вынести как конст.*/;
 
@@ -53,13 +51,13 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 //	SetBases2 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = defaultFacets[8];
-		Facet &baseBottom = defaultFacets[15];
+		Facet &baseTop = elems[8].origin;
+		Facet &baseBottom = elems[15].origin;
 
 		Point3f *facet;
 
-		double radius = m_diameter/2;
-		double halfHeight = m_height/2;
+		double radius = m_size.diameter/2;
+		double halfHeight = m_size.height/2;
 
 		double offset = halfHeight + radius + 1/*PART_OFFSET*/;
 
@@ -93,35 +91,35 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 	}
 
 	SetSideFacetParams(1, 7);
-	SetSides(defaultFacets[0], defaultFacets[7]);
+	SetSides(elems[0].origin, elems[7].origin);
 
 	SetSideFacetParams(9, 15);
-	SetSides(defaultFacets[8], defaultFacets[15]);
+	SetSides(elems[8].origin, elems[15].origin);
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	SetActualState();
+	Reset();
 }
 
 void HexagonalAggregate::SetFacetParams()
 {
-	defaultFacets[0].size = BASE_VERTEX_NUM;
-	defaultFacets[7].size = BASE_VERTEX_NUM;
+	elems[0].origin.nVertices = BASE_VERTEX_NUM;
+	elems[7].origin.nVertices = BASE_VERTEX_NUM;
 
-	defaultFacets[8].size = BASE_VERTEX_NUM;
-	defaultFacets[15].size = BASE_VERTEX_NUM;
+	elems[8].origin.nVertices = BASE_VERTEX_NUM;
+	elems[15].origin.nVertices = BASE_VERTEX_NUM;
 
-	facets[1].isVisibleOut = false;
-	facets[2].isVisibleOut = false;
-	facets[3].isVisibleOut = false;
-	facets[7].isVisibleOut = false;
-	facets[10].isVisibleOut = false;
-	facets[11].isVisibleOut = false;
-	facets[12].isVisibleOut = false;
-	facets[15].isVisibleOut = false;
+	elems[1].actual.isOverlayedOut = true;
+	elems[2].actual.isOverlayedOut = true;
+	elems[3].actual.isOverlayedOut = true;
+	elems[7].actual.isOverlayedOut = true;
+	elems[10].actual.isOverlayedOut = true;
+	elems[11].actual.isOverlayedOut = true;
+	elems[12].actual.isOverlayedOut = true;
+	elems[15].actual.isOverlayedOut = true;
 
-	for (int i = 0; i < facetNum; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+	for (int i = 0; i < nElems; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
 	{
-		facets[i].isVisibleIn = false;
+		elems[i].actual.isOverlayedIn = true;
 	}
 }

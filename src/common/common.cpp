@@ -1,59 +1,72 @@
-#include "global.h"
+#include "common.h"
 #include "macro.h"
-#include <string>
+
 #include <iostream>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-void OutputState(int i, int j)
-{
-	logfile << "i: " << i << "; j: " << j << std::endl;
-	logfile.flush();
-}
+//void OutputState(int i, int j)
+//{
+//	logfile << "i: " << i << "; j: " << j << std::endl;
+//	logfile.flush();
+//}
 
-void Dellines(int count)
-{
-#ifdef _WIN32
-	std::string mask;
+using namespace std;
 
-	for (int i = 0; i < count*80; ++i)
+string CreateUniqueFileName(const string &filename)
+{
+	string name = filename + ".dat";
+
+	for (int i = 1; ifstream(name) != NULL; ++i)
 	{
-		mask.append(" ");
+		name = filename + '(' + to_string(i) + ')' + ".dat";
 	}
 
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_SCREEN_BUFFER_INFO ci;
-	GetConsoleScreenBufferInfo(hConsole, &ci);
-
-	ci.dwCursorPosition.X = 0;
-	ci.dwCursorPosition.Y -= count-1;
-	SetConsoleCursorPosition(hConsole, ci.dwCursorPosition);
-	std::cout<< mask;
-	SetConsoleCursorPosition(hConsole, ci.dwCursorPosition);
-#else
-	++count;
-	--count;
-#endif
+	return name;
 }
 
-std::string CreateDir(const std::string &name)
+string CreateFolder(string &name)
 {
-	std::string dirName;
-
 #ifdef _WIN32
-	char dir[260] = "";
-	size_t bufferSize = MAX_PATH;
-	char cdir[MAX_PATH]; // store the current directory
+	char curDir[MAX_PATH] = ""; // current directory
+	char newDir[MAX_PATH]; // created directory
 
 	// get the current directory, and store it
-	if (!GetCurrentDirectoryA(bufferSize, cdir))
+	if (!GetCurrentDirectoryA(MAX_PATH, curDir))
 	{
-		std::cerr << "Error getting current directory: #" << GetLastError();
+		cerr << "Error getting current directory: #" << GetLastError();
 	}
 
-	strcat(cdir, "\\");
+	strcat(curDir, "\\");
+	strcpy(newDir, curDir);
+	strcat(newDir, name.c_str());
+
+	char dirN[MAX_PATH];
+	strcpy(dirN, newDir);
+	string num = "";
+
+	for (int i = 1; !CreateDirectoryA(dirN, NULL); ++i)
+	{
+		num = "(" + to_string(i) + ")";
+		string dirName = newDir + num;
+		strcpy(dirN, dirName.c_str());
+	}
+
+	name += num;
+#else
+	cr_dir = name;
+#endif
+	return curDir;
+}
+
+string CreateDir(const string &name)
+{
+	string dirName;
+#ifdef _WIN32
+	char cdir[MAX_PATH];
+	cdir[0] = '\0';
 	strcat(cdir, name.c_str());
 
 	char dirN[MAX_PATH];
@@ -61,38 +74,70 @@ std::string CreateDir(const std::string &name)
 
 	for (int i = 1; !CreateDirectoryA(cdir, NULL); ++i)
 	{
-		std::string dirName = dirN;
-		dirName += "(" + std::to_string(i) + ")";
+		string dirName = dirN;
+		dirName += "(" + to_string(i) + ")";
 		strcpy(cdir, dirName.c_str());
 	}
 
 	strcat(cdir, "\\");
-	strcat(dir, cdir);
-	dirName = dir;
+	dirName = cdir;
 #else
 	dirName = dir;
 #endif
 	return dirName;
 }
 
+std::string CutSubstring(const std::string &str, const std::string &sub)
+{
+	const char *src = str.c_str();
+	const char *src_ = sub.c_str();
+	char* t;
+
+	do
+	{
+		t= strstr (src, src_);
+
+		if (t!=NULL)
+		{
+			char* t_= t+ strlen (src_);
+			strcpy (t, t_);
+		}
+		else break;
+	}
+	while (true);
+
+	return std::string(src);
+}
+
+std::vector<std::string> FindFiles(const std::string &mask)
+{
+	std::vector<std::string> filelist;
+	WIN32_FIND_DATAA fd;
+
+	HANDLE hFind=::FindFirstFileA(mask.c_str(), &fd);
+	if(hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			filelist.push_back(fd.cFileName);
+//			printf("%s: %s\n", (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? "Folder" : "File", fd.cFileName);
+		}
+		while(::FindNextFileA(hFind, &fd));
+
+		::FindClose(hFind);
+	}
+
+	return filelist;
+}
+
 void EraseConsoleLine(int lenght)
 {
-	std::cout << '\r';
+	cout << '\r';
 
 	for (int i = 0; i < lenght; ++i)
 	{
-		std::cout << ' ';
+		cout << ' ';
 	}
 
-	std::cout << '\r';
-}
-
-double DegToRad(double deg)
-{
-	return (deg*M_PI)/180;
-}
-
-double RadToDeg(double rad)
-{
-	return (rad*180)/M_PI;
+	cout << '\r';
 }

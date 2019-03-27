@@ -1,373 +1,124 @@
 #pragma once
 
+#include "Polygon.h"
+#include "Intersection.h"
+#include <ostream>
+
 #define CLIP_RESULT_SINGLE 1
 
-#define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
-#define MAX_VERTEX_NUM 64		///< maximum number of vertices in polygon
-#define MAX_POLYGON_NUM 512		///< maximum number of polygons in array of polygons
 #define MAX_FACET_NUM 256
+#define ROT_MTR_RANK 3
 
-enum Location: bool
+class Facet;
+
+template <class T>
+class Array
 {
-	In, Out
-};
+public:
+	T elems[MAX_FACET_NUM];
+	int nElems = 0;
 
-struct Orientation
-{
-	double beta;
-	double gamma;
-	double alpha;
-};
-
-typedef Orientation Symmetry;
-
-struct IntArray
-{
-	int arr[MAX_FACET_NUM];
-	int size = 0;
-
-	void Add(int elem)
+	void Add(T elem)
 	{
-		arr[size++] = elem;
+		elems[nElems++] = elem;
 	}
 };
 
 template <class T>
-struct Couple
+class Couple
 {
+public:
 	T first;
 	T last;
 };
 
-// short access for Point3f
-#define cx		point[0]
-#define cy		point[1]
-#define cz		point[2]
-#define d_param point[3]
-
-// short access for normals of Facet
-#define in_normal normal[0]
-#define ex_normal normal[1]
-
 /**
- * @brief The Point3 struct
- * 3D coordinate point
+ * The units (degrees or radians)
+ * is defined by yours i.e. if you consider units of this object
+ * as degrees from beginning then you can call ToRadian() to convert angles
+ * of the object from degrees to radians.
  */
-struct Point3f
-{
-	float point[4]; /// coordinates
-
-	Point3f() {}
-
-	Point3f(float x, float y, float z)
-	{
-		point[0] = x;
-		point[1] = y;
-		point[2] = z;
-	}
-
-	Point3f(float x, float y, float z, float d)
-	{
-		point[0] = x;
-		point[1] = y;
-		point[2] = z;
-		point[3] = d;
-	}
-
-	Point3f(const Point3f &other)
-	{
-		point[0] = other.point[0];
-		point[1] = other.point[1];
-		point[2] = other.point[2];
-	}
-
-	Point3f & operator = (const Point3f &other)
-	{
-		point[0] = other.point[0];
-		point[1] = other.point[1];
-		point[2] = other.point[2];
-
-		return *this;
-	}
-
-	Point3f operator * (double value) const
-	{
-		return Point3f(point[0] * value,
-				point[1] * value,
-				point[2] * value);
-	}
-
-	Point3f operator / (double value) const
-	{
-		return Point3f(point[0] / value,
-				point[1] / value,
-				point[2] / value);
-	}
-
-	Point3f operator - (const Point3f &value) const
-	{
-		return Point3f(point[0] - value.point[0],
-				point[1] - value.point[1],
-				point[2] - value.point[2]);
-	}
-
-	Point3f operator + (const Point3f &value) const
-	{
-		return Point3f(point[0] + value.point[0],
-				point[1] + value.point[1],
-				point[2] + value.point[2]);
-	}
-
-	Point3f operator += (double value)
-	{
-		return *this = Point3f(point[0] + value,
-				point[1] + value,
-				point[2] + value);
-	}
-
-	Point3f operator - () const
-	{
-		return Point3f(-point[0], -point[1], -point[2], -point[3]);
-	}
-
-} __attribute__ ((aligned (16)));
-
-struct Point3d
-{
-	double x;
-	double y;
-	double z;
-	double d;
-
-	Point3d() {}
-
-	Point3d(const Point3f &other)
-	{
-		x = other.cx;
-		y = other.cy;
-		z = other.cz;
-		d = other.d_param;
-	}
-
-	Point3d(double p_x, double p_y, double p_z, double p_d = 0.0)
-	{
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		d = p_d;
-	}
-
-	Point3d operator * (double value) const
-	{
-		return Point3d(x*value, y*value, z*value);
-	}
-
-	Point3d operator + (const Point3d &other) const
-	{
-		return Point3d(x + other.x, y + other.y, z + other.z);
-	}
-
-	Point3d operator - (const Point3d &other) const
-	{
-		return Point3d(x - other.x, y - other.y, z - other.z);
-	}
-
-	Point3d operator - () const
-	{
-		return Point3d(-x, -y, -z);
-	}
-
-	Point3d operator / (double value) const
-	{
-		return Point3d(x/value, y/value, z/value);
-	}
-};
-
-
-/**
- * Functions
- */
-
-float DotProduct(const Point3f &v1, const Point3f &v2);
-double DotProductD(const Point3d &v1, const Point3d &v2);
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
-Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
-
-double Norm(const Point3f &point);
-void Normalize(Point3f &v);
-double Length(const Point3f &v);
-
-/**
- * @brief The Polygon struct
- * Convex polygon
- */
-class Polygon
+class Angle3d
 {
 public:
-	Point3f arr[MAX_VERTEX_NUM];
-	int size = 0;
+	double alpha;
+	double beta;
+	double gamma;
 
-	Polygon() {}
-
-	Polygon(int size) : size(size) {}
-
-	Polygon(const Polygon &other)
+	Angle3d() {}
+	Angle3d(double a, double b, double g)
 	{
-		size = other.size;
-
-		for (int i = 0; i < other.size; ++i)
-		{
-			arr[i] = other.arr[i];
-		}
-	}
-	Polygon(Polygon &&other)
-	{
-		size = other.size;
-
-		for (int i = 0; i < size; ++i)
-		{
-			arr[i] = other.arr[i];
-		}
-
-		other.size = 0;
+		alpha = a;
+		beta = b;
+		gamma = g;
 	}
 
-	Polygon & operator = (const Polygon &other)
+	/**
+	 * @brief Convert angles to radians
+	 */
+	void ToRadian()
 	{
-		if (this != &other)
-		{
-			size = other.size;
-
-			for (int i = 0; i < size; ++i)
-			{
-				arr[i] = other.arr[i];
-			}
-		}
-
-		return *this;
-	}
-	Polygon & operator = (Polygon &&other)
-	{
-		if (this != &other)
-		{
-			size = other.size;
-
-			for (int i = 0; i < size; ++i)
-			{
-				arr[i] = other.arr[i];
-			}
-
-			other.size = 0;
-		}
-
-		return *this;
+		alpha = DegToRad(alpha);
+		beta = DegToRad(beta);
+		gamma = DegToRad(gamma);
 	}
 
-	double Area() const
+	Angle3d ToRadian() const
 	{
-		double square = 0;
-		const Point3f &basePoint = arr[0];
-		Point3f p1 = arr[1] - basePoint;
-
-		for (int i = 2; i < size; ++i)
-		{
-			Point3f p2 = arr[i] - basePoint;
-			Point3f res;
-			CrossProduct(p1, p2, res);
-			square += Length(res);
-			p1 = p2;
-		}
-
-		return square/2.0;
+		Angle3d angle = *this;
+		angle.ToRadian();
+		return angle;
 	}
 
-	Point3f Center() const
+	/**
+	 * @brief Convert angles to degrees
+	 */
+	void ToDegree()
 	{
-		Point3f p(0, 0, 0);
-
-		for (int i = 0; i < size; ++i)
-		{
-			p = p + arr[i];
-		}
-
-		return p/size;
+		alpha = RadToDeg(alpha);
+		beta = RadToDeg(beta);
+		gamma = RadToDeg(gamma);
 	}
 
-	Point3f Normal() const
+	static double DegToRad(double deg)
 	{
-		Point3f normal;
+		return (deg*M_PI)/180;
+	}
 
-		Point3f p1 = arr[1] - arr[0];
-		Point3f p2 = arr[2] - arr[0];
-		CrossProduct(p1, p2, normal);
-
-		Normalize(normal);
-		return normal;
+	static double RadToDeg(double rad)
+	{
+		return (rad*180)/M_PI;
 	}
 };
 
-// REF: try to create template class 'Array<type>'
+typedef Point3f Vector3f;
+typedef Point3d Vector3d;
 
-struct PolygonArray
-{
-	Polygon arr[MAX_POLYGON_NUM];
-	int size = 0;
-};
-
-class Facet : public Polygon
+class Plane : public Polygon
 {
 public:
-	Point3f normal[2];	///< internal and external normals
-	Point3f center;		///< center of facet polygon (for fast access without calc)
-
-	bool isVisibleIn = true;
-	bool isVisibleOut = true;
-
-	void SetVisibility(bool in, bool out)
-	{
-		isVisibleIn = in;
-		isVisibleOut = out;
-	}
-
-	void SetNormal()
-	{
-		ex_normal = Normal();
-		in_normal = -ex_normal;
-	}
-
-	void SetCenter()
-	{
-		center = Center();
-	}
-
-	Facet & operator = (const Facet &other)
-	{
-		if (this != &other)
-		{
-			Polygon::operator =(other);
-			in_normal = other.in_normal;
-			ex_normal = other.ex_normal;
-			center = other.center;
-		}
-
-		return *this;
-	}
+	Point3f normal;
 };
 
+class Geometry
+{
+public:
+	static void DifferPolygons(const Polygon &subject, const Vector3f &subjNormal,
+							   const Polygon &clip, const Vector3f &clipNormal,
+							   const Vector3f &clipDir, PolygonArray &difference);
 
-/**
- * Functions
- */
+	static Point3f ProjectPointToPlane(const Point3f &point,
+									   const Vector3f &direction,
+									   const Vector3f &planeNormal);
 
-float DotProduct(const Point3f &v1, const Point3f &v2);
-double DotProductD(const Point3d &v1, const Point3d &v2);
+	static bool IncidentBeamToFacet(Facet *facet, const Polygon &beamPol,
+									bool isInside, const Vector3f &incDir,
+									Polygon &intersection);
 
-double Norm(const Point3f &point);
+private:
+	static bool ProjectPolygonToPlane(const Polygon &polygon, const Vector3f &dir,
+									  const Point3f &normal, __m128 *_projection);
 
-void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
-Point3d CrossProductD(const Point3d &v1, const Point3d &v2);
-
-void Normalize(Point3f &v);
-
-double Length(const Point3f &v);
-double LengthD(const Point3d &v);
+	static void RefineOutputPolygon(__m128 *_output_points, int outputSize,
+									Polygon &polygon);
+};
