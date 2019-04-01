@@ -100,6 +100,14 @@ struct Point3f
 		coordinates[3] = d;
 	}
 
+	void Clone(const Point3f &other)
+	{
+		coordinates[0] = other.coordinates[0];
+		coordinates[1] = other.coordinates[1];
+		coordinates[2] = other.coordinates[2];
+		coordinates[3] = other.coordinates[3];
+	}
+
 	friend std::ostream & operator << (std::ostream &os, const Point3f &p);
 
 	Point3f(const Point3f &other)

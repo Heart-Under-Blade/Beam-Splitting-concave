@@ -9,21 +9,33 @@
 #include "geometry_lib.h"
 #include "Converter.h"
 
-#define EPS_SAME_FACET 0.003
-//#define EPS_SAME_FACET 0.43921
+// cell_2
+//#define EPS_SAME_CELL 0.003
+//#define EPS_SAME_FACET 0.0005
+
+// cell_13
+//#define EPS_SAME_CELL 0.1
+//#define EPS_SAME_FACET 0.0005
+
+//#define EPS_SAME_FACET 0.01
+#define EPS_SAME_CELL 0.09
+//#define EPS_SAME_CELL 0.5
+//#define EPS_SAME_FACET 0.3
+#define EPS_SAME_FACET 0.0005
 #define EPS_DUPLICATE 0.003
 #define EPS_SAME_LINE 0.003
 
 VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 	: m_size(latticeSize)
 {
-	Lattice lattice(latticeSize, splitRatio);
+	int nRemovedLayers = 2;
+
+	Lattice lattice(latticeSize, splitRatio, nRemovedLayers);
 
 #ifdef _DEBUG // DEB
 	std::ofstream dfile("debug.dat", std::ios::out);
 #endif
 
-	int nRemovedLayers = 2;
 	int count = 0;
 
 	for (int i = nRemovedLayers; i < lattice.sideSize-nRemovedLayers; ++i)
@@ -39,7 +51,6 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 
 				std::vector<OrthoPlane> sitePlanes;
 				DefineOrthogonalPlanes(cell, lattice, sitePlanes);
-
 #ifdef _DEBUG // DEB
 				double kk = 10;
 				for (auto &p : sitePlanes)
@@ -48,75 +59,109 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 		//			dfile << p.center + p.normal * kk << std::endl << std::endl;
 				}
 				dfile << std::endl;
+				if (count == 13)
+				{
+					for (auto &p : sitePlanes)
+					{
+						if (p.cell->id == 218)
+							int fff = 0;
+					}
+				}
 #endif
 				int planeCount = 0;
+				const auto &ids = cell.checkedSiteIds;
 
 				for (int planeNo = 0; planeNo < sitePlanes.size(); ++planeNo)
 				{
-					std::vector<EdgeLine> edgeLines;
-					DefineFacetEdgeLines(sitePlanes, planeNo, edgeLines);
+					auto &plane = sitePlanes[planeNo];
+					auto it = std::find(std::begin(ids), std::end(ids),
+										plane.cell->id);
 
-#ifdef _DEBUG // DEB
-					std::ofstream ffile("facet.dat", std::ios::out);
-//					for (auto &pp : edgeLines)
-//					{
-//						Point3f b = (pp.vector * k) + pp.beginPoint;
-//						ffile << b << std::endl;
-//						ffile << (pp.vector * -k) + pp.beginPoint << std::endl << std::endl;
-//					}
-//					dfile << site.point << std::endl;
-//					dfile << plane.center << std::endl;
-					ffile << std::endl;
-#endif
-					auto &normal = sitePlanes[planeNo].normal;
-
-					std::list<Intersection> points;
-					DefineIntersections(edgeLines, normal, points);
-
-#ifdef _DEBUG // DEB
-					ffile << std::endl;
-//					for (auto &pp : points)
-//					{
-//						ffile << pp.point << std::endl;
-//					}
-#endif
-					RemoveExternalPoints(sitePlanes, points);
-					RemoveDuplicatedPoints(points);
-					RemoveSameLinePoints(points);
-#ifdef _DEBUG // DEB
-					if (planeNo == 3)
-						int fff = 0;
-#endif
-					OrderPoints(normal, points);
-		//			FixPointsOrder(normal, points);
-
-		//			RemoveDistantPlanes(points, sitePlanes[planeId], sitePlanes);
-
-					if (!points.empty())
+					if (it == std::end(ids))
 					{
-//						dfile << sitePlanes[planeNo].center << std::endl;
+						std::vector<EdgeLine> edgeLines;
+						DefineFacetEdgeLines(sitePlanes, planeNo, edgeLines);
+#ifdef _DEBUG // DEB
+//						dfile << site.point << std::endl;
+//						dfile << plane.center << std::endl;
+						if (count == 13 && plane.cell->id == 218)
+							int fff = 0;
+#endif
+						auto &normal = plane.normal;
 
-						std::list<Point3f> facet;
-
-						for (auto &p : points)
+						std::list<Point3f> points;
+						DefineIntersections(edgeLines, normal, points);
+#ifdef _DEBUG // DEB
+						if (count == 13 && planeCount == 4)
 						{
-//							facet.push_back(p.point);
-							facet.push_back(p);
+//							for (auto &pp : edgeLines)
+//							{
+//								Point3f b = (pp.vector * k) + pp.beginPoint;
+//								ffile << b << std::endl;
+//								ffile << (pp.vector * -k) + pp.beginPoint
+//									  << std::endl << std::endl;
+//							}
+//							ffile << std::endl;
 						}
 
-						cell.facets.push_back(facet);
-						facet.reverse();
-						sitePlanes[planeNo].cell->facets.push_back(facet);
-					}
-					else
-					{
-						RemovePlane(planeNo, sitePlanes);
-						--planeNo;
-					}
+						std::ofstream ffile("facet.dat", std::ios::out);
+						if (plane.cell->id == 218)
+						{
+							for (auto &pp : points)
+							{
+								if (pp.coordinates[2] > 0 &&
+										pp.coordinates[2] < 120 &&
+										pp.coordinates[1] > 0 &&
+										pp.coordinates[1] < 80 &&
+										pp.coordinates[0] > 0 &&
+										pp.coordinates[0] < 120)
+								{
+									ffile << pp << std::endl;
+								}
+							}
+						}
+						ffile.close();
+#endif
+	//					std::cout << points.size() << ' ';
+						RemoveExternalPoints(sitePlanes, points);
+						RemoveDuplicatedPoints(points);
 
-					++planeCount;
-//					ffile.close();
-//					std::cout << "count = " << std::to_string(count) << ", " << planeCount << std::endl;
+	//					std::cout << points.size() << ' ' << std::endl;
+						RemoveSameLinePoints(points);
+						OrderPoints(normal, points);
+			//			FixPointsOrder(normal, points);
+			//			RemoveDistantPlanes(points, sitePlanes[planeId], sitePlanes);
+
+						if (!points.empty())
+						{
+	//						dfile << sitePlanes[planeNo].center << std::endl;
+#ifdef _DEBUG // DEB
+//							if (count == 13)
+//								std::cout << plane.cell->id << std::endl;
+
+//							if (cell.facets.size() == 8)
+//								int ggg = 0;
+#endif
+							std::list<Point3f> facet;
+
+							for (auto &p : points)
+							{
+								facet.push_back(p);
+							}
+
+							cell.facets.push_back(facet);
+							facet.reverse();
+							plane.cell->facets.push_back(facet);
+						}
+						else
+						{
+//							RemovePlane(planeNo, sitePlanes);
+//							--planeNo;
+						}
+
+						++planeCount;
+	//					std::cout << "count = " << std::to_string(count) << ", " << planeCount << std::endl;
+					}
 				}
 
 #ifdef _DEBUG // DEB
@@ -197,7 +242,7 @@ void VoronoiLattice::OutputFacets(const std::string &filename,
 	file.close();
 }
 
-bool VoronoiLattice::RemoveDistantPlanes(const std::list<Intersection> &points,
+bool VoronoiLattice::RemoveDistantPlanes(const std::list<Point3f> &points,
 										 const OrthoPlane &currentPlane,
 										 std::vector<OrthoPlane> &sitePlanes)
 {
@@ -241,7 +286,7 @@ bool VoronoiLattice::RemoveDistantPlanes(const std::list<Intersection> &points,
 
 void VoronoiLattice::DefineIntersections(
 		const std::vector<EdgeLine> &edgeLines, const Vector3f &planeNormal,
-		std::list<Intersection> &points)
+		std::list<Point3f> &points)
 {
 	for (int i = 0; i < edgeLines.size(); ++i)
 	{
@@ -256,7 +301,12 @@ void VoronoiLattice::DefineIntersections(
 							planeNormal, isOk);
 				if (isOk)
 				{
-//					points.push_back(Intersection{x, 0, 0});
+#ifdef _DEBUG // DEB
+					if (x.coordinates[0] > 62.5978 && x.coordinates[0] < 62.5980
+							&& x.coordinates[1] > 67.0120 && x.coordinates[1] < 67.0122
+							&& x.coordinates[2] > 35.9103 && x.coordinates[2] < 35.9105)
+						int d = 0;
+#endif
 					points.push_back(x);
 				}
 			}
@@ -265,22 +315,43 @@ void VoronoiLattice::DefineIntersections(
 }
 
 void VoronoiLattice::RemoveExternalPoints(
-		const std::vector<OrthoPlane> &sitePlanes,
-		std::list<Intersection> &points)
+		const std::vector<OrthoPlane> &sitePlanes, std::list<Point3f> &points)
 {
-	for (int i = 0; i < sitePlanes.size() && !points.empty(); ++i)
+	for (auto &plane : sitePlanes)
 	{
-		const Point3f &n = sitePlanes[i].normal;
-		const Point3f &c = sitePlanes[i].center;
-		points.remove_if([&](Intersection &p) {
-//			Vector3f v = p.point-c;
-			Vector3f v = p-c;
-//			Normalize(v);
-			double vv = DotProduct(n, v);
-			bool res = vv > EPS_SAME_FACET;
-			return res;
-//			return DotProduct(n, p.point-c) > EPS_SAME_FACET;
-		});
+		Point3f n = plane.normal;
+		n.coordinates[3] = plane.dParam;
+
+		double dd = plane.normal.coordinates[3];
+		if (points.size() >= 3)
+		{
+			points.remove_if([&](Point3f &p) {
+
+				Vector3f v = p - plane.center;
+//				double h = Length(v);
+//				Normalize(v);
+				double cosA = DotProduct(n, v);
+//				double a = h*sqrt(1.0 - cosA*cosA);
+//				double x = sqrt(h*h - a*a);
+//				bool res = fabs(x) > EPS_SAME_FACET;
+//				bool res = cosA > EPS_SAME_FACET;
+
+				bool res = false;
+
+				if (cosA > EPS_SAME_CELL)
+				{
+					Point3f x = ProjectPointToPlane(p, -n, n);
+					double h = Length(x - p);
+					res = h > EPS_SAME_FACET;
+				}
+
+				return res;
+			});
+		}
+		else
+		{
+			break;
+		}
 	}
 
 	if (points.size() < 3)
@@ -289,7 +360,7 @@ void VoronoiLattice::RemoveExternalPoints(
 	}
 }
 
-void VoronoiLattice::RemoveDuplicatedPoints(std::list<Intersection> &points)
+void VoronoiLattice::RemoveDuplicatedPoints(std::list<Point3f> &points)
 {
 	for (auto it0 = points.begin(); it0 != points.end(); ++it0)
 	{
@@ -297,7 +368,6 @@ void VoronoiLattice::RemoveDuplicatedPoints(std::list<Intersection> &points)
 		{
 			if (it1 != it0)
 			{
-//				double len = Length((*it1).point - (*it0).point);
 				double len = Length((*it1) - (*it0));
 
 				if (len < EPS_DUPLICATE)
@@ -316,20 +386,19 @@ void VoronoiLattice::RemoveDuplicatedPoints(std::list<Intersection> &points)
 	}
 }
 
-void VoronoiLattice::RemoveSameLinePoints(std::list<Intersection> &points)
+void VoronoiLattice::RemoveSameLinePoints(std::list<Point3f> &points)
 {
 	if (points.empty())
 	{
 		return;
 	}
 
-	std::vector<Intersection> _points{std::begin(points), std::end(points)};
+	std::vector<Point3f> _points{std::begin(points), std::end(points)};
 
 	for (int i = 0; i < _points.size()-1; ++i)
 	{
 		for (int j = i + 1; j < _points.size(); ++j)
 		{
-//			Vector3f vBase = _points[j].point - _points[i].point;
 			Vector3f vBase = _points[j] - _points[i];
 			int k = j + 1;
 
@@ -347,7 +416,6 @@ void VoronoiLattice::RemoveSameLinePoints(std::list<Intersection> &points)
 					}
 				}
 
-//				Vector3f vLast = _points[k].point - _points[i].point;
 				Vector3f vLast = _points[k] - _points[i];
 				Vector3f cp = CrossProduct(vBase, vLast);
 				bool isErased = Length(cp) < EPS_SAME_LINE;
@@ -387,43 +455,38 @@ void VoronoiLattice::RemoveSameLinePoints(std::list<Intersection> &points)
 		_points.clear();
 	}
 
-	points = std::list<Intersection>{std::begin(_points), std::end(_points)};
+	points = std::list<Point3f>{std::begin(_points), std::end(_points)};
 }
 
 void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
-								 std::list<Intersection> &points) const
+								 std::list<Point3f> &points) const
 {
 	if (!points.empty())
 	{
-		std::vector<Intersection> _points{std::begin(points), std::end(points)};
-//		Point3f pBase = _points.back().point;
+		std::vector<Point3f> _points{std::begin(points), std::end(points)};
 		Point3f pBase = _points.back();
 
 		for (int iNext = 0; iNext < _points.size(); ++iNext)
 		{
-//			Vector3f vBase = _points[iNext].point - pBase;
 			Vector3f vBase = _points[iNext] - pBase;
 
 			for (int i = iNext + 1; i <= _points.size(); ++i)
 			{
 				int iLast = (i == _points.size()) ? 0 : i;
-//				Vector3f vLast = _points[iLast].point - pBase;
 				Vector3f vLast = _points[iLast] - pBase;
 				Vector3f cp = CrossProduct(vBase, vLast);
 
 				if (DotProduct(planeNormal, cp) < EPS_SAME_LINE)
 				{
 					std::swap(_points[iNext], _points[iLast]);
-//					vBase = _points[iNext].point - pBase;
 					vBase = _points[iNext] - pBase;
 				}
 			}
 
-//			pBase = _points[iNext].point;
 			pBase = _points[iNext];
 		}
 
-		points = std::list<Intersection>{std::begin(_points), std::end(_points)};
+		points = std::list<Point3f>{std::begin(_points), std::end(_points)};
 	}
 }
 
@@ -440,21 +503,17 @@ void VoronoiLattice::DefineFacetEdgeLines(
 			auto &pCurr = sitePlanes[i];
 
 			Point3f edgeV = CrossProduct(pBase.normal, pCurr.normal);
-
 			Point3f v0ToEdge = CrossProduct(pCurr.normal, edgeV);
-//			Point3f v1ToEdge = CrossProduct(edgeV, pBase.normal);
 
-//			bool isOk = false;
 			bool isOk = true;
 			Vector3f n = pBase.normal;
 			n.coordinates[3] = -DotProduct(pBase.center, pBase.normal);
 			Point3f x = ProjectPointToPlane(pCurr.center, v0ToEdge, n);
-//			Point3f x = IntersectVectors(pCurr.center, pBase.center,
-//										 v0ToEdge, v1ToEdge, edgeV, isOk);
+
 			if (isOk)
 			{
 				edgeV.coordinates[3] = -DotProduct(x, edgeV);
-				edgeLines.push_back(EdgeLine{edgeV, x});
+				edgeLines.push_back(EdgeLine{pCurr.cell->id, edgeV, x});
 			}
 		}
 	}
@@ -465,7 +524,6 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 											std::vector<OrthoPlane> &sitePlanes)
 {
 	int maxSiteDistance = 2.0*sqrt(2)*lattice.cellSize;
-	const auto &ids = baseCell.checkedSiteIds;
 
 	for (int i = 0; i < lattice.sideSize; ++i)
 	{
@@ -476,31 +534,30 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 				Cell &cell = lattice.cells[i][j][k];
 
 				if (cell.id != baseCell.id)
-				{
-					auto it = std::find(std::begin(ids), std::end(ids), cell.id);
+				{	// site has not been checked yet
+					Point3f normal = cell.site - baseCell.site;
+					double len = Length(normal);
 
-					if (it == std::end(ids))
-					{	// site has not been checked yet
-						Point3f normal = cell.site - baseCell.site;
-						double len = Length(normal);
+					if (len < maxSiteDistance)
+					{
+						Normalize(normal);
 
-						if (len < maxSiteDistance)
-						{
-							Normalize(normal);
+						// D-param
+						Point3f center = (baseCell.site + cell.site)/2;
+						normal.coordinates[3] = -DotProduct(center, normal);
 
-							// D-param
-							Point3f center = (baseCell.site + cell.site)/2;
-							normal.coordinates[3] = -DotProduct(center, normal);
-
-							sitePlanes.push_back(OrthoPlane{&cell, normal, center});
-							cell.checkedSiteIds.push_back(baseCell.id);
-						}
+						sitePlanes.push_back(OrthoPlane{&cell, normal, center,
+														normal.coordinates[3]});
+						cell.checkedSiteIds.push_back(baseCell.id);
 					}
 				}
 			}
 		}
 	}
 
+#ifdef _DEBUG // DEB
+	int fff = 0;
+#endif
 	// sort by distance
 	std::sort(sitePlanes.begin(), sitePlanes.end(),
 			  [&](OrthoPlane &p1, OrthoPlane &p2) {

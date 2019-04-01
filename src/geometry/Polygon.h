@@ -19,6 +19,14 @@ public:
 
 	void AddVertex(const Point3f &v);
 
+	void Concat(const Polygon &other)
+	{
+		for (int i = 0; i < other.nVertices; ++i)
+		{
+			AddVertex(other.arr[i]);
+		}
+	}
+
 	void InsertVertex(int index, const Point3f &v)
 	{
 		++nVertices;
@@ -53,6 +61,28 @@ public:
 	double Area() const;
 	Point3f Center() const;
 	Point3f Normal() const;
+};
+
+class Polygon512
+{
+public:
+	Point3f arr[512];
+	size_t nVertices = 0;
+
+	Polygon512() {}
+
+	void AddVertex(const Point3f &v)
+	{
+		arr[nVertices++] = v;
+	}
+
+	void Concat(const Polygon &other)
+	{
+		for (int i = 0; i < other.nVertices; ++i)
+		{
+			AddVertex(other.arr[i]);
+		}
+	}
 };
 
 class PolygonArray

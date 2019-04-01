@@ -6,17 +6,10 @@
 
 struct EdgeLine
 {
+	int facetNo;
 	Vector3f vector;
 	Point3f beginPoint;
 };
-
-typedef Point3f Intersection;
-//struct Intersection
-//{
-//	Point3f point;
-//	int firstPlaneId;
-//	int secondPlaneId;
-//};
 
 struct Cell
 {
@@ -39,6 +32,7 @@ struct OrthoPlane
 	Cell *cell;
 	Point3f normal;  ///< Normal of planes
 	Point3f center;  ///< Center of planes
+	double dParam;
 };
 
 struct SiteIndex
@@ -109,9 +103,10 @@ public:
 		return cells[index.i][index.j][index.k];
 	}
 
-	Lattice(double latticeSize, int splitRatio)
+	Lattice(double latticeSize, int splitRatio, int removedLayers)
 	{
-		size = splitRatio*splitRatio*splitRatio;
+		int sr = splitRatio - removedLayers;
+		size = sr*sr*sr;
 		cellSize = latticeSize/splitRatio;
 
 		// add one layer of points to make borders
@@ -193,7 +188,6 @@ private:
 		return from + static_cast<float>(rand())/
 				(static_cast<float>(RAND_MAX/(to-from)));
 	}
-
 };
 
 /**
@@ -237,7 +231,7 @@ private:
 
 	void DefineIntersections(const std::vector<EdgeLine> &edgeLines,
 							 const Vector3f &planeNormal,
-							 std::list<Intersection> &points);
+							 std::list<Point3f> &points);
 
 	/**
 	 * @brief Remove intersection points are situated in space in front of each
@@ -246,18 +240,18 @@ private:
 	 * @param points intersection points that become vertices of the facet
 	 */
 	void RemoveExternalPoints(const std::vector<OrthoPlane> &sitePlanes,
-							 std::list<Intersection> &points);
+							 std::list<Point3f> &points);
 
-	void RemoveDuplicatedPoints(std::list<Intersection> &points);
-	void RemoveSameLinePoints(std::list<Intersection> &points);
+	void RemoveDuplicatedPoints(std::list<Point3f> &points);
+	void RemoveSameLinePoints(std::list<Point3f> &points);
 
 	void OrderPoints(const Vector3f &planeNormal,
-					 std::list<Intersection> &points) const;
+					 std::list<Point3f> &points) const;
 
 	void OutputFacets(const std::string &filename,
 					  std::vector<std::vector<Point3f>> &facets);
 	void FixPointsOrder(const Vector3f &normal, std::list<Point3f> &points);
-	bool RemoveDistantPlanes(const std::list<Intersection> &points,
+	bool RemoveDistantPlanes(const std::list<Point3f> &points,
 							const OrthoPlane &currentPlane,
 							std::vector<OrthoPlane> &sitePlanes);
 	void RemovePlane(int planeNo, std::vector<OrthoPlane> &sitePlanes);

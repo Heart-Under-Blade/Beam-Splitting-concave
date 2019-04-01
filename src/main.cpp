@@ -63,7 +63,7 @@ void SetArgRules(ArgPP &parser)
 	parser.AddRule("conus", 3, true, "po"); // calculate only backscatter cone (radius, phi, theta)
 	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
 	parser.AddRule("tr", 1, true); // file with trajectories
-	parser.AddRule("", 0, true); // calculate  trajectories
+	parser.AddRule("all", 0, true); // calculate all trajectories
 	parser.AddRule("abs", zero, true, "w"); // accounting of absorbtion
 	parser.AddRule("close", 0, true); // closing of program after calculation
 	parser.AddRule("o", 1, true); // output folder name
@@ -156,7 +156,7 @@ int main(int argc, const char* argv[])
 		particle->SetFromFile(filename);
 		particle->SetRefractiveIndex(complex(refrIndex));
 
-		double origDMax = particle->ComputeMaximalDimention();
+		double origDMax = particle->MaximalDimention();
 		cout << "from file: " << filename << endl;
 		additionalSummary += "\n\nOriginal Dmax: " + std::to_string(origDMax);
 
@@ -166,7 +166,7 @@ int main(int argc, const char* argv[])
 			particle->Resize(newSize);
 		}
 
-		double newDMax = particle->ComputeMaximalDimention();
+		double newDMax = particle->MaximalDimention();
 		additionalSummary += ", new Dmax: " + std::to_string(newDMax)
 				+ ", resize factor: " + std::to_string(newDMax/origDMax) + '\n';
 	}
@@ -239,7 +239,7 @@ int main(int argc, const char* argv[])
 	{
 		string trackFileName = args.GetStringValue("tr");
 		trackGroups.ImportTracks(particle->nFacets, trackFileName);
-		trackGroups.shouldComputeTracksOnly = !args.IsCatched("");
+		trackGroups.shouldComputeTracksOnly = !args.IsCatched("all");
 	}
 
 	cout << "Method: ";

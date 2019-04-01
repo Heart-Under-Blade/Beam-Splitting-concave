@@ -202,21 +202,22 @@ double Particle::MaximalDimention() const
 	double Dmax = 0;
 	double newDmax;
 
+	Polygon512 pol;
+
 	for (int i = 0; i < nFacets; ++i)
 	{
-		for (int j = 0; j < facets[i].nVertices; ++j)
-		{
-			for (int k = 0; k < nFacets; ++k)
-			{
-				for (int m = 0; m < defaultFacets[k].nVertices; ++m)
-				{
-					newDmax = Length(defaultFacets[i].arr[j] - defaultFacets[k].arr[m]);
+		pol.Concat(defaultFacets[i]);
+	}
 
-					if (newDmax > Dmax)
-					{
-						Dmax = newDmax;
-					}
-				}
+	for (int i = 0; i < pol.nVertices; ++i)
+	{
+		for (int j = 0; j < pol.nVertices; ++j)
+		{
+			newDmax = Length(pol.arr[j] - pol.arr[i]);
+
+			if (newDmax > Dmax)
+			{
+				Dmax = newDmax;
 			}
 		}
 	}
