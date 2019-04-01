@@ -14,6 +14,7 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
 #endif
+
 	vector<Beam> outBeams;
 	double beta, gamma;
 
@@ -27,11 +28,8 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 		for (int j = 0; j < gammaRange.number; ++j)
 		{
 			gamma = (j + 0.5)*gammaRange.step;
-#ifdef _DEBUG // DEB
-//			beta = 0.47123889803846897; gamma = 0.52359877559829882;
-#endif
+
 			m_scattering->ScatterLight(beta, gamma, outBeams);
-//			m_particle->Output();
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
 
@@ -50,10 +48,6 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	m_handler->SetNormIndex(norm);
 
 	m_outcomingEnergy = ((HandlerGO*)m_handler)->ComputeTotalScatteringEnergy();
-
-	std::string dir = CreateFolder(m_resultDirName);
-	m_resultDirName = dir + m_resultDirName + '\\' + m_resultDirName;
-
 	m_handler->WriteMatricesToFile(m_resultDirName);
 	OutputSummary(orNum, m_outcomingEnergy, norm, timer);
 }
@@ -76,22 +70,10 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma)
 
 double TracerGO::CalcNorm(long long orNum)
 {
-//	return 1.0/(double)orNum;
-
 	double &symBeta = m_symmetry.beta;
-
-	if (symBeta < M_PI - FLT_EPSILON) //
-	{
-		double tmp = symBeta;
-		double dBeta = -(cos(symBeta));
-		dBeta -= cos(0);
-		dBeta = (dBeta < 0) ? -dBeta : dBeta;
-		return tmp/(orNum*dBeta);
-	}
-	else // otherwise the result becomes 'inf'
-	{
-		return 1;
-	}
+	double tmp = (/*isRandom*/true) ? symBeta : 1.0;
+	double dBeta = -(cos(symBeta) - cos(0));
+	return tmp/(orNum*dBeta);
 }
 
 void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &timer)
@@ -108,15 +90,12 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 			+ "\nTotal scattering energy = " + to_string(D_tot);
 
 #ifdef _CHECK_ENERGY_BALANCE
-	const double normEnergy = m_incomingEnergy * NRM;
-	const double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
-	const double parArea = m_particle->Area()/4;
+	double normEnergy = m_incomingEnergy * NRM;
+	double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
 
 	m_summary += "\nTotal incoming energy = " + to_string(normEnergy)
-			+ " must be equal to " + to_string(parArea) + " (S/4)"
 			+ "\nTotal outcoming energy = " + to_string(m_outcomingEnergy)
-			+ "\nEnergy passed = " + to_string(passedEnergy) + '%'
-			+ "\nNorm index = " + to_string(NRM);
+			+ "\nEnergy passed = " + to_string(passedEnergy) + '%';
 #endif
 
 	// out << "\nAveraged cross section = " << incomingEnergy*NRM;

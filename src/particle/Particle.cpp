@@ -135,6 +135,27 @@ void Particle::Fix()
 	}
 }
 
+void Particle::Scale(double ratio)
+{
+	for (int i = 0; i < nFacets; ++i)
+	{
+		for (int j = 0; j < defaultFacets[i].size; ++j)
+		{
+			defaultFacets[i].arr[j].cx *= ratio;
+			defaultFacets[i].arr[j].cy *= ratio;
+			defaultFacets[i].arr[j].cz *= ratio;
+		}
+	}
+}
+
+void Particle::Resize(double size)
+{
+	double radius = GetRotationRadius();
+	double ratio = size/radius*2;
+	Scale(ratio);
+	Reset();
+}
+
 void Particle::Concate(const std::vector<Particle> &parts)
 {
 	int i = 0;
@@ -174,6 +195,18 @@ double Particle::GetRotationRadius() const
 	}
 
 	return radius;
+}
+
+double Particle::Area()
+{
+	double area = 0;
+
+	for (int i = 0; i < nFacets; ++i)
+	{
+		area += facets[i].Area();
+	}
+
+	return area;
 }
 
 const complex &Particle::GetRefractiveIndex() const

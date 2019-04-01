@@ -9,5 +9,4 @@ public:
 
 public:
 	double opticalPath;				///< optical path of beam
-	double frontPosition;						///< current position of phase front from Ax+By+Cz+D=0
 };

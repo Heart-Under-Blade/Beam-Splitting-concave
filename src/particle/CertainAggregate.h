@@ -11,8 +11,4 @@ public:
 
 protected:
 	void SetFacetParams() override;
-
-	// Particle interface
-private:
-	void Resize(double sizeIndex);
 };

@@ -32,6 +32,7 @@ public:
 	void Rotate(double beta, double gamma, double alpha);
 	void Move(float dx, float dy, float dz);
 	void Fix();
+	void Resize(double size);
 
 	void Concate(const std::vector<Particle> &parts);
 
@@ -41,6 +42,12 @@ public:
 	 * to the farthest point of particle.
 	 */
 	double GetRotationRadius() const;
+
+	/**
+	 * @brief A sum of areas of each facet of the particle
+	 * @return value of area
+	 */
+	double Area();
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
@@ -73,7 +80,9 @@ protected:
 	void SetDefaultNormals();
 	void SetDefaultCenters();
 	void Reset();
+	void Scale(double ratio);
 	void SetSymmetry(double beta, double gamma, double alpha = 0);
+
 	virtual void SetFacetParams() {}
 
 private:

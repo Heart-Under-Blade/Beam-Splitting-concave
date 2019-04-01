@@ -15,14 +15,16 @@ public:
 private:
 	void SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs);
 	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir);
-	void CutBeamByFacet(int facetID, Beam &beam, bool &isDivided,
-						Polygon *resultBeams, int &resultSize);
+	void CutBeamByFacet(const Facet &facet, Beam &beam,
+						PolygonArray &result);
 
 	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
 
-	void CutFacetByShadows(int facetID, const IntArray &shadowFacetIDs, int prevFacetNum,
-						   PolygonArray &resFacets);
+	void CutPolygonByFacets(const Polygon &pol, const IntArray &facetIds,
+							size_t size, const Vector3f &polNormal,
+							const Vector3f &clipNormal, const Vector3f &dir,
+							PolygonArray &pols);
 
 	void CatchExternalBeam(const Beam &beam, std::vector<Beam> &scatteredBeams);
 
@@ -32,8 +34,8 @@ private:
 	void SelectVisibleFacets(const Beam &beam, IntArray &facetIDs);
 	void SelectVisibleFacetsForLight(IntArray &facetIDs);
 
-	void SetOpticalBeamParams(int facetID, const Beam &incidentBeam,
-							  Beam &inBeam, Beam &outBeam, bool &hasOutBeam);
+	bool SetOpticalBeamParams(const Facet &facet, const Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam);
 
 	void IntersectWithFacet(const IntArray &facetIDs, int prevFacetNum,
 							PolygonArray &resFacets);
@@ -61,6 +63,14 @@ private:
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 protected:
-	void TraceBeams(std::vector<Beam> &scaterredBeams);
+	void CutExternalBeam(const Beam &beam, std::vector<Beam> &scaterredBeams);
+	void SplitBeams(std::vector<Beam> &scaterredBeams);
+	bool IsOutgoingBeam(Beam &incidentBeam);
+	int FindFacetId(int facetId, const IntArray &arr);
+	bool SplitBeamByFacet(const Polygon &intersection, int facetId, Beam &beam);
+	void PushBeamPartsToTree(const Beam &beam, const PolygonArray &parts);
+	template<class T>
+	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
+						const T &newId, int facetId, Location loc);
 };
 

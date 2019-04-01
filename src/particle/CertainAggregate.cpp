@@ -314,7 +314,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	defaultFacets[63].arr[5] = Point3f(-35.21954898107649, -119.5204177598127, -19.06404150458911);
 	}
 
-	Resize(sizeIndex);
+	Scale(sizeIndex);
 
 	for (int i = 0; i < nFacets; ++i)
 	{
@@ -338,19 +338,6 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 		defaultFacets[i].isVisibleOut = false;
 		facets[i].isVisibleIn = false;
 		facets[i].isVisibleOut = false;
-	}
-}
-
-void CertainAggregate::Resize(double sizeIndex)
-{
-	for (int i = 0; i < nFacets; ++i)
-	{
-		for (int j = 0; j < defaultFacets[i].size; ++j)
-		{
-			defaultFacets[i].arr[j].cx *= sizeIndex;
-			defaultFacets[i].arr[j].cy *= sizeIndex;
-			defaultFacets[i].arr[j].cz *= sizeIndex;
-		}
 	}
 }
 

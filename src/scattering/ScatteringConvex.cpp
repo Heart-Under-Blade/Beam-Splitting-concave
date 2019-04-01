@@ -6,7 +6,8 @@ ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
 {
 }
 
-void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam> &outBeams)
+void ScatteringConvex::ScatterLight(double beta, double gamma,
+									std::vector<Beam> &outBeams)
 {
 	m_particle->Rotate(beta, gamma, 0);
 
@@ -16,10 +17,10 @@ void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam>
 	/// first extermal beam
 	for (int facetID = 0; facetID < m_particle->nFacets; ++facetID)
 	{
-		const Point3f &extNormal = m_facets[facetID].ex_normal;
-		double cosIN = DotProduct(m_incidentDir, extNormal);
+		const Point3f &inNormal = m_facets[facetID].in_normal;
+		m_splitting.ComputeCosA(m_incidentDir, inNormal);
 
-		if (cosIN >= EPS_M_COS_90) /// beam is not incident to this facet
+		if (!m_splitting.IsIncident()) /// beam is not incident to this facet
 		{
 			continue;
 		}
@@ -27,10 +28,14 @@ void ScatteringConvex::ScatterLight(double beta, double gamma, std::vector<Beam>
 		Beam inBeam, outBeam;
 		SplitLightToBeams(facetID, inBeam, outBeam);
 
+		auto newId = RecomputeTrackId(0, facetID);
+
+		outBeam.id = newId;
 		outBeam.lastFacetId = facetID;
-		outBeam.act = 0;
-		ComputeBeamId(outBeam);
+		outBeam.nActs = 0;
 		outBeams.push_back(outBeam);
+
+		inBeam.id = newId;
 		PushBeamToTree(inBeam, facetID, 0, Location::In);
 
 #ifdef _CHECK_ENERGY_BALANCE
@@ -71,8 +76,9 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 				continue;
 			}
 
-			inBeam.trackId = beam.trackId;
-			PushBeamToTree(inBeam, id, beam.act+1, Location::In);
+			inBeam.id = RecomputeTrackId(beam.id, id);
+			inBeam.locations = beam.locations;
+			PushBeamToTree(inBeam, id, beam.nActs+1, Location::In);
 		}
 	}
 }
@@ -85,46 +91,51 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	// ext. normal uses in this calculating
 	const Point3f &normal = m_facets[facetID].ex_normal;
-	double cosA = DotProduct(normal, incidentDir);
+	m_splitting.ComputeCosA(normal, incidentDir);
 
-	if (cosA < EPS_COS_90) /// beam is not incident to this facet
+	if (!m_splitting.IsIncident())
 	{
 		return false;
 	}
 
-	bool isOk = Intersect(facetID, incidentBeam, outBeam);
+	Intersect(facetID, incidentBeam, outBeam);
 
-	if (!isOk)
+	if (outBeam.size < MIN_VERTEX_NUM)
 	{
 		return false;
 	}
 
 	inBeam = outBeam;
+	m_splitting.ComputeSplittingParams(incidentBeam.direction, normal);
 
-	if (cosA < EPS_COS_00)
+	if (!m_splitting.IsNormalIncidence())
 	{	// regular incidence
-		bool isRegular;
-		SetRegularIncidenceBeamParams(cosA, normal, incidentBeam,
-									  inBeam, outBeam, isRegular);
-		if (isRegular)
+		ComputePolarisationParams(incidentBeam.direction, normal, incidentBeam);
+
+		if (!m_splitting.IsCompleteReflection())
 		{
-			outBeam.trackId = incidentBeam.trackId;
+			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
+												  inBeam, outBeam);
+			outBeam.nActs = incidentBeam.nActs + 1;
+			outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
+			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
 			outBeam.lastFacetId = facetID;
-			outBeam.act = incidentBeam.act + 1;
-			ComputeBeamId(outBeam);
-			outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition); // добираем оптический путь
 			outBeams.push_back(outBeam);
+		}
+		else // complete internal reflection incidence
+		{
+			m_splitting.ComputeCRBeamParams(normal, incidentBeam, inBeam);
 		}
 	}
 	else
 	{	// normal incidence
-		SetNormalIncidenceBeamParams(cosA, incidentBeam, inBeam, outBeam);
+		m_splitting.ComputeNormalBeamParams(incidentBeam, inBeam, outBeam);
 
-		outBeam.trackId = incidentBeam.trackId;
+		outBeam.nActs = incidentBeam.nActs + 1;
+		outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
+		double path = m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
+		outBeam.opticalPath += path;
 		outBeam.lastFacetId = facetID;
-		outBeam.act = incidentBeam.act + 1;
-		ComputeBeamId(outBeam);
-		outBeam.opticalPath += fabs(FAR_ZONE_DISTANCE + outBeam.frontPosition); // добираем оптический путь
 		outBeams.push_back(outBeam);
 	}
 

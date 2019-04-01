@@ -15,7 +15,26 @@ public:
 	Point3f polarizationBasis;
 };
 
-class Beam : public Polygon, public Light
+class Track
+{
+public:
+#ifdef _DEBUG // DEB
+	long long id = 0;
+#else
+	BigInteger id = 0;
+#endif
+	int locations;		///< each bit of variable represents location of beam after an r/r act from left to right
+						///< "0" when beam location is "inside" and "1" if it's "outside"
+
+	Location GetLocationByActNumber(int nActs) const
+	{
+		int mask = 1;
+		mask <<= nActs;
+		return (locations & mask) ? Location::Out : Location::In;
+	}
+};
+
+class Beam : public Polygon, public Light, public Track
 {
 public:
 	Beam();
@@ -23,24 +42,23 @@ public:
 	Beam(const Polygon &other);
 	Beam(Beam &&other);
 
-	void RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
-	void RotatePlane(const Point3f& newBasis); ///< rotate Jones matrix in case of beam splitting
+	Vector3f RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 
-	Location GetLocationByActNumber(int act) const;
-
-	void AddVertex(const Point3f &vertex);
 	void SetPolygon(const Polygon &other);
-	void SetLight(const Point3f &dir, const Point3f &polarBasis);
-	void ComputeFrontPosition();
+	void SetLight(const Vector3f &dir, const Vector3f &polarBasis);
+	void SetLight(const Light &other);
+	void AddOpticalPath(double path);
+	void CopyTrack(const Track &other);
 
 	Beam & operator = (const Beam &other);
 	Beam & operator = (const Polygon &other);
 	Beam & operator = (const Light &other);
 	Beam & operator = (Beam &&other);
 
-	void SetTracingParams(int facetID, int act, Location location);
+	void SetTracingParams(int facetId, int actN, Location location);
 
-	void SetJonesMatrix(const Beam &other, const complex &c1, const complex &c2);
+	void MultiplyJonesMatrix(const complex &c1, const complex &c2);
+	void RotateJMatrix(const Vector3f &newBasis);
 
 	// REF: перенести в PhisBeam
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
@@ -51,19 +69,24 @@ public:
 	// REF: рассмотреть схему, где у пучка будет много полигонов
 
 public:
-	Matrix2x2c J;					///< Jones matrix of beam
+	Matrix2x2c J;		///< Jones matrix of beam
 
-	int lastFacetId;				///< last reflected facet
-	int act;						///< number of preview reflections
-	Location location;				///< beam state towards the particle (inside or outside)
+	int nActs;			///< number of preview reflections
+	int lastFacetId;	///< last reflected facet id
+	Location location; // REF: заменить на 'bool isInside'			///< beam state towards the particle (inside or outside)
 
 	// REF: перенести в PhisBeam
-	double opticalPath;				///< optical path of beam
-	double frontPosition;			///< current position of phase front from Ax+By+Cz+D=0
+	double opticalPath;	///< optical path of beam
+	double front;		///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
-#ifdef _TRACK_ALLOW
-	BigInteger trackId = 0;
-//	std::vector<int> track;
+	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
+									///< "0" when beam location is "inside" and "1" if it's "outside"
+
+#ifdef _DEBUG // DEB
+	std::vector<Polygon> pols;
+	std::vector<Point3f> dirs;
+	std::vector<double> ops;
+>>>>>>> b14321ab31e6fc98d1829f71de1b4554fdb4f4f0
 #endif
 
 #ifdef _DEBUG // DEB
@@ -72,12 +95,7 @@ public:
 #endif
 
 private:
-	void RotateJMatrix(const Point3f &newBasis);
 	void GetSpherical(double &fi, double &teta) const;
 	void Copy(const Beam &other);
 	void SetDefault(Beam &other);
-
-private:
-	int locations;					///< each bit of variable represents location of beam after an r/r act from left to right
-									///< "0" when beam location is "inside" and "1" if it's "outside"
 };

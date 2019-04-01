@@ -11,9 +11,9 @@
  * @brief The Cone struct
  * Backscattering cone divided by cells
  */
-struct Cone
+struct Conus
 {
-	Cone(double radius, int phiCount, int thetaCount)
+	Conus(double radius, int phiCount, int thetaCount)
 		: radius(radius), phiCount(phiCount), thetaCount(thetaCount)
 	{
 		dPhi = M_2PI/(phiCount+1);
@@ -136,13 +136,13 @@ public:
 		forward.Fill(0);
 	}
 
-	void AddMueller(int angle, const matrix &m)
+	void AddMueller(float fAngle, int angle, const matrix &m)
 	{
-		if (angle >= 180)
+		if (fAngle >= 180-FLT_EPSILON)
 		{
 			forward += m;
 		}
-		else if (angle <= 0)
+		else if (fAngle <= FLT_EPSILON)
 		{
 			back += m;
 		}
@@ -157,7 +157,6 @@ public:
 	matrix forward;		///< Mueller matrix in forward direction
 };
 
-
 class Handler
 {
 public:
@@ -168,6 +167,8 @@ public:
 	void SetScattering(Scattering *scattering);
 	virtual void WriteMatricesToFile(std::string &destName);
 
+	void SetAbsorbtionAccounting(bool value);
+
 	void SetNormIndex(double normIndex);
 
 	Light *m_incidentLight;
@@ -177,13 +178,15 @@ protected:
 
 protected:
 	Scattering *m_scattering;
-	Particle *m_particle;
+
 	Tracks *m_tracks;
-	double m_cAbs;
+
+	Particle *m_particle;
 	float m_wavelength;
 	bool m_hasAbsorbtion;
 	double m_normIndex;
 	std::ofstream m_logFile;
+	double m_cAbs;
 };
 
 
@@ -195,23 +198,26 @@ public:
 	void HandleBeams(std::vector<Beam> &beams) override;
 	void WriteMatricesToFile(std::string &destName) override;
 
-	void SetScatteringConus(const Cone &conus);
+	void SetScatteringConus(const Conus &conus);
 
 protected:
-	void MultiplyJones(const Beam &beam, const Point3f &T,
-					   const Point3d &vf, const Point3d &vr,
-					   double lng_proj0, matrixC &Jx);
+	void ApplyDiffraction(const Beam &beam, const Point3f &beamBasis,
+						  const Vector3d &vf, const Vector3d &vr,
+						  const matrixC &fnJones, matrixC &jones);
 
-	void RotateJones(const Beam &beam, const Point3f &T, const Point3d &vf,
-					 const Point3d &vr, matrixC &J);
+	void RotateJones(const Beam &beam, const Vector3f &T,
+					 const Vector3d &vf, const Vector3d &vr, matrixC &J);
 
 	void CleanJ();
 	void AddToMueller();
+	matrixC ComputeFnJones(const Matrix2x2c &jones, const Point3d &center,
+						   const Vector3d &vr, double projLenght);
 
 protected:
 	std::vector<Arr2DC> J;	// Jones matrices
 	Arr2D M;				// Mueller matrices
-	Cone m_conus;			// back scattering conus
+
+	Conus m_conus;			// back scattering conus
 	bool isNanOccured = false;
 	bool isNan = false;
 };
@@ -241,7 +247,7 @@ public:
 	void SetTracks(Tracks *tracks) override;
 
 	double ComputeTotalScatteringEnergy();
-	void SetAbsorbtionAccounting(bool value);
+
 	void WriteLog(const std::string &str);
 
 	void MultiplyMueller(const Beam &beam, matrix &m);
@@ -254,19 +260,21 @@ protected:
 
 protected:
 	double BeamCrossSection(const Beam &beam) const;
-	matrix ComputeMueller(int zenAng, Beam &beam);
+
+	matrix ComputeMueller(float zenAng, Beam &beam);
 	void RotateMuller(const Point3f &dir, matrix &bf);
-	void AverageOverAlpha(int EDF, double norm, ContributionGO &contrib);
+	void AverageOverAlpha(int EDF, double norm, ContributionGO &contrib,
+						  const std::string &destDir);
 
 	void WriteToFile(ContributionGO &contrib, double norm,
 					 const std::string &filename);
+
 	double ComputeOpticalPathAbsorption(const Beam &beam);
 	Point3f CalcK(std::vector<int> &tr);
 
 private:
-	void ExtractPeaks(double *b, double *f, double norm);
+	void ExtractPeaks(double *b, double *f, double norm, const std::string &destDir);
 };
-
 
 class HandlerTotalGO : public HandlerGO
 {
