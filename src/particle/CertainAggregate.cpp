@@ -2,7 +2,7 @@
 #include "Point.h"
 #include "common.h"
 
-CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
+CertainAggregate::CertainAggregate(const complex &refrIndex)
 	: Particle(64, refrIndex, true)
 {
 	SetSymmetry(M_PI, 2*M_PI);
@@ -312,8 +312,6 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	elems[63].original.vertices[4] = Point3f(-27.25938340049844, -80.36344554182351, -3.17796928237496);
 	elems[63].original.vertices[5] = Point3f(-35.21954898107649, -119.5204177598127, -19.06404150458911);
 	}
-
-	Resize(sizeIndex);
 
 	for (int i = 0; i < nElems; ++i)
 	{

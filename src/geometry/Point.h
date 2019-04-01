@@ -24,8 +24,10 @@ struct Point3f
     Point3f operator * (double value) const;
 	Point3f operator *= (double value);
     Point3f operator / (double value) const;
+	Point3f operator /= (double value);
     Point3f operator - (const Point3f &value) const;
     Point3f operator + (const Point3f &value) const;
+	Point3f operator += (const Point3f &value);
     Point3f operator += (double value);
 	Point3f operator - () const;
 

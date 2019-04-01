@@ -1,10 +1,10 @@
 #include "Particle.h"
 #include "common.h"
+#include "geometry_lib.h"
 
 #include <fstream>
 #include <iostream>
 #include <cstring>
-
 
 Particle::Particle()
 {
@@ -33,8 +33,7 @@ Facet *Particle::GetActualFacet(int i)
 	return &elems[i].actual;
 }
 
-void Particle::SetFromFile(const std::string &filename, double sizeIndex,
-						   double reduceSize)
+void Particle::SetFromFile(const std::string &filename, double reduceSize)
 {
 	std::ifstream pfile(filename, std::ios::in);
 
@@ -91,7 +90,7 @@ void Particle::SetFromFile(const std::string &filename, double sizeIndex,
 		while (ptr != NULL)
 		{
 			double value = strtod(ptr, &trash);
-			facet->vertices[facet->nVertices].coordinates[c_i++] = value * sizeIndex;
+			facet->vertices[facet->nVertices].coordinates[c_i++] = value;
 			ptr = strtok(NULL, " ");
 		}
 
@@ -112,6 +111,7 @@ void Particle::SetFromFile(const std::string &filename, double sizeIndex,
 	}
 
 	SetDefaultNormals();
+	SetDParams();
 	ResetPosition();
 	SetDefaultCenters();
 
@@ -191,7 +191,7 @@ void Particle::RemoveFacet(int index)
 	SetFacetIndices();
 }
 
-double Particle::ComputeRotationRadius() const
+double Particle::ComputeLongRadius() const
 {
 	Point3f p0(0, 0, 0);
 
@@ -228,15 +228,42 @@ double Particle::Area() const
 	return area;
 }
 
-void Particle::Resize(double size)
+Point3f Particle::Center() const
 {
-	double dMax = MaximalDimension();
-	double ratio = size/dMax;
-	Scale(ratio);
-#ifdef _DEBUG // DEB
-	double dMax1 = MaximalDimension();
-#endif
-	ResetPosition();
+	Point3f center = Point3f(0, 0, 0);
+	int nVertices = 0;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		auto &facet = elems[i].original;
+		nVertices += facet.nVertices;
+
+		for (int j = 0; j < facet.nVertices; ++j)
+		{
+			center += facet.vertices[j];
+		}
+	}
+
+	center /= nVertices;
+	return center;
+}
+
+double Particle::Volume() const
+{
+	double volume = 0;
+	Point3f center = Center();
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		const Facet &facet = elems[i].original;
+
+		Point3f p = Geometry::ProjectPointToPlane(center, facet.ex_normal,
+												  facet.in_normal);
+		double h = Point3f::Length(p - center);
+		volume += (facet.Area()*h)/3;
+	}
+
+	return volume;
 }
 
 void Particle::Scale(double ratio)
@@ -248,7 +275,13 @@ void Particle::Scale(double ratio)
 			elems[i].original.vertices[j] *= ratio;
 		}
 	}
+
+	SetDefaultNormals();
+	SetDParams();
+	ResetPosition();
+	SetDefaultCenters();
 }
+
 double Particle::MaximalDimension() const
 {
 	double Dmax = 0;
@@ -485,7 +518,7 @@ void Particle::SetDParams()
 {
 	for (int i = 0; i < nElems; ++i)
 	{
-		Facet &facet = elems[i].actual;
+		Facet &facet = elems[i].original;
 		double d = Point3f::DotProduct(facet.vertices[0], facet.in_normal);
 		facet.in_normal.d_param = -d;
 	}

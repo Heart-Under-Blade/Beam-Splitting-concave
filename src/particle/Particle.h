@@ -15,7 +15,8 @@ struct ParticleFacet
 };
 
 /**
- * @brief The Particle class is the base class inherited by other concrete particle classes.
+ * @brief The Particle class is the base class inherited
+ * by other concrete particle classes.
  * Vertices are ordered by counterclock-wise direction if you see from outside.
  */
 class Particle : public Array<ParticleFacet>
@@ -25,26 +26,48 @@ public:
 	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
 	Facet *GetActualFacet(int i);
-	void SetFromFile(const std::string &filename, double sizeIndex = 1,
-					 double reduceSize = -1);
+	void SetFromFile(const std::string &filename, double reduceSize = -1);
 
 	void Rotate(const Orientation &orientation);
 	void Move(float dx, float dy, float dz);
 	void Scale(double ratio);
-	void Resize(double size);
+
 	void Concate(const std::vector<Particle> &parts);
 	void RemoveFacet(int index);
 	void CommitState();
 
 	/**
-	 * @brief ComputeRotationRadius
+	 * @brief Computes the long radius of the particle
 	 * @return The distance from beginning of the center of coordinate system
 	 * to the farthest point of particle.
 	 */
-	double ComputeRotationRadius() const;
+	double ComputeLongRadius() const;
 
+	/**
+	 * @brief Compute the area of the particle
+	 * with summarising areas of all facets of the particle
+	 * @return value of area
+	 */
 	double Area() const;
+
+	/**
+	 * @brief Compute the volume of the particle
+	 * with splitting into tetrahedrons.
+	 * @return volume of the particle
+	 */
+	double Volume() const;
+
+	/**
+	 * @brief Distance between two the most distant vertices of the particle
+	 * @return value of distance
+	 */
 	double MaximalDimension() const;
+
+	/**
+	 * @brief Geomertical center of the particle
+	 * @return coordinates of center
+	 */
+	Point3f Center() const;
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);

@@ -117,6 +117,30 @@ const string ExtractPath(std::string mask)
 	return mask.substr(0, pos+1);
 }
 
+void OutputSummary(std::ofstream *ofile,
+				   const std::vector<Facet> &mergedCrystal,
+				   const std::string &filename,
+				   Particle *particle)
+{
+	ParticleProperties props;
+	AnalyseParticle(mergedCrystal, props);
+
+	double v = particle->Volume();
+	double rEq = pow((3*v)/4*M_PI, 1.0/3);
+
+	(*ofile) << filename
+		  << " : min length = " << props.minLen
+		  << " (facet " << props.minLenFacetNo
+		  << "); max length = " << props.maxLen
+		  << "; min area = " << props.minArea
+		  << " (facet " << props.minAreaFacetNo
+		  << "); Dmax = " << particle->MaximalDimension()
+		  << "; particle: area = " << particle->Area()
+		  << ", volume = " << v
+		  << "; R-eq = " << rEq
+		  << std::endl;
+}
+
 int main(int argc, const char *argv[])
 {
 	double maxWavelength = 1.064;
@@ -126,6 +150,7 @@ int main(int argc, const char *argv[])
 	bool isCry = false;
 	std::string mask = "data/*.stl";
 	double newDmax = -1;
+	double newVolume = -1;
 
 	Converter converter;
 	ArgPP parcer;
@@ -134,7 +159,7 @@ int main(int argc, const char *argv[])
 	{
 		parcer.AddRule("t", 1); // input data type ("cry", "stl")
 		parcer.AddRule("f", '+'); // input files of mask
-		parcer.AddRule("rs", 1, true);
+		parcer.AddRule("rs", 2, true);
 //		parcer.AddRule("o", '*'); // output files ("cry", "stl", "nat")
 
 		parcer.Parse(argc, argv);
@@ -146,7 +171,21 @@ int main(int argc, const char *argv[])
 
 		if (parcer.IsCatched("rs"))
 		{
-			newDmax = parcer.GetDoubleValue("rs");
+			auto type = parcer.GetStringValue("rs", 0);
+
+			if (type == "d")
+			{
+				newDmax = parcer.GetDoubleValue("rs", 1);
+			}
+			else if (type == "v")
+			{
+				newVolume = parcer.GetDoubleValue("rs", 1);
+			}
+			else
+			{
+				std::cerr << "Unknown argument \"" << type << "\"" << std::endl;
+				throw std::exception();
+			}
 		}
 	}
 
@@ -170,7 +209,8 @@ int main(int argc, const char *argv[])
 
 	if (!ofile.is_open())
 	{
-		std::cerr << "File \"" << path + "summary.txt" << "\" is not found" << std::endl;
+		std::cerr << "File \"" << path + "summary.txt" << "\" is not found"
+				  << std::endl;
 		throw std::exception();
 	}
 
@@ -202,29 +242,28 @@ int main(int argc, const char *argv[])
 			WriteCry(mergedCrystal, filename + "_mbs");
 
 			Particle *particle = new Particle;
-			particle->SetFromFile(filename + "_mbs.dat"/*, 1, index*maxWavelength*/);
+			particle->SetFromFile(filename + "_mbs.dat"/*, 1,
+					  index*maxWavelength*/);
 
 			if (newDmax > 0)
 			{
-				particle->Resize(newDmax);
+				double oldDMax = particle->MaximalDimension();
+				double ratio = newDmax/oldDMax;
+				particle->Scale(ratio);
+			}
+			else if (newVolume > 0)
+			{
+				double oldV = particle->Volume();
+				double ratio = newVolume/oldV;
+				ratio = pow(ratio, 1.0/3);
+				particle->Scale(ratio);
 			}
 
 			ParticleToCrystal(particle, mergedCrystal);
 
 			converter.WriteNat(mergedCrystal, file + "_nat");
 
-			ParticleProperties props;
-			AnalyseParticle(mergedCrystal, props);
-
-			ofile << filename
-				  << " : min length = " << props.minLen
-				  << "(facet " << props.minLenFacetNo << ")"
-				  << ", max length = " << props.maxLen
-				  << ", min area = " << props.minArea
-				  << "(facet " << props.minAreaFacetNo
-				  << "), Dmax = " << particle->MaximalDimension()
-				  << ", particle area = " << particle->Area()
-				  << std::endl;
+			OutputSummary(&ofile, mergedCrystal, filename, particle);
 
 			if (triangles.empty())
 			{
@@ -240,7 +279,7 @@ int main(int argc, const char *argv[])
 	{
 		for (auto filename : filelist)
 		{
-			std::vector<Facet> crystal;
+			std::vector<Facet> mergedCrystal;
 			std::vector<Facet> triangles;
 
 			Particle *particle = new Particle;
@@ -248,33 +287,34 @@ int main(int argc, const char *argv[])
 
 			if (newDmax > 0)
 			{
-				particle->Resize(newDmax);
+				double oldDMax = particle->MaximalDimension();
+				double ratio = oldDMax/newDmax;
+				particle->Scale(ratio);
+			}
+			else if (newVolume > 0)
+			{
+				double oldV = particle->Volume();
+				double ratio = oldV/newVolume;
+				pow(ratio, 1.0/3);
+				particle->Scale(ratio);
 			}
 
-			ParticleToCrystal(particle, crystal);
+			ParticleToCrystal(particle, mergedCrystal);
 
 			// numer facets
 			int facetNo = 0;
 
-			for (Facet &facet : crystal)
+			for (Facet &facet : mergedCrystal)
 			{
 				facet.index = facetNo++;
 			}
 
 			ParticleProperties props;
-			AnalyseParticle(crystal, props);
+			AnalyseParticle(mergedCrystal, props);
 
-			ofile << filename
-				  << " : min length = " << props.minLen
-				  << "(facet " << props.minLenFacetNo << ")"
-				  << ", max length = " << props.maxLen
-				  << ", min area = " << props.minArea
-				  << "(facet " << props.minAreaFacetNo
-				  << "), Dmax = " << particle->MaximalDimension()
-				  << ", particle area = " << particle->Area()
-				  << std::endl;
+			OutputSummary(&ofile, mergedCrystal, filename, particle);
 
-			converter.Triangulate(crystal, triangles);
+			converter.Triangulate(mergedCrystal, triangles);
 			converter.WriteStl(triangles, filename);
 		}
 	}
