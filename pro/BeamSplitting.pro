@@ -1,7 +1,6 @@
 TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
-#CONFIG -= qt
 
 DESTDIR = ../bin
 
@@ -14,40 +13,20 @@ CONFIG(release, debug|release): {
     TARGET = mbs
 }
 
-CONFIG(debug,	debug|release): {
-    DEFINES += _DEBUG
+CONFIG(debug, debug|release): {
+	DEFINES += _DEBUG
     TARGET = mbs_d
 }
 
-INCLUDEPATH += \
-	../src \
-	../src/math \
-	../src/common \
-	../src/particle \
-	../src/geometry \
-    ../src/scattering \
-    ../src/tracer \
-	../src/bigint
+DISTFILES += \
+    *.qmodel
+
+# Insert string below to include source files in your project
+SRC = ../src
 
 SOURCES += \
-	../src/*.cpp \
-	../src/math/*.cpp \
-	../src/particle/*.cpp \
-	../src/geometry/*.cpp \
-	../src/common/*.cpp \
-    ../src/scattering/*.cpp \
-    ../src/bigint/*.cc
+    ../src/main.cpp
 
-HEADERS += \
-	../src/*.h \
-	../src/math/*.hpp \
-	../src/math/*.h \
-	../src/particle/*.h \
-	../src/geometry/*.h \
-	../src/common/*.h \
-    ../src/scattering/*.h \
-	../src/bigint/*.hh
+include(MBS.pri)
 
-DISTFILES += \
-    classes.qmodel
-    sequence.qmodel
+#message($$SOURCES)

@@ -1,0 +1,74 @@
+\hypertarget{class_handler_p_o}{}\section{Handler\+PO Class Reference}
+\label{class_handler_p_o}\index{Handler\+PO@{Handler\+PO}}
+
+
+Inheritance diagram for Handler\+PO\+:
+% FIG 0
+
+
+Collaboration diagram for Handler\+PO\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_p_o_ae4e146c9650b371deaeb6aa487e67928}\label{class_handler_p_o_ae4e146c9650b371deaeb6aa487e67928}} 
+{\bfseries Handler\+PO} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, float wavelength=0)
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a34614f0dab5f801ad4588fa5d1e0825d}\label{class_handler_p_o_a34614f0dab5f801ad4588fa5d1e0825d}} 
+void {\bfseries Handle\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&beams) override
+\item 
+\mbox{\Hypertarget{class_handler_p_o_acd1699ce858357c838f4a2507013b4aa}\label{class_handler_p_o_acd1699ce858357c838f4a2507013b4aa}} 
+void {\bfseries Write\+Matrices\+To\+File} (std\+::string \&dest\+Name) override
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a0a25182f4636d39a85f00ff1c78dd833}\label{class_handler_p_o_a0a25182f4636d39a85f00ff1c78dd833}} 
+void {\bfseries Set\+Scattering\+Conus} (const \mbox{\hyperlink{struct_conus}{Conus}} \&conus)
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a5587518a68abb18ad556ec4f3521e397}\label{class_handler_p_o_a5587518a68abb18ad556ec4f3521e397}} 
+void {\bfseries set\+Con20} (bool value)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a65a3e8c8a580a321b315f8afe89dd34e}\label{class_handler_p_o_a65a3e8c8a580a321b315f8afe89dd34e}} 
+void {\bfseries Apply\+Diffraction} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&beam\+Basis, const \mbox{\hyperlink{struct_point3d}{Vector3d}} \&vf, const \mbox{\hyperlink{struct_point3d}{Vector3d}} \&vr, const \mbox{\hyperlink{classmatrix_c}{matrixC}} \&fn\+Jones, \mbox{\hyperlink{classmatrix_c}{matrixC}} \&jones)
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a50d3c2cdc831fffb663487f75d47513a}\label{class_handler_p_o_a50d3c2cdc831fffb663487f75d47513a}} 
+void {\bfseries Rotate\+Jones} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&T, const \mbox{\hyperlink{struct_point3d}{Vector3d}} \&vf, const \mbox{\hyperlink{struct_point3d}{Vector3d}} \&vr, \mbox{\hyperlink{classmatrix_c}{matrixC}} \&J)
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a82d6ec400230d75e175f1f4ab300e323}\label{class_handler_p_o_a82d6ec400230d75e175f1f4ab300e323}} 
+void {\bfseries CleanJ} ()
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a01b025f232ece30a670b53f4acdf4e78}\label{class_handler_p_o_a01b025f232ece30a670b53f4acdf4e78}} 
+void {\bfseries Add\+To\+Mueller} ()
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a38248eea6a5b4a2cd53f4cfc57c66a4d}\label{class_handler_p_o_a38248eea6a5b4a2cd53f4cfc57c66a4d}} 
+\mbox{\hyperlink{classmatrix_c}{matrixC}} {\bfseries Compute\+Fn\+Jones} (const \mbox{\hyperlink{class_matrix2x2c}{Matrix2x2c}} \&jones, const \mbox{\hyperlink{struct_point3d}{Point3d}} \&center, const \mbox{\hyperlink{struct_point3d}{Vector3d}} \&vr, double proj\+Lenght)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a7feb7cb39223e0eda119c7f4b6aa2ace}\label{class_handler_p_o_a7feb7cb39223e0eda119c7f4b6aa2ace}} 
+std\+::vector$<$ \mbox{\hyperlink{class_arr2_d_c}{Arr2\+DC}} $>$ {\bfseries J}
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a158f16b20185bb8790e602e51a32e81d}\label{class_handler_p_o_a158f16b20185bb8790e602e51a32e81d}} 
+\mbox{\hyperlink{class_arr2_d}{Arr2D}} {\bfseries M}
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a8a23d47a3971ab91786b3ea9b861d38d}\label{class_handler_p_o_a8a23d47a3971ab91786b3ea9b861d38d}} 
+\mbox{\hyperlink{struct_conus}{Conus}} {\bfseries m\+\_\+conus}
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a4719cc4f40a41adea1c1e05c60eba146}\label{class_handler_p_o_a4719cc4f40a41adea1c1e05c60eba146}} 
+bool {\bfseries is\+Nan\+Occured} = false
+\item 
+\mbox{\Hypertarget{class_handler_p_o_a054af595516ef6050a06aa87899073e3}\label{class_handler_p_o_a054af595516ef6050a06aa87899073e3}} 
+bool {\bfseries is\+Nan} = false
+\item 
+\mbox{\Hypertarget{class_handler_p_o_af10369da142ec20f430d2db0997994e4}\label{class_handler_p_o_af10369da142ec20f430d2db0997994e4}} 
+bool {\bfseries con20} = true
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+common/Handler.\+h\item 
+common/Handler.\+cpp\end{DoxyCompactItemize}

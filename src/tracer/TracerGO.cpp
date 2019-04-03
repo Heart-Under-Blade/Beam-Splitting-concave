@@ -3,47 +3,52 @@
 
 using namespace std;
 
-TracerGO::TracerGO(Particle *particle, int reflNum, const std::string &resultFileName)
-	: Tracer(particle, reflNum, resultFileName)
+TracerGO::TracerGO(Particle *particle, Scattering *scattering,
+				   const std::string &resultFileName)
+	: LightTracer(particle, scattering, resultFileName)
 {
 }
 
-void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange)
+void TracerGO::TraceRandom(const AngleRange &zenithRange,
+						   const AngleRange &azimuthRange)
 {
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
 #endif
-
-	vector<Beam> outBeams;
-	double beta, gamma;
+	vector<Beam> beams;
+	Orientation orientation;
 
 	CalcTimer timer;
 	OutputStartTime(timer);
 
-	for (int i = 0; i < betaRange.number; ++i)
+	for (int i = 0; i < zenithRange.number; ++i)
 	{
-		beta = (i + 0.5)*betaRange.step;
+		orientation.zenith = (i + 0.5)*zenithRange.step;
 
-		for (int j = 0; j < gammaRange.number; ++j)
+		for (int j = 0; j < azimuthRange.number; ++j)
 		{
-			gamma = (j + 0.5)*gammaRange.step;
-
-			m_scattering->ScatterLight(beta, gamma, outBeams);
-			m_handler->HandleBeams(outBeams);
-			outBeams.clear();
+			orientation.azimuth = (j + 0.5)*azimuthRange.step;
+#ifdef _DEBUG // DEB
+//			angle.beta = Angle::DegToRad(179.34);
+//			angle.gamma = Angle::DegToRad(37);
+#endif
+			m_particle->Rotate(orientation);
+			m_scattering->ScatterLight(beams);
+			m_handler->HandleBeams(beams);
+			beams.clear();
 
 #ifdef _CHECK_ENERGY_BALANCE
-			m_incomingEnergy += m_scattering->GetIncedentEnergy()*sin(beta);
+			m_incomingEnergy += m_scattering->GetIncidentEnergy()*sin(orientation.zenith);
 #endif
 //			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
 		}
 
-		OutputProgress(betaRange.number, i, timer);
+		OutputProgress(zenithRange.number, i, timer);
 	}
 
-	long long orNum = gammaRange.number * betaRange.number;
+	long long orNum = azimuthRange.number * zenithRange.number;
 	double norm = CalcNorm(orNum);
 	m_handler->SetNormIndex(norm);
 
@@ -52,27 +57,11 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 	OutputSummary(orNum, m_outcomingEnergy, norm, timer);
 }
 
-void TracerGO::TraceFixed(const double &beta, const double &gamma)
-{
-	double b = DegToRad(beta);
-	double g = DegToRad(gamma);
-
-	vector<Beam> outBeams;
-	m_scattering->ScatterLight(b, g, outBeams);
-	m_handler->HandleBeams(outBeams);
-	outBeams.clear();
-
-//	double D_tot = CalcTotalScatteringEnergy();
-
-	m_handler->WriteMatricesToFile(m_resultDirName);
-//	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
-}
-
 double TracerGO::CalcNorm(long long orNum)
 {
-	double &symBeta = m_symmetry.beta;
-	double tmp = (/*isRandom*/true) ? symBeta : 1.0;
-	double dBeta = -(cos(symBeta) - cos(0));
+	const double &symZenith = m_particle->GetSymmetry().zenith;
+	double tmp = (/*isRandom*/true) ? symZenith : 1.0;
+	double dBeta = -(cos(symZenith) - cos(0));
 	return tmp/(orNum*dBeta);
 }
 

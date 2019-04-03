@@ -1,13 +1,13 @@
-#include "global.h"
+#include "common.h"
 #include "macro.h"
-#include <string>
 
 #include <iostream>
-using namespace std;
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+using namespace std;
 
 string CreateUniqueFileName(const string &filename)
 {
@@ -73,12 +73,55 @@ string CreateDir(const string &name)
 		strcpy(cdir, dirName.c_str());
 	}
 
-	strcat(cdir, "\\");
+	strcat(cdir, "/");
 	dirName = cdir;
 #else
 	dirName = name;
 #endif
 	return dirName;
+}
+
+std::string CutSubstring(const std::string &str, const std::string &sub)
+{
+	const char *src = str.c_str();
+	const char *src_ = sub.c_str();
+	char* t;
+
+	do
+	{
+		t= strstr (src, src_);
+
+		if (t!=NULL)
+		{
+			char* t_= t+ strlen (src_);
+			strcpy (t, t_);
+		}
+		else break;
+	}
+	while (true);
+
+	return std::string(src);
+}
+
+std::vector<std::string> FindFiles(const std::string &mask)
+{
+	std::vector<std::string> filelist;
+	WIN32_FIND_DATAA fd;
+
+	HANDLE hFind=::FindFirstFileA(mask.c_str(), &fd);
+	if(hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			filelist.push_back(fd.cFileName);
+//			printf("%s: %s\n", (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? "Folder" : "File", fd.cFileName);
+		}
+		while(::FindNextFileA(hFind, &fd));
+
+		::FindClose(hFind);
+	}
+
+	return filelist;
 }
 
 void EraseConsoleLine(int lenght)
@@ -91,14 +134,4 @@ void EraseConsoleLine(int lenght)
 	}
 
 	cout << '\r';
-}
-
-double DegToRad(double deg)
-{
-	return (deg*M_PI)/180;
-}
-
-double RadToDeg(double rad)
-{
-	return (rad*180)/M_PI;
 }

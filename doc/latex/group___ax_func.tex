@@ -1,0 +1,155 @@
+\hypertarget{group___ax_func}{}\section{Axillary functions}
+\label{group___ax_func}\index{Axillary functions@{Axillary functions}}
+Collaboration diagram for Axillary functions\+:
+% FIG 0
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classcomplex}{complex}}
+\begin{DoxyCompactList}\small\item\em This class provides a complex numbers and operation with them. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group___ax_func_ga51f6277e09dfe3ef1f168fc188f3e0d4}\label{group___ax_func_ga51f6277e09dfe3ef1f168fc188f3e0d4}} 
+\mbox{\hyperlink{classcomplex}{complex}} {\bfseries exp} (const \mbox{\hyperlink{classcomplex}{complex}} \&z)
+\item 
+\mbox{\Hypertarget{group___ax_func_ga688d8a6a461b1cc3dd6fedf784f20d12}\label{group___ax_func_ga688d8a6a461b1cc3dd6fedf784f20d12}} 
+\mbox{\hyperlink{classcomplex}{complex}} {\bfseries exp\+\_\+im} (double x)
+\item 
+\mbox{\Hypertarget{group___ax_func_ga9aafc8a193f0c5775eb9dc1f5aa4bac7}\label{group___ax_func_ga9aafc8a193f0c5775eb9dc1f5aa4bac7}} 
+void {\bfseries Sin\+Cos} (long double, long double \&, long double \&)
+\item 
+\mbox{\hyperlink{classmatrix}{matrix}} \mbox{\hyperlink{group___ax_func_gaa3c0276f7292390c42f6a0e54912f243}{Mueller}} (const \mbox{\hyperlink{classmatrix_c}{matrixC}} \&in)
+\begin{DoxyCompactList}\small\item\em The function returns Mueller matrix calculated from Jones matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group___ax_func_ga0061c1dfe590faee5df2b2bfe8543ebc}\label{group___ax_func_ga0061c1dfe590faee5df2b2bfe8543ebc}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries Mueller} (const \mbox{\hyperlink{class_matrix2x2c}{Matrix2x2c}} \&in)
+\item 
+void \mbox{\hyperlink{group___ax_func_ga4caf171817a28cab6689b5a05ac15ee9}{Right\+Rotate\+Mueller}} (\mbox{\hyperlink{classmatrix}{matrix}} \&, double, double)
+\begin{DoxyCompactList}\small\item\em Right multiplication of matrix {\bfseries m} by {\itshape  rotation matrix } with cos(f)=cs, sin(f)=sn. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group___ax_func_ga741a2cc01b63499350d7c4bd63b8e1bf}{Left\+Rotate\+Mueller}} (\mbox{\hyperlink{classmatrix}{matrix}} \&, double, double)
+\begin{DoxyCompactList}\small\item\em Left multiplication of matrix {\bfseries m} by {\itshape  rotation matrix } with cos(f)=cs, sin(f)=sn. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group___ax_func_ga3036e67532f4d1f5001eb52ee8ad16bc}{Rotate\+Mueller}} (\mbox{\hyperlink{classmatrix}{matrix}} \&m, double \+\_\+cs, double \+\_\+sn, double cs, double sn)
+\begin{DoxyCompactList}\small\item\em Multiplication of matrix {\bfseries m} by left and right {\itshape  rotation matrixes } \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group___ax_func_ga478ee7f889ff4d188e97822c4f495c41}{Forward\+Scattering}} (\mbox{\hyperlink{classmatrix}{matrix}} \&)
+\begin{DoxyCompactList}\small\item\em Calculate Mueller matrix in forward direction for randomly oriented particle. {\bfseries See equation below.} \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group___ax_func_ga12dbb77047b95585ed5246bc3a84a71c}{Backward\+Scattering}} (\mbox{\hyperlink{classmatrix}{matrix}} \&)
+\begin{DoxyCompactList}\small\item\em Calculate Mueller matrix in backward direction for randomly oriented particle. {\bfseries See equation below. } \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{group___ax_func_ga12dbb77047b95585ed5246bc3a84a71c}\label{group___ax_func_ga12dbb77047b95585ed5246bc3a84a71c}} 
+\index{Axillary functions@{Axillary functions}!Backward\+Scattering@{Backward\+Scattering}}
+\index{Backward\+Scattering@{Backward\+Scattering}!Axillary functions@{Axillary functions}}
+\subsubsection{\texorpdfstring{Backward\+Scattering()}{BackwardScattering()}}
+{\footnotesize\ttfamily void Backward\+Scattering (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classmatrix}{matrix}} \&}]{ }\end{DoxyParamCaption})}
+
+
+
+Calculate Mueller matrix in backward direction for randomly oriented particle. {\bfseries See equation below. } 
+
+Mueller matrix in backward direction for randomly oriented particle 
+\begin{DoxyCode}
+| M11    0           0           0   |
+| 0      (M22-M33)/2 0           0   |
+| 0      0           (M33-M22)/2 0   |
+| 0      0           0           M44 |
+\end{DoxyCode}
+ \mbox{\Hypertarget{group___ax_func_ga478ee7f889ff4d188e97822c4f495c41}\label{group___ax_func_ga478ee7f889ff4d188e97822c4f495c41}} 
+\index{Axillary functions@{Axillary functions}!Forward\+Scattering@{Forward\+Scattering}}
+\index{Forward\+Scattering@{Forward\+Scattering}!Axillary functions@{Axillary functions}}
+\subsubsection{\texorpdfstring{Forward\+Scattering()}{ForwardScattering()}}
+{\footnotesize\ttfamily void Forward\+Scattering (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classmatrix}{matrix}} \&}]{ }\end{DoxyParamCaption})}
+
+
+
+Calculate Mueller matrix in forward direction for randomly oriented particle. {\bfseries See equation below.} 
+
+Mueller matrix in forward direction for randomly oriented particle 
+\begin{DoxyCode}
+| M11    0           0           0   |
+| 0      (M22+M33)/2 0           0   |
+| 0      0           (M22+M33)/2 0   |
+| 0      0           0           M44 |
+\end{DoxyCode}
+ \mbox{\Hypertarget{group___ax_func_ga741a2cc01b63499350d7c4bd63b8e1bf}\label{group___ax_func_ga741a2cc01b63499350d7c4bd63b8e1bf}} 
+\index{Axillary functions@{Axillary functions}!Left\+Rotate\+Mueller@{Left\+Rotate\+Mueller}}
+\index{Left\+Rotate\+Mueller@{Left\+Rotate\+Mueller}!Axillary functions@{Axillary functions}}
+\subsubsection{\texorpdfstring{Left\+Rotate\+Mueller()}{LeftRotateMueller()}}
+{\footnotesize\ttfamily void Left\+Rotate\+Mueller (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classmatrix}{matrix}} \&}]{,  }\item[{double}]{,  }\item[{double}]{ }\end{DoxyParamCaption})}
+
+
+
+Left multiplication of matrix {\bfseries m} by {\itshape  rotation matrix } with cos(f)=cs, sin(f)=sn. 
+
+Rotation matrix 
+\begin{DoxyCode}
+| 1  0   0   0 |
+| 0  cs  sn  0 |
+| 0  -sn cs  0 |
+| 0  0   0   1 |
+\end{DoxyCode}
+ \mbox{\Hypertarget{group___ax_func_gaa3c0276f7292390c42f6a0e54912f243}\label{group___ax_func_gaa3c0276f7292390c42f6a0e54912f243}} 
+\index{Axillary functions@{Axillary functions}!Mueller@{Mueller}}
+\index{Mueller@{Mueller}!Axillary functions@{Axillary functions}}
+\subsubsection{\texorpdfstring{Mueller()}{Mueller()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classmatrix}{matrix}} Mueller (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classmatrix_c}{matrixC}} \&}]{in }\end{DoxyParamCaption})}
+
+
+
+The function returns Mueller matrix calculated from Jones matrix. 
+
+The dimension of Mueller matrix is 4x4. The dimension of Jones matrix must be 2x2. 
+\begin{DoxyParams}{Parameters}
+{\em in} & complex-\/value matrix (\mbox{\hyperlink{classmatrix_c}{matrixC}}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+real-\/value matrix 
+\end{DoxyReturn}
+\mbox{\Hypertarget{group___ax_func_ga4caf171817a28cab6689b5a05ac15ee9}\label{group___ax_func_ga4caf171817a28cab6689b5a05ac15ee9}} 
+\index{Axillary functions@{Axillary functions}!Right\+Rotate\+Mueller@{Right\+Rotate\+Mueller}}
+\index{Right\+Rotate\+Mueller@{Right\+Rotate\+Mueller}!Axillary functions@{Axillary functions}}
+\subsubsection{\texorpdfstring{Right\+Rotate\+Mueller()}{RightRotateMueller()}}
+{\footnotesize\ttfamily void Right\+Rotate\+Mueller (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classmatrix}{matrix}} \&}]{,  }\item[{double}]{,  }\item[{double}]{ }\end{DoxyParamCaption})}
+
+
+
+Right multiplication of matrix {\bfseries m} by {\itshape  rotation matrix } with cos(f)=cs, sin(f)=sn. 
+
+Rotation matrix 
+\begin{DoxyCode}
+| 1  0   0   0 |
+| 0  cs  sn  0 |
+| 0  -sn cs  0 |
+| 0  0   0   1 |
+\end{DoxyCode}
+ \mbox{\Hypertarget{group___ax_func_ga3036e67532f4d1f5001eb52ee8ad16bc}\label{group___ax_func_ga3036e67532f4d1f5001eb52ee8ad16bc}} 
+\index{Axillary functions@{Axillary functions}!Rotate\+Mueller@{Rotate\+Mueller}}
+\index{Rotate\+Mueller@{Rotate\+Mueller}!Axillary functions@{Axillary functions}}
+\subsubsection{\texorpdfstring{Rotate\+Mueller()}{RotateMueller()}}
+{\footnotesize\ttfamily void Rotate\+Mueller (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classmatrix}{matrix}} \&}]{m,  }\item[{double}]{\+\_\+cs,  }\item[{double}]{\+\_\+sn,  }\item[{double}]{cs,  }\item[{double}]{sn }\end{DoxyParamCaption})}
+
+
+
+Multiplication of matrix {\bfseries m} by left and right {\itshape  rotation matrixes } 
+
+Right rotation matrix 
+\begin{DoxyCode}
+| 1  0   0   0 |
+| 0  cs  sn  0 |
+| 0  -sn cs  0 |
+| 0  0   0   1 |
+\end{DoxyCode}
+
+
+Left rotation matrix 
+\begin{DoxyCode}
+| 1   0      0   0 |
+| 0   \_cs    \_sn 0 |
+| 0  -(\_sn)  \_cs 0 |
+| 0   0      0   1 |
+\end{DoxyCode}
+ 

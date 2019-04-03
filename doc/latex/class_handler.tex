@@ -1,0 +1,91 @@
+\hypertarget{class_handler}{}\section{Handler Class Reference}
+\label{class_handler}\index{Handler@{Handler}}
+
+
+Inheritance diagram for Handler\+:
+% FIG 0
+
+
+Collaboration diagram for Handler\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_a66ed760e6f799ed1c23bb7a6e911877a}\label{class_handler_a66ed760e6f799ed1c23bb7a6e911877a}} 
+{\bfseries Handler} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, float wavelength=0)
+\item 
+\mbox{\Hypertarget{class_handler_a05194b66451cc40133c4bd1a209ad530}\label{class_handler_a05194b66451cc40133c4bd1a209ad530}} 
+virtual void {\bfseries Handle\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&beams)
+\item 
+\mbox{\Hypertarget{class_handler_a3ef5c3e3392e658c693275a4d46567ba}\label{class_handler_a3ef5c3e3392e658c693275a4d46567ba}} 
+virtual void {\bfseries Set\+Tracks} (\mbox{\hyperlink{class_tracks}{Tracks}} $\ast$tracks)
+\item 
+\mbox{\Hypertarget{class_handler_ae113de0f27a2bac6dbd556c7162aed3e}\label{class_handler_ae113de0f27a2bac6dbd556c7162aed3e}} 
+void {\bfseries Set\+Scattering} (\mbox{\hyperlink{class_scattering}{Scattering}} $\ast$scattering)
+\item 
+\mbox{\Hypertarget{class_handler_a36b5f50775023a5d8acaf5b57e2295b2}\label{class_handler_a36b5f50775023a5d8acaf5b57e2295b2}} 
+virtual void {\bfseries Write\+Matrices\+To\+File} (std\+::string \&dest\+Name)
+\item 
+\mbox{\Hypertarget{class_handler_a4e0616dee14ef67e077209a66f9d48d7}\label{class_handler_a4e0616dee14ef67e077209a66f9d48d7}} 
+void {\bfseries Set\+Absorbtion\+Accounting} (bool value)
+\item 
+\mbox{\Hypertarget{class_handler_af47c4ac1eeb273bd27d8e6688131ff6c}\label{class_handler_af47c4ac1eeb273bd27d8e6688131ff6c}} 
+void {\bfseries Set\+Norm\+Index} (double norm\+Index)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_adf74e141c689233565ecc08c7f63b3e8}\label{class_handler_adf74e141c689233565ecc08c7f63b3e8}} 
+\mbox{\hyperlink{class_light}{Light}} $\ast$ {\bfseries m\+\_\+incident\+Light}
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_affc9ffb72eb7ea751f5efa484d7f4ca6}\label{class_handler_affc9ffb72eb7ea751f5efa484d7f4ca6}} 
+void {\bfseries Apply\+Absorbtion} (\mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_handler_a9216f95781001eb7e73ee16244344e4e}\label{class_handler_a9216f95781001eb7e73ee16244344e4e}} 
+double {\bfseries Beam\+Cross\+Section} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam) const
+\item 
+\mbox{\Hypertarget{class_handler_a1a26cbf9ad33fea2bbd790a188388283}\label{class_handler_a1a26cbf9ad33fea2bbd790a188388283}} 
+void {\bfseries Output\+Paths} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{struct_optical_path}{Optical\+Path}} \&path)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_a3ec723e931c7e29d4c170b5952019992}\label{class_handler_a3ec723e931c7e29d4c170b5952019992}} 
+\mbox{\hyperlink{class_scattering}{Scattering}} $\ast$ {\bfseries m\+\_\+scattering}
+\item 
+\mbox{\Hypertarget{class_handler_a6125e2561ea3f9f075c03df319c0c97e}\label{class_handler_a6125e2561ea3f9f075c03df319c0c97e}} 
+\mbox{\hyperlink{class_tracks}{Tracks}} $\ast$ {\bfseries m\+\_\+tracks}
+\item 
+\mbox{\Hypertarget{class_handler_a0df3d2d833e7fda44787d65f81742ebd}\label{class_handler_a0df3d2d833e7fda44787d65f81742ebd}} 
+\mbox{\hyperlink{class_particle}{Particle}} $\ast$ {\bfseries m\+\_\+particle}
+\item 
+\mbox{\Hypertarget{class_handler_af080b55b8049e366b2f2936a72dfda98}\label{class_handler_af080b55b8049e366b2f2936a72dfda98}} 
+float {\bfseries m\+\_\+wavelength}
+\item 
+\mbox{\Hypertarget{class_handler_a9ae74da04772426e9d0cf7769f37feff}\label{class_handler_a9ae74da04772426e9d0cf7769f37feff}} 
+bool {\bfseries m\+\_\+has\+Absorbtion}
+\item 
+\mbox{\Hypertarget{class_handler_a6ea64506e8b2aba07964693d37ab9193}\label{class_handler_a6ea64506e8b2aba07964693d37ab9193}} 
+double {\bfseries m\+\_\+norm\+Index}
+\item 
+\mbox{\Hypertarget{class_handler_a47907a97893becf7a1a57b8aeaf90a9e}\label{class_handler_a47907a97893becf7a1a57b8aeaf90a9e}} 
+std\+::ofstream {\bfseries m\+\_\+log\+File}
+\item 
+\mbox{\Hypertarget{class_handler_a0f06b8309569959b37669991045b8b1d}\label{class_handler_a0f06b8309569959b37669991045b8b1d}} 
+std\+::ofstream {\bfseries m\+\_\+abs\+Log\+File}
+\item 
+\mbox{\Hypertarget{class_handler_ad9af0b7001559831a5abed09014d11d0}\label{class_handler_ad9af0b7001559831a5abed09014d11d0}} 
+double {\bfseries m\+\_\+c\+Abs}
+\item 
+\mbox{\Hypertarget{class_handler_a5de093fc5bccc1d7aa3f60059408c7bc}\label{class_handler_a5de093fc5bccc1d7aa3f60059408c7bc}} 
+long long {\bfseries count} = 0
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+common/Handler.\+h\item 
+common/Handler.\+cpp\end{DoxyCompactItemize}

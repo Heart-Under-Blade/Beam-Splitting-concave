@@ -1,0 +1,147 @@
+\hypertarget{classmatrix}{}\section{matrix Class Reference}
+\label{classmatrix}\index{matrix@{matrix}}
+
+
+The array with (n-\/rows x m-\/columns) dimensions of {\bfseries real} values. \mbox{\hyperlink{struct_size}{Size}} of the array can\textquotesingle{}t be changed.  
+
+
+
+
+{\ttfamily \#include $<$matrix.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classmatrix_add3506596457db2aa2b913bb9c364e31}\label{classmatrix_add3506596457db2aa2b913bb9c364e31}} 
+\mbox{\hyperlink{classmatrix_add3506596457db2aa2b913bb9c364e31}{matrix}} (int \+\_\+n, int \+\_\+m)
+\begin{DoxyCompactList}\small\item\em Creates and initializes new matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_a4018e1b43d9ce6fe0fe385e796b4ff9d}\label{classmatrix_a4018e1b43d9ce6fe0fe385e796b4ff9d}} 
+{\bfseries matrix} (const \mbox{\hyperlink{classmatrix}{matrix}} \&)
+\item 
+\mbox{\Hypertarget{classmatrix_afe4d1e17fbbda7e391801eafbc951996}\label{classmatrix_afe4d1e17fbbda7e391801eafbc951996}} 
+std\+::vector$<$ double $>$ {\bfseries To\+Vector} () const
+\item 
+\mbox{\Hypertarget{classmatrix_aa18ddf4f504206635586e48d7c2fbb68}\label{classmatrix_aa18ddf4f504206635586e48d7c2fbb68}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator=} (const \mbox{\hyperlink{classmatrix}{matrix}} \&)
+\item 
+\mbox{\Hypertarget{classmatrix_a3ead8a54609a914a2b963a656d110282}\label{classmatrix_a3ead8a54609a914a2b963a656d110282}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator+} (const \mbox{\hyperlink{classmatrix}{matrix}} \&) const
+\item 
+\mbox{\Hypertarget{classmatrix_a241b7864981d7886dd74f64e52cebbd0}\label{classmatrix_a241b7864981d7886dd74f64e52cebbd0}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator+=} (const \mbox{\hyperlink{classmatrix}{matrix}} \&m)
+\item 
+\mbox{\Hypertarget{classmatrix_aefe9d9fce389bbbdf81a804a416dbe83}\label{classmatrix_aefe9d9fce389bbbdf81a804a416dbe83}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator-\/} (const \mbox{\hyperlink{classmatrix}{matrix}} \&) const
+\item 
+\mbox{\Hypertarget{classmatrix_a445583c6509980c6aceeeebfb2fcd8e0}\label{classmatrix_a445583c6509980c6aceeeebfb2fcd8e0}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator-\/=} (const \mbox{\hyperlink{classmatrix}{matrix}} \&m)
+\item 
+\mbox{\Hypertarget{classmatrix_a1ee2533474ec9e3b7db4203b8fb9b6e0}\label{classmatrix_a1ee2533474ec9e3b7db4203b8fb9b6e0}} 
+double $\ast$ \mbox{\hyperlink{classmatrix_a1ee2533474ec9e3b7db4203b8fb9b6e0}{operator\mbox{[}$\,$\mbox{]}}} (int i) const
+\begin{DoxyCompactList}\small\item\em The operator returns a pointer to the i-\/th row of the array. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_a59139bc18f039339e9a581c96fddb674}\label{classmatrix_a59139bc18f039339e9a581c96fddb674}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator$\ast$} (double) const
+\item 
+\mbox{\Hypertarget{classmatrix_a1b07b334ce71db5a644affa22bbb2ac2}\label{classmatrix_a1b07b334ce71db5a644affa22bbb2ac2}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator$\ast$} (const \mbox{\hyperlink{classmatrix}{matrix}} \&) const
+\item 
+\mbox{\Hypertarget{classmatrix_aa29824e63e29bb6249db2076fcb20b9c}\label{classmatrix_aa29824e63e29bb6249db2076fcb20b9c}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator$\ast$=} (double)
+\item 
+\mbox{\Hypertarget{classmatrix_a0a6164b6e48bae9ada50c8f4a5a68a22}\label{classmatrix_a0a6164b6e48bae9ada50c8f4a5a68a22}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator/} (double) const
+\item 
+\mbox{\Hypertarget{classmatrix_ac3e138b950721c43de696919f7837978}\label{classmatrix_ac3e138b950721c43de696919f7837978}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator/=} (double x)
+\item 
+\mbox{\Hypertarget{classmatrix_a6a864a6d8d0ff7f66c9bfd60a5fab5a4}\label{classmatrix_a6a864a6d8d0ff7f66c9bfd60a5fab5a4}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{classmatrix}{matrix}} \&) const
+\item 
+\mbox{\Hypertarget{classmatrix_a9e37d73f37a3041272675c7c5d4b6782}\label{classmatrix_a9e37d73f37a3041272675c7c5d4b6782}} 
+bool {\bfseries operator!=} (const \mbox{\hyperlink{classmatrix}{matrix}} \&m) const
+\item 
+\mbox{\Hypertarget{classmatrix_a2c882f692bfbca08d6f093a871a3fc7b}\label{classmatrix_a2c882f692bfbca08d6f093a871a3fc7b}} 
+bool \mbox{\hyperlink{classmatrix_a2c882f692bfbca08d6f093a871a3fc7b}{is\+Square}} (void) const
+\begin{DoxyCompactList}\small\item\em The function checks if the dimensions of the array are equal (n==m). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_a317b8bf6d740cabf51ab9fd803e62a2c}\label{classmatrix_a317b8bf6d740cabf51ab9fd803e62a2c}} 
+void \mbox{\hyperlink{classmatrix_a317b8bf6d740cabf51ab9fd803e62a2c}{Fill}} (double x)
+\begin{DoxyCompactList}\small\item\em The function sets all values of the array to x. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_a6f3af10a8808eebe72f1c41da20404f0}\label{classmatrix_a6f3af10a8808eebe72f1c41da20404f0}} 
+void \mbox{\hyperlink{classmatrix_a6f3af10a8808eebe72f1c41da20404f0}{Identity}} (void)
+\begin{DoxyCompactList}\small\item\em The function sets all the elements of the principal diagonal to one and all other elements to zero. The function do not check if the matrix is square. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_aa24c1fbce7909df96d09ba75174f5859}\label{classmatrix_aa24c1fbce7909df96d09ba75174f5859}} 
+void \mbox{\hyperlink{classmatrix_aa24c1fbce7909df96d09ba75174f5859}{Exchange}} (int i, int j)
+\begin{DoxyCompactList}\small\item\em The function exchanges two rows. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_aeb1dcd693cd6d18b731a2177f722eb6a}\label{classmatrix_aeb1dcd693cd6d18b731a2177f722eb6a}} 
+int {\bfseries getN} () const
+\item 
+\mbox{\Hypertarget{classmatrix_a5f3532e4269da537bcb0a1377c49c2da}\label{classmatrix_a5f3532e4269da537bcb0a1377c49c2da}} 
+int {\bfseries getM} () const
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classmatrix_a0f99416a4edc54f3db2dd8c5f7d546c5}\label{classmatrix_a0f99416a4edc54f3db2dd8c5f7d546c5}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries operator$\ast$} (double x, const \mbox{\hyperlink{classmatrix}{matrix}} \&m)
+\item 
+\mbox{\Hypertarget{classmatrix_a488a52731e335f04938b08f64a776f67}\label{classmatrix_a488a52731e335f04938b08f64a776f67}} 
+double \mbox{\hyperlink{classmatrix_a488a52731e335f04938b08f64a776f67}{norm}} (const \mbox{\hyperlink{classmatrix}{matrix}} \&)
+\begin{DoxyCompactList}\small\item\em The function returns a sum of squares of all elements. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_afead99146c1b79688d6609bb2b061808}\label{classmatrix_afead99146c1b79688d6609bb2b061808}} 
+double \mbox{\hyperlink{classmatrix_afead99146c1b79688d6609bb2b061808}{Max}} (const \mbox{\hyperlink{classmatrix}{matrix}} \&)
+\begin{DoxyCompactList}\small\item\em The function returns the square of maximal value of the array. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{classmatrix_a55ecd7691eca1e7dac81020e9bd69038}{Str}} (const \mbox{\hyperlink{classmatrix}{matrix}} \&m)
+\begin{DoxyCompactList}\small\item\em The function returns row counts. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{classmatrix_a54850708093c314282f7f9c8162a493b}{Col}} (const \mbox{\hyperlink{classmatrix}{matrix}} \&m)
+\begin{DoxyCompactList}\small\item\em The function returns column counts. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classmatrix_afadd635c5216a55b00380d8374c7eeac}\label{classmatrix_afadd635c5216a55b00380d8374c7eeac}} 
+std\+::ofstream \& \mbox{\hyperlink{classmatrix_afadd635c5216a55b00380d8374c7eeac}{operator$<$$<$}} (std\+::ofstream \&, const \mbox{\hyperlink{classmatrix}{matrix}} \&)
+\begin{DoxyCompactList}\small\item\em The operator outputs all elements of the array to the file separated by space. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The array with (n-\/rows x m-\/columns) dimensions of {\bfseries real} values. \mbox{\hyperlink{struct_size}{Size}} of the array can\textquotesingle{}t be changed. 
+
+\subsection{Friends And Related Function Documentation}
+\mbox{\Hypertarget{classmatrix_a54850708093c314282f7f9c8162a493b}\label{classmatrix_a54850708093c314282f7f9c8162a493b}} 
+\index{matrix@{matrix}!Col@{Col}}
+\index{Col@{Col}!matrix@{matrix}}
+\subsubsection{\texorpdfstring{Col}{Col}}
+{\footnotesize\ttfamily int Col (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classmatrix}{matrix}} \&}]{m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+The function returns column counts. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em m} & the array \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+row counts, (m.\+m) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classmatrix_a55ecd7691eca1e7dac81020e9bd69038}\label{classmatrix_a55ecd7691eca1e7dac81020e9bd69038}} 
+\index{matrix@{matrix}!Str@{Str}}
+\index{Str@{Str}!matrix@{matrix}}
+\subsubsection{\texorpdfstring{Str}{Str}}
+{\footnotesize\ttfamily int Str (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classmatrix}{matrix}} \&}]{m }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+The function returns row counts. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em m} & the array \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+row counts, (m.\+n) 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+math/matrix.\+hpp\item 
+math/matrix.\+cpp\end{DoxyCompactItemize}
