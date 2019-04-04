@@ -23,6 +23,9 @@
 #include "ArgPP.h"
 #include "Tracks.h"
 #include "Handler.h"
+#include "HandlerBackscatterPoint.h"
+#include "HandlerTotalGO.h"
+#include "HandlerTracksGO.h"
 
 #include "ArgumentParser.h"
 

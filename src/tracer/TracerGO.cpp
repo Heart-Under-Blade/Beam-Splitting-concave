@@ -1,4 +1,7 @@
 #include "TracerGO.h"
+
+#include "HandlerGO.h"
+
 #include <iostream>
 
 using namespace std;

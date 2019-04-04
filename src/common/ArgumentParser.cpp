@@ -1,8 +1,8 @@
 #include "ArgumentParser.h"
 
 ArgumentParser::ArgumentParser(ArgPP *parser)
+	: m_parser(parser)
 {
-
 }
 
 AngleRange ArgumentParser::GetRange(const std::string &key,

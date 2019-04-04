@@ -5,6 +5,7 @@ INCLUDEPATH += \
     $$SRC/geometry \
     $$SRC/scattering \
     $$SRC/tracer \
+    $$SRC/handler \
     $$SRC/incidence \
     $$SRC/bigint
 
