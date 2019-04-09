@@ -60,7 +60,7 @@ void Handler::SetNormIndex(double normIndex)
 void Handler::SetAbsorbtionAccounting(bool value)
 {
 	m_hasAbsorbtion = value;
-	m_cAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
+	m_cAbs = -M_2PI*imag(m_scattering->m_refractiveIndex)/m_wavelength;
 
 	m_absLogFile.open("abslog1.txt", ios::out);
 	m_absLogFile << setprecision(10);

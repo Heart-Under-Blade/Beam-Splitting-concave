@@ -1,9 +1,9 @@
 #include "HexagonalAggregate.h"
 #include "common.h"
 
-HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &size,
+HexagonalAggregate::HexagonalAggregate(const Size &size,
 									   int particleNumber)
-	: Column(8*particleNumber, refrIndex, size, true)
+	: Column(8*particleNumber, size, true)
 {
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();

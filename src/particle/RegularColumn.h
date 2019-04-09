@@ -5,5 +5,5 @@
 class RegularColumn : public Column
 {
 public:
-	RegularColumn(const complex &refrIndex, const Size &size);
+	RegularColumn(const Size &size);
 };

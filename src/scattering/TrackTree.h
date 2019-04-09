@@ -1,18 +1,20 @@
 #pragma once
 
+#include "Facet.h"
+
 #include <vector>
 
 struct TrackNode
 {
 	bool isCompleted;
-	int facetId;
+	Facet *m_facet;
 	TrackNode* m_parent;
 	std::vector<TrackNode*> children;
 
-	TrackNode(int value, TrackNode* parent = nullptr)
+	TrackNode(Facet *facet, TrackNode* parent = nullptr)
 	{
 		isCompleted = false;
-		facetId = value;
+		m_facet = facet;
 		m_parent = parent;
 	}
 
@@ -24,18 +26,18 @@ struct TrackNode
 		}
 	}
 
-	TrackNode* AddChild(int value)
+	TrackNode *AddChild(Facet *facet)
 	{
-		TrackNode* child = new TrackNode(value, this);
+		TrackNode* child = new TrackNode(facet, this);
 		children.push_back(child);
 		return child;
 	}
 
-	TrackNode *FindNode(int value)
+	TrackNode *FindNode(int id)
 	{
 		for (auto child : children)
 		{
-			if (child->facetId == value)
+			if (child->m_facet->index == id)
 			{
 				return child;
 			}

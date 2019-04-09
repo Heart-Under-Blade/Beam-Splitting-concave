@@ -4,9 +4,8 @@
 
 Column::Column() {}
 
-Column::Column(int nElems, const complex &refrIndex, const Size &size,
-			   bool isNonConvex)
-	: Particle(nElems, refrIndex, isNonConvex),
+Column::Column(int nElems, const Size &size, bool isNonConvex)
+	: Particle(nElems, isNonConvex),
 	  m_size(size)
 {
 }

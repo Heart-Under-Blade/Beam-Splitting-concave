@@ -23,7 +23,7 @@ class Particle : public Array<ParticleFacet>
 {
 public:
 	Particle();
-	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
+	Particle(int nFacets, bool isNonConvex = false);
 
 	Facet *GetActualFacet(int i);
 	void SetFromFile(const std::string &filename, double reduceSize = -1);
@@ -75,12 +75,8 @@ public:
 	 */
 	double Area();
 
-	const complex &GetRefractiveIndex() const;
-	void SetRefractiveIndex(const complex &value);
-
 	const Orientation &GetSymmetry() const;
-	virtual void GetParticalFacetIdRange(Facet */*id*/,
-										 int &/*begin*/, int &/*end*/) const {}
+	virtual void GetPartByFacet(Facet */*facet*/, Array<Facet*> &facets);
 
 	bool IsNonConvex() const;
 	void Output();
@@ -91,10 +87,6 @@ public:
 
 protected:
 	Orientation m_symmetry;		///< angle of particle symmetry
-
-	// REF move this to somewhere
-	complex m_refractiveIndex;	///< complex value of refractive index of the particle
-
 	bool m_isNonConvex;
 
 protected:
@@ -103,6 +95,7 @@ protected:
 	void SetDefaultCenters();
 	void ResetPosition();
 	void SetSymmetry(double beta, double gamma);
+	void GetFacets(int end, int begin, Array<Facet*> &facets);
 	virtual void SetFacetParams() {}
 
 private:

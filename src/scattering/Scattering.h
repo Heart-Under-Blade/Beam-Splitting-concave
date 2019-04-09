@@ -4,6 +4,7 @@
 #include "Beam.h"
 #include "Particle.h"
 #include "Splitting.h"
+#include "TrackTree.h"
 
 #include "CompleteReflectionIncidence.h"
 #include "NormalIncidence.h"
@@ -48,7 +49,8 @@ struct OpticalPath
 class Scattering
 {
 public:
-	Scattering(Particle *particle, const Light &incidentLight, int maxActNo);
+	Scattering(Particle *particle, const Light &incidentLight, int maxActNo,
+			   const complex &m_refractiveIndex);
 	virtual ~Scattering();
 
 	/**
@@ -56,6 +58,9 @@ public:
 	 * @param scaterredBeams result beams
 	 */
 	void ScatterLight(std::vector<Beam> &scatteredBeams);
+
+	void ScatterLight(TrackNode */*trackTree*/,
+					  std::vector<Beam> &/*scatteredBeams*/);
 
 	double GetIncidentEnergy() const;
 
@@ -70,6 +75,8 @@ public:
 								   std::vector<int> track);
 
 	virtual void SelectOriginVisibleFacets(Array<Facet*> &facets);
+
+	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 
 protected:
 	Particle *m_particle;	///< The crystal for a light scattering
@@ -91,16 +98,18 @@ protected:
 	int m_treeSize;
 	std::vector<Beam> *m_scatteredBeams;
 
+	Array<Facet*> m_workFacets;
 	Array<Facet*> m_visibleFacets;
+
 	double m_incidentEnergy;
 	const double EPS_BEAM_ENERGY = 2e-12;
 
+	TrackNode *m_trackTreeNode;
+	bool m_hasTracks;
+
 protected:
-	/**
-	 * @brief Splits the original beam to external and internal beams
-	 * @param externalBeams external beams
-	 */
 	virtual void SplitOriginalBeam(std::vector<Beam> &externalBeams) = 0;
+
 	/**
 	 * @brief Collect beams producted from splitting of the original beam and secondary beams
 	 * @param scatteredBeams beams that leaved the Particle
@@ -119,8 +128,8 @@ protected:
 	 * @param beam checked beam
 	 * @return true if beam has been to release, false otherwise
 	 */
-	virtual bool IsTerminalAct(const Beam &beam);
-	virtual bool isTerminalFacet(int index, Array<Facet*> &facets);
+	virtual bool IsFinalAct(const Beam &beam);
+	virtual bool isFinalFacet(int index, Array<Facet*> &facets);
 	virtual void SelectVisibleFacets(const Beam &beam, Array<Facet*> &facets) = 0;
 	virtual void PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 								   bool hasOutBeam);
@@ -131,9 +140,11 @@ protected:
 	void SplitBeamByVisibleFacets(Beam &beam);
 
 	void FindVisibleFacets(const Beam &beam, FacetChecker &checker,
-						   int begin, int end, Array<Facet*> &facets);
+						   Array<Facet *> &facets,
+						   Array<Facet*> &visibleFacets);
 
-	bool ComputeOpticalBeamParams(Facet *facet, Beam beam);
+	bool ComputeOpticalBeamParams(Facet *facet, Beam beam,
+								  const Polygon &resultShape);
 
 	void SetPolygonByFacet(Facet *facet, Polygon &polygon) const;
 
@@ -144,6 +155,6 @@ protected:
 							const Polygon &lightedPolygon);
 
 	void PushBeamToTree(Beam &beam);
-	void CreateOriginBeam(const Vector3f &dir, const Vector3f &basis);
+	void CreateOriginalBeam(const Vector3f &dir, const Vector3f &basis);
 	void SetIncidence();
 };

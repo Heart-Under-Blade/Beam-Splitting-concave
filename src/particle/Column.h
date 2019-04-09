@@ -17,8 +17,7 @@ class Column : public Particle
 {
 public:
 	Column();
-	Column(int nFacets, const complex &refrIndex, const Size &size,
-		   bool isNonConvex);
+	Column(int nFacets, const Size &size, bool isNonConvex);
 
 protected:
 	static const int BASE_NUM = 2;			///< number of bases

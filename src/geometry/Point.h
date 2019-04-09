@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Orientation.h"
+
 #include <math.h>
 #include <iostream>
 
@@ -30,6 +32,8 @@ struct Point3f
 	Point3f operator += (const Point3f &value);
     Point3f operator += (double value);
 	Point3f operator - () const;
+
+	Orientation ToOrientation() const;
 
 	friend std::ostream & operator << (std::ostream &os, const Point3f &p);
 

@@ -2,9 +2,8 @@
 #include "common.h"
 #include <algorithm>
 
-HollowColumn::HollowColumn(const complex &refrIndex, const Size &size,
-						   double cavityAngle)
-	: Column(18, refrIndex, size, true)
+HollowColumn::HollowColumn(const Size &size, double cavityAngle)
+	: Column(18, size, true)
 {
 	double angleD = Orientation::DegToRad(cavityAngle);
 	double r = m_size.diameter/2;

@@ -11,9 +11,8 @@ Particle::Particle()
 	SetFacetIndices();
 }
 
-Particle::Particle(int nFacets, const complex &refrIndex, bool isNonConvex)
-	: m_refractiveIndex(refrIndex),
-	  m_isNonConvex(isNonConvex)
+Particle::Particle(int nFacets, bool isNonConvex)
+	: m_isNonConvex(isNonConvex)
 {
 	nElems = nFacets;
 	SetFacetIndices();
@@ -310,14 +309,23 @@ double Particle::MaximalDimension() const
 	return Dmax;
 }
 
-const complex &Particle::GetRefractiveIndex() const
-{
-	return m_refractiveIndex;
-}
-
 const Orientation &Particle::GetSymmetry() const
 {
 	return m_symmetry;
+}
+
+void Particle::GetFacets(int end, int begin, Array<Facet*> &facets)
+{
+	for (int i = begin; i < end; ++i)
+	{
+		Facet *f = &(elems[i].actual);
+		facets.Add(f);
+	}
+}
+
+void Particle::GetPartByFacet(Facet */*facet*/, Array<Facet*> &facets)
+{
+	GetFacets(0, nElems, facets);
 }
 
 void Particle::Move(float dx, float dy, float dz)
@@ -465,11 +473,6 @@ void Particle::ReduceSmallEdges(double minSize)
 			}
 		}
 	} while (isReduced);
-}
-
-void Particle::SetRefractiveIndex(const complex &value)
-{
-	m_refractiveIndex = value;
 }
 
 void Particle::SetDefaultNormals()

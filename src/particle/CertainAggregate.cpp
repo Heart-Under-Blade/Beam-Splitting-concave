@@ -2,8 +2,8 @@
 #include "Point.h"
 #include "common.h"
 
-CertainAggregate::CertainAggregate(const complex &refrIndex)
-	: Particle(64, refrIndex, true)
+CertainAggregate::CertainAggregate()
+	: Particle(64, true)
 {
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
@@ -354,10 +354,13 @@ void CertainAggregate::SetFacetParams()
 
 }
 
-void CertainAggregate::GetParticalFacetIdRange(Facet *facet, int &begin, int &end) const
+void CertainAggregate::GetPartByFacet(Facet *facet, Array<Facet *> &facets)
 {
 	// REF: упростить
 	int &index = facet->index;
+
+	int begin;
+	int end;
 
 	if (index < 8)
 	{
@@ -399,4 +402,6 @@ void CertainAggregate::GetParticalFacetIdRange(Facet *facet, int &begin, int &en
 		begin = 56;
 		end = 64;
 	}
+
+	GetFacets(begin, end, facets);
 }

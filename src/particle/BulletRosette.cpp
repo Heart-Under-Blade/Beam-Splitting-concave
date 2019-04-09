@@ -7,9 +7,8 @@ BulletRosette::BulletRosette()
 {
 }
 
-BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
-							 double peakHeight)
-	: Particle(8, refrIndex, true) // REF: 8?????
+BulletRosette::BulletRosette(const Size &size, double peakHeight)
+	: Particle(8, true) // REF: 8?????
 {
 	SetSymmetry(M_PI/2, M_PI);
 	isAggregated = true;
@@ -18,14 +17,14 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	double halfHeight = size.height/2;
 
 	{
-		Bullet b(refrIndex, size, peakHeight);
+		Bullet b(size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.CommitState();
 		bullets.push_back(b);
 	}
 
 	{
-		Bullet b(refrIndex, size, peakHeight);
+		Bullet b(size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.CommitState();
 		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
@@ -34,7 +33,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	}
 
 	{
-		Bullet b(refrIndex, size, peakHeight);
+		Bullet b(size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.CommitState();
 		b.Rotate(Orientation(0, Orientation::DegToRad(180)));
@@ -43,7 +42,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	}
 
 	{
-		Bullet b(refrIndex, size, peakHeight);
+		Bullet b(size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.CommitState();
 		b.Rotate(Orientation(0, Orientation::DegToRad(270)));
@@ -52,7 +51,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	}
 
 	{
-		Bullet b(refrIndex, size, peakHeight);
+		Bullet b(size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.CommitState();
 		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
@@ -63,7 +62,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	}
 
 	{
-		Bullet b(refrIndex, size, peakHeight);
+		Bullet b(size, peakHeight);
 		b.Move(0, 0, -(halfHeight + peakHeight + 1));
 		b.CommitState();
 		b.Rotate(Orientation(0, Orientation::DegToRad(90)));
@@ -88,9 +87,11 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	}
 }
 
-void BulletRosette::GetParticalFacetIdRange(Facet *facet, int &begin, int &end) const
+void BulletRosette::GetPartByFacet(Facet *facet, Array<Facet*> &facets)
 {
 	int patN = facet->index/13;
-	begin = patN*13;
-	end = begin+13;
+	int begin = patN*13;
+	int end = begin+13;
+
+	GetFacets(begin, end, facets);
 }

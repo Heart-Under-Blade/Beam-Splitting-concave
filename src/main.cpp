@@ -7,6 +7,7 @@
 #include "CalcTimer.h"
 #include "macro.h"
 
+#include "Orientation.h"
 #include "Mueller.hpp"
 #include "RegularColumn.h"
 #include "HollowColumn.h"
@@ -103,7 +104,6 @@ int main(int argc, const char* argv[])
 		std::string filename = args.GetStringValue("p");
 		particle = new Particle();
 		particle->SetFromFile(filename);
-		particle->SetRefractiveIndex(complex(refrIndex));
 
 		cout << "from file: " << filename << endl;
 
@@ -127,31 +127,31 @@ int main(int argc, const char* argv[])
 		switch (type)
 		{
 		case ParticleType::RegularColumn:
-			particle = new RegularColumn(refrIndex, size);
+			particle = new RegularColumn(size);
 			break;
 		case ParticleType::Bullet:
 			sup = (size.diameter*sqrt(3)*tan(Orientation::DegToRad(62)))/4;
-			particle = new Bullet(refrIndex, size, sup);
+			particle = new Bullet(size, sup);
 			break;
 		case ParticleType::BulletRosette:
 			sup = (size.diameter*sqrt(3)*tan(Orientation::DegToRad(62)))/4;
-			particle = new BulletRosette(refrIndex, size, sup);
+			particle = new BulletRosette(size, sup);
 			break;
 		case ParticleType::DistortedColumn:
 			sup = args.GetDoubleValue("p", 3);
-			particle = new DistortedColumn(refrIndex, size, sup);
+			particle = new DistortedColumn(size, sup);
 			break;
 		case ParticleType::HollowColumn:
 			sup = args.GetDoubleValue("p", 3);
-			particle = new HollowColumn(refrIndex, size, sup);
+			particle = new HollowColumn(size, sup);
 			break;
 		case ParticleType::HexagonalAggregate:
 			num = args.GetIntValue("p", 3);
-			particle = new HexagonalAggregate(refrIndex, size, num);
+			particle = new HexagonalAggregate(size, num);
 			break;
 		case ParticleType::CertainAggregate:
 			sup = args.GetDoubleValue("p", 3);
-			particle = new CertainAggregate(refrIndex);
+			particle = new CertainAggregate();
 			break;
 		default:
 			assert(false && "ERROR! Incorrect type of particle.");
@@ -176,11 +176,13 @@ int main(int argc, const char* argv[])
 
 	if (particle->IsNonConvex())
 	{
-		scattering = new ScatteringNonConvex(particle, incidentLight, maxActNo);
+		scattering = new ScatteringNonConvex(particle, incidentLight, maxActNo,
+											 refrIndex);
 	}
 	else
 	{
-		scattering = new ScatteringConvex(particle, incidentLight, maxActNo);
+		scattering = new ScatteringConvex(particle, incidentLight, maxActNo,
+										  refrIndex);
 	}
 
 	Tracks trackGroups;
@@ -195,7 +197,7 @@ int main(int argc, const char* argv[])
 	if (args.IsCatched("tr"))
 	{
 		string trackFileName = args.GetStringValue("tr");
-		trackGroups.ImportTracks(particle->nElems, trackFileName);
+		trackGroups.ImportTracks(particle, trackFileName);
 		trackGroups.shouldComputeTracksOnly = !args.IsCatched("all");
 	}
 

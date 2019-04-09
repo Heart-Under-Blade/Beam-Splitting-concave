@@ -3,11 +3,10 @@
 
 Bullet::Bullet()
 {
-
 }
 
-Bullet::Bullet(const complex &refrIndex, const Size &size, double peakHeight)
-	: Column(13, refrIndex, size, false)
+Bullet::Bullet(const Size &size, double peakHeight)
+	: Column(13, size, false)
 {
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();

@@ -8,6 +8,7 @@
 #include "geometry_lib.h"
 #include "Facet.h"
 #include "Tracks.h"
+#include "TrackTree.h"
 
 template <class T>
 class SplittedBeams
@@ -96,6 +97,7 @@ public:
 
 	int actNo; ///< Current r/r act number
 	Facet *facet; ///< Last incident facet of the Particle
+	TrackNode *node;
 
 #ifdef MODE_FIXED_OR
 	std::vector<Point3f> dirs;
@@ -134,8 +136,6 @@ public:
 	// REF: перенести в Diffractor
 	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
-
-	void GetSpherical(double &fi, double &teta) const;
 
 	/**
 	 * @brief Outputs beam params. Use it with std::cout or std::ofstream

@@ -10,18 +10,21 @@
 class ScatteringNonConvex : public Scattering
 {
 public:
-	ScatteringNonConvex(Particle *particle, const Light &incidentLight, int maxActNo);
+	ScatteringNonConvex(Particle *particle, const Light &incidentLight,
+						int maxActNo, const complex &refractiveIndex);
 	~ScatteringNonConvex();
 
+	void ScatterLight(TrackNode *trackTree, std::vector<Beam> &scatteredBeams);
+
 protected:
-	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;
+	void SplitOriginalBeam(std::vector<Beam> &scatteredBeams) override;
 
 	void ReleaseBeam(Beam &beam) override;
-	bool IsTerminalAct(const Beam &beam) override;
-	bool isTerminalFacet(int index, Array<Facet*> &facets) override;
+	bool IsFinalAct(const Beam &beam) override;
+	bool isFinalFacet(int index, Array<Facet*> &facets) override;
 	void PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 						   bool hasOutBeam) override;
-	void SelectVisibleFacets(const Beam &beam, Array<Facet*> &facets) override;
+	void SelectVisibleFacets(const Beam &beam, Array<Facet*> &visibleFacets) override;
 
 	void PushBeamToBuffer(Beam &beam, const PolygonStack &beamParts,
 						  std::vector<Beam> &scatteredBeams);
@@ -49,7 +52,7 @@ private:
 	double CalcMinDistanceToFacet(Polygon *facet, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, Array<Facet*> &facets); ///< use 'Fast sort' algorithm
 
-	bool FindLightedFacetPolygon(const Array<Facet*> &facets, int nCheckedFacets,
+	bool FindVisiblePartOfFacet(const Array<Facet*> &facets, int nCheckedFacets,
 								 PolygonStack &pols);
 
 	void PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,

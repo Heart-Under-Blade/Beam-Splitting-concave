@@ -32,55 +32,6 @@ public:
 	T last;
 };
 
-class Orientation
-{
-public:
-	double zenith;
-	double azimuth;
-
-	Orientation() {}
-
-	Orientation(double b, double g)
-	{
-		zenith = b;
-		azimuth = g;
-	}
-
-	/**
-	 * @brief Convert angles to radians
-	 */
-	void ToRadian()
-	{
-		zenith = DegToRad(zenith);
-		azimuth = DegToRad(azimuth);
-	}
-
-	Orientation ToRadian() const
-	{
-		Orientation angle = *this;
-		angle.ToRadian();
-		return angle;
-	}
-
-	/**
-	 * @brief Convert angles to degrees
-	 */
-	void ToDegree()
-	{
-		zenith = RadToDeg(zenith);
-		azimuth = RadToDeg(azimuth);
-	}
-
-	static double DegToRad(double deg)
-	{
-		return (deg*M_PI)/180;
-	}
-
-	static double RadToDeg(double rad)
-	{
-		return (rad*180)/M_PI;
-	}
-};
 
 typedef Point3f Vector3f;
 typedef Point3d Vector3d;

@@ -1,5 +1,7 @@
 #include "Polygon.h"
-#include <math.h>
+
+#include <cmath>
+#include <limits.h>
 
 #define EPS_NORMAL 0.1
 
@@ -165,7 +167,7 @@ Point3f Polygon::Normal() const
 		Point3f::Normalize(normal);
 		++count;
 	}
-	while (isnan(normal.coordinates[0]) && count < nVertices);
+	while (std::isnan(normal.coordinates[0]) && count < nVertices);
 
 	return normal;
 }

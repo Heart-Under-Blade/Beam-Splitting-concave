@@ -95,54 +95,13 @@ Vector3f Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 		}
 		else
 		{
-			double phi, teta;
-			GetSpherical(phi, teta);
-			newBasis = Vector3f(-sin(phi), cos(phi), 0);
+			Orientation sph = direction.ToOrientation();
+			newBasis = Vector3f(-sin(sph.zenith), cos(sph.azimuth), 0);
 		}
 	}
 
 	RotateJones(newBasis);
 	return newBasis;
-}
-
-void Beam::GetSpherical(double &fi, double &teta) const
-{
-	const float &x = direction.coordinates[0];
-	const float &y = direction.coordinates[1];
-	const float &z = direction.coordinates[2];
-
-	if (fabs(z + 1.0) < DBL_EPSILON) // forward
-	{
-		fi = 0;
-		teta = M_PI;
-		return;
-	}
-
-	if (fabs(z - 1.0) < DBL_EPSILON) // backward
-	{
-		fi = 0;
-		teta = 0;
-		return;
-	}
-
-	double tmp = y*y;
-
-	if (tmp < DBL_EPSILON)
-	{
-		tmp = (x > 0) ? 0 : M_PI;
-	}
-	else
-	{
-		tmp = acos(x/sqrt(x*x + tmp));
-
-		if (y < 0)
-		{
-			tmp = M_2PI - tmp;
-		}
-	}
-
-	fi = (tmp < M_2PI) ? tmp : 0;
-	teta = acos(z);
 }
 
 Beam &Beam::operator = (const Beam &other)

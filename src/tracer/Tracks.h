@@ -6,6 +6,7 @@
 
 #include "BigInteger.hh"
 #include "TrackTree.h"
+#include "Particle.h"
 
 #define MAX_GROUP_NUM	1024
 
@@ -40,7 +41,7 @@ public:
 	Tracks(int nFacets) {m_nFacets = nFacets;}
 	int FindGroupByTrackId(const IdType &trackId) const;
 
-	void ImportTracks(int nFacets, const std::string &filename);
+	void ImportTracks(Particle *particle, const std::string &filename);
 	void RecoverTrack(const Beam &beam, std::vector<int> &track);
 	static void RecoverTrack(int nFacets, const Beam &beam, std::vector<int> &track);
 	static std::string TrackToStr(const std::vector<int> &track);
@@ -53,7 +54,8 @@ public:
 private:
 	int m_nFacets;
 
-	void FillTrackTree(const std::vector<std::vector<int>> &tracks);
+	void FillTrackTree(Particle *particle,
+					   const std::vector<std::vector<int>> &tracks);
 	void CreateGroupsForUngroupedTracks(const TrackGroup &buffGroup);
 	int ImportTrack(char *buff, vector<int> &track);
 };

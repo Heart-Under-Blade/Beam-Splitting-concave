@@ -6,7 +6,7 @@
 
 Tracks::Tracks()
 {
-	tree = new TrackNode(-1);
+	tree = new TrackNode(nullptr);
 }
 
 int Tracks::FindGroupByTrackId(const IdType &trackId) const
@@ -30,7 +30,8 @@ int Tracks::FindGroupByTrackId(const IdType &trackId) const
 	return -1;
 }
 
-void Tracks::FillTrackTree(const std::vector<std::vector<int>> &tracks)
+void Tracks::FillTrackTree(Particle *particle,
+						   const std::vector<std::vector<int>> &tracks)
 {
 	auto currNode = tree;
 
@@ -47,7 +48,7 @@ void Tracks::FillTrackTree(const std::vector<std::vector<int>> &tracks)
 			}
 			else
 			{
-				currNode = currNode->AddChild(id);
+				currNode = currNode->AddChild(particle->GetActualFacet(i));
 			}
 
 			if (i == t.size()-1)
@@ -120,11 +121,11 @@ IdType Tracks::ComputeTrackId(const vector<int> &track, int nFacets)
 	return trackId;
 }
 
-void Tracks::ImportTracks(int nFacets, const std::string &filename)
+void Tracks::ImportTracks(Particle *particle, const std::string &filename)
 {
 	std::vector<std::vector<int>> tracks;
 
-	m_nFacets = nFacets;
+	m_nFacets = particle->nElems;
 	const int bufSize = 1024;
 	std::ifstream trackFile(filename, std::ios::in);
 
@@ -145,7 +146,7 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 		vector<int> track;
 		int groupIndex = ImportTrack(buff, track);
 
-		auto trackId = ComputeTrackId(track, nFacets);
+		auto trackId = ComputeTrackId(track, particle->nElems);
 
 		if (groupIndex >= 0)
 		{
@@ -164,7 +165,7 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 	trackFile.close();
 
 	CreateGroupsForUngroupedTracks(buffGroup);
-	FillTrackTree(tracks);
+	FillTrackTree(particle, tracks);
 }
 
 void Tracks::RecoverTrack(const Beam &beam, std::vector<int> &track)
