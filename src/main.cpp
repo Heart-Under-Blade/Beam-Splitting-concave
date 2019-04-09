@@ -70,6 +70,8 @@ Light SetIncidentLight(Particle *particle)
 
 	Point3f point = incidentLight.direction * particle->RotationRadius();
 	incidentLight.direction.d_param = Point3f::DotProduct(point, incidentLight.direction);
+
+	return incidentLight;
 }
 
 int main(int argc, const char* argv[])
