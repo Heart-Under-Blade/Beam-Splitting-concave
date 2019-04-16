@@ -52,3 +52,5 @@ tool/StlToCry - копия/main.cpp
 tool/StlToCry - копия/StlToCry.pro
 tool/StlToCry - копия/Converter.h
 tool/StlToCry - копия/Converter.cpp
+bin/mbs_without.exe
+bin/mbs_with.exe

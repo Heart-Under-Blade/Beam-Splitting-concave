@@ -174,7 +174,18 @@ public:
 
 protected:
 	void ApplyAbsorbtion(Beam &beam);
+	/**
+	 * @brief Calculate diffraction at the point
+	 * @param point
+	 * @param wavelength
+	 * @param imRi
+	 * @return
+	 */
+	complex DiffractionIncline(const Beam &beam, const Point3d& point,
+							   double wavelength, double imRi) const;
 
+	complex DiffractionIncline(const Beam &beam, const Point3d& point,
+							   double wavelength) const;
 protected:
 	Scattering *m_scattering;
 	Tracks *m_tracks;
@@ -185,6 +196,11 @@ protected:
 	double m_normIndex;
 	std::ofstream m_logFile;
 	double m_cAbs;
+	complex m_ri;
+
+	double m_opticalLenght[3];
+private:
+	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);
 };
 
 

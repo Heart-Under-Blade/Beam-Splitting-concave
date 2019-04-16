@@ -60,11 +60,12 @@ public:
 	void MultiplyJonesMatrix(const complex &c1, const complex &c2);
 	void RotateJMatrix(const Vector3f &newBasis);
 
-	// REF: перенести в PhisBeam
-	complex DiffractionIncline(const Point3d& pt, double wavelength) const; ///< calculate diffraction at the point /b pt
 	//--------------------------
 
 	friend std::ostream & operator << (std::ostream &os, const Beam &beam);
+
+	Point3d Proj(const Point3d& Tx, const Point3d& Ty, const Point3d& r,  const Point3d& pnt) const;
+	Point3d Proj(const Point3d& _r, const Point3d &pnt) const;
 
 	// REF: рассмотреть схему, где у пучка будет много полигонов
 

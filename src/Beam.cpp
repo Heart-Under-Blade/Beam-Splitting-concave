@@ -26,13 +26,13 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 	return os;
 }
 
-Point3d Proj(const Point3d& Tx, const Point3d& Ty, const Point3d& r,  const Point3d& pnt)
+Point3d Beam::Proj(const Point3d& Tx, const Point3d& Ty, const Point3d& r,  const Point3d& pnt) const
 {
 	const  Point3d p_pr = pnt - r*DotProductD(r, pnt); // расчёт коор-т в СК наблюдателя
 	return Point3d(DotProductD(p_pr, Tx), DotProductD(p_pr, Ty), 0); //*/
 }
 
-Point3d Proj(const Point3d& _r, const Point3d &pnt)
+Point3d Beam::Proj(const Point3d& _r, const Point3d &pnt) const
 {
 	Point3d _Tx,  // условная горизонталь СК экрана в СК тела
 		_Ty;  // третья ось (условная вертикаль СК экрана)
@@ -231,157 +231,6 @@ void Beam::MultiplyJonesMatrix(const complex &c1, const complex &c2)
 	J.m12 *= c1;
 	J.m21 *= c2;
 	J.m22 *= c2;
-}
-
-complex Beam::DiffractionIncline(const Point3d &pt, double wavelength) const
-{
-	const double eps1 = /*1e9**/100*FLT_EPSILON;
-	const double eps2 = /*1e6**/FLT_EPSILON;
-
-	Vector3f _n = Normal();
-
-	int begin, startIndex, endIndex;
-	bool order = !(DotProduct(_n, direction) < 0);
-
-	if (order)
-	{
-		begin = 0;
-        startIndex = nVertices-1;
-		endIndex = -1;
-	}
-	else
-	{
-        begin = nVertices-1;
-		startIndex = 0;
-        endIndex = nVertices;
-	}
-
-	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
-
-	const Point3f &dir = direction;
-	Point3d k_k0 = -pt + Point3d(dir.cx, dir.cy, dir.cz);
-
-	Point3f cntr = Center();
-	Point3d center = Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
-
-	Point3d	pt_proj = Proj(n, k_k0);
-
-	const double
-			A = pt_proj.x,
-			B = pt_proj.y;
-
-	complex one(0, -1);
-	const double k = M_2PI/wavelength;
-
-	if (fabs(A) < eps2 && fabs(B) < eps2)
-	{
-		return -one/wavelength*Area();
-	}
-
-	complex s(0, 0);
-
-//	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
-//	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
-
-	Point3d p1 = Proj(n, arr[begin]) - center;
-	Point3d p2;
-
-	if (fabs(B) > fabs(A))
-	{
-		for (int i = startIndex; i != endIndex;)
-		{
-			p2 = Proj(n, arr[i]) - center;
-
-			if (fabs(p1.x - p2.x) < eps1)
-			{
-				p1 = p2;
-
-				if (order)
-				{
-					--i;
-				}
-				else
-				{
-					++i;
-				}
-				continue;
-			}
-
-			const double
-					ai = (p1.y-p2.y)/(p1.x-p2.x),
-					bi = p1.y - ai*p1.x,
-					Ci = A+ai*B;
-
-			complex tmp;
-
-			if (fabs(Ci) < eps1)
-			{
-				tmp = complex(-k*k*Ci*(p2.x*p2.x-p1.x*p1.x)/2.0,k*(p2.x-p1.x));
-			}
-			else
-			{
-				tmp = (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci; // OPT: (k*Ci)
-			}
-
-			s += exp_im(k*B*bi) * tmp;
-			p1 = p2;
-
-			if (order)
-			{
-				--i;
-			}
-			else
-			{
-				++i;
-			}
-		}
-
-		s /= B;
-	}
-	else
-	{
-		for (int i = startIndex; i != endIndex;)
-		{
-			p2 = Proj(n, arr[i]) - center;
-
-			if (fabs(p1.y - p2.y)<eps1)
-			{
-				p1 = p2;
-
-				if (order)
-				{
-					--i;
-				}
-				else
-				{
-					++i;
-				}
-
-				continue;
-			}
-
-			const double ci = (p1.x-p2.x)/(p1.y-p2.y),
-					di = p1.x - ci*p1.y,
-					Ei = A*ci+B;
-
-			s += exp_im(k*A*di) * (fabs(Ei)<eps1 ? complex(-k*k*Ei*(p2.y*p2.y-p1.y*p1.y)/2.0,k*(p2.y-p1.y))
-												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);// OPT: (k*Ei)
-			p1 = p2;
-
-			if (order)
-			{
-				--i;
-			}
-			else
-			{
-				++i;
-			}
-		}
-
-		s /= -A;
-	}
-
-	return one*wavelength*s/SQR(M_2PI);
 }
 
 void Beam::RotateJMatrix(const Vector3f &newBasis)

@@ -60,7 +60,8 @@ public:
 
 	double GetIncedentEnergy() const;
 
-	double ComputeInternalOpticalPath(const Beam &beam, const std::vector<int> &track);
+	double ComputeInternalOpticalPath(const Beam &beam, const Point3f sourcePoint,
+									  const std::vector<int> &track);
 //	double CrossSection(const Point3f &beamDir) const;
 
 protected:

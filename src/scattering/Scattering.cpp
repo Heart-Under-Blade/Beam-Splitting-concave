@@ -437,6 +437,7 @@ double Scattering::GetIncedentEnergy() const
 }
 
 double Scattering::ComputeInternalOpticalPath(const Beam &beam,
+											  const Point3f sourcePoint,
 											  const vector<int> &track)
 {
 	double path1 = 0;
@@ -445,7 +446,7 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 	Location loc = Location::Out;
 	Location nextLoc;
 
-	Point3f p1 = /*beam.arr[0]*/beam.Center();
+	Point3f p1 = sourcePoint;
 	Point3f p2;
 
 	for (int i = track.size()-1; i > 0; --i)
@@ -485,7 +486,7 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 	Point3f nFar1 = m_incidentDir;
 	Point3f nFar2 = -beam.direction;
 	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
-	double dd2 = fabs(DotProductD(beam.Center(), nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+	double dd2 = fabs(DotProductD(sourcePoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
 	path += dd1;
 	path += dd2;
 	if (fabs(path - beam.opticalPath) > 1)

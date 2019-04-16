@@ -22,10 +22,16 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 
 	for (int i = 0; i < betaRange.number; ++i)
 	{
+#ifdef _DEBUG // DEB
+//		i = 16;
+#endif
 		beta = (i + 0.5)*betaRange.step;
 
 		for (int j = 0; j < gammaRange.number; ++j)
 		{
+#ifdef _DEBUG // DEB
+//			j = 48;
+#endif
 			gamma = (j + 0.5)*gammaRange.step;
 #ifdef _DEBUG // DEB
 //			beta = 0.47123889803846897; gamma = 0.52359877559829882;

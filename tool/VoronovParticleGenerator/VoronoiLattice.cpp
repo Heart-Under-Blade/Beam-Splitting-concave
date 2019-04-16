@@ -17,11 +17,9 @@
 //#define EPS_SAME_CELL 0.1
 //#define EPS_SAME_FACET 0.0005
 
-//#define EPS_SAME_FACET 0.01
-#define EPS_SAME_CELL 0.09
-//#define EPS_SAME_CELL 0.5
-//#define EPS_SAME_FACET 0.3
-#define EPS_SAME_FACET 0.0005
+#define EPS_SAME_CELL 0.0001
+#define EPS_SAME_FACET 0.5
+//#define EPS_SAME_FACET 0.0005
 #define EPS_DUPLICATE 0.003
 #define EPS_SAME_LINE 0.003
 
@@ -322,7 +320,7 @@ void VoronoiLattice::RemoveExternalPoints(
 		Point3f n = plane.normal;
 		n.coordinates[3] = plane.dParam;
 
-		double dd = plane.normal.coordinates[3];
+//		double dd = plane.normal.coordinates[3];
 		if (points.size() >= 3)
 		{
 			points.remove_if([&](Point3f &p) {

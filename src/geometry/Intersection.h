@@ -7,7 +7,8 @@
 #define EPS_LAYONLINE		0.05
 
 const float EPS_INTERSECT = 0.08;
-const float EPS_MERGE = 0.08;
+//const float EPS_MERGE = 0.08;
+const float EPS_MERGE = 0.1;
 const float EPS_INSIDE = -0.06;
 
 inline bool is_inside_i(__m128 x, __m128 p1, __m128 p2, __m128 normal)

@@ -298,7 +298,8 @@ double HandlerGO::ComputeTotalScatteringEnergy()
 void Handler::SetAbsorbtionAccounting(bool value)
 {
 	m_hasAbsorbtion = value;
-	m_cAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
+	m_ri = m_particle->GetRefractiveIndex();
+	m_cAbs = -M_2PI*imag(m_ri)/m_wavelength;
 }
 
 void HandlerGO::WriteLog(const string &str)
@@ -316,17 +317,67 @@ HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float w
 {
 }
 
+void Handler::ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr)
+{
+	std::vector<double> lens;
+	for (int i = 0; i < beam.nVertices; ++i)
+	{
+		double d = m_scattering->ComputeInternalOpticalPath(
+					beam, beam.arr[i], tr) - 20000.000;
+		lens.push_back(d);
+	}
+
+	Vector3f _n = beam.Normal();
+	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
+	Point3f cntr = beam.Center();
+	Point3d center = beam.Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
+
+	Point3d p1 = beam.Proj(n, beam.arr[0]) - center;
+	Point3d p2 = beam.Proj(n, beam.arr[1]) - center;
+	Point3d p3 = beam.Proj(n, beam.arr[2]) - center;
+
+	double den = p1.x*p2.y - p1.x*p3.y - p2.x*p1.y + p2.x*p3.y + p3.x*p1.y - p3.x*p2.y;
+
+	double len1 = (lens[0]*p2.x*p3.y - lens[0]*p3.x*p2.y -
+			lens[1]*p1.x*p3.y + lens[1]*p3.x*p1.y +
+			lens[2]*p1.x*p2.y - lens[2]*p2.x*p1.y) / den;
+
+	double len2 = (lens[0]*p2.y - lens[0]*p3.y -
+			lens[1]*p1.y + lens[1]*p3.y +
+			lens[2]*p1.y - lens[2]*p2.y) / den;
+
+	double len3 = -(lens[0]*p2.x - lens[0]*p3.x -
+			lens[1]*p1.x + lens[1]*p3.x +
+			lens[2]*p1.x - lens[2]*p2.x) / den;
+
+	for (int i = 3; i < beam.nVertices; ++i)
+	{
+		Point3d newP = beam.Proj(n, beam.arr[i]) - center;
+		double newL = len1 + len2*newP.x + len3*newP.y;
+		double err = fabs((lens[i] - newL)/lens[i])*100;
+		if (err > 5)
+			m_logFile << Polygon(beam) << "Area: " << beam.Area() << ' '
+					 << i << ", "
+					  << "Error: " << err << std::endl;
+	}
+}
+
 void Handler::ApplyAbsorbtion(Beam &beam)
 {
 	vector<int> tr;
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-#ifdef _DEBUG // DEB
-	if (beam.id == 407490777/*415047647*/)
-		int fff = 0;
-#endif
-	double path = m_scattering->ComputeInternalOpticalPath(beam, tr);
+	double path = 0;
+//	double path = m_scattering->ComputeInternalOpticalPath(beam, beam.Center(), tr);
+
+	for (int i = 0; i < 3; ++i)
+	{
+		m_opticalLenght[i] = m_scattering->ComputeInternalOpticalPath(
+					beam, beam.arr[i], tr);
+	}
+
+//	ExtropolateOpticalLenght(beam, tr);
 
 #ifdef _DEBUG // DEB
 	double ddd = fabs(path - beam.opticalPath);
@@ -334,11 +385,360 @@ void Handler::ApplyAbsorbtion(Beam &beam)
 	if (fabs(path - beam.opticalPath) >= 10e-4)
 		int ggg = 0;
 #endif
+
 	if (path > DBL_EPSILON)
 	{
 		double abs = exp(m_cAbs*path);
 		beam.J *= abs;
 	}
+}
+
+
+complex Handler::DiffractionIncline(const Beam &beam, const Point3d &point,
+									double wavelength, double imRi) const
+{
+	const double eps1 = 1e9*DBL_EPSILON;
+	const double eps2 = 1e6*DBL_EPSILON;
+
+	Vector3f _n = beam.Normal();
+
+	int begin, startIndex, nextIndex, endIndex;
+	bool order = !(DotProduct(_n, beam.direction) < 0);
+
+	if (order)
+	{
+		begin = 0;
+		startIndex = beam.nVertices-1;
+		nextIndex = beam.nVertices-2;
+		endIndex = -1;
+	}
+	else
+	{
+		begin = beam.nVertices-1;
+		startIndex = 0;
+		nextIndex = 1;
+		endIndex = beam.nVertices;
+	}
+
+	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
+
+	const Point3f &dir = beam.direction;
+	Point3d k_k0 = -point + Point3d(dir.cx, dir.cy, dir.cz);
+
+	Point3f cntr = beam.Center();
+	Point3d center = beam.Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
+
+	Point3d	pt_proj = beam.Proj(n, k_k0);
+
+	Point3d p_1 = beam.Proj(n, beam.arr[0]) - center;
+	Point3d p_2 = beam.Proj(n, beam.arr[1]) - center;
+	Point3d p_3 = beam.Proj(n, beam.arr[2]) - center;
+
+	double den = p_1.x*p_2.y - p_1.x*p_3.y - p_2.x*p_1.y + p_2.x*p_3.y + p_3.x*p_1.y - p_3.x*p_2.y;
+
+	double len1 = (m_opticalLenght[0]*p_2.x*p_3.y - m_opticalLenght[0]*p_3.x*p_2.y -
+			m_opticalLenght[1]*p_1.x*p_3.y + m_opticalLenght[1]*p_3.x*p_1.y +
+			m_opticalLenght[2]*p_1.x*p_2.y - m_opticalLenght[2]*p_2.x*p_1.y) / den;
+
+	double len2 = (m_opticalLenght[0]*p_2.y - m_opticalLenght[0]*p_3.y -
+			m_opticalLenght[1]*p_1.y + m_opticalLenght[1]*p_3.y +
+			m_opticalLenght[2]*p_1.y - m_opticalLenght[2]*p_2.y) / den;
+
+	double len3 = -(m_opticalLenght[0]*p_2.x - m_opticalLenght[0]*p_3.x -
+			m_opticalLenght[1]*p_1.x + m_opticalLenght[1]*p_3.x +
+			m_opticalLenght[2]*p_1.x - m_opticalLenght[2]*p_2.x) / den;
+
+	const complex A(pt_proj.x, len2*imRi);
+	const complex B(pt_proj.y, len3*imRi);
+
+	const double k = M_2PI/wavelength;
+	double k2 = k*k;
+
+	complex one(0, -1);
+
+	if (abs(A) < eps2 && abs(B) < eps2)
+	{
+		return -one/wavelength*beam.Area();
+	}
+
+	complex s(0, 0);
+
+//	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
+//	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
+
+	Point3d p1 = beam.Proj(n, beam.arr[begin]) - center;
+	Point3d p2;
+
+	if (abs(B) > abs(A))
+	{
+		for (int i = startIndex; i != endIndex;)
+		{
+			p2 = beam.Proj(n, beam.arr[i]) - center;
+
+			if (fabs(p1.x - p2.x) < eps1)
+			{
+				p1 = p2;
+
+				if (order)
+				{
+					--i;
+				}
+				else
+				{
+					++i;
+				}
+
+				continue;
+			}
+
+			const double ai = (p1.y - p2.y)/(p1.x - p2.x);
+			const double bi = p1.y - ai*p1.x;
+			complex Ci = A + ai*B;
+
+			complex tmp;
+
+			if (abs(Ci) < eps1)
+			{
+				double mul = p2.x*p2.x - p1.x*p1.x;
+				tmp = complex(-k2*real(Ci)*mul/2.0,
+							  k*(p2.x - p1.x) + k2*imag(Ci)*mul/2.0);
+			}
+			else
+			{
+				double kReCi = k*real(Ci);
+				double kImCi = -k*imag(Ci);
+				tmp = (exp_im(kReCi*p2.x)*exp(kImCi*p2.x) -
+					   exp_im(kReCi*p1.x)*exp(kImCi*p1.x))/Ci;
+			}
+
+			double kBi = k*bi;
+			s += exp_im(kBi*real(B)) * exp(-kBi*imag(B)) * tmp;
+			p1 = p2;
+
+			if (order)
+			{
+				--i;
+			}
+			else
+			{
+				++i;
+			}
+		}
+
+		s /= B;
+	}
+	else
+	{
+		for (int i = startIndex; i != endIndex;)
+		{
+			p2 = beam.Proj(n, beam.arr[i]) - center;
+
+			if (fabs(p1.y - p2.y)<eps1)
+			{
+				p1 = p2;
+
+				if (order)
+				{
+					--i;
+				}
+				else
+				{
+					++i;
+				}
+
+				continue;
+			}
+
+			const double ci = (p1.x - p2.x)/(p1.y - p2.y);
+			const double di = p1.x - ci*p1.y;
+			const complex Ei = A*ci + B;
+
+			complex tmp;
+
+			if (abs(Ei) < eps1)
+			{
+				double mul = p2.y*p2.y - p1.y*p1.y;
+				tmp = complex(-k2*real(Ei)*mul/2.0,
+							  k*(p2.y - p1.y) + k2*imag(Ei)*mul/2.0);
+			}
+			else
+			{
+				double kReEi = k*real(Ei);
+				double kImEi = -k*imag(Ei);
+				tmp = (exp_im(kReEi*p2.y)*exp(kImEi*p2.y) -
+					   exp_im(kReEi*p1.y)*exp(kImEi*p1.y))/Ei;
+			}
+
+			double kDi = k*di;
+			s += exp_im(kDi*real(A)) * exp(-kDi*imag(A)) * tmp;
+			p1 = p2;
+
+			if (order)
+			{
+				--i;
+			}
+			else
+			{
+				++i;
+			}
+		}
+
+		s /= -A;
+	}
+
+	return one * wavelength * s/SQR(M_2PI) * exp(-k*imRi*len1);
+}
+
+complex Handler::DiffractionIncline(const Beam &beam, const Point3d &point,
+									double wavelength) const
+{
+	const double eps1 = /*1e9**/100*FLT_EPSILON;
+	const double eps2 = /*1e6**/FLT_EPSILON;
+
+	Vector3f _n = beam.Normal();
+
+	int begin, startIndex, endIndex;
+	bool order = !(DotProduct(_n, beam.direction) < 0);
+
+	if (order)
+	{
+		begin = 0;
+		startIndex = beam.nVertices-1;
+		endIndex = -1;
+	}
+	else
+	{
+		begin = beam.nVertices-1;
+		startIndex = 0;
+		endIndex = beam.nVertices;
+	}
+
+	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
+
+	const Point3f &dir = beam.direction;
+	Point3d k_k0 = -point + Point3d(dir.cx, dir.cy, dir.cz);
+
+	Point3f cntr = beam.Center();
+	Point3d center = beam.Proj(n, Point3d(cntr.cx, cntr.cy, cntr.cz));
+
+	Point3d	pt_proj = beam.Proj(n, k_k0);
+
+	const double
+			A = pt_proj.x,
+			B = pt_proj.y;
+
+	complex one(0, -1);
+	const double k = M_2PI/wavelength;
+
+	if (fabs(A) < eps2 && fabs(B) < eps2)
+	{
+		return -one/wavelength*beam.Area();
+	}
+
+	complex s(0, 0);
+
+//	std::list<Point3d>::const_iterator p = polygon.arrthis->v.begin();
+//	Point3d p1 = Proj(this->N, *p++)-cnt, p2; // переводим вершины в систему координат грани
+
+	Point3d p1 = beam.Proj(n, beam.arr[begin]) - center;
+	Point3d p2;
+
+	if (fabs(B) > fabs(A))
+	{
+		for (int i = startIndex; i != endIndex;)
+		{
+			p2 = beam.Proj(n, beam.arr[i]) - center;
+
+			if (fabs(p1.x - p2.x) < eps1)
+			{
+				p1 = p2;
+
+				if (order)
+				{
+					--i;
+				}
+				else
+				{
+					++i;
+				}
+				continue;
+			}
+
+			const double
+					ai = (p1.y-p2.y)/(p1.x-p2.x),
+					bi = p1.y - ai*p1.x,
+					Ci = A+ai*B;
+
+			complex tmp;
+
+			if (fabs(Ci) < eps1)
+			{
+				tmp = complex(-k*k*Ci*(p2.x*p2.x-p1.x*p1.x)/2.0,k*(p2.x-p1.x));
+			}
+			else
+			{
+				tmp = (exp_im(k*Ci*p2.x) - exp_im(k*Ci*p1.x))/Ci; // OPT: (k*Ci)
+			}
+
+			s += exp_im(k*B*bi) * tmp;
+			p1 = p2;
+
+			if (order)
+			{
+				--i;
+			}
+			else
+			{
+				++i;
+			}
+		}
+
+		s /= B;
+	}
+	else
+	{
+		for (int i = startIndex; i != endIndex;)
+		{
+			p2 = beam.Proj(n, beam.arr[i]) - center;
+
+			if (fabs(p1.y - p2.y)<eps1)
+			{
+				p1 = p2;
+
+				if (order)
+				{
+					--i;
+				}
+				else
+				{
+					++i;
+				}
+
+				continue;
+			}
+
+			const double ci = (p1.x-p2.x)/(p1.y-p2.y),
+					di = p1.x - ci*p1.y,
+					Ei = A*ci+B;
+
+			s += exp_im(k*A*di) * (fabs(Ei)<eps1 ? complex(-k*k*Ei*(p2.y*p2.y-p1.y*p1.y)/2.0,k*(p2.y-p1.y))
+												 : (exp_im(k*Ei*p2.y) - exp_im(k*Ei*p1.y))/Ei);// OPT: (k*Ei)
+			p1 = p2;
+
+			if (order)
+			{
+				--i;
+			}
+			else
+			{
+				++i;
+			}
+		}
+
+		s /= -A;
+	}
+
+	return one*wavelength*s/SQR(M_2PI);
 }
 
 void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
@@ -396,6 +796,11 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 		{
 			beam.RotateSpherical(-m_incidentLight->direction,
 								 m_incidentLight->polarizationBasis);
+			// absorbtion
+			if (m_hasAbsorbtion && beam.nActs > 0)
+			{
+				ApplyAbsorbtion(beam);
+			}
 
 			const float &z = beam.direction.cz;
 			int zenith = round((acos(z)*SPHERE_RING_NUM)/M_PI);
@@ -524,23 +929,10 @@ void HandlerPO::ApplyDiffraction(const Beam &beam, const Point3f &beamBasis,
 	matrixC jones_rot(2, 2);
 	RotateJones(beam, beamBasis, vf, vr, jones_rot);
 
-	complex fresnel = beam.DiffractionIncline(vr, m_wavelength);
-
-#ifdef _DEBUG // DEB
-	if (isnan(real(fresnel)))
-	{
-		isNanOccured = isNan = true;
-		return;
-	}
-#endif
+	complex fresnel = (m_hasAbsorbtion) ? DiffractionIncline(beam, vr, m_wavelength, imag(m_ri))
+										: DiffractionIncline(beam, vr, m_wavelength);
 
 	jones = fresnel*jones_rot*fnJones;
-#ifdef _DEBUG // DEB
-	Matrix2x2c mm(fnJones);
-	Matrix2x2c jr(jones_rot);
-	Matrix2x2c jo(jones);
-	int ffff = 0;
-#endif
 }
 
 void HandlerPO::RotateJones(const Beam &beam, const Vector3f &T,
@@ -557,10 +949,6 @@ void HandlerPO::RotateJones(const Beam &beam, const Vector3f &T,
 	Vector3d NTd = Vector3d(NT.cx, NT.cy, NT.cz);
 	Vector3d NPd = Vector3d(NE.cx, NE.cy, NE.cz);
 
-//	J[0][0] = -DotProductD(NTd, vf);
-//	J[0][1] = -DotProductD(NEd, vf);
-//	J[1][0] =  DotProductD(NTd, vt);
-//	J[1][1] =  DotProductD(NEd, vt);
 	Point3f DT = CrossProduct(beam.direction, T);
 	Point3f DP = CrossProduct(beam.direction, beam.polarizationBasis);
 
@@ -656,7 +1044,7 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 		}
 
 		beam.polarizationBasis = beam.RotateSpherical(-m_incidentLight->direction,
-							 m_incidentLight->polarizationBasis);
+													  m_incidentLight->polarizationBasis);
 
 		// absorbtion
 		if (m_hasAbsorbtion && beam.nActs > 0)
