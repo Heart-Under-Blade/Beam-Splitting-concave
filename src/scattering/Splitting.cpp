@@ -82,11 +82,6 @@ void Splitting::SetBeams(const Polygon &beamShape)
 
 	beams.external.Clear();
 	beams.external.SetPolygon(beamShape);
-
-#ifdef _DEBUG // DEB
-	beams.internal.pols.push_back(beamShape);
-	beams.external.pols.push_back(beamShape);
-#endif
 }
 
 bool Splitting::HasOutBeam()

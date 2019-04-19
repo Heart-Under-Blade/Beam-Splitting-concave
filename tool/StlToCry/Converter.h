@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <vector>
+<<<<<<< HEAD
+=======
+#include <list>
+>>>>>>> feature/track_tree
 
 #include "Facet.h"
 
@@ -19,7 +23,20 @@ public:
 
 	void WriteStl(const std::vector<Facet> &triangles,
 				  const std::string &outFile);
+<<<<<<< HEAD
 private:
 	Point3f ReadVertex(char *buff, char *ptr, char *trash);
 	void MergeTriangles(std::vector<Facet> &rest, Facet &convex);
+=======
+
+	void Triangulate(const std::vector<Facet> &crystal,
+					 std::vector<Facet> &triangles);
+	void Triangulate(const std::vector<std::list<Point3f>> &facets,
+					 std::vector<Facet> &triangles);
+private:
+	Point3f ReadVertex(char *buff, char *ptr, char *trash);
+	void MergeTriangles(std::vector<Facet> &rest, Facet &convex);
+	void FindSameFacetTriangles(std::vector<Facet> &triangles,
+								std::vector<Facet> &oneFacetTriangles);
+>>>>>>> feature/track_tree
 };

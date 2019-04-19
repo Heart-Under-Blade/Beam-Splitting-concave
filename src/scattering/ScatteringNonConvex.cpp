@@ -19,8 +19,10 @@ ofstream trackMapFile("tracks_deb.dat", ios::out);
 using namespace std;
 
 ScatteringNonConvex::ScatteringNonConvex(Particle *particle,
-										 const Light &incidentLight, int maxActNo)
-	: Scattering(particle, incidentLight, maxActNo)
+										 const Light &incidentLight,
+										 int maxActNo,
+										 const complex &refractiveIndex)
+	: Scattering(particle, incidentLight, maxActNo, refractiveIndex)
 {
 }
 
@@ -28,46 +30,55 @@ ScatteringNonConvex::~ScatteringNonConvex()
 {
 }
 
-void ScatteringNonConvex::SplitOriginalBeam(std::vector<Beam> &externalBeams)
+void ScatteringNonConvex::ScatterLight(TrackNode *trackTree,
+									   std::vector<Beam> &scatteredBeams)
 {
+	m_hasTracks = true;
+	m_trackTreeNode = trackTree;
+	SplitOriginalBeam(scatteredBeams);
+	// TODO: to complete
+}
+
+void ScatteringNonConvex::SplitOriginalBeam(std::vector<Beam> &scatteredBeams)
+{
+	m_incidentEnergy = 0;
+
+	auto &allFacets = m_workFacets;
+
 	m_visibleFacets.nElems = 0;
-	FindVisibleFacets(m_originalBeam, m_lightChecker, 0, m_particle->nElems,
+	FindVisibleFacets(m_originalBeam, m_lightChecker, allFacets,
 					  m_visibleFacets);
 	SortFacetsByDistance(m_originalBeam.direction, m_visibleFacets);
 
+	auto &visiblePart = m_intersectionBuffer;
+
 	for (int i = 0; i < m_visibleFacets.nElems; ++i)
 	{
-		m_intersectionBuffer.Clear();
-		bool isIntersected = FindLightedFacetPolygon(m_visibleFacets, i,
-													 m_intersectionBuffer);
-		if (isIntersected)
-		{
-			Facet *facet = m_visibleFacets.elems[i];
+		Facet *facet = m_visibleFacets.elems[i];
 
-			m_splitting.SetBeams(*facet);
-			ComputeOpticalBeamParams(facet, m_originalBeam);
-			PushBeamsToTree(facet, m_splitting.beams, m_intersectionBuffer,
-							externalBeams);
+		if (!m_hasTracks || m_trackTreeNode->FindNode(facet->index) != nullptr)
+		{
+			visiblePart.Clear();
+			bool isFound = FindVisiblePartOfFacet(m_visibleFacets, i, visiblePart);
+
+			if (isFound)
+			{
+				ComputeOpticalBeamParams(facet, m_originalBeam, *facet);
+				PushBeamsToTree(facet, m_splitting.beams, visiblePart,
+								scatteredBeams);
+			}
 		}
 	}
-
-#ifdef _DEBUG // DEB
-//	Beam b = m_propagatingBeams[18];
-//	m_propagatingBeams[18] = m_propagatingBeams[17];
-//	m_propagatingBeams[17] = b;
-#endif
 }
 
 void ScatteringNonConvex::PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,
-										  const PolygonArray &polygons,
+										  const PolygonStack &polygons,
 										  std::vector<Beam> &scatteredBeams)
 {
 	Track beamTrack;
 	beamTrack.Update(facet);
 	beamTrack.RecomputeTrackId(facet->index, m_particle->nElems);
-#ifdef _DEBUG // DEB
-	beamTrack.pols.push_back(polygons.arr[0]);
-#endif
+
 	beams.internal.CopyTrack(beamTrack);
 	beams.internal.SetLocation(true);
 	PushBeamToBuffer(beams.internal, polygons, scatteredBeams);
@@ -77,17 +88,17 @@ void ScatteringNonConvex::PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,
 	PushBeamToBuffer(beams.external, polygons, scatteredBeams);
 
 #ifdef _CHECK_ENERGY_BALANCE
-	for (int j = 0; j < polygons.size; ++j)
+	for (int j = 0; j < polygons.nPolygons; ++j)
 	{
-		ComputeFacetEnergy(facet->in_normal, polygons.arr[j]);
+		ComputeFacetEnergy(facet->in_normal, polygons.polygons[j]);
 	}
 #endif
 }
 
-void ScatteringNonConvex::PushBeamToBuffer(Beam &beam, const PolygonArray &beamParts,
+void ScatteringNonConvex::PushBeamToBuffer(Beam &beam, const PolygonStack &beamParts,
 										   std::vector<Beam> &scatteredBeams)
 {
-	if (Scattering::IsTerminalAct(beam))
+	if (Scattering::IsFinalAct(beam))
 	{
 		if (!beam.isInside)
 		{
@@ -108,16 +119,16 @@ void ScatteringNonConvex::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 	m_differenceBuffer.Clear();
 	bool isOverlayed = FindRestOfBeamShape(facet, parentBeam, m_differenceBuffer);
 
-	m_isDivided = m_differenceBuffer.size > CLIP_RESULT_SINGLE;
+	m_isDivided = m_differenceBuffer.nPolygons > CLIP_RESULT_SINGLE;
 
 	if (m_isDivided)
 	{
 		PushBeamPartsToBuffer(parentBeam, m_differenceBuffer);
 		parentBeam.nVertices = 0;
 	}
-	else if (m_differenceBuffer.size == CLIP_RESULT_SINGLE)
+	else if (m_differenceBuffer.nPolygons == CLIP_RESULT_SINGLE)
 	{
-		parentBeam = m_differenceBuffer.arr[0];
+		parentBeam = m_differenceBuffer.polygons[0];
 	}
 	else if (isOverlayed) // beam is totally overlayed by facet
 	{
@@ -126,26 +137,24 @@ void ScatteringNonConvex::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 }
 
 void ScatteringNonConvex::SelectVisibleFacets(const Beam &beam,
-											  Array<Facet*> &facets)
+											  Array<Facet*> &visibleFacets)
 {
-	int begin = 0;
-	int end = m_particle->nElems;
-
 	if (m_particle->isAggregated && beam.isInside)
 	{
-		m_particle->GetParticalFacetIdRange(beam.facet, begin, end);
+		m_workFacets.nElems = 0;
+		m_particle->GetPartByFacet(beam.facet, m_workFacets);
 	}
 
-	FindVisibleFacets(beam, m_beamChecker, begin, end, facets);
+	FindVisibleFacets(beam, m_beamChecker, m_workFacets, visibleFacets);
 
 	Point3f dir = beam.direction;
 	dir.d_param = beam.facet->in_normal.d_param;
-	SortFacetsByDistance(dir, facets);
+	SortFacetsByDistance(dir, visibleFacets);
 }
 
-bool ScatteringNonConvex::FindLightedFacetPolygon(const Array<Facet*> &facets,
-												  int nCheckedFacets,
-												  PolygonArray &pols)
+bool ScatteringNonConvex::FindVisiblePartOfFacet(const Array<Facet*> &facets,
+										  int nCheckedFacets,
+										  PolygonStack &pols)
 {
 	Facet *facet = facets.elems[nCheckedFacets];
 
@@ -160,7 +169,7 @@ bool ScatteringNonConvex::FindLightedFacetPolygon(const Array<Facet*> &facets,
 						   m_originalBeam.direction, pols);
 	}
 
-	return pols.size != 0;
+	return pols.nPolygons != 0;
 }
 
 void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
@@ -168,17 +177,17 @@ void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
 											 const Vector3f &polNormal,
 											 const Vector3f &clipNormal,
 											 const Vector3f &dir,
-											 PolygonArray &pols)
+											 PolygonStack &pols)
 {
 	pols.Push(pol);
-	m_differenceBuffer.size = 1;
+	m_differenceBuffer.nPolygons = 1;
 
 	// cut facet projections out of polygon one by one
-	for (int i = 0; (i < size && m_differenceBuffer.size != 0); ++i)
+	for (int i = 0; (i < size && m_differenceBuffer.nPolygons != 0); ++i)
 	{
 		m_differenceBuffer.Clear();
 
-		while (pols.size != 0)
+		while (pols.nPolygons != 0)
 		{
 			const Polygon &subj = pols.Pop();
 			const Polygon &clip = *facets.elems[i];
@@ -188,16 +197,16 @@ void ScatteringNonConvex::CutPolygonByFacets(const Polygon &pol,
 									 dir, m_differenceBuffer);
 		}
 
-		for (int i = 0; i < m_differenceBuffer.size; ++i)
+		for (int i = 0; i < m_differenceBuffer.nPolygons; ++i)
 		{
-			pols.Push(m_differenceBuffer.arr[i]);
+			pols.Push(m_differenceBuffer.polygons[i]);
 		}
 	}
 }
 
 void ScatteringNonConvex::ReleaseBeam(Beam &beam)
 {
-	if (Scattering::IsTerminalAct(beam))
+	if (Scattering::IsFinalAct(beam))
 	{
 		const Point3f &n1 = beam.facet->ex_normal;
 		const Point3f &n2 = beam.facet->in_normal;
@@ -214,12 +223,12 @@ void ScatteringNonConvex::ReleaseBeam(Beam &beam)
 #ifdef _DEBUG // DEB
 //		tmp.ops.push_back(path);
 #endif
-		for (int i = 0; i < m_intersectionBuffer.size; ++i)
+		for (int i = 0; i < m_intersectionBuffer.nPolygons; ++i)
 		{
 #ifdef MODE_FIXED_OR
 			tmp.pols.push_back(tmp);
 #endif
-			tmp.SetPolygon(m_intersectionBuffer.arr[i]);
+			tmp.SetPolygon(m_intersectionBuffer.polygons[i]);
 			m_scatteredBeams->push_back(tmp);
 		}
 	}
@@ -259,7 +268,7 @@ void ScatteringNonConvex::SortFacetsByDistance(const Vector3f &beamDir,
 		int i = left;
 		int j = rigth;
 
-		Point3f base = facets.elems[id]->arr[vertices[id]];
+		Point3f base = facets.elems[id]->vertices[vertices[id]];
 
 		while (i <= j)
 		{
@@ -268,7 +277,7 @@ void ScatteringNonConvex::SortFacetsByDistance(const Vector3f &beamDir,
 
 			do
 			{
-				vecB = base - facets.elems[i]->arr[vertices[i]];
+				vecB = base - facets.elems[i]->vertices[vertices[i]];
 				cosVN = Point3f::DotProduct(vecB, beamDir);
 				++i;
 			}
@@ -277,7 +286,7 @@ void ScatteringNonConvex::SortFacetsByDistance(const Vector3f &beamDir,
 
 			do
 			{
-				vecB = base - facets.elems[j]->arr[vertices[j]];
+				vecB = base - facets.elems[j]->vertices[vertices[j]];
 				cosVN = Point3f::DotProduct(vecB, beamDir);
 				--j;
 			}
@@ -328,7 +337,7 @@ int ScatteringNonConvex::FindClosestVertex(const Polygon &facet,
 
 	for (int i = 1; i < facet.nVertices; ++i)
 	{
-		Point3f v = facet.arr[closest] - facet.arr[i];
+		Point3f v = facet.vertices[closest] - facet.vertices[i];
 		double cosVD = Point3f::DotProduct(v, beamDir);
 
 		if (cosVD > FLT_EPSILON)
@@ -341,7 +350,7 @@ int ScatteringNonConvex::FindClosestVertex(const Polygon &facet,
 }
 
 bool ScatteringNonConvex::FindRestOfBeamShape(Facet *facet, const Beam &beam,
-											  PolygonArray &rest)
+											  PolygonStack &rest)
 {
 	bool isSwallowed = false;
 
@@ -350,7 +359,7 @@ bool ScatteringNonConvex::FindRestOfBeamShape(Facet *facet, const Beam &beam,
 		Geometry::DifferPolygons(beam, beam.facet->normal[!beam.isInside],
 				*facet, beam.facet->in_normal, -beam.direction, rest);
 
-		isSwallowed = (rest.size == 0);
+		isSwallowed = (rest.nPolygons == 0);
 	}
 
 	return isSwallowed;
@@ -442,7 +451,7 @@ double ScatteringNonConvex::CalcMinDistanceToFacet(Polygon *facet,
 												   const Point3f &beamDir)
 {
 	double dist = FLT_MAX;
-	const Point3f *pol = facet->arr;
+	const Point3f *pol = facet->vertices;
 	Point3f point;
 	Point3f dir = -beamDir;
 	double dp = Point3f::DotProduct(dir, beamDir);
@@ -471,13 +480,13 @@ double ScatteringNonConvex::CalcMinDistanceToFacet(Polygon *facet,
  * при заданных траекториях, возможно он не нужен т.к. заранее известен путь
  */
 void ScatteringNonConvex::PushBeamPartsToBuffer(const Beam &beam,
-												const PolygonArray &parts)
+												const PolygonStack &parts)
 {
 	Beam tmp = beam; // OPT: try to replace 'tmp' to 'beam'
 
-	for (int i = 0; i < parts.size; ++i)
+	for (int i = 0; i < parts.nPolygons; ++i)
 	{
-		tmp = parts.arr[i];
+		tmp = parts.polygons[i];
 		assert(m_treeSize < MAX_BEAM_NUM);
 #ifdef MODE_FIXED_OR
 		if (!m_isDivided)
@@ -490,7 +499,7 @@ void ScatteringNonConvex::PushBeamPartsToBuffer(const Beam &beam,
 	}
 }
 
-bool ScatteringNonConvex::isTerminalFacet(int index, Array<Facet*> &facets)
+bool ScatteringNonConvex::isFinalFacet(int index, Array<Facet*> &facets)
 {
 	if (m_isDivided)
 	{
@@ -499,11 +508,11 @@ bool ScatteringNonConvex::isTerminalFacet(int index, Array<Facet*> &facets)
 	}
 	else
 	{
-		return Scattering::isTerminalFacet(index, facets);
+		return Scattering::isFinalFacet(index, facets);
 	}
 }
 
-bool ScatteringNonConvex::IsTerminalAct(const Beam &beam)
+bool ScatteringNonConvex::IsFinalAct(const Beam &beam)
 {
-	return Scattering::IsTerminalAct(beam) || (!beam.isInside && beam.nVertices != 0);
+	return Scattering::IsFinalAct(beam) || (!beam.isInside && beam.nVertices != 0);
 }

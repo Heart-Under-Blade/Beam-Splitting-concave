@@ -5,11 +5,13 @@ INCLUDEPATH += \
     $$SRC/geometry \
     $$SRC/scattering \
     $$SRC/tracer \
+    $$SRC/handler \
     $$SRC/incidence \
     $$SRC/bigint
 
 SOURCES += \
     $$SRC/math/*.cpp \
+    $$SRC/handler/*.cpp \
     $$SRC/particle/*.cpp \
     $$SRC/geometry/*.cpp \
     $$SRC/common/*.cpp \
@@ -20,6 +22,7 @@ SOURCES += \
 
 HEADERS += \
     $$SRC/*.h \
+    $$SRC/handler/*.h \
     $$SRC/math/*.hpp \
     $$SRC/math/*.h \
     $$SRC/particle/*.h \

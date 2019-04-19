@@ -15,12 +15,13 @@
 #define MAX_POLYGON_NUM 512		///< maximum number of polygons in array of polygons
 
 /**
- * @brief Polygon consisted of 3-coordinate vertices
+ * @brief Polygon consisted of 3 or more 3-coordinated vertices.
+ * It will work correctly if the points are situated on the same plane.
  */
 class Polygon
 {
 public:
-	Point3f arr[MAX_VERTEX_NUM];
+	Point3f vertices[MAX_VERTEX_NUM];
 	int nVertices = 0;
 
 	Polygon();
@@ -28,38 +29,40 @@ public:
 	Polygon(const Polygon &other);
 	Polygon(Polygon &&other);
 
-	void AddVertex(const Point3f &v);
-
-	void InsertVertex(int index, const Point3f &v);
-	void DeleteVertex(int index);
-
 	Polygon & operator = (const Polygon &other);
 	Polygon & operator = (Polygon &&other);
-	friend std::ostream & operator << (std::ostream &os, const Polygon &beam);
+
+	void AddVertex(const Point3f &v);
+	void InsertVertex(int index, const Point3f &v);
+	void RemoveVertex(int index);
+	void Concat(const Polygon &other);
+	void Clear();
 
 	double Area() const;
 	Point3f Center() const;
 	Point3f Normal() const;
+
+	friend std::ostream & operator << (std::ostream &os, const Polygon &beam);
 };
 
-class PolygonArray
+class PolygonStack
 {
 public:
-	Polygon arr[MAX_POLYGON_NUM];
-	int size = 0;
+	Polygon polygons[MAX_POLYGON_NUM];
+	int nPolygons = 0;
 
 	void Push(const Polygon &p)
 	{
-		arr[size++] = p;
+		polygons[nPolygons++] = p;
 	}
 
 	Polygon &Pop()
 	{
-		return arr[--size];
+		return polygons[--nPolygons];
 	}
 
 	void Clear()
 	{
-		size = 0;
+		nPolygons = 0;
 	}
 };

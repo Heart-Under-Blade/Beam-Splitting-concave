@@ -1,5 +1,7 @@
 #include "Point.h"
 #include "intrinsic/intrinsics.h"
+#include "float.h"
+#include "common.h"
 
 Point3f::Point3f(float x, float y, float z)
 {
@@ -39,6 +41,12 @@ Point3f Point3f::operator * (double value) const
 			coordinates[2] * value);
 }
 
+Point3f Point3f::operator *=(double value)
+{
+	*this = operator*(value);
+	return *this;
+}
+
 Point3f Point3f::operator / (double value) const
 {
 	return Point3f(coordinates[0] / value,
@@ -46,11 +54,23 @@ Point3f Point3f::operator / (double value) const
 			coordinates[2] / value);
 }
 
+Point3f Point3f::operator /=(double value)
+{
+	*this = operator/(value);
+	return *this;
+}
+
 Point3f Point3f::operator + (const Point3f &value) const
 {
 	return Point3f(coordinates[0] + value.coordinates[0],
 			coordinates[1] + value.coordinates[1],
 			coordinates[2] + value.coordinates[2]);
+}
+
+Point3f Point3f::operator +=(const Point3f &value)
+{
+	*this = operator+(value);
+	return *this;
 }
 
 Point3f Point3f::operator += (double value)
@@ -62,7 +82,52 @@ Point3f Point3f::operator += (double value)
 
 Point3f Point3f::operator - () const
 {
-	return Point3f(-coordinates[0], -coordinates[1], -coordinates[2], -coordinates[3]);
+	return Point3f(-coordinates[0], -coordinates[1], -coordinates[2],
+			-coordinates[3]);
+}
+
+Orientation Point3f::ToOrientation() const
+{
+	Orientation orient;
+
+	const float &x = coordinates[0];
+	const float &y = coordinates[1];
+	const float &z = coordinates[2];
+
+	if (fabs(z + 1.0) < DBL_EPSILON) // forward
+	{
+		orient.zenith = 0;
+		orient.azimuth = M_PI;
+		return orient;
+	}
+
+	if (fabs(z - 1.0) < DBL_EPSILON) // backward
+	{
+		orient.zenith = 0;
+		orient.azimuth = 0;
+		return orient;
+	}
+
+	double tmp = y*y;
+
+	if (tmp < DBL_EPSILON)
+	{
+		tmp = (x > 0) ? 0 : M_PI;
+	}
+	else
+	{
+		tmp = acos(x/sqrt(x*x + tmp));
+
+		if (y < 0)
+		{
+			tmp = M_2PI - tmp;
+		}
+	}
+
+	orient.zenith = (tmp < M_2PI) ? tmp : 0;
+	orient.azimuth = acos(z);
+
+	return orient;
 }
 
 std::ostream &operator <<(std::ostream &os, const Point3f &p)
@@ -73,16 +138,20 @@ std::ostream &operator <<(std::ostream &os, const Point3f &p)
 
 float Point3f::DotProduct(const Point3f &v1, const Point3f &v2)
 {
-	__m128 _v1 = _mm_setr_ps(v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
-	__m128 _v2 = _mm_setr_ps(v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
+	__m128 _v1 = _mm_setr_ps(
+				v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
+	__m128 _v2 = _mm_setr_ps(
+				v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
 	__m128 _dp0 = _mm_dp_ps(_v1, _v2, MASK_FULL);
 	return _dp0[0];
 }
 
 void Point3f::CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
 {
-	__m128 _v1 = _mm_setr_ps(v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
-	__m128 _v2 = _mm_setr_ps(v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
+	__m128 _v1 = _mm_setr_ps(
+				v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
+	__m128 _v2 = _mm_setr_ps(
+				v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
 	__m128 _cp = _cross_product(_v1, _v2);
 
 	res.coordinates[0] = _cp[0];
@@ -92,8 +161,10 @@ void Point3f::CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res)
 
 Point3f Point3f::CrossProduct(const Point3f &v1, const Point3f &v2)
 {
-	__m128 _v1 = _mm_setr_ps(v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
-	__m128 _v2 = _mm_setr_ps(v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
+	__m128 _v1 = _mm_setr_ps(
+				v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
+	__m128 _v2 = _mm_setr_ps(
+				v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
 	__m128 _cp = _cross_product(_v1, _v2);
 
 	Point3f res;
@@ -104,11 +175,11 @@ Point3f Point3f::CrossProduct(const Point3f &v1, const Point3f &v2)
 	return res;
 }
 
-double Point3f::Norm(const Point3f &point)
+double Point3f::Norm(const Point3f &v)
 {
-	return	  point.coordinates[0] * point.coordinates[0]
-			+ point.coordinates[1] * point.coordinates[1]
-			+ point.coordinates[2] * point.coordinates[2];
+	return	  v.coordinates[0] * v.coordinates[0]
+			+ v.coordinates[1] * v.coordinates[1]
+			+ v.coordinates[2] * v.coordinates[2];
 }
 
 void Point3f::Normalize(Point3f &v)

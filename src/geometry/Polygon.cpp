@@ -1,11 +1,12 @@
 #include "Polygon.h"
-#include <math.h>
+
+#include <cmath>
+#include <limits.h>
 
 #define EPS_NORMAL 0.1
 
 Polygon::Polygon()
 {
-
 }
 
 Polygon::Polygon(int size) : nVertices(size) {}
@@ -16,7 +17,7 @@ Polygon::Polygon(const Polygon &other)
 
 	for (int i = 0; i < other.nVertices; ++i)
 	{
-		arr[i] = other.arr[i];
+		vertices[i] = other.vertices[i];
 	}
 }
 
@@ -26,7 +27,7 @@ Polygon::Polygon(Polygon &&other)
 
 	for (int i = 0; i < nVertices; ++i)
 	{
-		arr[i] = other.arr[i];
+		vertices[i] = other.vertices[i];
 	}
 
 	other.nVertices = 0;
@@ -34,7 +35,15 @@ Polygon::Polygon(Polygon &&other)
 
 void Polygon::AddVertex(const Point3f &v)
 {
-	arr[nVertices++] = v;
+	vertices[nVertices++] = v;
+}
+
+void Polygon::Concat(const Polygon &other)
+{
+	for (int i = 0; i < other.nVertices; ++i)
+	{
+		AddVertex(other.vertices[i]);
+	}
 }
 
 void Polygon::InsertVertex(int index, const Point3f &v)
@@ -43,17 +52,17 @@ void Polygon::InsertVertex(int index, const Point3f &v)
 
 	for (int i = nVertices-1; i > index; --i)
 	{
-		arr[i] = arr[i-1];
+		vertices[i] = vertices[i-1];
 	}
 
-	arr[index] = v;
+	vertices[index] = v;
 }
 
-void Polygon::DeleteVertex(int index)
+void Polygon::RemoveVertex(int index)
 {
-	for (int i = nVertices-1; i > index; --i)
+	for (int i = index+1; i < nVertices; ++i)
 	{
-		arr[i-1] = arr[i];
+		vertices[i-1] = vertices[i];
 	}
 
 	--nVertices;
@@ -67,7 +76,7 @@ Polygon &Polygon::operator =(const Polygon &other)
 
 		for (int i = 0; i < nVertices; ++i)
 		{
-			arr[i] = other.arr[i];
+			vertices[i] = other.vertices[i];
 		}
 	}
 
@@ -82,7 +91,7 @@ Polygon &Polygon::operator = (Polygon &&other)
 
 		for (int i = 0; i < nVertices; ++i)
 		{
-			arr[i] = other.arr[i];
+			vertices[i] = other.vertices[i];
 		}
 
 		other.nVertices = 0;
@@ -91,11 +100,11 @@ Polygon &Polygon::operator = (Polygon &&other)
 	return *this;
 }
 
-std::ostream &operator <<(std::ostream &os, const Polygon &beam)
+std::ostream &operator <<(std::ostream &os, const Polygon &p)
 {
-	for (int i = 0; i < beam.nVertices; ++i)
+	for (int i = 0; i < p.nVertices; ++i)
 	{
-		os << beam.arr[i] << std::endl;
+		os << p.vertices[i] << std::endl;
 	}
 
 	return os;
@@ -104,12 +113,12 @@ std::ostream &operator <<(std::ostream &os, const Polygon &beam)
 double Polygon::Area() const
 {
 	double square = 0;
-	const Point3f &basePoint = arr[0];
-	Point3f p1 = arr[1] - basePoint;
+	const Point3f &basePoint = vertices[0];
+	Point3f p1 = vertices[1] - basePoint;
 
 	for (int i = 2; i < nVertices; ++i)
 	{
-		Point3f p2 = arr[i] - basePoint;
+		Point3f p2 = vertices[i] - basePoint;
 		Point3f res;
 		Point3f::CrossProduct(p1, p2, res);
 		square += Point3f::Length(res);
@@ -133,7 +142,7 @@ Point3f Polygon::Center() const
 
 	for (int i = 0; i < nVertices; ++i)
 	{
-		p = p + arr[i];
+		p = p + vertices[i];
 	}
 
 	return p/nVertices;
@@ -152,13 +161,19 @@ Point3f Polygon::Normal() const
 		start = (start + 1 != nVertices) ? start + 1 : 0;
 		first = (start + 1 != nVertices) ? start + 1 : 0;
 		next  = (first + 1 != nVertices) ? first + 1 : 0;
-		Point3f p1 = arr[first] - arr[start];
-		Point3f p2 = arr[next] - arr[start];
+		Point3f p1 = vertices[first] - vertices[start];
+		Point3f p2 = vertices[next] - vertices[start];
 		Point3f::CrossProduct(p1, p2, normal);
 		Point3f::Normalize(normal);
 		++count;
 	}
-	while (isnan(normal.coordinates[0]) && count < nVertices);
+
+	while (std::isnan(normal.coordinates[0]) && count < nVertices);
 
 	return normal;
+}
+
+void Polygon::Clear()
+{
+	nVertices = 0;
 }

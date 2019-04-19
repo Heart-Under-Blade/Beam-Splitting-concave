@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Orientation.h"
+
 #include <math.h>
 #include <iostream>
 
@@ -22,18 +24,24 @@ struct Point3f
 
     Point3f &operator = (const Point3f &other);
     Point3f operator * (double value) const;
+	Point3f operator *= (double value);
     Point3f operator / (double value) const;
+	Point3f operator /= (double value);
     Point3f operator - (const Point3f &value) const;
     Point3f operator + (const Point3f &value) const;
+	Point3f operator += (const Point3f &value);
     Point3f operator += (double value);
 	Point3f operator - () const;
+
+	Orientation ToOrientation() const;
 
 	friend std::ostream & operator << (std::ostream &os, const Point3f &p);
 
     static float DotProduct(const Point3f &v1, const Point3f &v2);
     static void CrossProduct(const Point3f &v1, const Point3f &v2, Point3f &res);
     static Point3f CrossProduct(const Point3f &v1, const Point3f &v2);
-	static double Norm(const Point3f &coordinates);
+
+	static double Norm(const Point3f &v);
     static void Normalize(Point3f &v);
 	static double Length(const Point3f &v);
 

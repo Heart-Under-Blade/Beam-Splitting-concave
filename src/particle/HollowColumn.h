@@ -9,8 +9,7 @@
 class HollowColumn : public Column
 {
 public:
-	HollowColumn(const complex &refrIndex, const Size &size,
-				 double cavityAngle);
+	HollowColumn(const Size &size, double cavityAngle);
 
 private:
 	double m_cavityDept;

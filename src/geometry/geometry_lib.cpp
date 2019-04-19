@@ -14,7 +14,7 @@ Point3f Geometry::ProjectPointToPlane(const Point3f &point,
 
 void Geometry::DifferPolygons(const Polygon &subject, const Vector3f &subjNormal,
 							  const Polygon &clip, const Vector3f &clipNormal,
-							  const Vector3f &clipDir, PolygonArray &difference)
+							  const Vector3f &clipDir, PolygonStack &difference)
 {
 	__m128 _clip[MAX_VERTEX_NUM];
 	bool isProjected = ProjectPolygonToPlane(clip, clipDir, subjNormal, _clip);
@@ -35,7 +35,7 @@ void Geometry::DifferPolygons(const Polygon &subject, const Vector3f &subjNormal
 
 	for (int i = 0; i < subject.nVertices; ++i)
 	{
-		_subject[i] = _mm_load_ps(subject.arr[i].coordinates);
+		_subject[i] = _mm_load_ps(subject.vertices[i].coordinates);
 	}
 
 	__m128 *_subj = _buffer;
@@ -152,13 +152,13 @@ bool Geometry::IncidentBeamToFacet(Facet *facet, const Polygon &beamPol,
 	__m128 _s_point, _e_point;	// points of projection
 	bool isInsideE, isInsideS;
 
-	Point3f p2 = facet->arr[facet->nVertices-1];
+	Point3f p2 = facet->vertices[facet->nVertices-1];
 	_p2 = _mm_load_ps(p2.coordinates);
 
 	for (int i = 0; i < facet->nVertices; ++i)
 	{
 		_p1 = _p2;
-		p2 = facet->arr[i];
+		p2 = facet->vertices[i];
 		_p2 = _mm_load_ps(p2.coordinates);
 
 		bufferSize = outputSize;
@@ -230,7 +230,7 @@ bool Geometry::ProjectPolygonToPlane(const Polygon &polygon, const Vector3f &dir
 
 	for (int i = 0; i < polygon.nVertices; ++i)
 	{
-		const Point3f &p = polygon.arr[i];
+		const Point3f &p = polygon.vertices[i];
 		__m128 _point = _mm_setr_ps(p.coordinates[0], p.coordinates[1], p.coordinates[2], 0.0);
 		__m128 _dp1 = _mm_dp_ps(_point, _normal, MASK_FULL);
 		__m128 _add = _mm_add_ps(_dp1, _d_param);
@@ -266,7 +266,7 @@ void Geometry::RefineOutputPolygon(__m128 *_output_points, int outputSize,
 			p.coordinates[0] = _output_points[i][0];
 			p.coordinates[1] = _output_points[i][1];
 			p.coordinates[2] = _output_points[i][2];
-			polygon.arr[polygon.nVertices++] = p;
+			polygon.vertices[polygon.nVertices++] = p;
 		}
 
 		p0 = _output_points[i];

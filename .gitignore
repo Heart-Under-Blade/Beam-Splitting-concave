@@ -48,4 +48,9 @@ log.txt
 bin/btm_d.exe
 doc/macke-code-src/rt-crystal/rt-crystal.prj
 doc/macke-code-src/rt-crystal/Makefile
+<<<<<<< HEAD
+test/build-BS_test-Desktop-Debug/
+=======
 *.txt
+>>>>>>> origin/feature/stltocry
+backup/

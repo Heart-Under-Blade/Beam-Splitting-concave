@@ -6,7 +6,7 @@ class Bullet : public Column
 {
 public:
 	Bullet();
-	Bullet(const complex &refrIndex, const Size &size, double peakHeight);
+	Bullet(const Size &size, double peakHeight);
 
 private:
 	void SetBaseFacet(Facet &facet);

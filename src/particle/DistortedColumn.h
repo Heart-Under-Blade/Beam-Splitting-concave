@@ -10,8 +10,7 @@ class DistortedColumn : public Column
 {
 public:
 	DistortedColumn();
-	DistortedColumn(const complex &refrIndex, const Size &size,
-					double angle);
+	DistortedColumn(const Size &size, double angle);
 
 private:
 	void DistortBases(double angle);

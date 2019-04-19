@@ -4,9 +4,8 @@
 
 Column::Column() {}
 
-Column::Column(int nElems, const complex &refrIndex, const Size &size,
-			   bool isNonConvex)
-	: Particle(nElems, refrIndex, isNonConvex),
+Column::Column(int nElems, const Size &size, bool isNonConvex)
+	: Particle(nElems, isNonConvex),
 	  m_size(size)
 {
 }
@@ -16,8 +15,8 @@ void Column::SetFacetParams()
 	SetSideFacetParams(1, nElems-1);
 
 	// base facet number
-	elems[0].origin.nVertices = BASE_VERTEX_NUM;
-	elems[nElems-1].origin.nVertices = BASE_VERTEX_NUM;
+	elems[0].original.nVertices = BASE_VERTEX_NUM;
+	elems[nElems-1].original.nVertices = BASE_VERTEX_NUM;
 }
 
 void Column::SetSideFacetParams(int first, int last)
@@ -26,7 +25,7 @@ void Column::SetSideFacetParams(int first, int last)
 
 	for (int i = first; i < last; ++i)
 	{
-		elems[i].origin.nVertices = SIDE_VERTEX_NUM;
+		elems[i].original.nVertices = SIDE_VERTEX_NUM;
 	}
 }
 
@@ -41,13 +40,13 @@ void Column::SetBases(Facet &top, Facet &bottom)
 	double inRadius = (sqrt(3) * radius) / 2;
 
 	// top base facet
-	facet = top.arr;
+	facet = top.vertices;
 	SetTwoDiagonalPoints(0, facet, halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(1, facet, -halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(2, facet, -radius, 0, halfHeight);
 
 	// bottom base facet
-	facet = bottom.arr;
+	facet = bottom.vertices;
 	SetTwoDiagonalPoints(0, facet, radius, 0, -halfHeight);
 	SetTwoDiagonalPoints(1, facet, halfRadius, -inRadius, -halfHeight);
 	SetTwoDiagonalPoints(2, facet, -halfRadius, -inRadius, -halfHeight);
@@ -64,8 +63,8 @@ void Column::SetTwoDiagonalPoints(int index, Point3f *facet,
 
 void Column::SetSides(Facet &baseTop, Facet &baseBottom)
 {
-	const Point3f *top = baseTop.arr;
-	const Point3f *bot = baseBottom.arr;
+	const Point3f *top = baseTop.vertices;
+	const Point3f *bot = baseBottom.vertices;
 
 	int endIndex = BASE_VERTEX_NUM-1;
 
@@ -74,7 +73,7 @@ void Column::SetSides(Facet &baseTop, Facet &baseBottom)
 
 	for (int i = m_sideFacetIDs.first; i < m_sideFacetIDs.last; ++i)
 	{
-		Point3f *facet = elems[i].origin.arr;
+		Point3f *facet = elems[i].original.vertices;
 
 		facet[0] = top[i2];
 		facet[1] = top[i1];

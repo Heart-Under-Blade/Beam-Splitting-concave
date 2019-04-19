@@ -10,20 +10,23 @@
 class ScatteringNonConvex : public Scattering
 {
 public:
-	ScatteringNonConvex(Particle *particle, const Light &incidentLight, int maxActNo);
+	ScatteringNonConvex(Particle *particle, const Light &incidentLight,
+						int maxActNo, const complex &refractiveIndex);
 	~ScatteringNonConvex();
 
+	void ScatterLight(TrackNode *trackTree, std::vector<Beam> &scatteredBeams);
+
 protected:
-	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;
+	void SplitOriginalBeam(std::vector<Beam> &scatteredBeams) override;
 
 	void ReleaseBeam(Beam &beam) override;
-	bool IsTerminalAct(const Beam &beam) override;
-	bool isTerminalFacet(int index, Array<Facet*> &facets) override;
+	bool IsFinalAct(const Beam &beam) override;
+	bool isFinalFacet(int index, Array<Facet*> &facets) override;
 	void PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 						   bool hasOutBeam) override;
-	void SelectVisibleFacets(const Beam &beam, Array<Facet*> &facets) override;
+	void SelectVisibleFacets(const Beam &beam, Array<Facet*> &visibleFacets) override;
 
-	void PushBeamToBuffer(Beam &beam, const PolygonArray &beamParts,
+	void PushBeamToBuffer(Beam &beam, const PolygonStack &beamParts,
 						  std::vector<Beam> &scatteredBeams);
 
 private:
@@ -44,27 +47,28 @@ private:
 	 */
 	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir) const;
 
-	bool FindRestOfBeamShape(Facet *facet, const Beam &beam, PolygonArray &rest);
+	bool FindRestOfBeamShape(Facet *facet, const Beam &beam, PolygonStack &rest);
 
 	double CalcMinDistanceToFacet(Polygon *facet, const Point3f &beamDir);
 	void SortFacets(const Point3f &beamDir, Array<Facet*> &facets); ///< use 'Fast sort' algorithm
 
-	bool FindLightedFacetPolygon(const Array<Facet*> &facets, int nCheckedFacets,
-								 PolygonArray &pols);
+	bool FindVisiblePartOfFacet(const Array<Facet*> &facets, int nCheckedFacets,
+								 PolygonStack &pols);
 
 	void PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,
-						 const PolygonArray &polygons,
+						 const PolygonStack &polygons,
 						 std::vector<Beam> &scatteredBeams);
 
 	void CutPolygonByFacets(const Polygon &pol,
 							const Array<Facet*> &facets, int size,
 							const Vector3f &polNormal, const Vector3f &clipNormal,
-							const Vector3f &dir, PolygonArray &pols);
+							const Vector3f &dir, PolygonStack &pols);
 
-	void PushBeamPartsToBuffer(const Beam &beam, const PolygonArray &parts);
+	void PushBeamPartsToBuffer(const Beam &beam, const PolygonStack &parts);
+
 private:
 	bool m_isDivided;
-	PolygonArray m_intersectionBuffer;	///< Buffer for result of Polygon intersection functions
-	PolygonArray m_differenceBuffer;	///< Buffer for result of Polygon differencefunctions
+	PolygonStack m_intersectionBuffer;	///< Buffer for result of Polygon intersection functions
+	PolygonStack m_differenceBuffer;	///< Buffer for result of Polygon differencefunctions
 };
 

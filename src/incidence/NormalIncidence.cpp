@@ -27,11 +27,6 @@ void NormalIncidence::ComputeDirections(Beam &beam, BeamPair<Beam> &beams)
 
 	beams.internal.polarizationBasis = beam.polarizationBasis;
 	beams.external.polarizationBasis = beam.polarizationBasis;
-
-#ifdef _DEBUG // DEB
-	beams.internal.dirs.push_back(beams.internal.direction);
-	beams.external.dirs.push_back(beams.external.direction);
-#endif
 }
 
 void NormalIncidence::ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams)

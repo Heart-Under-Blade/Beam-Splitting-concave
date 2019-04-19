@@ -1,15 +1,15 @@
 #include "RegularColumn.h"
 
-RegularColumn::RegularColumn(const complex &refrIndex, const Size &size)
-	: Column(8, refrIndex, size, false)
+RegularColumn::RegularColumn(const Size &size)
+	: Column(8, size, false)
 {
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();
 
-	SetBases(elems[0].origin, elems[7].origin);
-	SetSides(elems[0].origin, elems[7].origin);
+	SetBases(elems[0].original, elems[7].original);
+	SetSides(elems[0].original, elems[7].original);
 
 	SetDefaultNormals();
-	Reset();
+	ResetPosition();
 	SetDefaultCenters();
 }

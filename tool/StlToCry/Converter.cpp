@@ -20,6 +20,7 @@ bool IsNear(int i1, int i2, int n)
 
 int FindEqualPoint(const Point3f &p, const Facet &merged)
 {
+<<<<<<< HEAD
 	if (p.IsEqualTo(merged.arr[0], PNT_EPS))
 	{
 		return 0;
@@ -29,6 +30,17 @@ int FindEqualPoint(const Point3f &p, const Facet &merged)
 		return 1;
 	}
 	else if (p.IsEqualTo(merged.arr[2], PNT_EPS))
+=======
+	if (p.IsEqualTo(merged.vertices[0], PNT_EPS))
+	{
+		return 0;
+	}
+	else if (p.IsEqualTo(merged.vertices[1], PNT_EPS))
+	{
+		return 1;
+	}
+	else if (p.IsEqualTo(merged.vertices[2], PNT_EPS))
+>>>>>>> feature/track_tree
 	{
 		return 2;
 	}
@@ -44,7 +56,11 @@ bool FindEqualPoints(const Facet &origin, const Facet &next, Array<int> &points)
 
 	for (int i = 0; i < origin.nVertices && points.nElems != 6; ++i)
 	{
+<<<<<<< HEAD
 		nextIndex = FindEqualPoint(origin.arr[i], next);
+=======
+		nextIndex = FindEqualPoint(origin.vertices[i], next);
+>>>>>>> feature/track_tree
 
 		if (nextIndex != -1)
 		{
@@ -63,11 +79,19 @@ Point3f Converter::ReadVertex(char *buff, char *ptr, char *trash)
 	ptr = strtok(buff, " "); // skip "vertex" word
 
 	ptr = strtok(NULL, " ");
+<<<<<<< HEAD
 	p.cx = strtod(ptr, &trash);
 	ptr = strtok(NULL, " ");
 	p.cy = strtod(ptr, &trash);
 	ptr = strtok(NULL, " ");
 	p.cz = strtod(ptr, &trash);
+=======
+	p.coordinates[0] = strtod(ptr, &trash);
+	ptr = strtok(NULL, " ");
+	p.coordinates[1] = strtod(ptr, &trash);
+	ptr = strtok(NULL, " ");
+	p.coordinates[2] = strtod(ptr, &trash);
+>>>>>>> feature/track_tree
 
 	return p;
 }
@@ -110,11 +134,19 @@ void Converter::ReadStl(const std::string &filename, std::vector<Facet> &triangl
 		ptr = strtok(NULL, " "); // skip "normal" word
 
 		ptr = strtok(NULL, " ");
+<<<<<<< HEAD
 		facet.ex_normal.cx = strtod(ptr, &trash);
 		ptr = strtok(NULL, " ");
 		facet.ex_normal.cy = strtod(ptr, &trash);
 		ptr = strtok(NULL, " ");
 		facet.ex_normal.cz = strtod(ptr, &trash);
+=======
+		facet.ex_normal.coordinates[0] = strtod(ptr, &trash);
+		ptr = strtok(NULL, " ");
+		facet.ex_normal.coordinates[1] = strtod(ptr, &trash);
+		ptr = strtok(NULL, " ");
+		facet.ex_normal.coordinates[2] = strtod(ptr, &trash);
+>>>>>>> feature/track_tree
 
 		// read vertices
 		pfile.getline(buff, bufSize); // skip "outer loop" line
@@ -195,6 +227,7 @@ void Converter::ReadCry(const std::string &filename, std::vector<Facet> &crystal
 //    pfile.close();
 }
 
+<<<<<<< HEAD
 void Converter::MergeCrystal(std::vector<Facet> triangles,
 							 std::vector<Facet> &mergedFacets)
 {
@@ -229,6 +262,48 @@ void Converter::MergeCrystal(std::vector<Facet> triangles,
 			Facet merged;
 			// OutputFacets(oneFacetTriangles);
 			MergeTriangles(oneFacetTriangles, merged);
+=======
+void Converter::FindSameFacetTriangles(std::vector<Facet> &triangles,
+									   std::vector<Facet> &oneFacetTriangles)
+{
+	Point3f normal = triangles[0].Normal();
+	double d1 = -Point3f::DotProduct(triangles[0].vertices[0], -normal);
+
+	for (int i = 0; i < triangles.size(); ++i)
+	{
+		const Facet &checking = triangles[i];
+
+		if (normal.IsEqualTo(checking.Normal(), NRM_EPS))
+		{
+			double d2 = -Point3f::DotProduct(checking.vertices[0], -normal);
+
+			if (fabs(d1 - d2) < NRM_EPS)
+			{
+				oneFacetTriangles.push_back(checking);
+
+				auto it = triangles.begin();
+				std::advance(it, i);
+				triangles.erase(it);
+				--i;
+			}
+		}
+	}
+}
+
+void Converter::MergeCrystal(std::vector<Facet> triangles,
+							 std::vector<Facet> &mergedFacets)
+{
+	while (!triangles.empty())
+	{
+		std::vector<Facet> sameFacetTriangles;
+		FindSameFacetTriangles(triangles, sameFacetTriangles);
+
+		while (!sameFacetTriangles.empty())
+		{
+			Facet merged;
+			// OutputFacets(oneFacetTriangles);
+			MergeTriangles(sameFacetTriangles, merged);
+>>>>>>> feature/track_tree
 			mergedFacets.push_back(merged);
 		}
 	}
@@ -264,7 +339,11 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 			place = merged.nVertices;
 		}
 
+<<<<<<< HEAD
 		merged.InsertVertex(place, checking.arr[pointToInsert]);
+=======
+		merged.InsertVertex(place, checking.vertices[pointToInsert]);
+>>>>>>> feature/track_tree
 #ifdef _DEBUG // DEB
 		if (merged.nVertices > 200)
 			int gg = 0;
@@ -275,7 +354,11 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 		if (IsNear(points.elems[0], points.elems[2], merged.nVertices) &&
 				IsNear(points.elems[2], points.elems[4], merged.nVertices))
 		{
+<<<<<<< HEAD
 			merged.DeleteVertex(points.elems[2]);
+=======
+			merged.RemoveVertex(points.elems[2]);
+>>>>>>> feature/track_tree
 		}
 	}
 	else
@@ -292,8 +375,13 @@ bool IsConvex(const Facet &merged)
 
 	Vector3f n = merged.Normal();
 
+<<<<<<< HEAD
 	v1 = merged.arr[1] - merged.arr[0];
 	v2 = merged.arr[2] - merged.arr[0];
+=======
+	v1 = merged.vertices[1] - merged.vertices[0];
+	v2 = merged.vertices[2] - merged.vertices[0];
+>>>>>>> feature/track_tree
 	dp1 = Vector3f::DotProduct(Vector3f::CrossProduct(v1, v2), n);
 
 	for (int i = 1; i < merged.nVertices; ++i)
@@ -314,8 +402,13 @@ bool IsConvex(const Facet &merged)
 			i2 = i + 2;
 		}
 
+<<<<<<< HEAD
 		v1 = merged.arr[i1] - merged.arr[i];
 		v2 = merged.arr[i2] - merged.arr[i];
+=======
+		v1 = merged.vertices[i1] - merged.vertices[i];
+		v2 = merged.vertices[i2] - merged.vertices[i];
+>>>>>>> feature/track_tree
 		dp2 = Vector3f::DotProduct(Vector3f::CrossProduct(v1, v2), n);
 
 		if (dp2*dp1 < 0)
@@ -376,6 +469,67 @@ void Converter::MergeTriangles(std::vector<Facet> &rest, Facet &convex)
 	}
 }
 
+<<<<<<< HEAD
+=======
+void Converter::Triangulate(const std::vector<Facet> &crystal,
+							std::vector<Facet> &triangles)
+{
+	for (const Facet &facet : crystal)
+	{
+		if (facet.nVertices == 3) // facet is already triangle
+		{
+			triangles.push_back(facet);
+		}
+		else // divide facet into triangles
+		{
+			for (int i = 1; (i + 1) < facet.nVertices; ++i)
+			{
+				Facet triangle;
+				triangle.AddVertex(facet.vertices[0]); // base vertex
+				triangle.AddVertex(facet.vertices[i]);
+				triangle.AddVertex(facet.vertices[i+1]);
+				triangles.push_back(triangle);
+			}
+		}
+	}
+}
+
+void Converter::Triangulate(const std::vector<std::list<Point3f>> &facets,
+							std::vector<Facet> &triangles)
+{
+	for (const auto &facet : facets)
+	{
+		if (facet.size() == 3) // facet is already triangle
+		{
+			Facet triangle;
+
+			for (auto &p : facet)
+			{
+				triangle.AddVertex(p);
+			}
+
+			triangles.push_back(triangle);
+		}
+		else // divide facet into triangles
+		{
+			Facet triangle;
+
+			for (const auto &p : facet)
+			{
+				triangle.AddVertex(p);
+
+				if (triangle.nVertices == 3)
+				{
+					triangles.push_back(triangle);
+					triangle.Clear();
+				}
+			}
+		}
+	}
+}
+
+
+>>>>>>> feature/track_tree
 void Converter::WriteStl(const std::vector<Facet> &triangles,
 						 const std::string &outFile)
 {
@@ -398,9 +552,15 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 	{
 		const Point3f &n = facet.Normal();
 		ofile << std::string(nSpaces, ' ') << "facet normal "
+<<<<<<< HEAD
 			  << n.point[0] << ' '
 			  << n.point[1] << ' '
 			  << n.point[2] << std::endl;
+=======
+			  << n.coordinates[0] << ' '
+			  << n.coordinates[1] << ' '
+			  << n.coordinates[2] << std::endl;
+>>>>>>> feature/track_tree
 
 		nSpaces += offset;
 		ofile << std::string(nSpaces, ' ') << "outer loop" << std::endl;
@@ -410,9 +570,15 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 		for (int i = 0; i < facet.nVertices; ++i)
 		{
 			ofile << std::string(nSpaces, ' ') << "vertex "
+<<<<<<< HEAD
 				  << facet.arr[i].point[0] << ' '
 				  << facet.arr[i].point[1] << ' '
 				  << facet.arr[i].point[2] << std::endl;
+=======
+				  << facet.vertices[i].coordinates[0] << ' '
+				  << facet.vertices[i].coordinates[1] << ' '
+				  << facet.vertices[i].coordinates[2] << std::endl;
+>>>>>>> feature/track_tree
 		}
 
 		nSpaces -= offset;
@@ -482,8 +648,17 @@ void __fastcall " << crystalName <<  "::SetVertices(void)\n\
 	 {
 		 for (int j = 0; j < crystal[i].nVertices; ++j)
 		 {
+<<<<<<< HEAD
 			 const Point3f &p = crystal[i].arr[j];
 			 ofile << "\tthis->p[" << vertexCount++ << "] = Point3d(" << p.point[0] << ", " << p.point[1] << ", " << p.point[2] << ");" << std::endl;
+=======
+			 const Point3f &p = crystal[i].vertices[j];
+			 ofile << "\tthis->p[" << vertexCount++ << "] = Point3d("
+				   << p.coordinates[0] << ", "
+				   << p.coordinates[1] << ", "
+				   << p.coordinates[2]
+				   << ");" << std::endl;
+>>>>>>> feature/track_tree
 		 }
 	 }
 

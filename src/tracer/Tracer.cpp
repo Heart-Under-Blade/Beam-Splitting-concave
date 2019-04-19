@@ -23,9 +23,9 @@ LightTracer::~LightTracer()
 {
 }
 
-void LightTracer::TraceFixed(const Angle3d &orientation)
+void LightTracer::TraceFixed(const Orientation &orientation)
 {
-	Angle3d orient = orientation.ToRadian();
+	Orientation orient = orientation.ToRadians();
 
 	vector<Beam> outBeams;
 	m_particle->Rotate(orient);

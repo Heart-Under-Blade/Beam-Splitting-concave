@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "BigInteger.hh"
+#include "TrackTree.h"
+#include "Particle.h"
 
 #define MAX_GROUP_NUM	1024
 
@@ -23,7 +25,6 @@ public:
 	int groupID;
 	IdType arr[MAX_GROUP_NUM];
 	int size = 0;
-	std::vector<std::vector<int>> tracks;
 
 	std::string CreateGroupName() const
 	{
@@ -36,17 +37,25 @@ public:
 class Tracks : public std::vector<TrackGroup>
 {
 public:
-	Tracks() {}
+	Tracks();
 	Tracks(int nFacets) {m_nFacets = nFacets;}
 	int FindGroupByTrackId(const IdType &trackId) const;
 
-	void ImportTracks(int nFacets, const std::string &filename);
+	void ImportTracks(Particle *particle, const std::string &filename);
 	void RecoverTrack(const Beam &beam, std::vector<int> &track);
 	static void RecoverTrack(int nFacets, const Beam &beam, std::vector<int> &track);
 	static std::string TrackToStr(const std::vector<int> &track);
 
 	bool shouldComputeTracksOnly;
+	TrackNode *tree;
+
+	IdType ComputeTrackId(const vector<int> &track, int nFacets);
 
 private:
 	int m_nFacets;
+
+	void FillTrackTree(Particle *particle,
+					   const std::vector<std::vector<int>> &tracks);
+	void CreateGroupsForUngroupedTracks(const TrackGroup &buffGroup);
+	int ImportTrack(char *buff, vector<int> &track);
 };

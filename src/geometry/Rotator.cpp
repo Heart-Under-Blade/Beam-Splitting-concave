@@ -1,39 +1,34 @@
 #include "Rotator.h"
 
-void LocalRotator::SetRotationAngle(const Angle3d &angle)
+void LocalRotator::SetRotationAngle(const Orientation &angle)
 {
-	double cosA, cosB, cosG,
-			sinA, sinB, sinG;
+	double cosB, cosG,
+			sinB, sinG;
 
-	sincos(angle.alpha, &sinA, &cosA);
-	sincos(angle.beta,  &sinB, &cosB);
-	sincos(angle.gamma, &sinG, &cosG);
+	sincos(angle.zenith,  &sinB, &cosB);
+	sincos(angle.azimuth, &sinG, &cosG);
 
-	double cosAcosB = cosA*cosB;
-	double sinAcosG = sinA*cosG;
-	double sinAsinG = sinA*sinG;
-
-	m_rotationMatrix[0][0] = cosAcosB*cosG - sinAsinG;
-	m_rotationMatrix[1][0] = sinAcosG*cosB + cosA*sinG;
+	m_rotationMatrix[0][0] = cosB*cosG - 0;
+	m_rotationMatrix[1][0] = sinG;
 	m_rotationMatrix[2][0] = -sinB*cosG;
 
-	m_rotationMatrix[0][1] = -(cosAcosB*sinG + sinAcosG);
-	m_rotationMatrix[1][1] = cosA*cosG - sinAsinG*cosB;
+	m_rotationMatrix[0][1] = -(cosB*sinG + 0);
+	m_rotationMatrix[1][1] = cosG;
 	m_rotationMatrix[2][1] = sinB*sinG;
 
-	m_rotationMatrix[0][2] = cosA*sinB;
-	m_rotationMatrix[1][2] = sinA*sinB;
+	m_rotationMatrix[0][2] = sinB;
+	m_rotationMatrix[1][2] = 0;
 	m_rotationMatrix[2][2] = cosB;
 }
 
-void GlobalRotator::SetRotationAngle(const Angle3d &angle)
+void GlobalRotator::SetRotationAngle(const Orientation &angle)
 {
 	double cosF, cosT, cosP,
 			sinF, sinT, sinP;
 
-	sincos(angle.alpha, &sinP, &cosP);
-	sincos(angle.beta, &sinF, &cosF);
-	sincos(angle.gamma, &sinT, &cosT);
+	sincos(0, &sinP, &cosP);
+	sincos(angle.zenith, &sinF, &cosF);
+	sincos(angle.azimuth, &sinT, &cosT);
 
 	double sinFsinT = sinF*sinT;
 	double cosFsinT = cosF*sinT;

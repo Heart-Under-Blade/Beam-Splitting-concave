@@ -12,7 +12,7 @@ void TracerPO::TraceRandom(const AngleRange &zenithRange,
 						   const AngleRange &azimuthRange)
 {
 	vector<Beam> outBeams;
-	Angle3d angle;
+	Orientation angle;
 
 	CalcTimer timer;
 	OutputStartTime(timer);
@@ -23,11 +23,11 @@ void TracerPO::TraceRandom(const AngleRange &zenithRange,
 
 	for (int i = 0; i <= zenithRange.number; ++i)
 	{
-		angle.beta = i*zenithRange.step;
+		angle.zenith = i*zenithRange.step;
 
 		for (int j = -halfGammaNum; j <= halfGammaNum; ++j)
 		{
-			angle.gamma = j*azimuthRange.step;
+			angle.azimuth = j*azimuthRange.step;
 
 			m_particle->Rotate(angle);
 			m_scattering->ScatterLight(outBeams);

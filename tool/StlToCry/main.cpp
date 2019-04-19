@@ -3,10 +3,39 @@
 #include "common.h"
 #include "ArgPP.h"
 #include "Converter.h"
+<<<<<<< HEAD
 
 #include <fstream>
 
 #define SIZE_INDEX 1
+=======
+
+#include <limits.h>
+#include <fstream>
+>>>>>>> feature/track_tree
+
+#define SIZE_INDEX 1
+
+<<<<<<< HEAD
+void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
+=======
+struct ParticleProperties
+{
+	double minLen;
+	double maxLen;
+	double minArea;
+	int minAreaFacetNo;
+	int minLenFacetNo;
+
+	ParticleProperties()
+	{
+		minLen = LONG_LONG_MAX;
+		maxLen = 0;
+		minArea = LONG_LONG_MAX;
+		minAreaFacetNo = INT_MAX;
+		minLenFacetNo = INT_MAX;
+	}
+};
 
 using namespace std;
 
@@ -19,6 +48,67 @@ void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
 		std::cerr << "File \"" << outFile << "\" is not found" << std::endl;
 		throw std::exception();
 	}
+
+	ofile << 0 << std::endl
+		  << 0 << std::endl
+		  << 180 << ' ' << 360 << std::endl << std::endl;
+
+	ofile << facets.at(0);
+
+	for (int i = 1; i < facets.size(); ++i)
+	{
+		ofile << std::endl;
+		ofile << facets.at(i) /*<< facet.arr[0]*/;
+	}
+
+	ofile.close();
+}
+
+void AnalyseParticle(const std::vector<Facet> &triangles,
+					 ParticleProperties &props)
+{
+	double newLen;
+
+	for (const Facet &tr : triangles)
+	{
+		for (int i = 1; i <= tr.nVertices; ++i)
+		{
+			newLen = (i == tr.nVertices)
+					? Point3f::Length(tr.vertices[0] - tr.vertices[i-1])
+					: Point3f::Length(tr.vertices[i] - tr.vertices[i-1]);
+
+			if (newLen < props.minLen)
+			{
+				props.minLenFacetNo = tr.index;
+				props.minLen = newLen;
+			}
+
+			if (newLen > props.maxLen)
+			{
+				props.maxLen = newLen;
+			}
+		}
+
+		double newArea = tr.Area();
+
+		if (newArea < props.minArea)
+		{
+			props.minAreaFacetNo = tr.index;
+			props.minArea = newArea;
+		}
+	}
+}
+
+void ParticleToCrystal(Particle *particle, std::vector<Facet> &mergedCrystal)
+>>>>>>> feature/track_tree
+{
+	mergedCrystal.clear();
+
+	for (int i = 0; i < particle->nElems; ++i)
+	{
+		mergedCrystal.push_back(particle->elems[i].original);
+	}
+<<<<<<< HEAD
 
 	ofile << 0 << std::endl
 		  << 0 << std::endl
@@ -70,80 +160,67 @@ void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
 <<<<<<< HEAD
 =======
 bool IsConvex(const Facet &merged)
+=======
+}
+
+const string ExtractPath(std::string mask)
+>>>>>>> feature/track_tree
 {
-	double dp1, dp2;
-	int i1, i2;
-	Vector3f v1, v2;
+	auto pos = mask.find_last_of('/');
 
-	Vector3f n = merged.Normal();
-
-	v1 = merged.arr[1] - merged.arr[0];
-	v2 = merged.arr[2] - merged.arr[0];
-	dp1 = Vector3f::DotProduct(Vector3f::CrossProduct(v1, v2), n);
-
-	for (int i = 1; i < merged.nVertices; ++i)
+	if (pos == std::string::npos)
 	{
-		if (i == merged.nVertices-2)
-		{
-			i1 = merged.nVertices - 1;
-			i2 = 0;
-		}
-		else if (i == merged.nVertices-1)
-		{
-			i1 = 0;
-			i2 = 1;
-		}
-		else
-		{
-			i1 = i + 1;
-			i2 = i + 2;
-		}
+		pos = mask.find_last_of('\\');
 
-		v1 = merged.arr[i1] - merged.arr[i];
-		v2 = merged.arr[i2] - merged.arr[i];
-		dp2 = Vector3f::DotProduct(Vector3f::CrossProduct(v1, v2), n);
-
-		if (dp2*dp1 < 0)
+		if (pos == std::string::npos)
 		{
-			return false;
+			std::cerr << "Path \"" << mask << "\" is not found" << std::endl;
+			throw std::exception();
 		}
 	}
 
-	return true;
+	return mask.substr(0, pos+1);
 }
 
-void MergeTriangles(std::vector<Facet> &rest, Facet &convex)
+void OutputSummary(std::ofstream *ofile,
+				   const std::vector<Facet> &mergedCrystal,
+				   const std::string &filename,
+				   Particle *particle)
 {
-	std::vector<Facet> triangles = rest;
-	Facet merged = triangles[0];
-#ifdef _DEBUG // DEB
-	if (triangles.size() == 88)
-		int fff = 0;
-#endif
-	auto it = triangles.begin();
-	std::advance(it, 0);
-	triangles.erase(it);
+	ParticleProperties props;
+	AnalyseParticle(mergedCrystal, props);
 
-	convex = merged;
-	rest = triangles;
+	double v = particle->Volume();
+	double rEq = pow((3*v)/4*M_PI, 1.0/3);
 
-	while (!triangles.empty())
-	{
-		bool isAdded = false;
+	(*ofile) << filename
+		  << " : min length = " << props.minLen
+		  << " (facet " << props.minLenFacetNo
+		  << "); max length = " << props.maxLen
+		  << "; min area = " << props.minArea
+		  << " (facet " << props.minAreaFacetNo
+		  << "); Dmax = " << particle->MaximalDimension()
+		  << "; particle: area = " << particle->Area()
+		  << ", volume = " << v
+		  << "; R-eq = " << rEq
+		  << std::endl;
+}
 
-		for (int i = 0; i < triangles.size(); ++i)
-		{
-			const Facet &triangle = triangles[i];
-			Array<int> points;
+int main(int argc, const char *argv[])
+{
+	double maxWavelength = 1.064;
+	double index = 5;
 
-			if (FindEqualPoints(merged, triangle, points))
-			{
-				Merge(points, triangle, merged);
+	bool isStl = true;
+	bool isCry = false;
+	std::string mask = "data/*.stl";
+	double newDmax = -1;
+	double newVolume = -1;
 
-				it = triangles.begin();
-				std::advance(it, i);
-				triangles.erase(it);
+	Converter converter;
+	ArgPP parcer;
 
+<<<<<<< HEAD
 				if (IsConvex(merged))
 				{
 #ifdef _DEBUG // DEB
@@ -156,18 +233,20 @@ void MergeTriangles(std::vector<Facet> &rest, Facet &convex)
 					convex = merged;
 					rest = triangles;
 				}
+=======
+	if (argc > 1)
+	{
+		parcer.AddRule("t", 1); // input data type ("cry", "stl")
+		parcer.AddRule("f", '+'); // input files of mask
+		parcer.AddRule("rs", 2, true);
+//		parcer.AddRule("o", '*'); // output files ("cry", "stl", "nat")
+>>>>>>> feature/track_tree
 
-				isAdded = true;
-			}
-		}
+		parcer.Parse(argc, argv);
 
-		if (!isAdded)
-		{
-			break;
-		}
-	}
-}
+		auto type = parcer.GetStringValue("t", 0);
 
+<<<<<<< HEAD
 void MergeCrystal(std::vector<Facet> triangles,
 				 std::vector<Facet> &mergedFacets)
 {
@@ -176,11 +255,16 @@ void MergeCrystal(std::vector<Facet> triangles,
 		std::vector<Facet> oneFacetTriangles;
 		Point3f normal = triangles[0].ex_normal;
 		double d1 = -Point3f::DotProduct(triangles[0].arr[0], -normal);
+=======
+		isStl = (type == "stl");
+		isCry = (type == "cry");
+>>>>>>> feature/track_tree
 
-		for (int i = 0; i < triangles.size(); ++i)
+		if (parcer.IsCatched("rs"))
 		{
-			const Facet &checking = triangles[i];
+			auto type = parcer.GetStringValue("rs", 0);
 
+<<<<<<< HEAD
 			if (normal.IsEqualTo(checking.ex_normal, NRM_EPS))
 			{
 				double d2 = -Point3f::DotProduct(checking.arr[0], -normal);
@@ -220,17 +304,25 @@ void Triangulate(const std::vector<Facet> &crystal,
 		else // divide facet into triangles
 		{
 			for (int i = 1; i+1 < facet.nVertices; ++i)
+=======
+			if (type == "d")
 			{
-				Facet triangle;
-				triangle.AddVertex(facet.arr[0]); // base vertex
-				triangle.AddVertex(facet.arr[i]);
-				triangle.AddVertex(facet.arr[i+1]);
-				triangles.push_back(triangle);
+				newDmax = parcer.GetDoubleValue("rs", 1);
+			}
+			else if (type == "v")
+>>>>>>> feature/track_tree
+			{
+				newVolume = parcer.GetDoubleValue("rs", 1);
+			}
+			else
+			{
+				std::cerr << "Unknown argument \"" << type << "\"" << std::endl;
+				throw std::exception();
 			}
 		}
 	}
-}
 
+<<<<<<< HEAD
 int main(int argc, const char *argv[])
 {
 	bool isStl = true;
@@ -319,10 +411,83 @@ int main(int argc, const char *argv[])
 	getchar();
 =======
 	ofile << "\n}\n";
+=======
+//	std::string path = ExtractPath(mask);
+	std::string path = "";
 
-	ofile.close();
-}
+//	std::vector<std::string> filelist = FindFiles(mask);
+	std::vector<std::string> filelist;
 
+	int n = parcer.GetArgNumber("f");
+
+	for (int i = 0; i < n; ++i)
+	{
+		auto filestr = parcer.GetStringValue("f", i);
+		filelist.push_back(filestr);
+	}
+
+	std::string	dir = CreateDir("out");
+
+	std::ofstream ofile(path + "summary.txt", std::ios::out);
+
+	if (!ofile.is_open())
+	{
+		std::cerr << "File \"" << path + "summary.txt" << "\" is not found"
+				  << std::endl;
+		throw std::exception();
+	}
+
+	if (isStl)
+	{
+		for (auto filename : filelist)
+		{
+			//std::string filename = "particle.stl";
+			std::vector<Facet> triangles;
+			converter.ReadStl(path + filename, triangles);
+
+			filename = CutSubstring(filename, ".stl");
+			auto const pos = filename.find_last_of('/');
+			const auto file = filename.substr(pos+1);
+			filename = dir + file;
+			//	OutputFacets(triangles);
+
+			std::vector<Facet> mergedCrystal;
+			converter.MergeCrystal(triangles, mergedCrystal);
+
+			// numer facets
+			int facetNo = 0;
+
+			for (Facet &facet : mergedCrystal)
+			{
+				facet.index = facetNo++;
+			}
+
+			WriteCry(mergedCrystal, filename + "_mbs");
+
+			Particle *particle = new Particle;
+			particle->SetFromFile(filename + "_mbs.dat"/*, 1,
+					  index*maxWavelength*/);
+
+			if (newDmax > 0)
+			{
+				double oldDMax = particle->MaximalDimension();
+				double ratio = newDmax/oldDMax;
+				particle->Scale(ratio);
+			}
+			else if (newVolume > 0)
+			{
+				double oldV = particle->Volume();
+				double ratio = newVolume/oldV;
+				ratio = pow(ratio, 1.0/3);
+				particle->Scale(ratio);
+			}
+
+			ParticleToCrystal(particle, mergedCrystal);
+>>>>>>> feature/track_tree
+
+			converter.WriteNat(mergedCrystal, file + "_nat");
+
+<<<<<<< HEAD
 int main()
 {
 	std::string filename = "particle.stl";
@@ -343,5 +508,67 @@ int main()
 	WriteStl(triangles);
 
 >>>>>>> a35fd73175c41f758864fc5b7ba0285a19c70315
+=======
+			OutputSummary(&ofile, mergedCrystal, filename, particle);
+
+			if (triangles.empty())
+			{
+				continue;
+			}
+
+			triangles.clear();
+			converter.Triangulate(mergedCrystal, triangles);
+			converter.WriteStl(triangles, filename);
+		}
+	}
+	else
+	{
+		for (auto filename : filelist)
+		{
+			std::vector<Facet> mergedCrystal;
+			std::vector<Facet> triangles;
+
+			Particle *particle = new Particle;
+			particle->SetFromFile(path + filename);
+
+			if (newDmax > 0)
+			{
+				double oldDMax = particle->MaximalDimension();
+				double ratio = oldDMax/newDmax;
+				particle->Scale(ratio);
+			}
+			else if (newVolume > 0)
+			{
+				double oldV = particle->Volume();
+				double ratio = oldV/newVolume;
+				pow(ratio, 1.0/3);
+				particle->Scale(ratio);
+			}
+
+			ParticleToCrystal(particle, mergedCrystal);
+
+			// numer facets
+			int facetNo = 0;
+
+			for (Facet &facet : mergedCrystal)
+			{
+				facet.index = facetNo++;
+			}
+
+			ParticleProperties props;
+			AnalyseParticle(mergedCrystal, props);
+
+			OutputSummary(&ofile, mergedCrystal, filename, particle);
+
+			converter.Triangulate(mergedCrystal, triangles);
+			converter.WriteStl(triangles, filename);
+		}
+	}
+
+	ofile.close();
+
+	std::cout << "Done." << std::endl << "Press <Enter> to exit...";
+	getchar();
+>>>>>>> feature/track_tree
 	return 0;
 }

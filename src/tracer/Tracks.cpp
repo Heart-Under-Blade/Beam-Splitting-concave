@@ -4,6 +4,11 @@
 
 #include "Beam.h"
 
+Tracks::Tracks()
+{
+	tree = new TrackNode(nullptr);
+}
+
 int Tracks::FindGroupByTrackId(const IdType &trackId) const
 {
 	for (int i = 0; i < size(); ++i)
@@ -25,9 +30,102 @@ int Tracks::FindGroupByTrackId(const IdType &trackId) const
 	return -1;
 }
 
-void Tracks::ImportTracks(int nFacets, const std::string &filename)
+void Tracks::FillTrackTree(Particle *particle,
+						   const std::vector<std::vector<int>> &tracks)
 {
-	m_nFacets = nFacets;
+	auto currNode = tree;
+
+	for (auto &t : tracks)
+	{
+		for (int i = 0; i < t.size(); ++i)
+		{
+			int id = t[i];
+			auto node = currNode->FindNode(id);
+
+			if (node != nullptr)
+			{
+				currNode = node;
+			}
+			else
+			{
+				currNode = currNode->AddChild(particle->GetActualFacet(i));
+			}
+
+			if (i == t.size()-1)
+			{
+				currNode->isCompleted = true;
+			}
+		}
+
+		currNode = tree;
+	}
+}
+
+void Tracks::CreateGroupsForUngroupedTracks(const TrackGroup &buffGroup)
+{
+	if (buffGroup.size != 0) // добавляем треки без группы в отдельные группы
+	{
+		for (int i = 0; i < buffGroup.size; ++i)
+		{
+			TrackGroup newGroup;
+			newGroup.arr[newGroup.size++] = buffGroup.arr[i];
+			newGroup.groupID = size();
+			push_back(newGroup);
+		}
+	}
+}
+
+int Tracks::ImportTrack(char *buff, vector<int> &track)
+{
+	int groupIndex = -1;
+	char *ptr, *trash;
+	ptr = strtok(buff, " ");
+
+	while (ptr != NULL)
+	{
+		if (ptr[0] == ':')
+		{
+			ptr = strtok(NULL, " ");
+			groupIndex = strtol(ptr, &ptr, 10);
+
+			if (groupIndex >= size())
+			{
+				for (int i = size(); i <= groupIndex; ++i)
+				{
+					(*this).push_back(TrackGroup());
+				}
+			}
+
+			(*this)[groupIndex].groupID = groupIndex;
+			break;
+		}
+
+		int tmp = strtol(ptr, &trash, 10);
+		track.push_back(tmp);
+		ptr = strtok(NULL, " ");
+	}
+
+	return groupIndex;
+}
+
+IdType Tracks::ComputeTrackId(const vector<int> &track, int nFacets)
+{
+	IdType trackId = 0;
+
+	for (int t : track)
+	{
+		trackId += (t + 1);
+		trackId *= (nFacets + 1);
+	}
+
+	return trackId;
+}
+
+void Tracks::ImportTracks(Particle *particle, const std::string &filename)
+{
+	std::vector<std::vector<int>> tracks;
+
+	m_nFacets = particle->nElems;
 	const int bufSize = 1024;
 	std::ifstream trackFile(filename, std::ios::in);
 
@@ -46,73 +144,28 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 		trackFile.getline(buff, bufSize);
 
 		vector<int> track;
+		int groupIndex = ImportTrack(buff, track);
 
-		char *ptr, *trash;
-		ptr = strtok(buff, " ");
+		auto trackId = ComputeTrackId(track, particle->nElems);
 
-		int groupIndex = 0;
-		bool haveGroup = false;
-
-		while (ptr != NULL)
+		if (groupIndex >= 0)
 		{
-			if (ptr[0] == ':')
-			{
-				haveGroup = true;
-				ptr = strtok(NULL, " ");
-				groupIndex = strtol(ptr, &ptr, 10);
-
-				if (groupIndex >= size())
-				{
-					for (int i = size(); i <= groupIndex; ++i)
-					{
-						(*this).push_back(TrackGroup());
-					}
-				}
-
-				(*this)[groupIndex].groupID = groupIndex;
-				break;
-			}
-
-			int tmp = strtol(ptr, &trash, 10);
-			track.push_back(tmp);
-			ptr = strtok(NULL, " ");
-		}
-
-		int trackID = 0;
-
-		for (int t : track)
-		{
-			trackID += (t + 1);
-			trackID *= (nFacets + 1);
-		}
-
-		if (haveGroup)
-		{
-			(*this)[groupIndex].tracks.push_back(track);
-			(*this)[groupIndex].arr[(*this)[groupIndex].size++] = trackID;
+			(*this)[groupIndex].arr[(*this)[groupIndex].size++] = trackId;
 		}
 		else
 		{
-			buffGroup.tracks.push_back(track);
-			buffGroup.arr[buffGroup.size++] = trackID;
+			buffGroup.arr[buffGroup.size++] = trackId;
 		}
+
+		tracks.push_back(track);
 
 		track.clear();
 	}
 
 	trackFile.close();
 
-	if (buffGroup.size != 0) // добавляем треки без группы в отдельные группы
-	{
-		for (int i = 0; i < buffGroup.size; ++i)
-		{
-			TrackGroup newGroup;
-			newGroup.arr[newGroup.size++] = buffGroup.arr[i];
-			newGroup.tracks.push_back(buffGroup.tracks[i]);
-			newGroup.groupID = size();
-			push_back(newGroup);
-		}
-	}
+	CreateGroupsForUngroupedTracks(buffGroup);
+	FillTrackTree(particle, tracks);
 }
 
 void Tracks::RecoverTrack(const Beam &beam, std::vector<int> &track)

@@ -15,15 +15,18 @@
 using namespace std;
 
 Scattering::Scattering(Particle *particle, const Light &incidentLight,
-					   int maxActNo)
+					   int maxActNo, const complex &refractiveIndex)
 	: m_particle(particle),
 	  m_maxActNo(maxActNo),
-	  m_splitting(m_particle->GetRefractiveIndex()),
+	  m_splitting(refractiveIndex),
 	  m_completeReflectionIncidence(),
 	  m_regularIncidence(),
-	  m_normalIncidence()
+	  m_refractiveIndex(refractiveIndex),
+	  m_normalIncidence(),
+	  m_hasTracks(false)
 {
-	CreateOriginBeam(incidentLight.direction, incidentLight.polarizationBasis);
+	m_particle->GetPartByFacet(nullptr, m_workFacets);
+	CreateOriginalBeam(incidentLight.direction, incidentLight.polarizationBasis);
 }
 
 Scattering::~Scattering()
@@ -31,7 +34,7 @@ Scattering::~Scattering()
 	delete m_originalBeam.facet;
 }
 
-void Scattering::CreateOriginBeam(const Vector3f &dir, const Vector3f &basis)
+void Scattering::CreateOriginalBeam(const Vector3f &dir, const Vector3f &basis)
 {
 	m_originalBeam.direction = dir;
 	m_originalBeam.direction.d_param = dir.d_param;
@@ -43,14 +46,16 @@ void Scattering::CreateOriginBeam(const Vector3f &dir, const Vector3f &basis)
 
 void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
 {
-#ifdef _CHECK_ENERGY_BALANCE
-	m_incidentEnergy = 0;
-#endif
 	m_treeSize = 0;
 	m_scatteredBeams = &scatteredBeams;
 
 	SplitOriginalBeam(scatteredBeams);
 	SplitSecondaryBeams(scatteredBeams);
+}
+
+void Scattering::ScatterLight(TrackNode */*trackTree*/,
+							  std::vector<Beam> &/*scatteredBeams*/)
+{
 }
 
 void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
@@ -59,9 +64,14 @@ void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 	{
 		Beam beam = m_propagatingBeams[--m_treeSize];
 
+//		if (m_hasTracks)
+//		{
+//			m_trackTreeNode = m_trackTreeNode->FindNode(beam.facet->index);
+//		}
+
 		SplitBeamByVisibleFacets(beam);
 
-		if (IsTerminalAct(beam))
+		if (IsFinalAct(beam))
 		{
 			ReleaseBeam(beam);
 		}
@@ -86,13 +96,12 @@ void Scattering::SetIncidence()
 	}
 }
 
-bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
+bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam,
+										  const Polygon &resultShape)
 {
+	m_splitting.SetBeams(resultShape);
 	auto &beams = m_splitting.beams;
-#ifdef _DEBUG // DEB
-	beams.internal.pols = beam.pols;
-	beams.external.pols = beam.pols;
-#endif
+
 	const Vector3f &normal = facet->normal[beam.isInside];
 	m_splitting.ComputeSplittingParams(beam.direction, normal, beam.isInside);
 
@@ -106,15 +115,16 @@ bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
 }
 
 void Scattering::FindVisibleFacets(const Beam &beam, FacetChecker &checker,
-								   int begin, int end, Array<Facet*> &facets)
+								   Array<Facet*> &facets,
+								   Array<Facet*> &visibleFacets)
 {
-	for (int i = begin; i < end; ++i)
+	for (int i = 0; i < facets.nElems; ++i)
 	{
-		Facet *facet = m_particle->GetActualFacet(i);
+		Facet *facet = facets.elems[i];
 
 		if (checker.IsVisibleFacet(facet, beam))
 		{
-			facets.Add(facet);
+			visibleFacets.Add(facet);
 		}
 	}
 }
@@ -128,7 +138,7 @@ void Scattering::ComputeFacetEnergy(const Vector3f &facetNormal,
 
 void Scattering::PushBeamToTree(Beam &beam)
 {
-	if (Scattering::IsTerminalAct(beam))
+	if (Scattering::IsFinalAct(beam))
 	{
 		if (!beam.isInside)
 		{
@@ -145,7 +155,7 @@ void Scattering::PushBeamToTree(Beam &beam)
 	}
 }
 
-bool Scattering::IsTerminalAct(const Beam &beam)
+bool Scattering::IsFinalAct(const Beam &beam)
 {
 	return (beam.actNo >= m_maxActNo) || (beam.Jones.Norm() < EPS_BEAM_ENERGY);
 }
@@ -159,7 +169,7 @@ void Scattering::SetPolygonByFacet(Facet *facet, Polygon &polygon) const
 
 	for (int i = 0; i <= size; ++i)
 	{
-		polygon.arr[i] = facet->arr[size-i];
+		polygon.vertices[i] = facet->vertices[size-i];
 	}
 }
 
@@ -255,7 +265,7 @@ OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
 
 void Scattering::SelectOriginVisibleFacets(Array<Facet*> &facets)
 {
-	FindVisibleFacets(m_originalBeam, m_lightChecker, 0, m_particle->nElems, facets);
+	FindVisibleFacets(m_originalBeam, m_lightChecker, m_workFacets, facets);
 }
 
 void Scattering::ReleaseBeam(Beam &beam)
@@ -269,7 +279,7 @@ void Scattering::SplitBeamByVisibleFacets(Beam &beam)
 	Array<Facet*> visibleFacets; // NOTE: DO NOT MAKE IT FIELD OF CLASS!!
 	SelectVisibleFacets(beam, visibleFacets);
 
-	for (int i = 0; !isTerminalFacet(i, visibleFacets); ++i)
+	for (int i = 0; !isFinalFacet(i, visibleFacets); ++i)
 	{
 		Facet *facet = visibleFacets.elems[i];
 
@@ -278,14 +288,13 @@ void Scattering::SplitBeamByVisibleFacets(Beam &beam)
 														   beam.direction, beamShape);
 		if (isIntersected)
 		{
-			m_splitting.SetBeams(beamShape);
-			bool hasOutBeam = ComputeOpticalBeamParams(facet, beam);
+			bool hasOutBeam = ComputeOpticalBeamParams(facet, beam, beamShape);
 			PushBeamsToBuffer(beam, facet, hasOutBeam);
 		}
 	}
 }
 
-bool Scattering::isTerminalFacet(int index, Array<Facet*> &facets)
+bool Scattering::isFinalFacet(int index, Array<Facet*> &facets)
 {
 	return index >= facets.nElems;
 }
@@ -304,18 +313,12 @@ void Scattering::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 #endif
 	beams.internal.CopyTrack(tr);
 	beams.internal.SetLocation(true);
-#ifdef _DEBUG // DEB
-	beams.internal.dirs = parentBeam.dirs;
-#endif
 	PushBeamToTree(beams.internal);
 
 	if (hasOutBeam)
 	{
 		beams.external.CopyTrack(tr);
 		beams.external.SetLocation(false);
-#ifdef _DEBUG // DEB
-		beams.external.dirs = parentBeam.dirs;
-#endif
 		PushBeamToTree(beams.external);
 	}
 }

@@ -12,9 +12,6 @@ void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
 {
 	m_splitting->ComputeReflectedDirection(beams.internal.direction);
 	beams.internal.polarizationBasis = beam.polarizationBasis;
-#ifdef _DEBUG // DEB
-	beams.internal.dirs.push_back(beams.internal.direction);
-#endif
 }
 
 void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
