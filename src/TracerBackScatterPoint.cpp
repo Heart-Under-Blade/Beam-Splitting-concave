@@ -60,13 +60,13 @@ void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
 		{
 			gamma = gammaRange.min + gammaRange.step*j;
 #ifdef _DEBUG // DEB
-			beta = DegToRad(179.34); gamma = DegToRad(37);
+//			beta = DegToRad(179.34); gamma = DegToRad(37);
 #endif
 			m_particle->Rotate(beta, gamma, 0);
 			m_scattering->ScatterLight(beta, gamma, outBeams);
 
 #ifdef _DEBUG // DEB
-			m_particle->Output();
+//			m_particle->Output();
 #endif
 			m_incomingEnergy += m_scattering->GetIncedentEnergy();
 

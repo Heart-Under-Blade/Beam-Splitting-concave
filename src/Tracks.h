@@ -8,11 +8,7 @@
 
 #define MAX_GROUP_NUM	1024
 
-#ifdef _DEBUG // DEB
-typedef long long IdType;
-#else
 typedef BigInteger IdType;
-#endif
 
 class Beam;
 /// REF OPT TODO: сохранять треки вместе в id в виде массива интов,

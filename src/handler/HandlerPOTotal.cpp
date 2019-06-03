@@ -51,14 +51,7 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
         for (int p = 0; p <= nP; ++p)
         {
 			double radPhi = -p*m_sphere.azinuthStep;
-            matrix m = M(p, t);
-#ifdef _DEBUG // DEB
-			double fff[4];
-			fff[0] = m[0][0];
-			fff[1] = m[0][1];
-			fff[2] = m[1][0];
-			fff[3] = m[1][1];
-#endif
+			matrix m = M(p, t);
             Lp[1][1] = cos(2*radPhi);
             Lp[1][2] = sin(2*radPhi);
             Lp[2][1] = -Lp[1][2];
@@ -91,9 +84,6 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 
 void HandlerPOTotal::AddToMueller()
 {
-#ifdef _DEBUG // DEB
-	double sum = 0;
-#endif
 	for (size_t q = 0; q < m_diffractedMatrices.size(); ++q)
 	{
 		auto &diffM = m_diffractedMatrices[q];
@@ -103,33 +93,9 @@ void HandlerPOTotal::AddToMueller()
 			for (int p = 0; p < m_sphere.nAzimuth; ++p)
 			{
 				matrix m = Mueller(diffM(p, t));
-#ifdef _DEBUG // DEB
-				double fff[4];
-				fff[0] = m[0][0];
-				fff[1] = m[0][1];
-				fff[2] = m[1][0];
-				fff[3] = m[1][1];
-#endif
 				m *= m_sinZenith;
-
-#ifdef _DEBUG // DEB
-				complex ddd[4];
-				ddd[0] = diffM(p, t)[0][0];
-				ddd[1] = diffM(p, t)[0][1];
-				ddd[2] = diffM(p, t)[1][0];
-				ddd[3] = diffM(p, t)[1][1];
-				double d = m[0][0];
-				if (t == 160)
-				{
-					sum += d;
-					m_logFile << p << ' ' << t << ' ' << sum << std::endl;
-				}
-#endif
 				M.insert(p, t, m);
 			}
 		}
 	}
-
-	double d = M(0,0)[0][0];
-//	m_logFile << d << std::endl;
 }

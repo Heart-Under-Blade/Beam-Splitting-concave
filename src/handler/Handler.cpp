@@ -121,10 +121,9 @@ void Handler::ApplyAbsorption(Beam &beam)
 	double path = m_scattering->ComputeInternalOpticalPath(beam, beam.Center(), tr);
 
 #ifdef _DEBUG // DEB
-	double ddd = fabs(path - beam.opticalPath);
-//	m_logFile << ddd << endl;
-	if (fabs(path - beam.opticalPath) >= 10e-4)
-		int ggg = 0;
+//	double ddd = fabs(path - beam.opticalPath);
+//	if (fabs(path - beam.opticalPath) >= 10e-4)
+//		int ggg = 0;
 #endif
 
 	if (path > DBL_EPSILON)
@@ -203,7 +202,7 @@ Point3d Handler::ChangeCoordinateSystem(const Point3d& normal,
 }
 
 complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
-							 const Point3d &direction) const
+									const Point3d &direction) const
 {
 	const Point3f &dir = beam.direction;
 	Point3d k_k0 = -direction + Point3d(dir.cx, dir.cy, dir.cz);

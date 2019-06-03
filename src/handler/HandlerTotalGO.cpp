@@ -13,9 +13,6 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-#ifdef _DEBUG // DEB
-//		m_logFile << beam.id << std::endl;
-#endif
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
 		// absorbtion

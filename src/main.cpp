@@ -227,9 +227,7 @@ int main(int argc, const char* argv[])
 	}
 
 	cout << endl;
-
-//	particle->Output();
-	cout << "Area:" << particle->Area() << endl;
+	cout << "Area: " << particle->Area() << endl;
 
 	int reflNum = args.GetDoubleValue("n");
 	cout << "Number of secondary reflections: " << reflNum << endl;
@@ -237,8 +235,7 @@ int main(int argc, const char* argv[])
 	string dirName = (args.IsCatched("o")) ? args.GetStringValue("o")
 										   : "M";
 	bool isOutputGroups = args.IsCatched("gr");
-	double wave = args.IsCatched("w") ? args.GetDoubleValue("w")
-									  : 0;
+	double wave = args.IsCatched("w") ? args.GetDoubleValue("w") : 0;
 	cout << "Wavelength (um): " << wave << endl;
 
 	if (args.IsCatched("tr"))
@@ -259,7 +256,7 @@ int main(int argc, const char* argv[])
 		{
 			cout << ", fixed orientation" << endl << endl;
 
-			ScatteringSphere bsCone = SetConus(args);
+			ScatteringSphere sphere = SetConus(args);
 
 			double beta  = args.GetDoubleValue("fixed", 0);
 			double gamma = args.GetDoubleValue("fixed", 1);
@@ -269,7 +266,7 @@ int main(int argc, const char* argv[])
 
 			HandlerPO *handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 			handler->SetTracks(&trackGroups);
-			handler->SetScatteringSphere(bsCone);
+			handler->SetScatteringSphere(sphere);
 			handler->SetAbsorptionAccounting(isAbs);
 
 			tracer.SetIsOutputGroups(isOutputGroups);

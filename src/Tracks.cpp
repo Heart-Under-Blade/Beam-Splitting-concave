@@ -122,11 +122,7 @@ void Tracks::RecoverTrack(const Beam &beam, int facetNum,
 
 	for (int i = 0; i <= beam.nActs; ++i)
 	{
-#ifdef _DEBUG // DEB
-		int tmp = (tmpId%coef);
-#else
 		int tmp = (tmpId%coef).toInt();
-#endif
 		tmpId -= tmp;
 		tmpId /= coef;
 		tmp -= 1;

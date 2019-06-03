@@ -8,7 +8,7 @@
 #include "BigIntegerLibrary.hh"
 
 //#ifdef _DEBUG // DEB
-#include "Tracer.h"
+//#include "Tracer.h"
 //#endif
 
 #define EPS_ORTO_FACET 0.0001
@@ -51,22 +51,22 @@ void ScatteringNonConvex::PushBeamsToTree(int facetId, const PolygonArray &polyg
 		in = pol;
 		out = pol;
 #ifdef _DEBUG // DEB
-		in.pols.push_back(pol);
-		out.pols.push_back(pol);
+//		in.pols.push_back(pol);
+//		out.pols.push_back(pol);
 #endif
 		Point3f p = pol.Center();
 		in.opticalPath = 0;
 		out.opticalPath = 0;
 		double path = m_splitting.ComputeIncidentOpticalPath(m_incidentDir, p);
 #ifdef _DEBUG // DEB
-		in.ops.push_back(path);
-		out.ops.push_back(path);
+//		in.ops.push_back(path);
+//		out.ops.push_back(path);
 #endif
 		in.AddOpticalPath(path);
 		out.AddOpticalPath(path);
 #ifdef _DEBUG // DEB
-		in.dirs.push_back(in.direction);
-		out.dirs.push_back(out.direction);
+//		in.dirs.push_back(in.direction);
+//		out.dirs.push_back(out.direction);
 #endif
 		m_beamTree[m_treeSize++] = in;
 		m_beamTree[m_treeSize++] = out;
@@ -195,7 +195,7 @@ void ScatteringNonConvex::CutExternalBeam(const Beam &beam,
 	double path = m_splitting.ComputeOutgoingOpticalPath(tmp); // добираем оптический путь
 	tmp.opticalPath += path;
 #ifdef _DEBUG // DEB
-	tmp.ops.push_back(path);
+//	tmp.ops.push_back(path);
 #endif
 	for (unsigned i = 0; i < resultBeams.size; ++i)
 	{
@@ -362,16 +362,14 @@ int ScatteringNonConvex::FindFacetId(int facetId, const IntArray &arr)
 void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 {
 #ifdef _DEBUG // DEB
-	int count = 0;
+//	int count = 0;
 #endif
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
 #ifdef _DEBUG // DEB
-	++count;
-		if (beam.id == 1142698)
-			int ffgf = 0;
+//	++count;
 #endif
 		if (!IsTerminalAct(beam)) // REF, OPT: перенести проверку во все места, где пучок закидывается в дерево, чтобы пучки заранее не закидывались в него
 		{
@@ -383,10 +381,7 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 			for (unsigned i = 0; (i < facetIds.size) && !isDivided; ++i)// OPT: move this loop to SplitBeamByFacet
 			{
 				int facetId = facetIds.arr[i];
-#ifdef _DEBUG // DEB
-			if (beam.id == 2370 && count == 427 && facetId == 47)
-				int fff = 0;
-#endif
+
 				Polygon intersection;
 				Intersect(facetId, beam, intersection);
 
@@ -401,7 +396,7 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 				double path = m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
 				beam.opticalPath += path;
 #ifdef _DEBUG // DEB
-	beam.ops.push_back(path);
+//	beam.ops.push_back(path);
 #endif
 				scaterredBeams.push_back(beam);
 			}
@@ -462,10 +457,10 @@ bool ScatteringNonConvex::SetOpticalBeamParams(const Facet &facet, const Beam &i
 				double path = m_splitting.ComputeSegmentOpticalPath(incidentBeam,
 																	inBeam.Center());
 #ifdef _DEBUG // DEB
-	inBeam.ops = incidentBeam.ops;
-	outBeam.ops = incidentBeam.ops;
-	inBeam.ops.push_back(path);
-	outBeam.ops.push_back(path);
+//	inBeam.ops = incidentBeam.ops;
+//	outBeam.ops = incidentBeam.ops;
+//	inBeam.ops.push_back(path);
+//	outBeam.ops.push_back(path);
 #endif
 				path += incidentBeam.opticalPath;
 				inBeam.AddOpticalPath(path);
@@ -650,10 +645,6 @@ void ScatteringNonConvex::PushBeamPartsToTree(const Beam &beam,
 	for (unsigned i = 0; i < parts.size; ++i)
 	{
 		tmp = parts.arr[i];
-#ifdef _DEBUG // DEB
-	if (tmp.id == 222205)
-		int fff = 0;
-#endif
 		assert(m_treeSize < MAX_BEAM_REFL_NUM);
 		m_beamTree[m_treeSize++] = tmp;
 	}
@@ -667,7 +658,7 @@ void ScatteringNonConvex::PushBeamToTree(Beam &beam, const Beam &oldBeam,
 	beam.id = newId;
 	beam.locations = oldBeam.locations;
 #ifdef _DEBUG // DEB
-	beam.dirs = oldBeam.dirs;
+//	beam.dirs = oldBeam.dirs;
 #endif
 	Scattering::PushBeamToTree(beam, facetId, oldBeam.nActs+1, loc);
 }
@@ -675,21 +666,16 @@ void ScatteringNonConvex::PushBeamToTree(Beam &beam, const Beam &oldBeam,
 bool ScatteringNonConvex::SplitBeamByFacet(const Polygon &intersection,
 										   int facetId, Beam &beam)
 {
-#ifdef _DEBUG // DEB
-if (beam.lastFacetId==0 && facetId==6)
-//if (beam.trackId.toLong()==9633 && facetID==0)
-	int f =0;
-#endif
 	Facet &facet = m_facets[facetId];
 
 	Beam inBeam, outBeam;
 	inBeam.SetPolygon(intersection);
 	outBeam.SetPolygon(intersection);
 #ifdef _DEBUG // DEB
-	inBeam.pols = beam.pols;
-	outBeam.pols = beam.pols;
-	inBeam.pols.push_back(intersection);
-	outBeam.pols.push_back(intersection);
+//	inBeam.pols = beam.pols;
+//	outBeam.pols = beam.pols;
+//	inBeam.pols.push_back(intersection);
+//	outBeam.pols.push_back(intersection);
 #endif
 
 	bool hasOutBeam = SetOpticalBeamParams(facet, beam, inBeam, outBeam);
@@ -716,10 +702,6 @@ if (beam.lastFacetId==0 && facetId==6)
 	else if (m_polygonBuffer.size == CLIP_RESULT_SINGLE)
 	{
 		beam = m_polygonBuffer.arr[0];
-#ifdef _DEBUG // DEB
-		if (beam.id == 222205)
-			int ffgf = 0;
-#endif
 	}
 
 	return isDivided;

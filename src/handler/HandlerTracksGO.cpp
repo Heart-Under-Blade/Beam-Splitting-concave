@@ -13,8 +13,8 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
     for (Beam &beam : beams)
     {
 #ifdef _DEBUG // DEB
-        std::vector<int> tr;
-        Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+//        std::vector<int> tr;
+//        Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 #endif
         int groupId = m_tracks->FindGroupByTrackId(beam.id);
 

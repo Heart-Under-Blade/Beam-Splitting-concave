@@ -37,10 +37,7 @@ public:
 			{
 				double t = j * zenithStep;
 				sincos(t, &sinZen, &cosZen);
-#ifdef _DEBUG // DEB
-				if (i == 1 && j == 70)
-					int fff = 0;
-#endif
+
 				Point3d dir(sinZen*cosAz, sinZen*sinAz, cosZen);
 				directions[i].push_back(dir);
 			}

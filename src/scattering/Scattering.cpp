@@ -8,7 +8,7 @@
 #include "geometry_lib.h"
 
 #ifdef _DEBUG // DEB
-#include <iostream>
+//#include <iostream>
 #endif
 
 #define NORM_CEIL	FLT_EPSILON + 1
@@ -41,7 +41,7 @@ void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location loc
 {
 	beam.SetTracingParams(facetId, level, location);
 #ifdef _DEBUG // DEB
-	beam.dirs.push_back(beam.direction);
+//	beam.dirs.push_back(beam.direction);
 #endif
 	m_beamTree[m_treeSize++] = beam;
 }
@@ -583,12 +583,12 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 		}
 
 #ifdef _DEBUG // DEB
-		Point3f dddd = inNormal;
-		dddd.d_param = -dddd.d_param;
-		Point3f p22 = ProjectPointToPlane(p1, dir, dddd);
-		double len1 = Length(p1 - p22);
-		len1 *= sqrt(real(m_splitting.GetRi()));
-		path1 += len1;
+//		Point3f dddd = inNormal;
+//		dddd.d_param = -dddd.d_param;
+//		Point3f p22 = ProjectPointToPlane(p1, dir, dddd);
+//		double len1 = Length(p1 - p22);
+//		len1 *= sqrt(real(m_splitting.GetRi()));
+//		path1 += len1;
 #endif
 		path += len;
 

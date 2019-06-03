@@ -18,11 +18,11 @@ public:
 class Track
 {
 public:
-#ifdef _DEBUG // DEB
-	long long id = 0;
-#else
+//#ifdef _DEBUG // DEB
+//	long long id = 0;
+//#else
 	BigInteger id = 0;
-#endif
+//#endif
 	int locations;		///< each bit of variable represents location of beam after an r/r act from left to right
 						///< "0" when beam location is "inside" and "1" if it's "outside"
 
@@ -79,9 +79,9 @@ public:
 	double front;		///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
 #ifdef _DEBUG // DEB
-	std::vector<Polygon> pols;
-	std::vector<Point3f> dirs;
-	std::vector<double> ops;
+//	std::vector<Polygon> pols;
+//	std::vector<Point3f> dirs;
+//	std::vector<double> ops;
 #endif
 
 private:

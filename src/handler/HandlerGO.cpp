@@ -94,9 +94,7 @@ void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 matrix HandlerGO::ComputeMueller(float zenAng, Beam &beam)
 {
 	matrix m = Mueller(beam.J);
-#ifdef _DEBUG // DEB
-	double &ddd = m[0][0];
-#endif
+
 	if (zenAng < 180-FLT_EPSILON && zenAng > FLT_EPSILON)
 	{
 		const float &y = beam.direction.cy;
@@ -158,11 +156,6 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 		allFile << '\n' << tmp0 + tmp1 + tmp2 << ' ' << (M_2PI*sn);
 
 		matrix bf = contrib.muellers(0, j);
-
-#ifdef _DEBUG // DEB
-		double dd = bf[0][0];
-		std::cout << sn;
-#endif
 
 		if (bf[0][0] <= DBL_EPSILON)
 		{

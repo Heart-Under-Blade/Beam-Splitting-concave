@@ -16,8 +16,7 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 	CalcTimer timer;
 	long long count = 0;
 	long long nOrientations = betaRange.number * gammaRange.number;
-
-	ofstream outFile(m_resultDirName + ".dat", ios::out);
+	ofstream outFile(m_resultDirName + "_out.dat", ios::out);
 
 	if (!outFile.is_open())
 	{
@@ -55,6 +54,7 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 			m_scattering->ScatterLight(M_PI-beta, M_PI+gamma, outBeams);
 
 			m_handler->HandleBeams(outBeams);
+//			cout << "!" << endl;
 			outBeams.clear();
 
 			OutputProgress(nOrientations, count, beta, gamma, timer);

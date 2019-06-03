@@ -110,9 +110,6 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	if (!m_splitting.IsNormalIncidence())
 	{	// regular incidence
-#ifdef _DEBUG // DEB
-		auto id = RecomputeTrackId(incidentBeam.id, facetID);
-#endif
 		ComputePolarisationParams(incidentBeam.direction, normal, incidentBeam);
 
 		if (!m_splitting.IsCompleteReflection())
