@@ -6,10 +6,10 @@
 #include "Splitting.h"
 #include "TrackTree.h"
 
-#include "CompleteReflectionIncidence.h"
+#include "TotalReflectionIncidence.h"
 #include "NormalIncidence.h"
 
-#include "CompleteReflectionIncidence.h"
+#include "TotalReflectionIncidence.h"
 #include "NormalIncidence.h"
 
 #include <float.h>
@@ -82,15 +82,15 @@ public:
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
 
 protected:
-	Particle *m_particle;	///< The crystal for a light scattering
 	int m_maxActNo;			///< Maximal number of reflection/refraction acts
+	Particle *m_particle;	///< The crystal for a light scattering
 
 	Splitting m_splitting;
 
 	Incidence *m_incidence;
 	RegularIncidence				m_regularIncidence;
 	NormalIncidence					m_normalIncidence;
-	CompleteReflectionIncidence		m_completeReflectionIncidence;
+	TotalReflectionIncidence		m_totalReflectionIncidence;
 
 	LightFacetChecker m_lightChecker;
 	BeamFacetChecker m_beamChecker;

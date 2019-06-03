@@ -16,13 +16,13 @@ using namespace std;
 
 Scattering::Scattering(Particle *particle, const Light &incidentLight,
 					   int maxActNo, const complex &refractiveIndex)
-	: m_particle(particle),
-	  m_maxActNo(maxActNo),
-	  m_splitting(refractiveIndex),
-	  m_completeReflectionIncidence(),
-	  m_regularIncidence(),
+	: m_maxActNo(maxActNo),
+	  m_particle(particle),
 	  m_refractiveIndex(refractiveIndex),
+	  m_splitting(refractiveIndex),
+	  m_regularIncidence(),
 	  m_normalIncidence(),
+	  m_totalReflectionIncidence(),
 	  m_hasTracks(false)
 {
 	m_particle->GetPartByFacet(nullptr, m_workFacets);
@@ -92,7 +92,7 @@ void Scattering::SetIncidence()
 	}
 	else if (incType == IncidenceType::CompleteReflection)
 	{
-		m_incidence = &m_completeReflectionIncidence;
+		m_incidence = &m_totalReflectionIncidence;
 	}
 }
 

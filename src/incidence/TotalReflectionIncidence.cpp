@@ -1,21 +1,21 @@
-#include "CompleteReflectionIncidence.h"
+#include "TotalReflectionIncidence.h"
 
 #include "Beam.h"
 #include "Splitting.h"
 
-CompleteReflectionIncidence::CompleteReflectionIncidence()
+TotalReflectionIncidence::TotalReflectionIncidence()
 {
 }
 
-void CompleteReflectionIncidence::ComputeDirections(Beam &beam,
-													BeamPair<Beam> &beams) const
+void TotalReflectionIncidence::ComputeDirections(Beam &beam,
+												 BeamPair<Beam> &beams) const
 {
 	m_splitting->ComputeReflectedDirection(beams.internal.direction);
 	beams.internal.polarizationBasis = beam.polarizationBasis;
 }
 
-void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
-													   BeamPair<Beam> &beams) const
+void TotalReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
+													BeamPair<Beam> &beams) const
 {
 	const double bf = m_splitting->reRiEff*(1.0 - m_splitting->cosA2) - 1.0;
     double im = (bf > 0) ? sqrt(bf) : 0;
@@ -31,26 +31,27 @@ void CompleteReflectionIncidence::ComputeJonesMatrices(Beam &parentBeam,
 	beams.internal.MultiplyJonesMatrix(cv, ch);
 }
 
-void CompleteReflectionIncidence::ComputeOpticalPaths(const PathedBeam &incidentBeam,
-													  BeamPair<PathedBeam> &beams) const
+void TotalReflectionIncidence::ComputeOpticalPaths(
+		const PathedBeam &parentBeam, BeamPair<PathedBeam> &beams) const
 {
-	if (incidentBeam.opticalPath < FLT_EPSILON)
+	if (parentBeam.opticalPath < FLT_EPSILON)
 	{
 		Point3f p = beams.internal.Center();
-		double path = incidentBeam.ComputeIncidentOpticalPath(incidentBeam.direction, p);
+		double path = parentBeam.ComputeIncidentOpticalPath(
+					parentBeam.direction, p);
 		beams.internal.opticalPath = 0;
 		beams.internal.AddOpticalPath(path);
 	}
 	else
 	{
-		double path = incidentBeam.ComputeSegmentOpticalPath(m_splitting->reRiEff,
-															 beams.internal.Center());
-		path += incidentBeam.opticalPath;
+		double path = parentBeam.ComputeSegmentOpticalPath(
+					m_splitting->reRiEff, beams.internal.Center());
+		path += parentBeam.opticalPath;
 #ifdef _DEBUG // DEB
-		beams.internal.ops = incidentBeam.ops;
+		beams.internal.ops = parentBeam.ops;
 		beams.internal.ops.push_back(path);
 #endif
-		path += incidentBeam.opticalPath;
+		path += parentBeam.opticalPath;
 		beams.internal.AddOpticalPath(path);
 	}
 }
