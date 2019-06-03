@@ -51,15 +51,23 @@ void Tracer::OutputOrientationToLog(int i, int j, ostream &logfile)
 	logfile.flush();
 }
 
-void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
+void Tracer::OutputProgress(int nOrientation, long long count,
+							double zenith, double azimuth, CalcTimer &timer)
 {
-	EraseConsoleLine(50);
-	cout << (count*100)/(betaNumber+1) << '%'
-		 << '\t' << timer.Elapsed();
+	auto now = timer.SecondsElapsed();
+
+	if (now - m_timeElapsed > 1)
+	{
+		m_timeElapsed = now;
+		EraseConsoleLine(50);
+		cout << (count*100)/nOrientation << "%, orientation: ("
+			 << zenith << ", " << azimuth << ") " << timer.Elapsed();
+	}
 }
 
 
-void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
+void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber,
+								const string &path)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -90,7 +98,7 @@ void Tracer::SetIsOutputGroups(bool value)
 }
 
 //REF: объединить с предыдущим
-void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
+void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const ScatteringSphere &bsCone,
 							  const Tracks &tracks, double wave)
 {
 //	m_wavelength = wave;
@@ -152,7 +160,7 @@ void Tracer::SetHandler(Handler *handler)
 	m_handler->SetScattering(m_scattering);
 }
 
-void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Conus &bsCone, int groupID)
+void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const ScatteringSphere &bsCone, int groupID)
 {
 //	for (unsigned int i = 0; i < outBeams.size(); ++i)
 //	{
@@ -197,4 +205,3 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Conus &bsCone, int gro
 //		}
 //	}
 }
-

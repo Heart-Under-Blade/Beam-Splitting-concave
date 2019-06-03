@@ -68,6 +68,49 @@ public:
 	}
 };
 
+struct Point2f
+{
+	float x;
+	float y;
+
+	Point2f() {}
+
+	Point2f(float x, float y)
+		: x(x), y(y)
+	{
+	}
+
+	Point2f(const Point2f &other)
+	{
+		x = other.x;
+		y = other.y;
+	}
+
+	bool IsEqualTo(const Point2f &other, float eps) const
+	{
+		return fabs(x - other.x) < eps &&
+				fabs(y - other.y) < eps;
+	}
+
+	Point2f operator - (const Point2f &other) const
+	{
+		return Point2f(x - other.x,
+					   y - other.y);
+	}
+
+	Point2f &operator = (const Point2f &other)
+	{
+		x = other.x;
+		y = other.y;
+		return *this;
+	}
+
+	double CrossProduct(const Point2f &other)
+	{
+		return x*other.y - y*other.x;
+	}
+};
+
 /**
  * @brief The Point3 struct
  * 3-coordinated point
@@ -77,13 +120,6 @@ struct Point3f
 	float coordinates[4]; /// coordinates
 
 	Point3f() {}
-
-	bool IsEqualTo(const Point3f &other, float eps) const
-	{
-		return (fabs(coordinates[0] - other.coordinates[0]) +
-				fabs(coordinates[1] - other.coordinates[1]) +
-				fabs(coordinates[2] - other.coordinates[2]))/3 < eps;
-	}
 
 	Point3f(float x, float y, float z)
 	{
@@ -98,6 +134,20 @@ struct Point3f
 		coordinates[1] = y;
 		coordinates[2] = z;
 		coordinates[3] = d;
+	}
+
+	Point3f(const Point2f &other)
+	{
+		coordinates[0] = other.x;
+		coordinates[1] = other.y;
+		coordinates[2] = 0;
+	}
+
+	bool IsEqualTo(const Point3f &other, float eps) const
+	{
+		return (fabs(coordinates[0] - other.coordinates[0]) +
+				fabs(coordinates[1] - other.coordinates[1]) +
+				fabs(coordinates[2] - other.coordinates[2]))/3 < eps;
 	}
 
 	void Clone(const Point3f &other)

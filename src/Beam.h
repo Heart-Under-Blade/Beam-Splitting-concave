@@ -44,6 +44,7 @@ public:
 
 	Vector3f RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 
+	void SetMatrix(const Matrix2x2c &matrix);
 	void SetPolygon(const Polygon &other);
 	void SetLight(const Vector3f &dir, const Vector3f &polarBasis);
 	void SetLight(const Light &other);
@@ -63,9 +64,6 @@ public:
 	//--------------------------
 
 	friend std::ostream & operator << (std::ostream &os, const Beam &beam);
-
-	Point3d Proj(const Point3d& Tx, const Point3d& Ty, const Point3d& r,  const Point3d& pnt) const;
-	Point3d Proj(const Point3d& _r, const Point3d &pnt) const;
 
 	// REF: рассмотреть схему, где у пучка будет много полигонов
 

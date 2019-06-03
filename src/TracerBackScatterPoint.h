@@ -8,8 +8,7 @@ public:
 	TracerBackScatterPoint(Particle *particle, int reflNum,
 						   const std::string &resultFileName);
 
-	void Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
-			   const Tracks &tracks, double wave);
+	void TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange);
 
 private:
 	std::string GetTableHead(const AngleRange &range);

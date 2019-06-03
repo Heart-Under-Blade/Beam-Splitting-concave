@@ -212,6 +212,7 @@ public:
 	VoronoiLattice(double latticeSize, int splitRatio);
 
 private:
+	int m_maxSiteDistance;
 	double m_size; ///< Lattice size
 
 	/**
@@ -255,4 +256,6 @@ private:
 							const OrthoPlane &currentPlane,
 							std::vector<OrthoPlane> &sitePlanes);
 	void RemovePlane(int planeNo, std::vector<OrthoPlane> &sitePlanes);
+	void AddBorderPlane(std::vector<OrthoPlane> &sitePlanes, const Point3f &n,
+						const Point3f &c, double r, Cell &cell);
 };

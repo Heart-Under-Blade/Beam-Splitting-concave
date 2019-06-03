@@ -58,6 +58,8 @@ public:
 	virtual void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
+	virtual void FormShadowBeam(std::vector<Beam> &scaterredBeams);
+
 	double GetIncedentEnergy() const;
 
 	double ComputeInternalOpticalPath(const Beam &beam, const Point3f sourcePoint,
@@ -89,6 +91,14 @@ protected:
 
 
 	IdType RecomputeTrackId(const IdType &oldId, int facetId);
+
+	void OrderVertices2f(std::vector<Point2f> &vertices,
+						 Polygon &orderedPolygon);
+
+	void ProjectParticleToXY(std::vector<Point2f> &projected);
+
+	void RemoveDublicatedVertices2f(const std::vector<Point2f> &projected,
+								  std::vector<Point2f> &cleared);
 
 private:
 	void SetOutputPolygon(__m128 *_output_points, int outputSize,

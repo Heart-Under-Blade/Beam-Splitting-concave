@@ -26,6 +26,7 @@ INCLUDEPATH += \
 	../src/particle \
 	../src/geometry \
 	../src/scattering \
+    ../src/handler \
     ../src/tracer \
 	../src/bigint
 
@@ -34,6 +35,7 @@ SOURCES += \
 	../src/math/*.cpp \
 	../src/particle/*.cpp \
 	../src/geometry/*.cpp \
+    ../src/handler/*.cpp \
 	../src/common/*.cpp \
 	../src/scattering/*.cpp \
     ../src/bigint/*.cc
@@ -44,6 +46,7 @@ HEADERS += \
 	../src/math/*.h \
 	../src/particle/*.h \
 	../src/geometry/*.h \
+    ../src/handler/*.h \
 	../src/common/*.h \
 	../src/scattering/*.h \
     ../src/bigint/*.hh

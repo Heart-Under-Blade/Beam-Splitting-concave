@@ -1,7 +1,10 @@
 #include "TracerBackScatterPoint.h"
+
+#include <iostream>
+
 #include "global.h"
 #include "ScatteringFiles.h"
-#include <iostream>
+#include "HandlerBackScatterPoint.h"
 
 using namespace std;
 
@@ -11,12 +14,12 @@ TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, int reflNum,
 {
 }
 
-void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
-								   const Tracks &tracks, double wave)
+void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
+										 const AngleRange &gammaRange)
 {
-	size_t nGroups = tracks.size();
+	Tracks *tracks = m_handler->GetTracks();
+	size_t nGroups = tracks->size();
 
-	m_wavelength = wave;
 	CalcTimer timer;
 	long long count = 0;
 
@@ -28,14 +31,14 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 	ScatteringFiles resFiles(dir, m_resultDirName, tableHead);
 	CreateDir(fulldir + "res");
-	CreateResultFiles(resFiles, tracks, "res");
+	CreateResultFiles(resFiles, *tracks, "res");
 
 	vector<Arr2D> groupResultM;
 	AllocGroupMatrices(groupResultM, nGroups);
 
 	ScatteringFiles corFiles(dir, m_resultDirName, tableHead);
 	CreateDir(fulldir + "cor");
-	CreateResultFiles(corFiles, tracks, "cor", "cor_");
+	CreateResultFiles(corFiles, *tracks, "cor", "cor_");
 
 	vector<Arr2D> groupResultM_cor;
 	AllocGroupMatrices(groupResultM_cor, nGroups);
@@ -49,7 +52,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	for (int i = 0; i <= betaRange.number; ++i)
 	{
 		m_incomingEnergy = 0;
-		OutputProgress(betaRange.number, ++count, timer);
+		OutputProgress(betaRange.number, ++count, i, i, timer);
 
 		beta = betaRange.min + betaRange.step*i;
 
@@ -59,6 +62,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 #ifdef _DEBUG // DEB
 			beta = DegToRad(179.34); gamma = DegToRad(37);
 #endif
+			m_particle->Rotate(beta, gamma, 0);
 			m_scattering->ScatterLight(beta, gamma, outBeams);
 
 #ifdef _DEBUG // DEB

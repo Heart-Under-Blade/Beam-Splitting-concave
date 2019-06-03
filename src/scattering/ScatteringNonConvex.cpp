@@ -29,7 +29,7 @@ ScatteringNonConvex::ScatteringNonConvex(Particle *particle, Light *incidentLigh
 void ScatteringNonConvex::ScatterLight(double beta, double gamma,
 									   std::vector<Beam> &scaterredBeams)
 {
-	m_particle->Rotate(beta, gamma, 0);
+//	m_particle->Rotate(beta, gamma, 0);
 	SplitLightToBeams();
 	SplitBeams(scaterredBeams);
 }
@@ -665,11 +665,6 @@ void ScatteringNonConvex::PushBeamToTree(Beam &beam, const Beam &oldBeam,
 										 Location loc)
 {
 	beam.id = newId;
-
-#ifdef _DEBUG // DEB
-	if (beam.id == 21711433)
-		int fff = 0;
-#endif
 	beam.locations = oldBeam.locations;
 #ifdef _DEBUG // DEB
 	beam.dirs = oldBeam.dirs;

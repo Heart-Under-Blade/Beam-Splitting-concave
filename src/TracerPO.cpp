@@ -1,4 +1,5 @@
 #include "TracerPO.h"
+#include <iostream>
 
 using namespace std;
 
@@ -11,8 +12,15 @@ void TracerPO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 {
 	CalcTimer timer;
 	long long count = 0;
+	long long nOrientations = betaRange.number * gammaRange.number;
 
-	ofstream outFile(m_resultDirName, ios::out);
+	ofstream outFile(m_resultDirName + ".dat", ios::out);
+
+	if (!outFile.is_open())
+	{
+		std::cerr << "Error! File \"" << m_resultDirName << "\" was not opened. " << __FUNCTION__;
+		throw std::exception();
+	}
 
 	vector<Beam> outBeams;
 	double beta, gamma;
@@ -31,16 +39,17 @@ void TracerPO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 		{
 			gamma = j*gammaRange.step;
 
+			m_particle->Rotate(beta, gamma, 0);
 			m_scattering->ScatterLight(beta, gamma, outBeams);
 
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
+
+			++count;
+			OutputProgress(nOrientations, count, i, j, timer);
 		}
 
 		m_handler->WriteMatricesToFile(m_resultDirName);
-
-		OutputProgress(betaRange.number, count, timer);
-		++count;
 	}
 
 	outFile.close();
@@ -53,6 +62,7 @@ void TracerPO::TraceFixed(const double &beta, const double &gamma)
 
 	double b = DegToRad(beta);
 	double g = DegToRad(gamma);
+	m_particle->Rotate(b, g, 0);
 	m_scattering->ScatterLight(b, g, outBeams);
 
 	m_handler->HandleBeams(outBeams);

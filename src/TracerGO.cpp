@@ -1,5 +1,8 @@
 #include "TracerGO.h"
+
 #include <iostream>
+
+#include "HandlerGO.h"
 
 using namespace std;
 
@@ -36,6 +39,7 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 #ifdef _DEBUG // DEB
 //			beta = 0.47123889803846897; gamma = 0.52359877559829882;
 #endif
+			m_particle->Rotate(beta, gamma, 0);
 			m_scattering->ScatterLight(beta, gamma, outBeams);
 //			m_particle->Output();
 			m_handler->HandleBeams(outBeams);
@@ -48,7 +52,7 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 //			OutputOrientationToLog(i, j, logfile);
 		}
 
-		OutputProgress(betaRange.number, i, timer);
+		OutputProgress(betaRange.number, i, i, i, timer);
 	}
 
 	long long orNum = gammaRange.number * betaRange.number;
@@ -70,6 +74,7 @@ void TracerGO::TraceFixed(const double &beta, const double &gamma)
 	double g = DegToRad(gamma);
 
 	vector<Beam> outBeams;
+	m_particle->Rotate(b, g, 0);
 	m_scattering->ScatterLight(b, g, outBeams);
 	m_handler->HandleBeams(outBeams);
 	outBeams.clear();

@@ -2,6 +2,7 @@
 
 #include <float.h>
 #include <assert.h>
+#include <algorithm>
 
 #include "macro.h"
 #include "geometry_lib.h"
@@ -92,6 +93,7 @@ void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 		outBeam.opticalPath = 0;
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
+		outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam);
 	}
 }
 
@@ -150,7 +152,120 @@ void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vect
 //		}
 
 //		outBeams.push_back(outBuff.back());
-//	}
+	//	}
+}
+
+void Scattering::OrderVertices2f(std::vector<Point2f> &vertices,
+								 Polygon &orderedPolygon)
+{
+	// define base point
+	int baseIndex = 0;
+	double minX = vertices[baseIndex].x;
+
+	for (int i = 1; i < vertices.size(); ++i)
+	{
+		if (vertices[i].x < minX)
+		{
+			baseIndex = i;
+			minX = vertices[i].x;
+		}
+	}
+
+	std::swap(vertices[baseIndex], vertices.back());
+	Point2f base = vertices.back();
+//	orderedPolygon.AddVertex(Point3f(base.x, base.y, 0));
+
+	int iBase = 0;
+
+	for (int i = 0; iBase != vertices.size()-1 && i < vertices.size(); ++i)
+	{
+		iBase = i;
+		Point2f vBase = vertices[iBase] - base;
+
+		for (int j = i + 1; j <= vertices.size(); ++j)
+		{
+			int iNext = (j == vertices.size()) ? 0 : j;
+			Point2f vNext = vertices[iNext] - base;
+
+			if (vBase.CrossProduct(vNext) > 0)
+			{
+				iBase = iNext;
+				vBase = vNext;
+			}
+		}
+
+		std::swap(vertices[iBase], vertices[i]);
+		base = vertices[i];
+		orderedPolygon.AddVertex(Point3f(base.x, base.y, 10000));
+	}
+}
+
+void Scattering::ProjectParticleToXY(std::vector<Point2f> &projected)
+{
+	Point3f n(0, 0, 1, 10000);
+	n.d_param = m_particle->MaximalDimention();
+
+	for (int i = 0; i < m_particle->nFacets; i++)
+	{
+		auto &f = m_particle->facets[i];
+
+		if (DotProduct(f.in_normal, -n) < EPS_COS_90)
+		{
+			for (int j = 0; j < f.nVertices; j++)
+			{
+//				auto p = ProjectPointToPlane(f.arr[j], -m_incidentDir, n);
+//				projected.push_back(Point2f(-p.coordinates[0], -p.coordinates[1]));
+				double tmp = (n.d_param - DotProduct(n, f.arr[j]));
+				auto p = f.arr[j] + n*tmp;
+				projected.push_back(Point2f(p.coordinates[0], p.coordinates[1]));
+			}
+		}
+	}
+}
+
+void Scattering::RemoveDublicatedVertices2f(const std::vector<Point2f> &projected,
+										  std::vector<Point2f> &cleared)
+{
+	for (int i = 0; i < projected.size(); ++i)
+	{
+		bool isUnique = true;
+
+		for (int j = i + 1; j < projected.size(); ++j)
+		{
+			if (projected[i].IsEqualTo(projected[j], 0.0001))
+			{
+				isUnique = false;
+			}
+		}
+
+		if (isUnique)
+		{
+			cleared.push_back(projected[i]);
+		}
+	}
+}
+
+void Scattering::FormShadowBeam(std::vector<Beam> &scaterredBeams)
+{
+	std::vector<Point2f> projected;
+	ProjectParticleToXY(projected);
+
+	std::vector<Point2f> projectedCleared;
+	RemoveDublicatedVertices2f(projected, projectedCleared);
+
+	Beam shadowBeam;
+	OrderVertices2f(projectedCleared, shadowBeam);
+
+	Matrix2x2c jones;
+	jones.m11 = -jones.m11;
+	jones.m22 = -jones.m22;
+	shadowBeam.SetMatrix(jones);
+
+	shadowBeam.direction = m_incidentLight->direction;
+	shadowBeam.polarizationBasis = m_incidentLight->polarizationBasis;
+	shadowBeam.opticalPath = 20000;
+	shadowBeam.lastFacetId = INT_MAX;
+	scaterredBeams.push_back(shadowBeam);
 }
 
 bool Scattering::IsTerminalAct(const Beam &beam)
@@ -483,14 +598,14 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 
 #ifdef _DEBUG // DEB
 //	path *= real(m_splitting.GetRi());
-	Point3f nFar1 = m_incidentDir;
-	Point3f nFar2 = -beam.direction;
-	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
-	double dd2 = fabs(DotProductD(sourcePoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
-	path += dd1;
-	path += dd2;
-	if (fabs(path - beam.opticalPath) > 1)
-		int ff = 0;
+//	Point3f nFar1 = m_incidentDir;
+//	Point3f nFar2 = -beam.direction;
+//	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
+//	double dd2 = fabs(DotProductD(sourcePoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+//	path += dd1;
+//	path += dd2;
+//	if (fabs(path - beam.opticalPath) > 1)
+//		int ff = 0;
 #endif
 	return path;
 }

@@ -2,6 +2,9 @@
 
 #include "Beam.h"
 
+#define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
+#define EPS_COS_00		0.99999999998254670756866631966593		//1 - cos(89.99999999)
+
 class Splitting
 {
 public:

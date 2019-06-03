@@ -71,7 +71,7 @@ void Particle::SetFromFile(const std::string &filename)
 	pfile.close();
 
 	// correction of number of facet
-	if (defaultFacets[nFacets-1].nVertices == 0)
+	while (defaultFacets[nFacets-1].nVertices == 0)
 	{
 		--nFacets;
 	}

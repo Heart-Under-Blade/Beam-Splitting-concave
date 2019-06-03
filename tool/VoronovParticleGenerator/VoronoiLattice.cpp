@@ -18,15 +18,28 @@
 //#define EPS_SAME_FACET 0.0005
 
 #define EPS_SAME_CELL 0.0001
-#define EPS_SAME_FACET 0.5
+#define EPS_SAME_FACET 0.05
 //#define EPS_SAME_FACET 0.0005
-#define EPS_DUPLICATE 0.003
-#define EPS_SAME_LINE 0.003
+#define EPS_DUPLICATE 0.005
+#define EPS_SAME_LINE 0.005
+
+void VoronoiLattice::AddBorderPlane(std::vector<OrthoPlane> &sitePlanes,
+									const Point3f &n, const Point3f &c,
+									double r, Cell &cell)
+{
+	double len = Length(c - cell.site);
+
+	if (len < m_maxSiteDistance)
+	{
+		sitePlanes.push_back(OrthoPlane{&cell, n, c, r});
+	}
+}
 
 VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 	: m_size(latticeSize)
 {
-	int nRemovedLayers = 2;
+	double r = latticeSize/2 - 40;
+	int nRemovedLayers = 1;
 
 	Lattice lattice(latticeSize, splitRatio, nRemovedLayers);
 
@@ -34,13 +47,17 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 	std::ofstream dfile("debug.dat", std::ios::out);
 #endif
 
+	m_maxSiteDistance = 2.0*sqrt(2)*lattice.cellSize;
 	int count = 0;
 
-	for (int i = nRemovedLayers; i < lattice.sideSize-nRemovedLayers; ++i)
+	int startLayer = nRemovedLayers;
+	int endLayer = lattice.sideSize-nRemovedLayers;
+
+	for (int i = startLayer; i < endLayer; ++i)
 	{
-		for (int j = nRemovedLayers; j < lattice.sideSize-nRemovedLayers; ++j)
+		for (int j = startLayer; j < endLayer; ++j)
 		{
-			for (int k = nRemovedLayers; k < lattice.sideSize-nRemovedLayers; ++k)
+			for (int k = startLayer; k < endLayer; ++k)
 			{
 				std::cout << "Progress: " << count++
 						  << "/" << lattice.size << std::endl;
@@ -49,6 +66,20 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 
 				std::vector<OrthoPlane> sitePlanes;
 				DefineOrthogonalPlanes(cell, lattice, sitePlanes);
+
+//				AddBorderPlane(sitePlanes, Point3f(0,0,1, r),
+//							   Point3f(cell.site.coordinates[0],cell.site.coordinates[1],r), r, cell);
+//				AddBorderPlane(sitePlanes, Point3f(0,1,0, r),
+//							   Point3f(cell.site.coordinates[0],r,cell.site.coordinates[2]), r, cell);
+//				AddBorderPlane(sitePlanes, Point3f(1,0,0, r),
+//							   Point3f(r,cell.site.coordinates[1],cell.site.coordinates[2]), r, cell);
+//				AddBorderPlane(sitePlanes, Point3f(0,0,-1, r),
+//							   Point3f(cell.site.coordinates[0],cell.site.coordinates[1],-r), r, cell);
+//				AddBorderPlane(sitePlanes, Point3f(0,-1,0, r),
+//							   Point3f(cell.site.coordinates[0],-r,cell.site.coordinates[2]), r, cell);
+//				AddBorderPlane(sitePlanes, Point3f(-1,0,0, r),
+//							   Point3f(-r,cell.site.coordinates[1],cell.site.coordinates[2]), r, cell);
+
 #ifdef _DEBUG // DEB
 				double kk = 10;
 				for (auto &p : sitePlanes)
@@ -326,13 +357,7 @@ void VoronoiLattice::RemoveExternalPoints(
 			points.remove_if([&](Point3f &p) {
 
 				Vector3f v = p - plane.center;
-//				double h = Length(v);
-//				Normalize(v);
 				double cosA = DotProduct(n, v);
-//				double a = h*sqrt(1.0 - cosA*cosA);
-//				double x = sqrt(h*h - a*a);
-//				bool res = fabs(x) > EPS_SAME_FACET;
-//				bool res = cosA > EPS_SAME_FACET;
 
 				bool res = false;
 
@@ -521,8 +546,6 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 											Lattice &lattice,
 											std::vector<OrthoPlane> &sitePlanes)
 {
-	int maxSiteDistance = 2.0*sqrt(2)*lattice.cellSize;
-
 	for (int i = 0; i < lattice.sideSize; ++i)
 	{
 		for (int j = 0; j < lattice.sideSize; ++j)
@@ -536,7 +559,7 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 					Point3f normal = cell.site - baseCell.site;
 					double len = Length(normal);
 
-					if (len < maxSiteDistance)
+					if (len < m_maxSiteDistance)
 					{
 						Normalize(normal);
 

@@ -26,22 +26,6 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 	return os;
 }
 
-Point3d Beam::Proj(const Point3d& Tx, const Point3d& Ty, const Point3d& r,  const Point3d& pnt) const
-{
-	const  Point3d p_pr = pnt - r*DotProductD(r, pnt); // расчёт коор-т в СК наблюдателя
-	return Point3d(DotProductD(p_pr, Tx), DotProductD(p_pr, Ty), 0); //*/
-}
-
-Point3d Beam::Proj(const Point3d& _r, const Point3d &pnt) const
-{
-	Point3d _Tx,  // условная горизонталь СК экрана в СК тела
-		_Ty;  // третья ось (условная вертикаль СК экрана)
-	const double tmp = sqrt(SQR(_r.x)+SQR(_r.y));
-	(fabs(_r.z)>1-DBL_EPSILON) ? (_Tx=Point3d(0,-_r.z,0), _Ty=Point3d(1,0,0))
-							   : (_Tx=Point3d(_r.y/tmp,-_r.x/tmp,0), _Ty=CrossProductD(_r,_Tx));
-	return Proj(_Tx, _Ty, _r, pnt);
-}
-
 Beam::Beam()
 {
 	locations = 0;
@@ -114,6 +98,11 @@ Vector3f Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 
 	RotateJMatrix(newBasis);
 	return newBasis;
+}
+
+void Beam::SetMatrix(const Matrix2x2c &matrix)
+{
+	J = matrix;
 }
 
 void Beam::GetSpherical(double &fi, double &teta) const

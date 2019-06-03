@@ -9,7 +9,7 @@ ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
 void ScatteringConvex::ScatterLight(double beta, double gamma,
 									std::vector<Beam> &outBeams)
 {
-	m_particle->Rotate(beta, gamma, 0);
+//	m_particle->Rotate(beta, gamma, 0);
 
 	m_incidentEnergy = 0;
 	m_treeSize = 0;
@@ -110,14 +110,18 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 	if (!m_splitting.IsNormalIncidence())
 	{	// regular incidence
+#ifdef _DEBUG // DEB
+		auto id = RecomputeTrackId(incidentBeam.id, facetID);
+#endif
 		ComputePolarisationParams(incidentBeam.direction, normal, incidentBeam);
 
 		if (!m_splitting.IsCompleteReflection())
 		{
+			outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
+
 			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
 												  inBeam, outBeam);
 			outBeam.nActs = incidentBeam.nActs + 1;
-			outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
 			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
 			outBeam.lastFacetId = facetID;
 			outBeams.push_back(outBeam);
