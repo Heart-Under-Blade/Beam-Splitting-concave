@@ -12,7 +12,8 @@ Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
 	  m_particle(particle),
 	  m_wavelength(wavelength),
 	  m_hasAbsorption(false),
-	  m_normIndex(1)
+	  m_normIndex(1),
+	  m_sphere(0.0, 0, 0)
 {
 //	m_wavelength = 0.532;
 	m_waveIndex = M_2PI/m_wavelength;
@@ -24,9 +25,7 @@ Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
 
 	m_eps1 = 1e9*DBL_EPSILON;
 	m_eps2 = 1e6*DBL_EPSILON;
-
-	m_riIm = imag(m_ri);
-	m_absMag = -m_waveIndex*m_riIm;
+	m_eps3 = 1e-4;
 
 	m_logFile.open("log1.txt", std::ios::out);
 	m_logFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
@@ -66,6 +65,8 @@ void Handler::SetAbsorptionAccounting(bool value)
 	m_hasAbsorption = value;
 	m_ri = m_particle->GetRefractiveIndex();
 	m_cAbs = -imag(m_ri)*m_waveIndex;
+	m_riIm = imag(m_ri);
+	m_absMag = -m_waveIndex*m_riIm;
 }
 
 void Handler::SetScattering(Scattering *scattering)
@@ -246,7 +247,7 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis,
 										info.normald, beam.arr[i]) - info.projectedCenter;
 
-			if (fabs(p1.x - p2.x) < m_eps1)
+			if (fabs(p1.x - p2.x) < m_eps3)
 			{
 				p1 = p2;
 				continue;
@@ -287,7 +288,7 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis, info.normald,
 										beam.arr[i]) - info.projectedCenter;
 
-			if (fabs(p1.y - p2.y) < m_eps1)
+			if (fabs(p1.y - p2.y) < m_eps3)
 			{
 				p1 = p2;
 				continue;
@@ -322,6 +323,9 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 		s /= -A;
 	}
 
+#ifdef _DEBUG // DEB
+	double dddd = exp(m_absMag*info.lenIndices.z);
+#endif
 	return m_complWave * s * exp(m_absMag*info.lenIndices.z);
 }
 

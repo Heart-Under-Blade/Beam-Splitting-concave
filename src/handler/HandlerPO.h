@@ -12,6 +12,7 @@ public:
 
 	void SetScatteringSphere(const ScatteringSphere &grid);
 
+	Arr2D M;				// Mueller matrices
 protected:
 	virtual void AddToMueller();
 
@@ -32,8 +33,6 @@ protected:
 
 protected:
 	std::vector<Arr2DC> m_diffractedMatrices;	// Jones matrices
-	Arr2D M;				// Mueller matrices
-	ScatteringSphere m_sphere;			// back scattering conus
 	bool isNanOccured = false;
 	bool isNan = false;
 };

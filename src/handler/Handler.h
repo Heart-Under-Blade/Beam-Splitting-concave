@@ -14,7 +14,7 @@ public:
 		: radius(radius), nAzimuth(phiCount), nZenith(thetaCount)
 	{
 		azinuthStep = M_2PI/phiCount;
-		zenithStep = DegToRad(radius)/thetaCount;
+		zenithStep = M_PI/**DegToRad(radius)*//(thetaCount-1);
 	}
 
 	void ComputeSphereDirections(const Light &incidentLight)
@@ -218,6 +218,7 @@ public:
 	void SetSinZenith(double value);
 
 	Light *m_incidentLight;
+	ScatteringSphere m_sphere;			// back scattering conus
 
 	double m_sinZenith;
 
@@ -274,6 +275,7 @@ protected:
 
 	double m_eps1;
 	double m_eps2;
+	double m_eps3;
 
 private:
 	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);
