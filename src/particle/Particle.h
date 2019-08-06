@@ -26,6 +26,8 @@ public:
 	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
 	Facet *GetActualFacet(int i);
+	void SetFromFacets(bool isNonConvex, bool isAggregated,
+					   std::vector<Facet> &facets);
 	void SetFromFile(const std::string &filename, double reduceSize = -1);
 
 	void Rotate(const Orientation &orientation);
@@ -77,10 +79,10 @@ public:
 										 int &/*begin*/, int &/*end*/) const {}
 
 	bool IsNonConvex() const;
-	void Output();
+	void Output(const std::string &filename = "particle.dat");
 
 public:
-	bool isAggregated = false;
+	bool m_isAggregated = false;
 	Orientation rotAngle;
 
 protected:

@@ -12,7 +12,7 @@ BulletRosette::BulletRosette(const complex &refrIndex, const Size &size,
 	: Particle(8, refrIndex, true) // REF: 8?????
 {
 	SetSymmetry(M_PI/2, M_PI);
-	isAggregated = true;
+	m_isAggregated = true;
 
 	std::vector<Particle> bullets;
 	double halfHeight = size.height/2;

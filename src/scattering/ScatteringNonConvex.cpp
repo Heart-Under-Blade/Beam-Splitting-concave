@@ -131,7 +131,7 @@ void ScatteringNonConvex::SelectVisibleFacets(const Beam &beam,
 	int begin = 0;
 	int end = m_particle->nElems;
 
-	if (m_particle->isAggregated && beam.isInside)
+	if (m_particle->m_isAggregated && beam.isInside)
 	{
 		m_particle->GetParticalFacetIdRange(beam.facet, begin, end);
 	}

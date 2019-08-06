@@ -33,6 +33,22 @@ Facet *Particle::GetActualFacet(int i)
 	return &elems[i].actual;
 }
 
+void Particle::SetFromFacets(bool isNonConvex, bool isAggregated,
+							 std::vector<Facet> &facets)
+{
+	m_isNonConvex = isNonConvex;
+	m_isAggregated = isAggregated;
+
+	SetSymmetry(180, 360);
+
+	for (Facet &fac : facets)
+	{
+		ParticleFacet f;
+		f.original = fac;
+		Add(f);
+	}
+}
+
 void Particle::SetFromFile(const std::string &filename, double reduceSize)
 {
 	std::ifstream pfile(filename, std::ios::in);
@@ -55,7 +71,7 @@ void Particle::SetFromFile(const std::string &filename, double reduceSize)
 	m_isNonConvex = strtol(buff, &trash, 10);
 
 	pfile.getline(buff, bufSize);
-	isAggregated = strtol(buff, &trash, 10);
+	m_isAggregated = strtol(buff, &trash, 10);
 
 	// read symmetry params
 	{
@@ -115,7 +131,7 @@ void Particle::SetFromFile(const std::string &filename, double reduceSize)
 	ResetPosition();
 	SetDefaultCenters();
 
-	if (IsNonConvex() || isAggregated)
+	if (IsNonConvex() || m_isAggregated)
 	{
 		for (int i = 0; i < nElems; ++i)
 		{
@@ -176,7 +192,7 @@ void Particle::Concate(const std::vector<Particle> &parts)
 		}
 	}
 
-	isAggregated = true;
+	m_isAggregated = true;
 }
 
 void Particle::RemoveFacet(int index)
@@ -339,9 +355,13 @@ bool Particle::IsNonConvex() const
 	return m_isNonConvex;
 }
 
-void Particle::Output()
+void Particle::Output(const std::string &filename)
 {
-	std::ofstream M("particle.dat", std::ios::out);
+	std::ofstream M(filename, std::ios::out);
+
+	M << m_isNonConvex << std::endl
+	  << m_isAggregated << std::endl
+	  << 180 << ' ' << 360 << std::endl << std::endl;
 
 	for (int i = 0; i < nElems; ++i)
 	{
@@ -353,11 +373,11 @@ void Particle::Output()
 			M << p.coordinates[0]
 					<< ' ' << p.coordinates[1]
 					<< ' ' << p.coordinates[2]
-					<< ' ' << i ;
+					<< ' ' << i;
 			M << std::endl;
 		}
 
-		M << std::endl << std::endl;;
+		M << std::endl;
 	}
 
 	M.close();

@@ -64,7 +64,7 @@ Light SetIncidentLight(Particle *particle)
 	incidentLight.direction = Point3f(0, 0, -1);
 	incidentLight.polarizationBasis = Point3f(0, 1, 0);
 
-	Point3f point = incidentLight.direction * particle->ComputeRotationRadius();
+	Point3f point = incidentLight.direction * particle->RotationRadius();
 	incidentLight.direction.d_param = Point3f::DotProduct(point, incidentLight.direction);
 }
 
