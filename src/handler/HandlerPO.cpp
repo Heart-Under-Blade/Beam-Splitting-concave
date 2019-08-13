@@ -125,19 +125,21 @@ BeamInfo HandlerPO::ComputeBeamInfo(const Beam &beam)
 	info.normal = beam.Normal();
 	info.normald = Point3d(info.normal.cx, info.normal.cy, info.normal.cz);
 
-	info.order = DotProduct(info.normal, beam.direction) > 0;
+	bool isCcw = DotProduct(info.normal, beam.direction) > 0;
+	info.order.SetOrder(isCcw, beam.nVertices);
 
-	if (!info.order)
+	if (!isCcw)
 	{
 		info.normal = -info.normal;
 		info.normald = -info.normald;
 	}
 
-	ComputeCoordinateSystemAxes(info.normald, info.horAxis, info.verAxis);
+	ComputeCoordinateSystemAxes(info.normald, info.csAxes);
 
 	info.center = beam.Center();
-	info.projectedCenter = ChangeCoordinateSystem(info.horAxis, info.verAxis,
+	info.projectedCenter = ChangeCoordinateSystem(info.csAxes,
 												  info.normald, info.center);
+
 	if (m_hasAbsorption && beam.lastFacetId != INT_MAX)
 	{
 		ComputeOpticalLengths(beam, info);
@@ -149,7 +151,7 @@ BeamInfo HandlerPO::ComputeBeamInfo(const Beam &beam)
 	info.projLenght = beam.opticalPath + DotProductD(info.center, beam.direction);
 
 	info.beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
-	info.beamBasis = info.beamBasis/Length(info.beamBasis); // basis of beam
+	Normalize(info.beamBasis);
 
 	return info;
 }

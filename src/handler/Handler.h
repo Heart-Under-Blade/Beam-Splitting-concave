@@ -7,6 +7,32 @@
 #include "Tracks.h"
 #include "ScatteringFiles.h"
 
+struct VertexOrder
+{
+	int begin;
+	int startIndex;
+	int endIndex;
+	int increment;
+
+	void SetOrder(bool isCcw, int nVertices)
+	{
+		if (isCcw)
+		{
+			begin = 0;
+			startIndex = nVertices-1;
+			endIndex = -1;
+			increment = -1;
+		}
+		else
+		{
+			begin = nVertices-1;
+			startIndex = 0;
+			endIndex = nVertices;
+			increment = 1;
+		}
+	}
+};
+
 class ScatteringSphere
 {
 public:
@@ -186,20 +212,25 @@ public:
 	matrix forward;		///< Mueller matrix in forward direction
 };
 
+struct Axes
+{
+	Point3d horisontal;
+	Point3d vertical;
+};
+
 struct BeamInfo
 {
-	bool order;
 	double area;
 	double projLenght;
 	double opticalLengths[3];
 	Point3f beamBasis;
+	Point3f normal;
 	Point3d center;
 	Point3d projectedCenter;
-	Point3f normal;
 	Point3d normald;
-	Point3d horAxis;
-	Point3d verAxis;
 	Point3d lenIndices;
+	Axes csAxes; // coordinate system axes
+	VertexOrder order; // order of vertices
 };
 
 class Handler
@@ -240,15 +271,13 @@ protected:
 							   const Point3d &direction) const;
 
 
-	Point3d ChangeCoordinateSystem(const Point3d& hor, const Point3d& ver,
-								   const Point3d& normal,
+	Point3d ChangeCoordinateSystem(const Axes &axes, const Point3d& normal,
 								   const Point3d& point) const;
 
 	Point3d ChangeCoordinateSystem(const Point3d& normal,
 								   const Point3d &point) const;
 
-	void ComputeCoordinateSystemAxes(const Point3d& normal,
-									 Point3d &hor, Point3d &ver) const;
+	void ComputeCoordinateSystemAxes(const Point3d& normal, Axes &axes) const;
 
 	void ComputeLengthIndices(const Beam &beam, BeamInfo &info) const;
 
@@ -266,17 +295,23 @@ protected:
 	complex m_ri;
 	double m_riIm;
 
-	double m_waveIndex;
-	double m_wi2;
+	double m_wavenumber;
+	double m_wn2;
 
 	complex m_complWave;
 	complex m_invComplWave;
-	double m_absMag;
 
 	double m_eps1;
 	double m_eps2;
 	double m_eps3;
 
+	VertexOrder order;
+
 private:
 	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);
+	complex ComputeAvgBeamEnergy(const Polygon &pol, const BeamInfo &info,
+								 Point3d &p1, Point3d &p2,
+								 double &p11, double &p12,
+								 double &p21, double &p22,
+								 const complex &c1, const complex &c2) const;
 };
