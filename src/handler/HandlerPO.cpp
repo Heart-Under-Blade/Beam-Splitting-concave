@@ -7,7 +7,7 @@
 HandlerPO::HandlerPO(Particle *particle, Light *incidentLight, double wavelength)
 	: Handler(particle, incidentLight, wavelength)
 {
-	m_wavelength = 0.532;
+//	m_wavelength = 0.532;
 }
 
 void HandlerPO::CleanJ()
@@ -99,7 +99,7 @@ matrixC HandlerPO::ComputeFnJones(const Matrix2x2c &matrix, const BeamInfo &info
 								  const Vector3d &direction)
 {
 	double dp = DotProductD(direction, info.center);
-	double arg = m_waveIndex*(info.projLenght - dp);
+	double arg = m_wavenumber*(info.projLenght - dp);
 	return matrix*exp_im(arg);
 }
 
@@ -183,7 +183,7 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-		beam = beams[161];
+//		beam = beams[161];
 #ifdef _DEBUG // DEB
 //		std::vector<int> tr;
 //		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);

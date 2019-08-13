@@ -62,7 +62,7 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 
 			outBeams.clear();
 
-			OutputProgress(nOrientations, count, beta, gamma, timer);
+			OutputProgress(nOrientations, count, i, j, timer);
 			++count;
 
 #ifdef _DEBUG // DEB

@@ -162,7 +162,7 @@ int main(int argc, const char* argv[])
 		particle->SetRefractiveIndex(complex(refrIndex));
 
 		double origDMax = particle->MaximalDimention();
-		cout << "from file: " << filename << endl;
+		cout << "from file \"" << filename << "\"";
 		additionalSummary += "\n\nOriginal Dmax: " + std::to_string(origDMax);
 
 		if (args.IsCatched("rs"))
@@ -219,6 +219,7 @@ int main(int argc, const char* argv[])
 		}
 	}
 
+	cout << " (" << particle->nFacets << " facets)" << endl;
 	cout << "Refractive index: " << re;
 
 	if (fabs(im) > FLT_EPSILON)

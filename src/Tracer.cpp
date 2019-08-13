@@ -52,7 +52,7 @@ void Tracer::OutputOrientationToLog(int i, int j, ostream &logfile)
 }
 
 void Tracer::OutputProgress(int nOrientation, long long count,
-							double zenith, double azimuth, CalcTimer &timer)
+							int zenith, int azimuth, CalcTimer &timer)
 {
 	auto now = timer.SecondsElapsed();
 

@@ -13,6 +13,7 @@ public:
 	void SetScatteringSphere(const ScatteringSphere &grid);
 
 	Arr2D M;				// Mueller matrices
+
 protected:
 	virtual void AddToMueller();
 
@@ -26,7 +27,7 @@ protected:
 						   const Vector3d &direction);
 
 	matrixC ApplyDiffraction(const Beam &beam, const BeamInfo &info,
-						 const Vector3d &direction, const Vector3d &vf);
+							 const Vector3d &direction, const Vector3d &vf);
 
 	BeamInfo ComputeBeamInfo(const Beam &beam);
 

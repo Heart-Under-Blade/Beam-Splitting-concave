@@ -64,7 +64,7 @@ protected:
 protected:
 	void OutputStartTime(CalcTimer &timer);
 	void OutputProgress(int nOrientation, long long count,
-						double zenith, double azimuth, CalcTimer &timer);
+						int zenith, int azimuth, CalcTimer &timer);
 	void OutputOrientationToLog(int i, int j, std::ostream &logfile);
 
 private:
