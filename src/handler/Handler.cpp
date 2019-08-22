@@ -13,11 +13,11 @@ Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
 	  m_wavelength(wavelength),
 	  m_hasAbsorption(false),
 	  m_normIndex(1),
-	  m_sphere(0.0, 0, 0)
+	  m_sphere(0.0, 0, 0),
+	  m_nBadBeams(0)
 {
-//	m_wavelength = 0.532;
-	m_waveIndex = M_2PI/m_wavelength;
-	m_wi2 = m_waveIndex*m_waveIndex;
+	m_wavenumber = M_2PI/m_wavelength;
+	m_wi2 = m_wavenumber*m_wavenumber;
 
 	complex one(0, -1);
 	m_complWave = (one * m_wavelength) / SQR(M_2PI);
@@ -64,9 +64,9 @@ void Handler::SetAbsorptionAccounting(bool value)
 {
 	m_hasAbsorption = value;
 	m_ri = m_particle->GetRefractiveIndex();
-	m_cAbs = -imag(m_ri)*m_waveIndex;
+	m_cAbs = -imag(m_ri)*m_wavenumber;
 	m_riIm = imag(m_ri);
-	m_absMag = -m_waveIndex*m_riIm;
+	m_absMag = -m_wavenumber*m_riIm;
 }
 
 void Handler::SetScattering(Scattering *scattering)
@@ -140,7 +140,6 @@ Point3d Handler::ChangeCoordinateSystem(const Point3d& hor, const Point3d& ver,
 {
 	// расчёт коор-т в СК наблюдателя
 	const Point3d p_pr = point - normal*DotProductD(normal, point);
-
 	return Point3d(DotProductD(p_pr, hor), DotProductD(p_pr, ver), 0);
 }
 
@@ -160,7 +159,7 @@ void Handler::ComputeCoordinateSystemAxes(const Point3d& normal,
 	}
 }
 
-void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info) const
+void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 {
 	auto *lens = info.opticalLengths;
 
@@ -174,6 +173,14 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info) const
 	double den = p1.x*p2.y - p1.x*p3.y -
 			p2.x*p1.y + p2.x*p3.y +
 			p3.x*p1.y - p3.x*p2.y;
+
+	m_isBadBeam = false;
+
+	if (fabs(den) < 1e-3)
+	{
+		m_isBadBeam = true;
+		++m_nBadBeams;
+	}
 
 	info.lenIndices.z = (lens[0]*p2.x*p3.y - lens[0]*p3.x*p2.y -
 			lens[1]*p1.x*p3.y + lens[1]*p3.x*p1.y +
@@ -262,24 +269,35 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 			{
 				double mul = p2.x*p2.x - p1.x*p1.x;
 				tmp = complex(-m_wi2*real(Ci)*mul/2.0,
-							  m_waveIndex*(p2.x - p1.x) + m_wi2*imag(Ci)*mul/2.0);
+							  m_wavenumber*(p2.x - p1.x) + m_wi2*imag(Ci)*mul/2.0);
 			}
 			else
 			{
-				double kReCi = m_waveIndex*real(Ci);
-				double kImCi = -m_waveIndex*imag(Ci);
+				double kReCi = m_wavenumber*real(Ci);
+				double kImCi = -m_wavenumber*imag(Ci);
+				complex c1 = exp_im(kReCi*p2.x)*exp(kImCi*p2.x);
+				complex c2 = exp_im(kReCi*p1.x)*exp(kImCi*p1.x);
+				complex c3 = (c1 - c2)/Ci;
 				tmp = (exp_im(kReCi*p2.x)*exp(kImCi*p2.x) -
 					   exp_im(kReCi*p1.x)*exp(kImCi*p1.x))/Ci;
 			}
 
 			const double bi = p1.y - ai*p1.x;
-			double kBi = m_waveIndex*bi;
+			double kBi = m_wavenumber*bi;
 			s += exp_im(kBi*real(B)) * tmp * exp(-kBi*imag(B));
 
+#ifdef _DEBUG // DEB
+		if (isnan(real(s)))
+			int fff = 0;
+#endif
 			p1 = p2;
 		}
 
 		s /= B;
+#ifdef _DEBUG // DEB
+		if (isnan(real(s)))
+			int fff = 0;
+#endif
 	}
 	else
 	{
@@ -303,24 +321,28 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 			{
 				double mul = p2.y*p2.y - p1.y*p1.y;
 				tmp = complex(-m_wi2*real(Ei)*mul/2.0,
-							  m_waveIndex*(p2.y - p1.y) + m_wi2*imag(Ei)*mul/2.0);
+							  m_wavenumber*(p2.y - p1.y) + m_wi2*imag(Ei)*mul/2.0);
 			}
 			else
 			{
-				double kReEi = m_waveIndex*real(Ei);
-				double kImEi = -m_waveIndex*imag(Ei);
+				double kReEi = m_wavenumber*real(Ei);
+				double kImEi = -m_wavenumber*imag(Ei);
 				tmp = (exp_im(kReEi*p2.y)*exp(kImEi*p2.y) -
 					   exp_im(kReEi*p1.y)*exp(kImEi*p1.y))/Ei;
 			}
 
 			const double di = p1.x - ci*p1.y;
-			double kDi = m_waveIndex*di;
+			double kDi = m_wavenumber*di;
 			s += exp_im(kDi*real(A)) * exp(-kDi*imag(A)) * tmp;
 
 			p1 = p2;
 		}
 
 		s /= -A;
+#ifdef _DEBUG // DEB
+		if (isnan(real(s)))
+			int fff = 0;
+#endif
 	}
 
 #ifdef _DEBUG // DEB
@@ -408,16 +430,16 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 			if (fabs(Ci) < m_eps1)
 			{
 				tmp = complex(-m_wi2*Ci*(p2.x*p2.x - p1.x*p1.x)/2.0,
-							  m_waveIndex*(p2.x - p1.x));
+							  m_wavenumber*(p2.x - p1.x));
 			}
 			else
 			{
-				double kCi = m_waveIndex*Ci;
+				double kCi = m_wavenumber*Ci;
 				tmp = (exp_im(kCi*p2.x) - exp_im(kCi*p1.x))/Ci;
 			}
 
 			const double bi = p1.y - ai*p1.x;
-			s += exp_im(m_waveIndex*B*bi) * tmp;
+			s += exp_im(m_wavenumber*B*bi) * tmp;
 
 			p1 = p2;
 		}
@@ -445,16 +467,16 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 			if (fabs(Ei) < m_eps1)
 			{
 				tmp = complex(-m_wi2*Ei*(p2.y*p2.y - p1.y*p1.y)/2.0,
-							  m_waveIndex*(p2.y - p1.y));
+							  m_wavenumber*(p2.y - p1.y));
 			}
 			else
 			{
-				double kEi = m_waveIndex*Ei;
+				double kEi = m_wavenumber*Ei;
 				tmp = (exp_im(kEi*p2.y) - exp_im(kEi*p1.y))/Ei;
 			}
 
 			const double di = p1.x - ci*p1.y;
-			s += exp_im(m_waveIndex*A*di) * tmp;
+			s += exp_im(m_wavenumber*A*di) * tmp;
 
 			p1 = p2;
 		}

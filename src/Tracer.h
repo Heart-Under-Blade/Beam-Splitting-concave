@@ -38,10 +38,10 @@ public:
 
 	void SetIsOutputGroups(bool value);// REF: заменить
 
-	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
+	void OutputLogPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
 	Light m_incidentLight;
-	std::string m_summary;
+	std::string m_log;
 
 protected:
 	Handler *m_handler;
@@ -63,8 +63,7 @@ protected:
 
 protected:
 	void OutputStartTime(CalcTimer &timer);
-	void OutputProgress(int nOrientation, long long count,
-						int zenith, int azimuth, CalcTimer &timer);
+	void OutputProgress(long long nOrientation, long long count, CalcTimer &timer);
 	void OutputOrientationToLog(int i, int j, std::ostream &logfile);
 
 private:

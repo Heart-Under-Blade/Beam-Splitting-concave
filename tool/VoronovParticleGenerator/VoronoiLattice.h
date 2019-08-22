@@ -33,6 +33,7 @@ struct OrthoPlane
 	Point3f normal;  ///< Normal of planes
 	Point3f center;  ///< Center of planes
 	double dParam;
+	double distance;
 };
 
 struct SiteIndex
@@ -250,8 +251,10 @@ private:
 					 std::list<Point3f> &points) const;
 
 	void OutputFacets(const std::string &filename,
-					  std::vector<std::vector<Point3f>> &facets);
+					  std::vector<std::vector<Point3f>> &facets,
+					  bool isForGrapher = true);
 	void FixPointsOrder(const Vector3f &normal, std::list<Point3f> &points);
+	void FixPointsOrder(const Vector3f &normal, std::vector<Point3f> &points);
 	bool RemoveDistantPlanes(const std::list<Point3f> &points,
 							const OrthoPlane &currentPlane,
 							std::vector<OrthoPlane> &sitePlanes);

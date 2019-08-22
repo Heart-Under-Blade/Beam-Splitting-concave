@@ -111,7 +111,7 @@ void TracerGO::OutputSummary(int orNumber, double NRM, CalcTimer &timer)
 	time_t end = timer.Stop();
 	string endTime = ctime(&end);
 
-	m_summary += "\nStart of calculation = " + startTime
+	m_log += "\nStart of calculation = " + startTime
 			+ "End of calculation   = " + endTime
 			+ "\nTotal time of calculation = " + totalTime
 			+ "\nTotal number of body orientation = " + to_string(orNumber);
@@ -121,7 +121,7 @@ void TracerGO::OutputSummary(int orNumber, double NRM, CalcTimer &timer)
 	const double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
 	const double parArea = m_particle->Area()/4.0;
 
-	m_summary += "\nTotal incoming energy = " + to_string(normEnergy)
+	m_log += "\nTotal incoming energy = " + to_string(normEnergy)
 			+ " must be equal to " + to_string(parArea) + " (S/4)"
 			+ "\nTotal outcoming energy = " + to_string(m_outcomingEnergy)
 			+ "\nEnergy passed = " + to_string(passedEnergy) + '%'
@@ -130,8 +130,8 @@ void TracerGO::OutputSummary(int orNumber, double NRM, CalcTimer &timer)
 
 	// out << "\nAveraged cross section = " << incomingEnergy*NRM;
 	ofstream out(m_resultDirName+"_out.dat", ios::out);
-	out << m_summary;
+	out << m_log;
 	out.close();
 
-	cout << m_summary;
+	cout << m_log;
 }

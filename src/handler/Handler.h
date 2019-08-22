@@ -221,6 +221,9 @@ public:
 	ScatteringSphere m_sphere;			// back scattering conus
 
 	double m_sinZenith;
+	std::ofstream m_logFile;
+
+	int m_nBadBeams;
 
 protected:
 	double BeamCrossSection(const Beam &beam) const;
@@ -250,7 +253,7 @@ protected:
 	void ComputeCoordinateSystemAxes(const Point3d& normal,
 									 Point3d &hor, Point3d &ver) const;
 
-	void ComputeLengthIndices(const Beam &beam, BeamInfo &info) const;
+	void ComputeLengthIndices(const Beam &beam, BeamInfo &info);
 
 protected:
 	Scattering *m_scattering;
@@ -260,13 +263,12 @@ protected:
 	double m_wavelength; // must be double type!!!
 	bool m_hasAbsorption;
 	double m_normIndex;
-	std::ofstream m_logFile;
 	double m_cAbs;
 
 	complex m_ri;
 	double m_riIm;
 
-	double m_waveIndex;
+	double m_wavenumber;
 	double m_wi2;
 
 	complex m_complWave;
@@ -276,6 +278,8 @@ protected:
 	double m_eps1;
 	double m_eps2;
 	double m_eps3;
+
+	bool m_isBadBeam;
 
 private:
 	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);

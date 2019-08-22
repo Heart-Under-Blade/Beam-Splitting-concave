@@ -110,7 +110,7 @@ void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
 	}
 
 	long long orNumber = betaRange.number * gammaRange.number;
-	OutputStatisticsPO(timer, orNumber, m_resultDirName);
+	OutputLogPO(timer, orNumber, m_resultDirName);
 }
 
 string TracerBackScatterPoint::GetTableHead(const AngleRange &range)

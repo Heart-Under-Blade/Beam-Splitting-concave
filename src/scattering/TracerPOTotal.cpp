@@ -19,7 +19,7 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 {
 	CalcTimer timer;
 	long long count = 0;
-	long long nOrientations = betaRange.number * gammaRange.number;
+	long long nOrientations = (betaRange.number + 1) * gammaRange.number;
 	ofstream outFile(m_resultDirName + "_out.dat", ios::out);
 
 	if (!outFile.is_open())
@@ -39,9 +39,13 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 	timer.Start();
 
 	for (int i = 0; i <= betaRange.number; ++i)
+//	for (int i = 6; i <= 6/*betaRange.number*/; ++i)
 	{
 		beta = i*betaRange.step;
 
+//#ifdef _DEBUG // DEB
+//		beta = DegToRad(170);
+//#endif
 		double sinZenith = (i == 0 || i == betaRange.number)
 				? (1.0-cos(0.5*betaRange.step))/normIndex
 				: (cos((i-0.5)*betaRange.step) -
@@ -51,6 +55,7 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 		m_handler->SetSinZenith(sinZenith);
 
 		for (int j = 0; j < gammaRange.number; ++j)
+//		for (int j = 65; j < 67/*gammaRange.number*/; ++j)
 		{
 			gamma = j*gammaRange.step;
 
@@ -68,8 +73,8 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 #ifdef _DEBUG // DEB
 //			if (i == 9)
 //			{
-//				double m = static_cast<HandlerPO*>(m_handler)->M(0,100)[0][0];
-//				cout << j << ' ' << m << endl;
+				double m = static_cast<HandlerPO*>(m_handler)->M(0,100)[0][0];
+				m_handler->m_logFile << i << ' ' << j << ' ' << m << endl;
 //			}
 #endif
 		}
@@ -92,6 +97,6 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 //		}
 //	}
 
-	OutputStatisticsPO(timer, nOrientations, dir);
+	OutputLogPO(timer, nOrientations, dir);
 	outFile.close();
 }

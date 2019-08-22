@@ -5,38 +5,38 @@
 
 HandlerPOTotal::HandlerPOTotal(Particle *particle, Light *incidentLight,
 							   double wavelength)
-    : HandlerPO(particle, incidentLight, wavelength)
+	: HandlerPO(particle, incidentLight, wavelength)
 {
-    m_Lp = new matrix(4, 4);
+	m_Lp = new matrix(4, 4);
 
-    (*m_Lp)[0][0] = 1;
-    (*m_Lp)[0][1] = 0;
-    (*m_Lp)[0][2] = 0;
-    (*m_Lp)[0][3] = 0;
+	(*m_Lp)[0][0] = 1;
+	(*m_Lp)[0][1] = 0;
+	(*m_Lp)[0][2] = 0;
+	(*m_Lp)[0][3] = 0;
 
-    (*m_Lp)[1][0] = 0;
-    (*m_Lp)[1][3] = 0;
+	(*m_Lp)[1][0] = 0;
+	(*m_Lp)[1][3] = 0;
 
-    (*m_Lp)[2][0] = 0;
-    (*m_Lp)[2][3] = 0;
+	(*m_Lp)[2][0] = 0;
+	(*m_Lp)[2][3] = 0;
 
-    (*m_Lp)[3][0] = 0;
-    (*m_Lp)[3][1] = 0;
-    (*m_Lp)[3][2] = 0;
-    (*m_Lp)[3][3] = 1;
+	(*m_Lp)[3][0] = 0;
+	(*m_Lp)[3][1] = 0;
+	(*m_Lp)[3][2] = 0;
+	(*m_Lp)[3][3] = 1;
 
-    m_Ln = new matrix(4, 4);
+	m_Ln = new matrix(4, 4);
 
-    (*m_Ln) = (*m_Lp);
+	(*m_Ln) = (*m_Lp);
 }
 
 void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 {
 	std::ofstream outFile(destName + ".dat", std::ios::out);
-    matrix sum(4, 4);
+	matrix sum(4, 4);
 
-    auto &Lp = *m_Lp;
-    auto &Ln = *m_Ln;
+	auto &Lp = *m_Lp;
+	auto &Ln = *m_Ln;
 
 	int &nT = m_sphere.nZenith;
 	double &dT = m_sphere.zenithStep;
@@ -44,12 +44,12 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 	int &nP = m_sphere.nAzimuth;
 
 	for (int t = nT-1; t >= 0; --t)
-    {
-        sum.Fill(0.0);
-        double tt = 180.0 - RadToDeg(t*dT);
+	{
+		sum.Fill(0.0);
+		double tt = 180.0 - RadToDeg(t*dT);
 
-        for (int p = 0; p <= nP; ++p)
-        {
+		for (int p = 0; p <= nP; ++p)
+		{
 			double radPhi = -p*m_sphere.azinuthStep;
 			matrix m = M(p, t);
 //			if (t == 100) {
@@ -57,31 +57,31 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 //			}
 
 			Lp[1][1] = cos(2*radPhi);
-            Lp[1][2] = sin(2*radPhi);
-            Lp[2][1] = -Lp[1][2];
-            Lp[2][2] = Lp[1][1];
+			Lp[1][2] = sin(2*radPhi);
+			Lp[2][1] = -Lp[1][2];
+			Lp[2][2] = Lp[1][1];
 
-            Ln[1][2] = -Lp[1][2];
-            Ln[2][1] = -Lp[2][1];
+			Ln[1][2] = -Lp[1][2];
+			Ln[2][1] = -Lp[2][1];
 
-            if (t == 0)
-            {
-                sum += Lp*m*Lp;
-            }
-            else if (t == nT-1)
-            {
-                sum += Ln*m*Lp; // OPT: вынести Ln в отдельный случай
-            }
-            else
-            {
-                sum += m*Lp;
+			if (t == 0)
+			{
+				sum += Lp*m*Lp;
 			}
-        }
+			else if (t == nT-1)
+			{
+				sum += Ln*m*Lp; // OPT: вынести Ln в отдельный случай
+			}
+			else
+			{
+				sum += m*Lp;
+			}
+		}
 
-        double dS2 = (t == 0 || t == (nT-1)) ? 1.0-cos(0.5*dT)
+		double dS2 = (t == 0 || t == (nT-1)) ? 1.0-cos(0.5*dT)
 											 : cos((t-0.5)*dT)-cos((t+0.5)*dT);
-        dS2 *= M_2PI;
-        outFile << std::endl << tt << ' ' << dS2 << ' ';
+		dS2 *= M_2PI;
+		outFile << std::endl << tt << ' ' << dS2 << ' ';
 		outFile << sum/m_sphere.nAzimuth;
 	}
 }

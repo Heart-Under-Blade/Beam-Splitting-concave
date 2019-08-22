@@ -98,6 +98,10 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 		return false;
 	}
 
+#ifdef _DEBUG // DEB
+	if (outBeams.size() == 329)
+		int ddd = 0;
+#endif
 	Intersect(facetID, incidentBeam, outBeam);
 
 	if (outBeam.nVertices < MIN_VERTEX_NUM)
@@ -122,6 +126,10 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
 			outBeam.lastFacetId = facetID;
 			outBeams.push_back(outBeam);
+#ifdef _DEBUG // DEB
+			if (outBeams.size() == 330)
+				int ddd = 0;
+#endif
 		}
 		else // complete internal reflection incidence
 		{
@@ -138,6 +146,10 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 		outBeam.opticalPath += path;
 		outBeam.lastFacetId = facetID;
 		outBeams.push_back(outBeam);
+#ifdef _DEBUG // DEB
+			if (outBeams.size() == 330)
+				int ddd = 0;
+#endif
 	}
 
 	return true;

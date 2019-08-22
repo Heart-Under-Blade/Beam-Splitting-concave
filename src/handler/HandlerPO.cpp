@@ -177,14 +177,18 @@ void HandlerPO::ComputeOpticalLengths(const Beam &beam, BeamInfo &info)
 
 void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 {
-//	int cc = 0;
+#ifdef _DEBUG // DEB
+	int cc = 0;
+#endif
 	CleanJ();
 	int groupId = 0;
 
 	for (Beam &beam : beams)
 	{
-//		beam = beams[161];
 #ifdef _DEBUG // DEB
+		cc++;
+		if (cc == 330)
+			int ddddddd = 0;
 //		std::vector<int> tr;
 //		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 //		if (tr.size() == 2 && tr[0] == 2 && tr[1] == 4)
@@ -206,6 +210,10 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 
 		BeamInfo info = ComputeBeamInfo(beam);
 
+		if (m_isBadBeam)
+		{
+			continue;
+		}
 //		std::cout << "2" << std::endl;
 //		if (beam.lastFacetId != INT_MAX)
 //		{
@@ -229,11 +237,9 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 				Point3d &vf = (j == 0) ? m_sphere.vf.back() : m_sphere.vf[i];
 				matrixC diffractedMatrix = ApplyDiffraction(beam, info, dir, vf);
 #ifdef _DEBUG // DEB
-				complex fff[4];
-				fff[0] = diffractedMatrix[0][0];
-				fff[1] = diffractedMatrix[0][1];
-				fff[2] = diffractedMatrix[1][0];
-				fff[3] = diffractedMatrix[1][1];
+				complex fff = diffractedMatrix[0][0];
+				if (isnan(real(fff)))
+					m_logFile << cc << std::endl;
 #endif
 				m_diffractedMatrices[groupId].insert(i, j, diffractedMatrix);
 			}

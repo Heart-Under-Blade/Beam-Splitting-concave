@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
+
 //#ifdef _TRACK_ALLOW
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 //#endif
@@ -51,8 +52,8 @@ void Tracer::OutputOrientationToLog(int i, int j, ostream &logfile)
 	logfile.flush();
 }
 
-void Tracer::OutputProgress(int nOrientation, long long count,
-							int zenith, int azimuth, CalcTimer &timer)
+void Tracer::OutputProgress(long long nOrientation, long long count,
+							CalcTimer &timer)
 {
 	auto now = timer.SecondsElapsed();
 
@@ -60,24 +61,26 @@ void Tracer::OutputProgress(int nOrientation, long long count,
 	{
 		m_timeElapsed = now;
 		EraseConsoleLine(50);
-		cout << (count*100)/nOrientation << "%, orientation: ("
-			 << zenith << ", " << azimuth << ") " << timer.Elapsed();
+		cout << (count*100)/nOrientation
+			 << "%, orientations remains: " << nOrientation - count
+			 << ", time left: " << timer.Elapsed();
 	}
 }
 
 
-void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber,
-								const string &path)
+void Tracer::OutputLogPO(CalcTimer &timer, long long orNumber,
+						 const string &path)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
 	time_t end = timer.Stop();
 	string endTime = ctime(&end);
 
-	m_summary += "\nStart of calculation = " + startTime
+	m_log += "\nStart of calculation = " + startTime
 			+ "End of calculation   = " + endTime
 			+ "\nTotal time of calculation = " + totalTime
-			+ "\nTotal number of body orientation = " + to_string(orNumber);
+			+ "\nTotal number of body orientation = " + to_string(orNumber)
+			+ "\nNumber of bad beams = " + to_string(m_handler->m_nBadBeams);
 
 //	if (isNanOccured)
 //	{
@@ -85,11 +88,10 @@ void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber,
 //	}
 
 	ofstream out(path + "\\out.dat", ios::out);
-
-	out << m_summary;
+	out << m_log;
 	out.close();
 
-	cout << m_summary;
+	cout << m_log;
 }
 
 void Tracer::SetIsOutputGroups(bool value)

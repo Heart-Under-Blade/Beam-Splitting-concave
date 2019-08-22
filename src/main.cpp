@@ -150,9 +150,9 @@ int main(int argc, const char* argv[])
 
 	Particle *particle = nullptr;
 
-	cout << "Particle: ";
-
 	std::string additionalSummary;
+
+	additionalSummary += "Particle:\n\tType: ";
 
 	if (args.IsCatched("pf"))
 	{
@@ -162,8 +162,8 @@ int main(int argc, const char* argv[])
 		particle->SetRefractiveIndex(complex(refrIndex));
 
 		double origDMax = particle->MaximalDimention();
-		cout << "from file \"" << filename << "\"";
-		additionalSummary += "\n\nOriginal Dmax: " + std::to_string(origDMax);
+		additionalSummary += "\tfile \"" + filename + "\"";
+		additionalSummary += "\n\tOriginal Dmax: " + std::to_string(origDMax);
 
 		if (args.IsCatched("rs"))
 		{
@@ -172,8 +172,8 @@ int main(int argc, const char* argv[])
 		}
 
 		double newDMax = particle->MaximalDimention();
-		additionalSummary += ", new Dmax: " + std::to_string(newDMax)
-				+ ", resize factor: " + std::to_string(newDMax/origDMax) + '\n';
+		additionalSummary += "\n\tNew Dmax: " + std::to_string(newDMax)
+				+ " (resize factor: " + std::to_string(newDMax/origDMax) + ')';
 	}
 	else
 	{
@@ -219,25 +219,23 @@ int main(int argc, const char* argv[])
 		}
 	}
 
-	cout << " (" << particle->nFacets << " facets)" << endl;
-	cout << "Refractive index: " << re;
+	additionalSummary += "\n\tArea: " + to_string(particle->Area());
+	additionalSummary += "\n\tNumber of facets: " + to_string(particle->nFacets);
+	additionalSummary += "\n\nRefractive index: " + to_string(re);
 
 	if (fabs(im) > FLT_EPSILON)
 	{
-		cout << " + i" << im;
+		additionalSummary += " + i" + to_string(im);
 	}
 
-	cout << endl;
-	cout << "Area: " << particle->Area() << endl;
-
 	int reflNum = args.GetDoubleValue("n");
-	cout << "Number of secondary reflections: " << reflNum << endl;
+	additionalSummary += "\nNumber of secondary reflections: " + to_string(reflNum);
 
 	string dirName = (args.IsCatched("o")) ? args.GetStringValue("o")
 										   : "M";
 	bool isOutputGroups = args.IsCatched("gr");
 	double wave = args.IsCatched("w") ? args.GetDoubleValue("w") : 0;
-	cout << "Wavelength (um): " << wave << endl;
+	additionalSummary += "\nWavelength (um): " + to_string(wave);
 
 	if (args.IsCatched("tr"))
 	{
@@ -247,15 +245,15 @@ int main(int argc, const char* argv[])
 	}
 
 
-	cout << "Method: ";
+	additionalSummary += "\nMethod: ";
 
 	if (args.IsCatched("po"))
 	{
-		cout << "Physical optics";
+		additionalSummary += "Physical optics";
 
 		if (args.IsCatched("fixed"))
 		{
-			cout << ", fixed orientation" << endl << endl;
+			additionalSummary += ", fixed orientation";
 
 			ScatteringSphere sphere = SetConus(args);
 
@@ -263,7 +261,7 @@ int main(int argc, const char* argv[])
 			double gamma = args.GetDoubleValue("fixed", 1);
 
 			TracerPO tracer(particle, reflNum, dirName);
-			tracer.m_summary = additionalSummary;
+			tracer.m_log = additionalSummary;
 
 			HandlerPO *handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 			handler->SetTracks(&trackGroups);
@@ -272,11 +270,15 @@ int main(int argc, const char* argv[])
 
 			tracer.SetIsOutputGroups(isOutputGroups);
 			tracer.SetHandler(handler);
+			additionalSummary += "Orientation: zenith - " +
+					to_string(beta) + "°, azimuth - " + to_string(gamma) +
+					"°\n\n";
+			tracer.m_log = additionalSummary;
 			tracer.TraceFixed(beta, gamma);
 		}
 		else if (args.IsCatched("random"))
 		{
-			cout << ", random orientation" << endl << endl;
+			additionalSummary += ", random orientation";
 			AngleRange beta = GetRange(args, "b", particle);
 			AngleRange gamma = GetRange(args, "g", particle);
 
@@ -285,7 +287,7 @@ int main(int argc, const char* argv[])
 			if (args.IsCatched("point"))
 			{
 				TracerBackScatterPoint tracer(particle, reflNum, dirName);
-				tracer.m_summary = additionalSummary;
+				tracer.m_log = additionalSummary;
 
 				handler = new HandlerBackScatterPoint(particle, &tracer.m_incidentLight, wave);
 				double normIndex = gamma.step/gamma.norm;
@@ -314,14 +316,16 @@ int main(int argc, const char* argv[])
 					handler = new HandlerPO(particle, &tracer->m_incidentLight, wave);
 				}
 
-				tracer->m_summary = additionalSummary;
-
 				handler->SetTracks(&trackGroups);
 				handler->SetScatteringSphere(conus);
 				handler->SetAbsorptionAccounting(isAbs);
 
 				tracer->SetIsOutputGroups(isOutputGroups);
 				tracer->SetHandler(handler);
+				additionalSummary += "\nGrid: " + to_string(beta.number) + "x" +
+						to_string(gamma.number) + "\n\n";
+				tracer->m_log = additionalSummary;
+				cout << additionalSummary;
 				tracer->TraceRandom(beta, gamma);
 			}
 
@@ -334,10 +338,9 @@ int main(int argc, const char* argv[])
 	}
 	else // go
 	{
-		cout << "Geometrical optics";
+		additionalSummary += "Geometrical optics";
 
 		TracerGO tracer(particle, reflNum, dirName);
-		tracer.m_summary = additionalSummary;
 		tracer.SetIsOutputGroups(isOutputGroups);
 
 		HandlerGO *handler;
@@ -357,18 +360,25 @@ int main(int argc, const char* argv[])
 
 		if (args.IsCatched("fixed"))
 		{
-			cout << ", fixed orientation, ";
+			additionalSummary += ", fixed orientation";
 			double beta  = args.GetDoubleValue("fixed", 0);
 			double gamma = args.GetDoubleValue("fixed", 1);
-			cout << "zenith " << beta << "°, azimuth " << gamma << "°" << endl << endl;
+			additionalSummary += "Orientation: zenith - " +
+					to_string(beta) + "°, azimuth - " + to_string(gamma) +
+					"°\n\n";
+			cout << additionalSummary;
+			tracer.m_log = additionalSummary;
 			tracer.TraceFixed(beta, gamma);
 		}
 		else if (args.IsCatched("random"))
 		{
-			cout << ", random orientation, ";
+			additionalSummary += ", random orientation";
 			AngleRange beta = GetRange(args, "b", particle);
 			AngleRange gamma = GetRange(args, "g", particle);
-			cout << "grid: " << beta.number << "x" << gamma.number << endl << endl;
+			additionalSummary += "\nGrid: " + to_string(beta.number) + "x" +
+					to_string(gamma.number) + "\n\n";
+			cout << additionalSummary;
+			tracer.m_log = additionalSummary;
 			tracer.TraceRandom(beta, gamma);
 		}
 
