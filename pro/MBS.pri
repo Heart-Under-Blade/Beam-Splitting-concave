@@ -6,7 +6,7 @@ INCLUDEPATH += \
 #    $$SRC/scattering \
 #    $$SRC/tracer \
 #    $$SRC/incidence \
-#    $$SRC/bigint
+    $$SRC/bigint
 
 SOURCES += \
     $$SRC/math/*.cpp \
@@ -16,7 +16,7 @@ SOURCES += \
 #    $$SRC/scattering/*.cpp \
 #    $$SRC/incidence/*.cpp \
 #    $$SRC/tracer/*.cpp \
-#    $$SRC/bigint/*.cc
+    $$SRC/bigint/*.cc
 
 HEADERS += \
     $$SRC/*.h \
@@ -28,4 +28,4 @@ HEADERS += \
 #    $$SRC/scattering/*.h \
 #    $$SRC/incidence/*.h \
 #    $$SRC/tracer/*.h \
-#    $$SRC/bigint/*.hh
+    $$SRC/bigint/*.hh

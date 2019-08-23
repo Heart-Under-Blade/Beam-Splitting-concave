@@ -41,7 +41,7 @@ void Tracer::SetIncidentLight(Particle *particle)
 	m_incidentLight.direction = Point3f(0, 0, -1);
 	m_incidentLight.polarizationBasis = Point3f(0, 1, 0);
 
-	Point3f point = m_incidentLight.direction * particle->GetRotationRadius();
+	Point3f point = m_incidentLight.direction * particle->MaximalDimention()/2;
 	m_incidentLight.direction.d_param = DotProduct(point, m_incidentLight.direction);
 }
 
@@ -59,14 +59,14 @@ void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
 }
 
 
-void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
+void Tracer::OutputLogPO(CalcTimer &timer, long long orNumber, const string &path)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
 	time_t end = timer.Stop();
 	string endTime = ctime(&end);
 
-	m_summary += "\nStart of calculation = " + startTime
+	m_log += "\nStart of calculation = " + startTime
 			+ "End of calculation   = " + endTime
 			+ "\nTotal time of calculation = " + totalTime
 			+ "\nTotal number of body orientation = " + to_string(orNumber);
@@ -78,10 +78,10 @@ void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const stri
 
 	ofstream out(path + "\\out.dat", ios::out);
 
-	out << m_summary;
+	out << m_log;
 	out.close();
 
-	cout << m_summary;
+	cout << m_log;
 }
 
 void Tracer::SetIsOutputGroups(bool value)
@@ -90,9 +90,9 @@ void Tracer::SetIsOutputGroups(bool value)
 }
 
 //REF: объединить с предыдущим
-void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
-							  const Tracks &tracks, double wave)
-{
+//void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
+//							  const Tracks &tracks, double wave)
+//{
 //	m_wavelength = wave;
 //	CalcTimer timer;
 //	long long count = 0;
@@ -138,7 +138,7 @@ void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone
 //	}
 
 //	outFile.close();
-}
+//}
 
 void Tracer::OutputStartTime(CalcTimer &timer)
 {
@@ -152,8 +152,8 @@ void Tracer::SetHandler(Handler *handler)
 	m_handler->SetScattering(m_scattering);
 }
 
-void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Conus &bsCone, int groupID)
-{
+//void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Conus &bsCone, int groupID)
+//{
 //	for (unsigned int i = 0; i < outBeams.size(); ++i)
 //	{
 //		Beam &beam = outBeams.at(i);
@@ -196,5 +196,5 @@ void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Conus &bsCone, int gro
 //			}
 //		}
 //	}
-}
+//}
 

@@ -1,6 +1,7 @@
 #include "TracerBackScatterPoint.h"
 #include "global.h"
 #include "ScatteringFiles.h"
+#include "HandlerBackScatterPoint.h"
 #include <iostream>
 
 using namespace std;
@@ -62,7 +63,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
-			OutputOrientationToLog(i, j, logfile);		
+			OutputOrientationToLog(i, j, logfile);
 
 			if (isNan)
 			{
@@ -100,7 +101,7 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 	}
 
 	long long orNumber = betaRange.number * gammaRange.number;
-	OutputStatisticsPO(timer, orNumber, m_resultDirName);
+	OutputLogPO(timer, orNumber, m_resultDirName);
 }
 
 string TracerBackScatterPoint::GetTableHead(const AngleRange &range)

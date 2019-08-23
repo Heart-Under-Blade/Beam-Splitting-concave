@@ -31,16 +31,18 @@ public:
 	~Tracer();
 
 	// REF: delete?
-	void TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
-						const Tracks &tracks, double wave);
+//	void TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
+//						const Tracks &tracks, double wave);
 
 	void SetHandler(Handler *handler);
 
 	void SetIsOutputGroups(bool value);// REF: заменить
 
-	void OutputStatisticsPO(CalcTimer &timer, long long orNumber, const std::string &path);
+	void OutputLogPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
 	Light m_incidentLight;
+	std::string m_log;
+
 protected:
 	Handler *m_handler;
 	Scattering *m_scattering;
@@ -52,7 +54,6 @@ protected:
 	std::string m_resultDirName;
 	double m_wavelength;
 	Symmetry m_symmetry;
-	std::string m_summary;
 	time_t m_startTime;
 
 	// REF: заменить
@@ -64,6 +65,6 @@ protected:
 	void OutputOrientationToLog(int i, int j, std::ostream &logfile);
 
 private:
-	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Conus &bsCone, int groupID);
+//	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Conus &bsCone, int groupID);
 	void SetIncidentLight(Particle *particle);
 };

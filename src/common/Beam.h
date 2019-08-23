@@ -1,7 +1,7 @@
 #pragma once
 
 #include "global.h"
-#include "math/compl.hpp"
+#include "compl.hpp"
 #include "JonesMatrix.h"
 #include "float.h"
 #include "BigInteger.hh"

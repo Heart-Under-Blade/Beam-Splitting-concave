@@ -1,4 +1,5 @@
 #include "TracerGO.h"
+#include "HandlerGO.h"
 #include <iostream>
 
 using namespace std;
@@ -83,7 +84,7 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 	time_t end = timer.Stop();
 	string endTime = ctime(&end);
 
-	m_summary += "\nStart of calculation = " + startTime
+	m_log += "\nStart of calculation = " + startTime
 			+ "End of calculation   = " + endTime
 			+ "\nTotal time of calculation = " + totalTime
 			+ "\nTotal number of body orientation = " + to_string(orNumber)
@@ -93,15 +94,15 @@ void TracerGO::OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &
 	double normEnergy = m_incomingEnergy * NRM;
 	double passedEnergy = (m_outcomingEnergy/normEnergy)*100;
 
-	m_summary += "\nTotal incoming energy = " + to_string(normEnergy)
+	m_log += "\nTotal incoming energy = " + to_string(normEnergy)
 			+ "\nTotal outcoming energy = " + to_string(m_outcomingEnergy)
 			+ "\nEnergy passed = " + to_string(passedEnergy) + '%';
 #endif
 
 	// out << "\nAveraged cross section = " << incomingEnergy*NRM;
 	ofstream out(m_resultDirName+"_out.dat", ios::out);
-	out << m_summary;
+	out << m_log;
 	out.close();
 
-	cout << m_summary;
+	cout << m_log;
 }

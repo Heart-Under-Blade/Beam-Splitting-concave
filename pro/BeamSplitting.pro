@@ -15,42 +15,46 @@ CONFIG(release, debug|release): {
 }
 
 CONFIG(debug,	debug|release): {
-	DEFINES += _DEBUG
+    DEFINES += _DEBUG
     TARGET = mbs_d
 }
 
 INCLUDEPATH += \
-	../src \
-	../src/math \
-	../src/common \
-	../src/particle \
-	../src/geometry \
-	../src/scattering \
+    ../src \
+    ../src/math \
+    ../src/common \
+    ../src/particle \
+    ../src/geometry \
+    ../src/scattering \
     ../src/handler \
     ../src/tracer \
-	../src/bigint
+    ../src/bigint
 
 SOURCES += \
-	../src/*.cpp \
-	../src/math/*.cpp \
-	../src/particle/*.cpp \
-	../src/geometry/*.cpp \
+    ../src/*.cpp \
+    ../src/math/*.cpp \
+    ../src/tracer/*.cpp \
+    ../src/particle/*.cpp \
+    ../src/geometry/*.cpp \
     ../src/handler/*.cpp \
-	../src/common/*.cpp \
-	../src/scattering/*.cpp \
+    ../src/common/*.cpp \
+    ../src/scattering/*.cpp \
     ../src/bigint/*.cc
 
+SOURCES -= ../src/Beam.cpp
+
 HEADERS += \
-	../src/*.h \
-	../src/math/*.hpp \
-	../src/math/*.h \
-	../src/particle/*.h \
-	../src/geometry/*.h \
+    ../src/*.h \
+    ../src/math/*.hpp \
+    ../src/tracer/*.h \
+    ../src/math/*.h \
+    ../src/particle/*.h \
+    ../src/geometry/*.h \
     ../src/handler/*.h \
-	../src/common/*.h \
-	../src/scattering/*.h \
+    ../src/common/*.h \
+    ../src/scattering/*.h \
     ../src/bigint/*.hh
 
 DISTFILES += \
-	classes.qmodel \
+    classes.qmodel \
     sequence.qmodel
