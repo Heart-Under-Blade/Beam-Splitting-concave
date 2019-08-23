@@ -78,7 +78,7 @@ BigUnsignedInABase::BigUnsignedInABase(const std::string &s, Base base) {
 	// This pattern is seldom seen in C++, but the analogous ``this.'' is common in Java.
 	this->base = base;
 
-	// `s.length()' is a `size_t', while `len' is a `NumberlikeArray::Index',
+	// `s.length()' is a `int', while `len' is a `NumberlikeArray::Index',
 	// also known as an `unsigned int'.  Some compilers warn without this cast.
 	len = Index(s.length());
 	allocate(len);

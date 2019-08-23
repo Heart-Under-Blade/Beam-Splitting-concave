@@ -15,78 +15,106 @@
 
 using namespace std;
 
-Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
-					   int nActs)
+Scattering::Scattering(Particle *particle, const Light &incidentLight,
+					   int maxActNo)
 	: m_particle(particle),
-	  m_splitting(isOpticalPath),
-	  m_incidentLight(incidentLight),
-	  m_nActs(nActs)
+	  m_maxActNo(maxActNo),
+	  m_splitting(m_particle->GetRefractiveIndex()),
+	  m_completeReflectionIncidence(),
+	  m_regularIncidence(),
+	  m_normalIncidence()
 {
-	m_facets = m_particle->facets;
-
-	m_incidentDir = m_incidentLight->direction;
-	m_incidentDir.d_param = m_incidentLight->direction.d_param;
-
-	m_polarBasis = m_incidentLight->polarizationBasis;
-
-	m_splitting.ComputeRiParams(m_particle->GetRefractiveIndex());
+	CreateOriginBeam(incidentLight.direction, incidentLight.polarizationBasis);
 }
 
-IdType Scattering::Scattering::RecomputeTrackId(const IdType &oldId, int facetId)
+Scattering::~Scattering()
 {
-	return (oldId + (facetId + 1)) * (m_particle->nFacets + 1);
+	delete m_originalBeam.facet;
 }
 
-void Scattering::PushBeamToTree(Beam &beam, int facetId, int level, Location location)
+void Scattering::CreateOriginBeam(const Vector3f &dir, const Vector3f &basis)
 {
+	m_originalBeam.direction = dir;
+	m_originalBeam.direction.d_param = dir.d_param;
+	m_originalBeam.polarizationBasis = basis;
+	m_originalBeam.isInside = false;
+	m_originalBeam.facet = new Facet();
+	m_originalBeam.facet->index = -1;
+}
+
+void Scattering::ScatterLight(std::vector<Beam> &scatteredBeams)
+{
+<<<<<<< HEAD
 	beam.SetTracingParams(facetId, level, location);
 #ifdef _DEBUG // DEB
 //	beam.dirs.push_back(beam.direction);
+=======
+#ifdef _CHECK_ENERGY_BALANCE
+	m_incidentEnergy = 0;
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 #endif
-	m_beamTree[m_treeSize++] = beam;
+	m_treeSize = 0;
+	m_scatteredBeams = &scatteredBeams;
+
+	SplitOriginalBeam(scatteredBeams);
+	SplitSecondaryBeams(scatteredBeams);
 }
 
-void Scattering::SetIncidentBeamOpticalParams(unsigned facetId,
-											  Beam &inBeam, Beam &outBeam)
+void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 {
-	const Point3f &normal = m_facets[facetId].in_normal;
-	m_splitting.ComputeCosA(m_incidentDir, normal);
+	while (m_treeSize != 0)
+	{
+		Beam beam = m_propagatingBeams[--m_treeSize];
 
-	if (!m_splitting.IsNormalIncidence()) // regular incidence
-	{
-		Beam fakeIncidentBeam;
-		fakeIncidentBeam.SetLight(*m_incidentLight);
-		const Point3f &facetNormal = m_facets[facetId].in_normal;
-		ComputePolarisationParams(-fakeIncidentBeam.direction, facetNormal,
-								  fakeIncidentBeam);
-		m_splitting.ComputeRegularBeamParamsExternal(facetNormal,
-													 fakeIncidentBeam,
-													 inBeam, outBeam);
-	}
-	else // normal incidence
-	{
-		m_splitting.ComputeNormalBeamParamsExternal(*m_incidentLight,
-													inBeam, outBeam);
+		SplitBeamByVisibleFacets(beam);
+
+		if (IsTerminalAct(beam))
+		{
+			ReleaseBeam(beam);
+		}
 	}
 }
 
-void Scattering::ComputePolarisationParams(const Vector3f &dir,
-										   const Vector3f &facetNormal, Beam &beam)
+void Scattering::SetIncidence()
 {
-	Point3f newBasis = CrossProduct(facetNormal, dir);
-	Normalize(newBasis);
-	beam.RotateJMatrix(newBasis);
-	beam.polarizationBasis = newBasis;
+	IncidenceType incType = m_splitting.GetIncidenceType();
+
+	if (incType == IncidenceType::Regular)
+	{
+		m_incidence = &m_regularIncidence;
+	}
+	else if (incType == IncidenceType::Normal)
+	{
+		m_incidence = &m_normalIncidence;
+	}
+	else if (incType == IncidenceType::CompleteReflection)
+	{
+		m_incidence = &m_completeReflectionIncidence;
+	}
 }
 
-void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
+bool Scattering::ComputeOpticalBeamParams(Facet *facet, Beam beam)
 {
-	SetPolygonByFacet(facetId, inBeam); // REF: try to exchange this to inBeam = m_facets[facetId]
-	SetPolygonByFacet(facetId, outBeam);
-	SetIncidentBeamOpticalParams(facetId, inBeam, outBeam);
+	auto &beams = m_splitting.beams;
 
-//	if (m_isOpticalPath)
+	const Vector3f &normal = facet->normal[beam.isInside];
+	m_splitting.ComputeSplittingParams(beam.direction, normal, beam.isInside);
+
+	SetIncidence();
+
+	m_incidence->ComputeDirections(beam, beams);
+	m_incidence->ComputeJonesMatrices(beam, beams);
+//	incidence->ComputeOpticalPaths(beam, beams);
+
+	return m_splitting.HasOutBeam();
+}
+
+void Scattering::FindVisibleFacets(const Beam &beam, FacetChecker &checker,
+								   int begin, int end, Array<Facet*> &facets)
+{
+	for (int i = begin; i < end; ++i)
 	{
+<<<<<<< HEAD
 		Point3f p = inBeam.Center();
 		double path = m_splitting.ComputeIncidentOpticalPath(m_incidentDir, p);
 		inBeam.opticalPath = 0;
@@ -94,20 +122,27 @@ void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
 		outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam);
+=======
+		Facet *facet = m_particle->GetActualFacet(i);
+
+		if (checker.IsVisibleFacet(facet, beam))
+		{
+			facets.Add(facet);
+		}
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 	}
 }
 
-void Scattering::ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon)
+void Scattering::ComputeFacetEnergy(const Vector3f &facetNormal,
+									const Polygon &lightedPolygon)
 {
-	const Point3f &normal = m_facets[facetId].in_normal;
-	double cosA = DotProduct(m_incidentDir, normal);
+	double cosA = Point3f::DotProduct(m_originalBeam.direction, facetNormal);
 	m_incidentEnergy += lightedPolygon.Area() * cosA;
 }
 
-// TODO: пофиксить
-void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vector<std::vector<int>> &/*tracks*/,
-								  std::vector<Beam> &/*outBeams*/)
+void Scattering::PushBeamToTree(Beam &beam)
 {
+<<<<<<< HEAD
 //	m_particle->Rotate(beta, gamma, 0);
 
 //	for (unsigned int i = 0; i < tracks.size(); ++i)
@@ -266,34 +301,62 @@ void Scattering::FormShadowBeam(std::vector<Beam> &scaterredBeams)
 	shadowBeam.opticalPath = 20000;
 	shadowBeam.lastFacetId = INT_MAX;
 	scaterredBeams.push_back(shadowBeam);
+=======
+	if (Scattering::IsTerminalAct(beam))
+	{
+		if (!beam.isInside)
+		{
+			ReleaseBeam(beam);
+		}
+	}
+	else
+	{
+#ifdef MODE_FIXED_OR
+		beam.dirs.push_back(beam.direction);
+		beam.pols.push_back(beam);
+#endif
+		m_propagatingBeams[m_treeSize++] = beam;
+	}
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }
 
 bool Scattering::IsTerminalAct(const Beam &beam)
 {
-	return (beam.nActs >= m_nActs) || (beam.J.Norm() < EPS_BEAM_ENERGY);
+	return (beam.actNo >= m_maxActNo) || (beam.Jones.Norm() < EPS_BEAM_ENERGY);
 }
 
-void Scattering::Difference(const Polygon &subject, const Vector3f &subjNormal,
-						 const Polygon &clip, const Vector3f &clipNormal,
-						 const Vector3f &clipDir, PolygonArray &difference) const
+/** NOTE: Result beams are ordered in inverse direction */
+void Scattering::SetPolygonByFacet(Facet *facet, Polygon &polygon) const
 {
-	__m128 _clip[MAX_VERTEX_NUM];
-	bool isProjected = ProjectToFacetPlane(clip, clipDir, subjNormal, _clip);
+	int size = facet->nVertices;
+	polygon.nVertices = size;
+	--size;
 
-	if (!isProjected)
+	for (int i = 0; i <= size; ++i)
 	{
-		difference.Push(subject);
-		return;
+		polygon.vertices[i] = facet->vertices[size-i];
 	}
+}
 
+<<<<<<< HEAD
 	__m128 _clip_normal = _mm_setr_ps(clipNormal.cx, clipNormal.cy, clipNormal.cz, 0.0);
 
 	int clipSize = clip.nVertices;
 	__m128 _diff_pol[MAX_VERTEX_NUM];
+=======
+double Scattering::GetIncidentEnergy() const
+{
+	return m_incidentEnergy;
+}
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
-	__m128 _subject[MAX_VERTEX_NUM];
-	__m128 _buffer[MAX_VERTEX_NUM];
+Point3f Scattering::ComputeBeamDirection(const Vector3f &oldDir,
+										 const Vector3f &normal,
+										 bool isIn1, bool isIn2)
+{
+	Point3f newDir;
 
+<<<<<<< HEAD
 	for (int i = 0; i < subject.nVertices; ++i)
 	{
 		_subject[i] = _mm_load_ps(subject.arr[i].coordinates);
@@ -379,44 +442,39 @@ void Scattering::Difference(const Polygon &subject, const Vector3f &subjNormal,
 				difference.Push(resPolygon);
 			}
 		}
-	}
-}
-
-bool Scattering::ProjectToFacetPlane(const Polygon &polygon, const Vector3f &dir,
-								  const Point3f &normal, __m128 *_projection) const
-{
-	__m128 _normal = _mm_setr_ps(normal.cx, normal.cy, normal.cz, 0.0);
-	__m128 _direction = _mm_setr_ps(dir.cx, dir.cy, dir.cz, 0.0);
-
-	__m128 _d_param = _mm_set_ps1(normal.d_param);
-	__m128 _dp0 = _mm_dp_ps(_direction, _normal, MASK_FULL);
-
-	__m128 _sign_mask = _mm_set1_ps(-0.f);
-	__m128 _abs_dp = _mm_andnot_ps(_sign_mask, _dp0);
-
-	if (_abs_dp[0] < EPS_PROJECTION)
+=======
+	if (!isIn1)
 	{
-		return false; /// beam is parallel to facet
+		m_splitting.ComputeSplittingParams(oldDir, -normal, isIn1);
 	}
+	else
+	{
+		m_splitting.ComputeSplittingParams(oldDir, normal, isIn1);
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+	}
+
+	if (isIn1 == isIn2)
+	{
+		m_splitting.ComputeReflectedDirection(newDir);
+	}
+<<<<<<< HEAD
 
 	for (int i = 0; i < polygon.nVertices; ++i)
+=======
+	else
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 	{
-		const Point3f &p = polygon.arr[i];
-		__m128 _point = _mm_setr_ps(p.cx, p.cy, p.cz, 0.0);
-		__m128 _dp1 = _mm_dp_ps(_point, _normal, MASK_FULL);
-		__m128 _add = _mm_add_ps(_dp1, _d_param);
-		__m128 _t = _mm_div_ps(_add, _dp0);
-		__m128 _mul = _mm_mul_ps(_t, _direction);
-
-		_projection[i] = _mm_sub_ps(_point, _mul);
+		m_splitting.ComputeRefractedDirection(newDir);
 	}
 
-	return true;
+	return newDir;
 }
 
-/// NOTE: вершины пучка и грани должны быть ориентированы в одном направлении
-void Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection) const
+OpticalPath Scattering::ComputeOpticalPath(const Beam &beam,
+										   const Point3f &startPoint,
+										   std::vector<int> track)
 {
+<<<<<<< HEAD
 	__m128 _output_points[MAX_VERTEX_NUM];
 	// REF: перенести в случай невыпуклых частиц
 	const Point3f &normal = m_facets[facetID].in_normal;
@@ -439,102 +497,118 @@ void Scattering::Intersect(int facetID, const Beam &beam, Polygon &intersection)
 	int bufferSize;
 
 	int facetSize = m_particle->facets[facetID].nVertices;
+=======
+	OpticalPath path;
 
-	__m128 _p1, _p2; // vertices of facet
-	__m128 _s_point, _e_point;	// points of projection
-	bool isInsideE, isInsideS;
+	Point3f dir = -beam.direction; // back direction
+	bool isIn1 = false;
+	bool isIn2;
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
+	Point3f p1 = startPoint;
+	Point3f p2;
+
+<<<<<<< HEAD
 	Point3f p2 = m_particle->facets[facetID].arr[facetSize-1];
 	_p2 = _mm_load_ps(p2.coordinates);
+=======
+	Facet *f1, *f2;
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
-	for (int i = 0; i < facetSize; ++i)
+	// back tracing
+	for (int act = track.size()-1; act > 0; --act)
 	{
+<<<<<<< HEAD
 		_p1 = _p2;
 		p2 = m_particle->facets[facetID].arr[i];
 		_p2 = _mm_load_ps(p2.coordinates);
 
 		bufferSize = outputSize;
 		outputSize = 0;
+=======
+		f1 = m_particle->GetActualFacet(track[act]);
+		f2 = m_particle->GetActualFacet(track[act-1]);
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
-		__m128 *_temp = _output_ptr;
-		_output_ptr = _buffer_ptr;
-		_buffer_ptr = _temp;
+		isIn2 = beam.IsInsideOnAct(act-1);
+		dir = ComputeBeamDirection(dir, f1->ex_normal, isIn1, isIn2);
+		p2 = Geometry::ProjectPointToPlane(p1, dir, f2->in_normal);
+		double len = Point3f::Length(p2 - p1);
 
-		_s_point = _buffer_ptr[bufferSize-1];
-		isInsideS = is_inside_i(_s_point, _p1, _p2, _normal_to_facet);
-
-		bool isIntersected;
-
-		for (int j = 0; j < bufferSize; ++j)
+		if (isIn2)
 		{
-			_e_point = _buffer_ptr[j];
-			isInsideE = is_inside_i(_e_point, _p1, _p2, _normal_to_facet);
-
-			if (isInsideE)
-			{
-				if (!isInsideS)
-				{
-					__m128 x = intersect_i(_s_point, _e_point, _p1, _p2,
-										   _normal_to_facet, isIntersected);
-					if (isIntersected)
-					{
-						_output_ptr[outputSize++] = x;
-					}
-				}
-
-				_output_ptr[outputSize++] = _e_point;
-			}
-			else if (isInsideS)
-			{
-				__m128 x = intersect_i(_s_point, _e_point, _p1, _p2,
-									   _normal_to_facet, isIntersected);
-				if (isIntersected)
-				{
-					_output_ptr[outputSize++] = x;
-				}
-			}
-
-			_s_point = _e_point;
-			isInsideS = isInsideE;
+#ifdef _DEBUG // DEB
+			len *= sqrt(real(m_splitting.GetRi()));
+#endif
+			path.internal += len;
 		}
+		else
+		{
+			path.external += len;
+		}
+
+		p1 = p2;
+		isIn1 = isIn2;
 	}
 
-	SetOutputPolygon(_output_ptr, outputSize, intersection);
+#ifdef _DEBUG // DEB
+//	path *= real(m_splitting.GetRi());
+	Point3f nFar1 = m_originalBeam.direction;
+	Point3f nFar2 = -beam.direction;
+//	double dd1 = m_splitting.FAR_ZONE_DISTANCE + Point3f::DotProduct(p2, nFar1);
+//	double dd2 = fabs(Point3f::DotProduct(startPoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+
+//	path.external += dd1;
+//	path.external += dd2;
+
+//	if (fabs(path.GetTotal() - beam.opticalPath) > 1)
+//		int ff = 0;
+#endif
+	return path;
 }
 
-void Scattering::SetOutputPolygon(__m128 *_output_points, int outputSize,
-								  Polygon &polygon) const
+void Scattering::SelectOriginVisibleFacets(Array<Facet*> &facets)
 {
-	Point3f p;
+	FindVisibleFacets(m_originalBeam, m_lightChecker, 0, m_particle->nElems, facets);
+}
 
-	__m128 eps = _mm_load_ps1(&EPS_MERGE);
-	__m128 sign_mask = _mm_set1_ps(-0.f);
+void Scattering::ReleaseBeam(Beam &beam)
+{
+//	beam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(beam); // добираем оптический путь
+	m_scatteredBeams->push_back(beam);
+}
 
-	__m128 p0 = _output_points[outputSize-1];
+void Scattering::SplitBeamByVisibleFacets(Beam &beam)
+{
+	Array<Facet*> visibleFacets; // NOTE: DO NOT MAKE IT FIELD OF CLASS!!
+	SelectVisibleFacets(beam, visibleFacets);
 
-	for (int i = 0; i < outputSize; ++i)
+	for (int i = 0; !isTerminalFacet(i, visibleFacets); ++i)
 	{
-		__m128 difference = _mm_sub_ps(_output_points[i], p0);
-		__m128 abs = _mm_andnot_ps(sign_mask, difference);
-		__m128 cmp = _mm_cmplt_ps(eps, abs);
+		Facet *facet = visibleFacets.elems[i];
 
-		int res = _mm_movemask_ps(cmp) & 0b111;
-
-		if (res != 0)
+		Polygon beamShape;
+		bool isIntersected = Geometry::IncidentBeamToFacet(facet, beam, beam.isInside,
+														   beam.direction, beamShape);
+		if (isIntersected)
 		{
+<<<<<<< HEAD
 			p.cx = _output_points[i][0];
 			p.cy = _output_points[i][1];
 			p.cz = _output_points[i][2];
 			polygon.arr[polygon.nVertices++] = p;
+=======
+			m_splitting.SetBeams(beamShape);
+			bool hasOutBeam = ComputeOpticalBeamParams(facet, beam);
+			PushBeamsToBuffer(beam, facet, hasOutBeam);
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 		}
-
-		p0 = _output_points[i];
 	}
 }
 
-/** NOTE: Result beams are ordered in inverse direction */
-void Scattering::SetPolygonByFacet(int facetId, Polygon &polygon) const
+bool Scattering::isTerminalFacet(int index, Array<Facet*> &facets)
 {
+<<<<<<< HEAD
 	const Polygon &facet = m_facets[facetId];
 	int size = facet.nVertices;
 	polygon.nVertices = size;
@@ -544,10 +618,15 @@ void Scattering::SetPolygonByFacet(int facetId, Polygon &polygon) const
 	{
 		polygon.arr[i] = facet.arr[size-i];
 	}
+=======
+	return index >= facets.nElems;
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }
 
-double Scattering::GetIncedentEnergy() const
+void Scattering::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
+								   bool hasOutBeam)
 {
+<<<<<<< HEAD
 	return m_incidentEnergy;
 }
 
@@ -589,12 +668,28 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 //		double len1 = Length(p1 - p22);
 //		len1 *= sqrt(real(m_splitting.GetRi()));
 //		path1 += len1;
-#endif
-		path += len;
+=======
+	auto &beams = m_splitting.beams;
+	Track tr = parentBeam;
+	tr.Update(facet);
+	tr.RecomputeTrackId(facet->index, m_particle->nElems);
 
-		p1 = p2;
-		loc = nextLoc;
+#ifdef _DEBUG // DEB
+	if (tr.id == 4222009)
+		int fff = 0;
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+#endif
+	beams.internal.CopyTrack(tr);
+	beams.internal.SetLocation(true);
+	PushBeamToTree(beams.internal);
+
+	if (hasOutBeam)
+	{
+		beams.external.CopyTrack(tr);
+		beams.external.SetLocation(false);
+		PushBeamToTree(beams.external);
 	}
+<<<<<<< HEAD
 
 #ifdef _DEBUG // DEB
 //	path *= real(m_splitting.GetRi());
@@ -608,4 +703,6 @@ double Scattering::ComputeInternalOpticalPath(const Beam &beam,
 //		int ff = 0;
 #endif
 	return path;
+=======
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }

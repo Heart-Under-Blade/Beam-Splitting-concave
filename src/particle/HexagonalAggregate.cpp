@@ -1,25 +1,22 @@
 #include "HexagonalAggregate.h"
-#include "global.h"
+#include "common.h"
 
-HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter, double height,
+HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, const Size &size,
 									   int particleNumber)
+	: Column(8*particleNumber, refrIndex, size, true)
 {
-	isConcave = true;
-	SetSize(diameter, height);
-	Init(8*particleNumber, refrIndex);
-
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
 
 //  SetBases1 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = defaultFacets[0];
-		Facet &baseBottom = defaultFacets[7];
+		Facet &baseTop = elems[0].original;
+		Facet &baseBottom = elems[7].original;
 
 		Point3f *facet;
 
-		double radius = m_diameter/2;
-		double halfHeight = m_height/2;
+		double radius = m_size.diameter/2;
+		double halfHeight = m_size.height/2;
 
 		double offset = halfHeight + radius + 1/*REF: вынести как конст.*/;
 
@@ -40,13 +37,13 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 		};
 
 		// top base facet
-		facet = baseTop.arr;
+		facet = baseTop.vertices;
 		SetTwoDiagonalPoints(0, halfRadius, inRadius, halfHeight + offset);
 		SetTwoDiagonalPoints(1, -halfRadius, inRadius, halfHeight + offset);
 		SetTwoDiagonalPoints(2, -radius, 0, halfHeight + offset);
 
 		// bottom base facet
-		facet = baseBottom.arr;
+		facet = baseBottom.vertices;
 		SetTwoDiagonalPoints(0, radius, 0, -halfHeight + offset);
 		SetTwoDiagonalPoints(1, halfRadius, -inRadius, -halfHeight + offset);
 		SetTwoDiagonalPoints(2, -halfRadius, -inRadius, -halfHeight + offset);
@@ -54,13 +51,13 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 //	SetBases2 REF: вынести в отд. ф-цию
 	{
-		Facet &baseTop = defaultFacets[8];
-		Facet &baseBottom = defaultFacets[15];
+		Facet &baseTop = elems[8].original;
+		Facet &baseBottom = elems[15].original;
 
 		Point3f *facet;
 
-		double radius = m_diameter/2;
-		double halfHeight = m_height/2;
+		double radius = m_size.diameter/2;
+		double halfHeight = m_size.height/2;
 
 		double offset = halfHeight + radius + 1/*PART_OFFSET*/;
 
@@ -81,31 +78,32 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 		};
 
 		// top base facet
-		facet = baseTop.arr;
+		facet = baseTop.vertices;
 		SetTwoDiagonalPoints(2, halfRadius, halfHeight+offset, inRadius);
 		SetTwoDiagonalPoints(1, -halfRadius, halfHeight+offset, inRadius);
 		SetTwoDiagonalPoints(0, -radius, halfHeight+offset, 0);
 
 		// bottom base facet
-		facet = baseBottom.arr;
+		facet = baseBottom.vertices;
 		SetTwoDiagonalPoints(2, radius, -halfHeight+offset, 0);
 		SetTwoDiagonalPoints(1, halfRadius, -halfHeight+offset, -inRadius);
 		SetTwoDiagonalPoints(0, -halfRadius, -halfHeight+offset, -inRadius);
 	}
 
 	SetSideFacetParams(1, 7);
-	SetSides(defaultFacets[0], defaultFacets[7]);
+	SetSides(elems[0].original, elems[7].original);
 
 	SetSideFacetParams(9, 15);
-	SetSides(defaultFacets[8], defaultFacets[15]);
+	SetSides(elems[8].original, elems[15].original);
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	Reset();
+	ResetPosition();
 }
 
 void HexagonalAggregate::SetFacetParams()
 {
+<<<<<<< HEAD
 	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
 	defaultFacets[7].nVertices = BASE_VERTEX_NUM;
 
@@ -122,7 +120,25 @@ void HexagonalAggregate::SetFacetParams()
 	facets[15].isVisibleOut = false;
 
 	for (int i = 0; i < nFacets; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+=======
+	elems[0].original.nVertices = BASE_VERTEX_NUM;
+	elems[7].original.nVertices = BASE_VERTEX_NUM;
+
+	elems[8].original.nVertices = BASE_VERTEX_NUM;
+	elems[15].original.nVertices = BASE_VERTEX_NUM;
+
+	elems[1].actual.isOverlayedOut = true;
+	elems[2].actual.isOverlayedOut = true;
+	elems[3].actual.isOverlayedOut = true;
+	elems[7].actual.isOverlayedOut = true;
+	elems[10].actual.isOverlayedOut = true;
+	elems[11].actual.isOverlayedOut = true;
+	elems[12].actual.isOverlayedOut = true;
+	elems[15].actual.isOverlayedOut = true;
+
+	for (int i = 0; i < nElems; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 	{
-		facets[i].isVisibleIn = false;
+		elems[i].actual.isOverlayedIn = true;
 	}
 }

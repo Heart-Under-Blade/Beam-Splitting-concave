@@ -1,6 +1,6 @@
 #pragma once
 
-#include "global.h"
+#include "common.h"
 #include "compl.hpp"
 #include "JonesMatrix.h"
 #include "float.h"

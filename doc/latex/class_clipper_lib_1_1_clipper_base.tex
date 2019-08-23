@@ -1,0 +1,89 @@
+\hypertarget{class_clipper_lib_1_1_clipper_base}{}\section{Clipper\+Lib\+:\+:Clipper\+Base Class Reference}
+\label{class_clipper_lib_1_1_clipper_base}\index{Clipper\+Lib\+::\+Clipper\+Base@{Clipper\+Lib\+::\+Clipper\+Base}}
+Inheritance diagram for Clipper\+Lib\+:\+:Clipper\+Base\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_clipper_lib_1_1_clipper_base}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a7545ac6e146894dc8416887eadd01dba}\label{class_clipper_lib_1_1_clipper_base_a7545ac6e146894dc8416887eadd01dba}} 
+bool {\bfseries Add\+Path} (const Path \&pg, Poly\+Type Poly\+Typ, bool Closed)
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a2395967b47fb9f3f5846e2bf56c18f67}\label{class_clipper_lib_1_1_clipper_base_a2395967b47fb9f3f5846e2bf56c18f67}} 
+bool {\bfseries Add\+Paths} (const Paths \&ppg, Poly\+Type Poly\+Typ, bool Closed)
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a5690952fe8c2cb047025566405827821}\label{class_clipper_lib_1_1_clipper_base_a5690952fe8c2cb047025566405827821}} 
+virtual void {\bfseries Clear} ()
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a5590a5454248ac3f6beeba7f9690f62e}\label{class_clipper_lib_1_1_clipper_base_a5590a5454248ac3f6beeba7f9690f62e}} 
+\mbox{\hyperlink{struct_clipper_lib_1_1_int_rect}{Int\+Rect}} {\bfseries Get\+Bounds} ()
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a95c47199aeb139b13059968bc6056f44}\label{class_clipper_lib_1_1_clipper_base_a95c47199aeb139b13059968bc6056f44}} 
+bool {\bfseries Preserve\+Collinear} ()
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_aa827cfffd9be40dba7d503a3da708b91}\label{class_clipper_lib_1_1_clipper_base_aa827cfffd9be40dba7d503a3da708b91}} 
+void {\bfseries Preserve\+Collinear} (bool value)
+\end{DoxyCompactItemize}
+\subsection*{Protected Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_addb22572066d3983dcd5797c542df00b}\label{class_clipper_lib_1_1_clipper_base_addb22572066d3983dcd5797c542df00b}} 
+typedef std\+::vector$<$ \mbox{\hyperlink{struct_clipper_lib_1_1_local_minimum}{Local\+Minimum}} $>$ {\bfseries Minima\+List}
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a311dbbec1454ab7965e363a0359f5ee4}\label{class_clipper_lib_1_1_clipper_base_a311dbbec1454ab7965e363a0359f5ee4}} 
+void {\bfseries Dispose\+Local\+Minima\+List} ()
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a906ea17c9dc8822d689e54c3243e7f58}\label{class_clipper_lib_1_1_clipper_base_a906ea17c9dc8822d689e54c3243e7f58}} 
+\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$ {\bfseries Add\+Bounds\+To\+L\+ML} (\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$e, bool Is\+Closed)
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a9554e9f2273c39e0f5f07d3cd73533e6}\label{class_clipper_lib_1_1_clipper_base_a9554e9f2273c39e0f5f07d3cd73533e6}} 
+void {\bfseries Pop\+Local\+Minima} ()
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a125febb065f23fc55dafffe8d185b642}\label{class_clipper_lib_1_1_clipper_base_a125febb065f23fc55dafffe8d185b642}} 
+virtual void {\bfseries Reset} ()
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a292655c74a7e70a8b8829337c632bdf0}\label{class_clipper_lib_1_1_clipper_base_a292655c74a7e70a8b8829337c632bdf0}} 
+\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$ {\bfseries Process\+Bound} (\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$E, bool Is\+Clockwise)
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_ae57efb542cfbbc42d000815e8a2e2877}\label{class_clipper_lib_1_1_clipper_base_ae57efb542cfbbc42d000815e8a2e2877}} 
+void {\bfseries Do\+Minima\+L\+ML} (\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$E1, \mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$E2, bool Is\+Closed)
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a13086e8d650edc1a024813d3a8469120}\label{class_clipper_lib_1_1_clipper_base_a13086e8d650edc1a024813d3a8469120}} 
+\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$ {\bfseries Descend\+To\+Min} (\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$\&E)
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_afafbf0dafffb5ad6f5a5c30dbed6378f}\label{class_clipper_lib_1_1_clipper_base_afafbf0dafffb5ad6f5a5c30dbed6378f}} 
+void {\bfseries Ascend\+To\+Max} (\mbox{\hyperlink{struct_clipper_lib_1_1_t_edge}{T\+Edge}} $\ast$\&E, bool Appending, bool Is\+Closed)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_ab6ed40f62810c0f894878c79d74afb36}\label{class_clipper_lib_1_1_clipper_base_ab6ed40f62810c0f894878c79d74afb36}} 
+Minima\+List\+::iterator {\bfseries m\+\_\+\+Current\+LM}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a970749dc12a20e980c932af040f8a8c5}\label{class_clipper_lib_1_1_clipper_base_a970749dc12a20e980c932af040f8a8c5}} 
+Minima\+List {\bfseries m\+\_\+\+Minima\+List}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_aea11d183617adc12d7ba2b84533f7f45}\label{class_clipper_lib_1_1_clipper_base_aea11d183617adc12d7ba2b84533f7f45}} 
+bool {\bfseries m\+\_\+\+Use\+Full\+Range}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_a8bfc007c0c0afd4e9d252dac0ef5daa0}\label{class_clipper_lib_1_1_clipper_base_a8bfc007c0c0afd4e9d252dac0ef5daa0}} 
+Edge\+List {\bfseries m\+\_\+edges}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_aad4ca0f2a16a6fb466036b36cc5ff638}\label{class_clipper_lib_1_1_clipper_base_aad4ca0f2a16a6fb466036b36cc5ff638}} 
+bool {\bfseries m\+\_\+\+Preserve\+Collinear}
+\item 
+\mbox{\Hypertarget{class_clipper_lib_1_1_clipper_base_aa2508f5b2a599294c359271506441fbd}\label{class_clipper_lib_1_1_clipper_base_aa2508f5b2a599294c359271506441fbd}} 
+bool {\bfseries m\+\_\+\+Has\+Open\+Paths}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+geometry/clipper/clipper.\+hpp\item 
+geometry/clipper/clipper.\+cpp\end{DoxyCompactItemize}

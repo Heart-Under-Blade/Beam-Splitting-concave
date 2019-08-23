@@ -1,11 +1,10 @@
 TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
-#CONFIG -= qt
 
 DESTDIR = ../bin
 
-VERSION = 1.2.0
+VERSION = 2.0.0
 
 QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
@@ -22,6 +21,7 @@ CONFIG(debug,	debug|release): {
 INCLUDEPATH += \
     ../src \
     ../src/math \
+    ../src/incidence \
     ../src/common \
     ../src/particle \
     ../src/geometry \
@@ -33,6 +33,7 @@ INCLUDEPATH += \
 SOURCES += \
     ../src/*.cpp \
     ../src/math/*.cpp \
+    ../src/incidence/*.cpp \
     ../src/tracer/*.cpp \
     ../src/particle/*.cpp \
     ../src/geometry/*.cpp \
@@ -46,6 +47,7 @@ SOURCES -= ../src/Beam.cpp
 HEADERS += \
     ../src/*.h \
     ../src/math/*.hpp \
+    ../src/incidence/*.h \
     ../src/tracer/*.h \
     ../src/math/*.h \
     ../src/particle/*.h \
@@ -56,5 +58,4 @@ HEADERS += \
     ../src/bigint/*.hh
 
 DISTFILES += \
-    classes.qmodel \
-    sequence.qmodel
+    *.qmodel

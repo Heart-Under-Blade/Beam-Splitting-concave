@@ -1,14 +1,14 @@
 #pragma once
 
 //#include "Particle.h"
-#include "Hexagonal.h"
+#include "Column.h"
 
 class BulletRosette : public Particle
 {
 public:
 	BulletRosette();
-	BulletRosette(const complex &refrIndex, double diameter, double height,
+	BulletRosette(const complex &refrIndex, const Size &size,
 				  double peakHeight);
 
-	void GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const override;
+	void GetParticalFacetIdRange(Facet *facet, int &begin, int &end) const override;
 };

@@ -76,14 +76,14 @@ public:
 		rest += m;
 	}
 
-	void AddToGroup(const Matrix2x2c &jones, size_t groupId)
+	void AddToGroup(const Matrix2x2c &jones, int groupId)
 	{
 		groupJones[groupId] += jones;
 	}
 
 	void SumGroupTotal()
 	{
-		for (size_t gr = 0; gr < m_nGroups; ++gr)
+		for (int gr = 0; gr < m_nGroups; ++gr)
 		{
 			MuellerMatrix m(groupJones[gr]);
 			m *= m_normIndex;
@@ -115,7 +115,7 @@ public:
 		return rest;
 	}
 
-	const MuellerMatrix &GetGroupMueller(size_t groupID)
+	const MuellerMatrix &GetGroupMueller(int groupID)
 	{
 		return groupMuellers.at(groupID);
 	}
@@ -140,7 +140,7 @@ private:
 	MuellerMatrix rest;
 	MuellerMatrix total;
 
-	size_t m_nGroups;
+	int m_nGroups;
 	double m_normIndex;
 
 	void ResetJones()
@@ -151,7 +151,6 @@ private:
 		}
 	}
 };
-
 
 class ContributionGO
 {
@@ -202,6 +201,8 @@ struct BeamInfo
 	Point3d lenIndices;
 };
 
+<<<<<<< HEAD
+
 class Handler
 {
 public:
@@ -226,6 +227,8 @@ public:
 	int m_nBadBeams;
 
 protected:
+	void OutputPaths(const Beam &beam, const OpticalPath &path);
+
 	double BeamCrossSection(const Beam &beam) const;
 
 	void ApplyAbsorption(Beam &beam);
@@ -258,6 +261,7 @@ protected:
 protected:
 	Scattering *m_scattering;
 	Tracks *m_tracks;
+	std::ofstream m_absLogFile;
 
 	Particle *m_particle;
 	double m_wavelength; // must be double type!!!
@@ -273,13 +277,13 @@ protected:
 
 	complex m_complWave;
 	complex m_invComplWave;
-	double m_absMag;
 
 	double m_eps1;
 	double m_eps2;
 	double m_eps3;
 
 	bool m_isBadBeam;
+	long long count = 0;
 
 private:
 	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);

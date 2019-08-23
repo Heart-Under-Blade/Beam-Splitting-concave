@@ -2,8 +2,9 @@
 
 #include "ScatteringNonConvex.h"
 #include "BulletRosette.h"
+#include "HollowColumn.h"
 #include "Tracks.h"
-#include "global.h"
+#include "common.h"
 
 using namespace std;
 
@@ -19,7 +20,7 @@ private slots:
 	void test_Absorption();
 
 private:
-	BulletRosette *pt;
+	Particle *pt;
 	ScatteringNonConvex *sc;
 	Light incidentLight;
 };
@@ -28,10 +29,10 @@ PO::PO()
 {
 	incidentLight.direction = Point3f(0, 0, -1);
 	incidentLight.polarizationBasis = Point3f(0, 1, 0);
-
-	pt = new BulletRosette(complex(1.3116, 0), 42.04, 100,
-						   (42.04*sqrt(3)*tan(DegToRad(62)))/4);
-	sc = new ScatteringNonConvex(pt, &incidentLight, true, 4);
+//	pt = new BulletRosette(complex(1.3116, 0), Size(42.04, 100),
+//						   (42.04*sqrt(3)*tan(Angle::DegToRad(62)))/4);
+	pt = new HollowColumn(complex(1.3116, 0), Size(42.04, 100), 5);
+	sc = new ScatteringNonConvex(pt, incidentLight, 4);
 }
 
 PO::~PO()
@@ -40,11 +41,13 @@ PO::~PO()
 
 void PO::test_Absorption()
 {
-	Point3f point = incidentLight.direction * pt->GetRotationRadius();
-	incidentLight.direction.d_param = DotProduct(point, incidentLight.direction);
+	Point3f point = incidentLight.direction * pt->ComputeRotationRadius();
+	incidentLight.direction.d_param = Point3f::DotProduct(point, incidentLight.direction);
 
 	vector<Beam> outBeams;
-	sc->ScatterLight(179.34, 37, outBeams);
+	pt->Rotate(Orientation(0, Orientation::DegToRad(179.34), Orientation::DegToRad(37)));
+//	sc->RotateParticle(Angle(0, 179.34, 37));
+	sc->ScatterLight(outBeams);
 
 	pt->Output();
 
@@ -56,24 +59,35 @@ void PO::test_Absorption()
 //	QVERIFY(b.opticalPath >= 20022.8019);
 //	QVERIFY(b.opticalPath <= 20022.8021);
 
+	QVERIFY(!outBeams.empty());
+
 	// absorption
+
+	Tracks tracks(pt->nElems);
+	bool isCatchedBeams = false;
+
 	for (unsigned i = 0; i < outBeams.size(); ++i)
 	{
 		Beam &beam = outBeams[i];
+//		QVERIFY(!isnan(beam.front));
 
-		if (beam.nActs > 0)
+		if (beam.actNo > 0)
 		{
+			isCatchedBeams = true;
 			vector<int> tr;
-			Tracks::RecoverTrack(beam, pt->nFacets, tr);
+			tracks.RecoverTrack(beam, tr);
 
-			double path = sc->ComputeInternalOpticalPath(beam, tr);
+			OpticalPath path = sc->ComputeOpticalPath(beam, beam.Center(), tr);
+			double total = path.GetTotal();
 #ifdef _DEBUG // DEB
-			if (fabs(path - beam.opticalPath) >= 10e-4)
-				int ggg = 0;
+//			if (fabs(total - beam.opticalPath) >= 10e-4)
+//				int ggg = 0;
+//			QVERIFY(fabs(total - beam.opticalPath) < 10e-4);
 #endif
-			QVERIFY(fabs(path - beam.opticalPath) < 10e-4);
 		}
 	}
+
+	QVERIFY(isCatchedBeams);
 }
 
 QTEST_APPLESS_MAIN(PO)

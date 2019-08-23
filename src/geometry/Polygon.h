@@ -1,16 +1,28 @@
 #pragma once
 
-#include "geometry_lib.h"
+#include "Point.h"
+#include <iostream>
+
+#define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
+
+#ifdef _DEBUG // DEB
+#define MAX_VERTEX_NUM 256		///< maximum number of vertices in polygon
+#else
+/// REF OPT: уменьшить в 2 раза
+#define MAX_VERTEX_NUM 64		///< maximum number of vertices in polygon
+#endif
+
+#define MAX_POLYGON_NUM 512		///< maximum number of polygons in verticesay of polygons
 
 /**
- * @brief The Polygon struct
- * Convex polygon
+ * @brief Polygon consisted of 3 or more 3-coordinated vertices.
+ * It will work correctly if the points are situated on the same plane.
  */
 class Polygon
 {
 public:
-	Point3f arr[MAX_VERTEX_NUM];
-	size_t nVertices = 0;
+	Point3f vertices[MAX_VERTEX_NUM];
+	int nVertices = 0;
 
 	Polygon();
 	explicit Polygon(int nVertices);
@@ -19,90 +31,61 @@ public:
 
 	void AddVertex(const Point3f &v);
 
-	void Concat(const Polygon &other)
-	{
-		for (int i = 0; i < other.nVertices; ++i)
-		{
-			AddVertex(other.arr[i]);
-		}
-	}
-
-	void InsertVertex(int index, const Point3f &v)
-	{
-		++nVertices;
-
-		for (int i = nVertices-1; i > index; --i)
-		{
-			arr[i] = arr[i-1];
-		}
-
-		arr[index] = v;
-	}
-
-	void DeleteVertex(int index)
-	{
-		for (int i = nVertices-1; i > index; --i)
-		{
-			arr[i-1] = arr[i];
-		}
-
-		--nVertices;
-	}
-
 	Polygon & operator = (const Polygon &other);
 	Polygon & operator = (Polygon &&other);
-	friend std::ostream & operator << (std::ostream &os, const Polygon &beam);
 
-	void Clear()
-	{
-		nVertices = 0;
-	}
+	void InsertVertex(int index, const Point3f &v);
+	void RemoveVertex(int index);
+	void Concat(const Polygon &other);
+	void Clear();
 
 	double Area() const;
 	Point3f Center() const;
 	Point3f Normal() const;
+
+	friend std::ostream & operator << (std::ostream &os, const Polygon &beam);
 };
 
 class Polygon512
 {
 public:
-	Point3f arr[512];
+	Point3f vertices[512];
 	size_t nVertices = 0;
 
 	Polygon512() {}
 
 	void AddVertex(const Point3f &v)
 	{
-		arr[nVertices++] = v;
+		vertices[nVertices++] = v;
 	}
 
 	void Concat(const Polygon &other)
 	{
 		for (int i = 0; i < other.nVertices; ++i)
 		{
-			AddVertex(other.arr[i]);
+			AddVertex(other.vertices[i]);
 		}
 	}
 };
 
-class PolygonArray
+class PolygonStack
 {
 public:
-	Polygon arr[MAX_POLYGON_NUM];
-	size_t size = 0;
+	Polygon polygons[MAX_POLYGON_NUM];
+	int nPolygons = 0;
 
 	void Push(const Polygon &p)
 	{
-		arr[size++] = p;
+		polygons[nPolygons++] = p;
 	}
 
 	Polygon &Pop()
 	{
-		return arr[--size];
+		return polygons[--nPolygons];
 	}
 
 	void Clear()
 	{
-		size = 0;
+		nPolygons = 0;
 	}
 };

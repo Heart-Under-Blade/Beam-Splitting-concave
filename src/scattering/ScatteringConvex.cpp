@@ -1,91 +1,64 @@
 #include "ScatteringConvex.h"
 
-ScatteringConvex::ScatteringConvex(Particle *particle, Light *incidentLight,
-								   bool isOpticalPath, int nActs)
-	: Scattering(particle, incidentLight, isOpticalPath, nActs)
+ScatteringConvex::ScatteringConvex(Particle *particle, const Light &incidentLight,
+								   int maxActNo)
+	: Scattering(particle, incidentLight, maxActNo)
 {
 }
 
-void ScatteringConvex::ScatterLight(double beta, double gamma,
-									std::vector<Beam> &outBeams)
+void ScatteringConvex::PushBeamsToBuffer(Facet *facet, BeamPair<Beam> &beams,
+										 std::vector<Beam> &scatteredBeams)
 {
+<<<<<<< HEAD
 //	m_particle->Rotate(beta, gamma, 0);
+=======
+	Track tr = m_originalBeam;
+	tr.Update(facet);
+	tr.RecomputeTrackId(0, facet->index);
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
-	m_incidentEnergy = 0;
-	m_treeSize = 0;
+	beams.external.CopyTrack(tr);
+	beams.external.SetLocation(false);
+	scatteredBeams.push_back(beams.external);
 
-	/// first extermal beam
-	for (int facetID = 0; facetID < m_particle->nFacets; ++facetID)
+	beams.internal.CopyTrack(tr);
+	beams.internal.SetLocation(true);
+
+	if (IsTerminalAct(beams.internal))
 	{
-		const Point3f &inNormal = m_facets[facetID].in_normal;
-		m_splitting.ComputeCosA(m_incidentDir, inNormal);
-
-		if (!m_splitting.IsIncident()) /// beam is not incident to this facet
+		if (!beams.internal.isInside)
 		{
-			continue;
+			ReleaseBeam(beams.internal);
 		}
-
-		Beam inBeam, outBeam;
-		SplitLightToBeams(facetID, inBeam, outBeam);
-
-		auto newId = RecomputeTrackId(0, facetID);
-
-		outBeam.id = newId;
-		outBeam.lastFacetId = facetID;
-		outBeam.nActs = 0;
-		outBeams.push_back(outBeam);
-
-		inBeam.id = newId;
-		PushBeamToTree(inBeam, facetID, 0, Location::In);
+	}
+	else
+	{
+		PushBeamToTree(beams.internal);
+	}
 
 #ifdef _CHECK_ENERGY_BALANCE
-		ComputeFacetEnergy(facetID, outBeam);
+	ComputeFacetEnergy(facet->in_normal, beams.external);
 #endif
-	}
-
-	TraceInternalBeams(outBeams);
 }
 
-void ScatteringConvex::ScatterLight(double, double, const std::vector<std::vector<int>> &/*tracks*/, std::vector<Beam> &)
+void ScatteringConvex::SplitOriginalBeam(std::vector<Beam> &externalBeams)
 {
-}
+	m_visibleFacets.nElems = 0;
+	FindVisibleFacets(m_originalBeam, m_lightChecker, 0, m_particle->nElems, m_visibleFacets);
 
-void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
-{
-	while (m_treeSize != 0)
+	for (int i = 0; i < m_visibleFacets.nElems; ++i)
 	{
-		Beam beam = m_beamTree[--m_treeSize];
+		Facet *facet = m_visibleFacets.elems[i];
 
-		if (IsTerminalAct(beam))
-		{
-			continue;
-		}
-
-		for (int id = 0; id < m_particle->nFacets; ++id)
-		{
-			if (id == beam.lastFacetId)
-			{
-				continue;
-			}
-
-			Beam inBeam;
-			bool isIncident = SplitSecondaryBeams(beam, id, inBeam, outBeams);
-
-			if (!isIncident)
-			{
-				continue;
-			}
-
-			inBeam.id = RecomputeTrackId(beam.id, id);
-			inBeam.locations = beam.locations;
-			PushBeamToTree(inBeam, id, beam.nActs+1, Location::In);
-		}
+		m_splitting.SetBeams(*facet);
+		ComputeOpticalBeamParams(facet, m_originalBeam);
+		PushBeamsToBuffer(facet, m_splitting.beams, externalBeams);
 	}
 }
 
-bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
-										   Beam &inBeam, std::vector<Beam> &outBeams)
+void ScatteringConvex::SelectVisibleFacets(const Beam &beam, Array<Facet*> &facets)
 {
+<<<<<<< HEAD
 	Beam outBeam;
 	const Point3f &incidentDir = incidentBeam.direction;
 
@@ -153,4 +126,7 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 	}
 
 	return true;
+=======
+	FindVisibleFacets(beam, m_lightChecker, 0, m_particle->nElems, facets);
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }
