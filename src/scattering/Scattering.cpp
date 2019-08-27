@@ -29,7 +29,12 @@ Scattering::Scattering(Particle *particle, Light *incidentLight, bool isOpticalP
 
 	m_polarBasis = m_incidentLight->polarizationBasis;
 
-	m_splitting.ComputeRiParams(m_particle->GetRefractiveIndex());
+	SetSplitting(m_particle);
+}
+
+void Scattering::SetSplitting(Particle *p)
+{
+	m_splitting.ComputeRiParams(p->GetRefractiveIndex());
 }
 
 IdType Scattering::Scattering::RecomputeTrackId(const IdType &oldId, int facetId)
@@ -91,6 +96,10 @@ void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 		double path = m_splitting.ComputeIncidentOpticalPath(m_incidentDir, p);
 		inBeam.opticalPath = 0;
 		outBeam.opticalPath = 0;
+#ifdef _DEBUG // DEB
+		inBeam.ops.push_back(path);
+		outBeam.ops.push_back(path);
+#endif
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
 		outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam);
@@ -245,7 +254,7 @@ void Scattering::RemoveDublicatedVertices2f(const std::vector<Point2f> &projecte
 	}
 }
 
-void Scattering::FormShadowBeam(std::vector<Beam> &scaterredBeams)
+void Scattering::ExtractShadowBeam(std::vector<Beam> &scaterredBeams)
 {
 	std::vector<Point2f> projected;
 	ProjectParticleToXY(projected);
@@ -551,61 +560,12 @@ double Scattering::GetIncedentEnergy() const
 	return m_incidentEnergy;
 }
 
-double Scattering::ComputeInternalOpticalPath(const Beam &beam,
-											  const Point3f sourcePoint,
-											  const vector<int> &track)
+double Scattering::MesureOpticalPath(const Beam &beam,
+									 const Point3f sourcePoint,
+									 const vector<int> &track)
 {
-	double path1 = 0;
-	double path = 0;
-	Point3f dir = -beam.direction; // back direction
-	Location loc = Location::Out;
-	Location nextLoc;
+}
 
-	Point3f p1 = sourcePoint;
-	Point3f p2;
-
-	for (int i = track.size()-1; i > 0; --i)
-	{
-		nextLoc = beam.GetLocationByActNumber(i-1);
-
-		Point3f &exNormal = m_facets[track[i]].ex_normal;
-		dir = m_splitting.ChangeBeamDirection(dir, exNormal, loc, nextLoc);
-
-		Point3f &inNormal = m_facets[track[i-1]].in_normal;
-		p2 = ProjectPointToPlane(p1, dir, inNormal);
-		double len = Length(p2 - p1);
-
-		if (nextLoc == Location::In)
-		{	// add internal path only
-			m_splitting.ComputeCosA(dir, exNormal);
-			double reRi = m_splitting.ComputeEffectiveReRi();
-			len *= sqrt(reRi);
-		}
-
-#ifdef _DEBUG // DEB
-//		Point3f dddd = inNormal;
-//		dddd.d_param = -dddd.d_param;
-//		Point3f p22 = ProjectPointToPlane(p1, dir, dddd);
-//		double len1 = Length(p1 - p22);
-//		len1 *= sqrt(real(m_splitting.GetRi()));
-//		path1 += len1;
-#endif
-		path += len;
-
-		p1 = p2;
-		loc = nextLoc;
-	}
-
-#ifdef _DEBUG // DEB
-//	path *= real(m_splitting.GetRi());
-//	Point3f nFar1 = m_incidentDir;
-//	Point3f nFar2 = -beam.direction;
-//	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
-//	double dd2 = fabs(DotProductD(sourcePoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
-//	path += dd1;
-//	path += dd2;
-//	if (fabs(path - beam.opticalPath) > 1)
-//		int ff = 0;
-#endif
-	return path;
+double Scattering::MesureFullOpticalPath(const Beam &beam, const Point3f sourcePoint, const std::vector<int> &track)
+{
 }

@@ -5,6 +5,14 @@
 #define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
 #define EPS_COS_00		0.99999999998254670756866631966593		//1 - cos(89.99999999)
 
+enum class SplittingType
+{
+	OutIn,
+	OutOut,
+	InOut,
+	InIn
+};
+
 class Splitting
 {
 public:
@@ -43,8 +51,11 @@ public:
 
 	Point3f ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
 								Location oldLoc, Location loc);
+
+	Point3f ChangeBeamDirectionConvex(const Vector3f &oldDir,
+									  const Vector3f &normal, Location loc);
 private:
-	Point3f r;
+	Point3f m_r;
 	double reRiEff;
 	double s;
 //	double cosA;
@@ -67,7 +78,14 @@ private:
 	void ComputeRegularJonesParams(const Point3f &normal,
 								   const Beam &incidentBeam,
 								   Beam &inBeam, Beam &outBeam);
-	void ComputeInternalRefractiveDirection(const Vector3f &r,
-											const Vector3f &normal, Vector3f &dir);
+	void RefractIn(const Vector3f &r, const Vector3f &normal,
+				   Vector3f &newDir);
 
+	void ReflectExternal(const Vector3f &oldDir, const Vector3f &normal,
+					Vector3f &newDir);
+
+	void ReflectInternal(const Vector3f &oldDir, const Vector3f &normal,
+						 Vector3f &newDir);
+	void RefractOut(const Vector3f &oldDir, const Vector3f &normal,
+					Vector3f &newDir);
 };

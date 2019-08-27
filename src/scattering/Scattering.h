@@ -58,13 +58,18 @@ public:
 	virtual void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
-	virtual void FormShadowBeam(std::vector<Beam> &scaterredBeams);
+	virtual void ExtractShadowBeam(std::vector<Beam> &scaterredBeams);
 
 	double GetIncedentEnergy() const;
 
-	double ComputeInternalOpticalPath(const Beam &beam, const Point3f sourcePoint,
-									  const std::vector<int> &track);
+	virtual double MesureOpticalPath(const Beam &beam, const Point3f sourcePoint,
+									 const std::vector<int> &track);
+
+	virtual double MesureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
+										 const std::vector<int> &track);
 //	double CrossSection(const Point3f &beamDir) const;
+
+	void SetSplitting(Particle *p);
 
 protected:
 	void SetIncidentBeamOpticalParams(unsigned facetId, Beam &inBeam, Beam &outBeam);

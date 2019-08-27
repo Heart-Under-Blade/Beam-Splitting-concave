@@ -123,11 +123,17 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
 												  inBeam, outBeam);
 			outBeam.nActs = incidentBeam.nActs + 1;
+#ifdef _DEBUG // DEB
+			double p = m_splitting.ComputeOutgoingOpticalPath(outBeam);
+			outBeam.opticalPath += p;
+			outBeam.ops.push_back(p);
+#else
 			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
+#endif
 			outBeam.lastFacetId = facetID;
 			outBeams.push_back(outBeam);
 #ifdef _DEBUG // DEB
-			if (outBeams.size() == 330)
+			if (outBeams.size() == 19)
 				int ddd = 0;
 #endif
 		}
@@ -142,15 +148,69 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 
 		outBeam.nActs = incidentBeam.nActs + 1;
 		outBeam.id = RecomputeTrackId(incidentBeam.id, facetID);
-		double path = m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
-		outBeam.opticalPath += path;
+#ifdef _DEBUG // DEB
+		double p = m_splitting.ComputeOutgoingOpticalPath(outBeam);
+		outBeam.opticalPath += p;
+		outBeam.ops.push_back(p);
+#else
+		outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
+#endif
 		outBeam.lastFacetId = facetID;
 		outBeams.push_back(outBeam);
 #ifdef _DEBUG // DEB
-			if (outBeams.size() == 330)
-				int ddd = 0;
+		if (outBeams.size() == 19)
+			int ddd = 0;
 #endif
 	}
 
 	return true;
+}
+
+
+double ScatteringConvex::MesureOpticalPath(const Beam &beam,
+										   const Point3f sourcePoint,
+										   const std::vector<int> &track)
+{
+	double path = 0;
+	Point3f dir = -beam.direction; // back direction
+	Location loc = Location::Out;
+
+	Point3f p1 = sourcePoint;
+	Point3f p2;
+
+	// back tracing
+	for (int i = track.size()-1; i > 0; --i)
+	{
+		Point3f &exNormal = m_facets[track[i]].ex_normal;
+		dir = m_splitting.ChangeBeamDirectionConvex(dir, exNormal, loc);
+
+		Point3f &inNormal = m_facets[track[i-1]].in_normal;
+		p2 = ProjectPointToPlane(p1, dir, inNormal);
+		double len = Length(p2 - p1);
+
+		path += len;
+		p1 = p2;
+		loc = Location::In;
+	}
+
+	lastPoint = p2;
+
+	path *= real(m_splitting.GetRi());
+	return path;
+}
+
+double ScatteringConvex::MesureFullOpticalPath(const Beam &beam,
+											   const Point3f sourcePoint,
+											   const std::vector<int> &track)
+{
+	double path = MesureOpticalPath(beam, sourcePoint, track);
+
+	Point3f nFar1 = m_incidentDir;
+	Point3f nFar2 = -beam.direction;
+	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(lastPoint, nFar1);
+	double dd2 = fabs(DotProductD(sourcePoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+	path += dd1;
+	path += dd2;
+
+	return path;
 }

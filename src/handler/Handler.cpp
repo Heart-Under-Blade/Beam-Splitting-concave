@@ -80,7 +80,7 @@ void Handler::ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr)
 
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		double d = m_scattering->ComputeInternalOpticalPath(
+		double d = m_scattering->MesureOpticalPath(
 					beam, beam.arr[i], tr);
 		lengths.push_back(d);
 	}
@@ -119,7 +119,7 @@ void Handler::ApplyAbsorption(Beam &beam)
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-	double path = m_scattering->ComputeInternalOpticalPath(beam, beam.Center(), tr);
+	double path = m_scattering->MesureOpticalPath(beam, beam.Center(), tr);
 
 #ifdef _DEBUG // DEB
 //	double ddd = fabs(path - beam.opticalPath);
@@ -174,8 +174,6 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 			p2.x*p1.y + p2.x*p3.y +
 			p3.x*p1.y - p3.x*p2.y;
 
-	m_isBadBeam = false;
-
 	if (fabs(den) < 1e-3)
 	{
 		m_isBadBeam = true;
@@ -193,6 +191,54 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 	info.lenIndices.y = -(lens[0]*p2.x - lens[0]*p3.x -
 			lens[1]*p1.x + lens[1]*p3.x +
 			lens[2]*p1.x - lens[2]*p2.x) / den;
+}
+
+BeamInfo Handler::ComputeBeamInfo(const Beam &beam)
+{
+	BeamInfo info;
+	info.normal = beam.Normal();
+	info.normald = Point3d(info.normal.cx, info.normal.cy, info.normal.cz);
+
+	info.order = DotProduct(info.normal, beam.direction) > 0;
+
+	if (!info.order)
+	{
+		info.normal = -info.normal;
+		info.normald = -info.normald;
+	}
+
+	ComputeCoordinateSystemAxes(info.normald, info.horAxis, info.verAxis);
+
+	info.center = beam.Center();
+	info.projectedCenter = ChangeCoordinateSystem(info.horAxis, info.verAxis,
+												  info.normald, info.center);
+	if (m_hasAbsorption && beam.lastFacetId != INT_MAX)
+	{
+		ComputeOpticalLengths(beam, info);
+		ComputeLengthIndices(beam, info);
+	}
+
+	info.area = beam.Area();
+
+	info.projLenght = beam.opticalPath + DotProductD(info.center, beam.direction);
+
+	info.beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
+	info.beamBasis = info.beamBasis/Length(info.beamBasis); // basis of beam
+
+	return info;
+}
+
+void Handler::ComputeOpticalLengths(const Beam &beam, BeamInfo &info)
+{
+	std::vector<int> tr;
+	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+
+	for (int i = 0; i < 3; ++i)
+	{
+		info.opticalLengths[i] = m_scattering->MesureOpticalPath(
+					beam, beam.arr[i], tr);
+	}
+	//	ExtropolateOpticalLenght(beam, tr);
 }
 
 Tracks *Handler::GetTracks() const

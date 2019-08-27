@@ -12,9 +12,18 @@ public:
 	void ScatterLight(double, double, const std::vector<std::vector<int>> &,
 					  std::vector<Beam> &) override; ///> for predefined trajectories
 
+	double MesureOpticalPath(const Beam &beam, const Point3f sourcePoint,
+							 const std::vector<int> &track) override;
+
+	double MesureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
+								 const std::vector<int> &track) override;
+
 protected:
 	void TraceInternalBeams(std::vector<Beam> &outBeams);
 
 	bool SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 							 Beam &inBeam, std::vector<Beam> &outBeams);
+
+private:
+	Point3f lastPoint;
 };

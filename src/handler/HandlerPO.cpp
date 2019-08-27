@@ -119,60 +119,12 @@ void HandlerPO::AddToMueller()
 	}
 }
 
-BeamInfo HandlerPO::ComputeBeamInfo(const Beam &beam)
-{
-	BeamInfo info;
-	info.normal = beam.Normal();
-	info.normald = Point3d(info.normal.cx, info.normal.cy, info.normal.cz);
-
-	info.order = DotProduct(info.normal, beam.direction) > 0;
-
-	if (!info.order)
-	{
-		info.normal = -info.normal;
-		info.normald = -info.normald;
-	}
-
-	ComputeCoordinateSystemAxes(info.normald, info.horAxis, info.verAxis);
-
-	info.center = beam.Center();
-	info.projectedCenter = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-												  info.normald, info.center);
-	if (m_hasAbsorption && beam.lastFacetId != INT_MAX)
-	{
-		ComputeOpticalLengths(beam, info);
-		ComputeLengthIndices(beam, info);
-	}
-
-	info.area = beam.Area();
-
-	info.projLenght = beam.opticalPath + DotProductD(info.center, beam.direction);
-
-	info.beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
-	info.beamBasis = info.beamBasis/Length(info.beamBasis); // basis of beam
-
-	return info;
-}
-
 void HandlerPO::SetScatteringSphere(const ScatteringSphere &grid)
 {
 	m_sphere = grid;
 	M = Arr2D(m_sphere.nAzimuth+1, m_sphere.nZenith+1, 4, 4);
 
 	m_sphere.ComputeSphereDirections(*m_incidentLight);
-}
-
-void HandlerPO::ComputeOpticalLengths(const Beam &beam, BeamInfo &info)
-{
-	std::vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
-
-	for (int i = 0; i < 3; ++i)
-	{
-		info.opticalLengths[i] = m_scattering->ComputeInternalOpticalPath(
-					beam, beam.arr[i], tr);
-	}
-	//	ExtropolateOpticalLenght(beam, tr);
 }
 
 void HandlerPO::HandleBeams(std::vector<Beam> &beams)
@@ -185,6 +137,8 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
+		m_isBadBeam = false;
+
 #ifdef _DEBUG // DEB
 		cc++;
 		if (cc == 330)

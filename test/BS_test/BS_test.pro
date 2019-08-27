@@ -11,8 +11,9 @@ SOURCES +=  tst_po.cpp
 QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
+DEFINES += _TEST
+
 CONFIG(release, debug|release): {
-    DEFINES += _NDEBUG
     TARGET = mbs
 }
 
@@ -24,6 +25,7 @@ CONFIG(debug,	debug|release): {
 INCLUDEPATH += \
     ../../src \
     ../../src/math \
+    ../../src/handler \
     ../../src/common \
     ../../src/particle \
     ../../src/geometry \
@@ -32,17 +34,9 @@ INCLUDEPATH += \
     ../../src/bigint
 
 SOURCES += \
-    ../../src/Beam.cpp \
-    ../../src/CalcTimer.cpp \
-    ../../src/Handler.cpp \
-    ../../src/ScatteringFiles.cpp \
-    ../../src/Splitting.cpp \
-    ../../src/Tracer.cpp \
-    ../../src/TracerBackScatterPoint.cpp \
-    ../../src/TracerGO.cpp \
-    ../../src/TracerPO.cpp \
     ../../src/Tracks.cpp \
     ../../src/math/*.cpp \
+    ../../src/handler/*.cpp \
     ../../src/particle/*.cpp \
     ../../src/geometry/*.cpp \
     ../../src/common/*.cpp \
@@ -50,17 +44,20 @@ SOURCES += \
     ../../src/bigint/*.cc
 
 SOURCES -= ../../src/main.cpp
-message($$SOURCES)
+#message($$SOURCES)
 
 HEADERS += \
     ../../src/*.h \
     ../../src/math/*.hpp \
     ../../src/math/*.h \
+    ../../src/handler/*.h \
     ../../src/particle/*.h \
     ../../src/geometry/*.h \
     ../../src/common/*.h \
     ../../src/scattering/*.h \
     ../../src/bigint/*.hh
+
+HEADERS -= ../../src/Beam.h
 
 DISTFILES += \
     classes.qmodel \

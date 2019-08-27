@@ -54,3 +54,6 @@ tool/StlToCry - копия/Converter.h
 tool/StlToCry - копия/Converter.cpp
 bin/mbs_without.exe
 bin/mbs_with.exe
+src_bcp/
+test/build-BS_test-Desktop-Release/
+test/build-BS_test-Desktop-Debug/log1.txt

@@ -11,10 +11,10 @@ MAKEFILE      = Makefile.Release
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DUNICODE -D_NDEBUG -DQT_NO_DEBUG -DQT_TESTLIB_LIB -DQT_CORE_LIB -DQT_TESTCASE_BUILDDIR="\"C:/Projects/Beam-Splitting-concave/test/build-BS_test-Desktop-Debug\"" -DQT_QML_DEBUG
+DEFINES       = -DUNICODE -D_TEST -DQT_NO_DEBUG -DQT_TESTLIB_LIB -DQT_CORE_LIB -DQT_TESTCASE_BUILDDIR="\"C:/Projects/Beam-Splitting-develop/test/build-BS_test-Desktop-Debug\"" -DQT_QML_DEBUG
 CFLAGS        = -fno-keep-inline-dllexport -pipe -O2 -Wextra -Wall -W $(DEFINES)
 CXXFLAGS      = -fno-keep-inline-dllexport -pipe -std=gnu++11 -march=corei7 -msse4.2 -O2 -std=gnu++11 -Wextra -Wall -W -fexceptions -mthreads $(DEFINES)
-INCPATH       = -I..\BS_test -I. -I..\..\src -I..\..\src\math -I..\..\src\common -I..\..\src\particle -I..\..\src\geometry -I..\..\src\scattering -I..\..\src\tracer -I..\..\src\bigint -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\include -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\include\QtTest -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\include\QtCore -Irelease -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\win32-g++ 
+INCPATH       = -I..\BS_test -I. -I..\..\src -I..\..\src\math -I..\..\src\handler -I..\..\src\common -I..\..\src\particle -I..\..\src\geometry -I..\..\src\scattering -I..\..\src\tracer -I..\..\src\bigint -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\include -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\include\QtTest -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\include\QtCore -Irelease -I..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\win32-g++ 
 LINKER      =        g++
 LFLAGS        =        -Wl,-s -Wl,-subsystem,console -mthreads
 LIBS        =        -LC:\Qt\5.9.1\5.9.1\mingw53_32\lib C:\Qt\5.9.1\5.9.1\mingw53_32\lib\libQt5Test.a C:\Qt\5.9.1\5.9.1\mingw53_32\lib\libQt5Core.a 
@@ -46,21 +46,19 @@ OBJECTS_DIR   = release
 ####### Files
 
 SOURCES       = ..\BS_test\tst_po.cpp \
-		..\..\src\Beam.cpp \
-		..\..\src\CalcTimer.cpp \
-		..\..\src\Handler.cpp \
-		..\..\src\ScatteringFiles.cpp \
-		..\..\src\Splitting.cpp \
-		..\..\src\Tracer.cpp \
-		..\..\src\TracerBackScatterPoint.cpp \
-		..\..\src\TracerGO.cpp \
-		..\..\src\TracerPO.cpp \
 		..\..\src\Tracks.cpp \
 		..\..\src\math\compl.cpp \
 		..\..\src\math\JonesMatrix.cpp \
 		..\..\src\math\matrix.cpp \
 		..\..\src\math\Mueller.cpp \
 		..\..\src\math\PhysMtr.cpp \
+		..\..\src\handler\Handler.cpp \
+		..\..\src\handler\HandlerBackScatterPoint.cpp \
+		..\..\src\handler\HandlerGO.cpp \
+		..\..\src\handler\HandlerPO.cpp \
+		..\..\src\handler\HandlerPOTotal.cpp \
+		..\..\src\handler\HandlerTotalGO.cpp \
+		..\..\src\handler\HandlerTracksGO.cpp \
 		..\..\src\particle\Bullet.cpp \
 		..\..\src\particle\BulletRosette.cpp \
 		..\..\src\particle\CertainAggregate.cpp \
@@ -73,33 +71,35 @@ SOURCES       = ..\BS_test\tst_po.cpp \
 		..\..\src\geometry\geometry_lib.cpp \
 		..\..\src\geometry\Intersection.cpp \
 		..\..\src\geometry\Polygon.cpp \
+		..\..\src\common\Beam.cpp \
+		..\..\src\common\CalcTimer.cpp \
 		..\..\src\common\common.cpp \
 		..\..\src\common\Matrix4x4.cpp \
 		..\..\src\common\MullerMatrix.cpp \
+		..\..\src\common\ScatteringFiles.cpp \
 		..\..\src\scattering\Scattering.cpp \
 		..\..\src\scattering\ScatteringConvex.cpp \
 		..\..\src\scattering\ScatteringNonConvex.cpp \
+		..\..\src\scattering\Splitting.cpp \
 		..\..\src\bigint\BigInteger.cc \
 		..\..\src\bigint\BigIntegerAlgorithms.cc \
 		..\..\src\bigint\BigIntegerUtils.cc \
 		..\..\src\bigint\BigUnsigned.cc \
 		..\..\src\bigint\BigUnsignedInABase.cc 
 OBJECTS       = release/tst_po.o \
-		release/Beam.o \
-		release/CalcTimer.o \
-		release/Handler.o \
-		release/ScatteringFiles.o \
-		release/Splitting.o \
-		release/Tracer.o \
-		release/TracerBackScatterPoint.o \
-		release/TracerGO.o \
-		release/TracerPO.o \
 		release/Tracks.o \
 		release/compl.o \
 		release/JonesMatrix.o \
 		release/matrix.o \
 		release/Mueller.o \
 		release/PhysMtr.o \
+		release/Handler.o \
+		release/HandlerBackScatterPoint.o \
+		release/HandlerGO.o \
+		release/HandlerPO.o \
+		release/HandlerPOTotal.o \
+		release/HandlerTotalGO.o \
+		release/HandlerTracksGO.o \
 		release/Bullet.o \
 		release/BulletRosette.o \
 		release/CertainAggregate.o \
@@ -112,12 +112,16 @@ OBJECTS       = release/tst_po.o \
 		release/geometry_lib.o \
 		release/Intersection.o \
 		release/Polygon.o \
+		release/Beam.o \
+		release/CalcTimer.o \
 		release/common.o \
 		release/Matrix4x4.o \
 		release/MullerMatrix.o \
+		release/ScatteringFiles.o \
 		release/Scattering.o \
 		release/ScatteringConvex.o \
 		release/ScatteringNonConvex.o \
+		release/Splitting.o \
 		release/BigInteger.o \
 		release/BigIntegerAlgorithms.o \
 		release/BigIntegerUtils.o \
@@ -125,25 +129,20 @@ OBJECTS       = release/tst_po.o \
 		release/BigUnsignedInABase.o
 
 DIST          = classes.qmodel \
-		sequence.qmodel ..\..\src\ArgPP.h \
-		..\..\src\Beam.h \
-		..\..\src\CalcTimer.h \
-		..\..\src\Handler.h \
-		..\..\src\PhisBeam.h \
-		..\..\src\ScatteringFiles.h \
-		..\..\src\Splitting.h \
-		..\..\src\test.h \
-		..\..\src\Tracer.h \
-		..\..\src\TracerBackScatterPoint.h \
-		..\..\src\TracerGO.h \
-		..\..\src\TracerPO.h \
-		..\..\src\Tracks.h \
+		sequence.qmodel ..\..\src\Tracks.h \
 		..\..\src\math\compl.hpp \
 		..\..\src\math\matrix.hpp \
 		..\..\src\math\Mueller.hpp \
 		..\..\src\math\PhysMtr.hpp \
 		..\..\src\math\service.hpp \
 		..\..\src\math\JonesMatrix.h \
+		..\..\src\handler\Handler.h \
+		..\..\src\handler\HandlerBackScatterPoint.h \
+		..\..\src\handler\HandlerGO.h \
+		..\..\src\handler\HandlerPO.h \
+		..\..\src\handler\HandlerPOTotal.h \
+		..\..\src\handler\HandlerTotalGO.h \
+		..\..\src\handler\HandlerTracksGO.h \
 		..\..\src\particle\Bullet.h \
 		..\..\src\particle\BulletRosette.h \
 		..\..\src\particle\CertainAggregate.h \
@@ -156,13 +155,19 @@ DIST          = classes.qmodel \
 		..\..\src\geometry\geometry_lib.h \
 		..\..\src\geometry\Intersection.h \
 		..\..\src\geometry\Polygon.h \
+		..\..\src\common\ArgPP.h \
+		..\..\src\common\Beam.h \
+		..\..\src\common\CalcTimer.h \
 		..\..\src\common\global.h \
 		..\..\src\common\macro.h \
 		..\..\src\common\Matrix4x4.h \
 		..\..\src\common\MullerMatrix.h \
+		..\..\src\common\ScatteringFiles.h \
+		..\..\src\common\test.h \
 		..\..\src\scattering\Scattering.h \
 		..\..\src\scattering\ScatteringConvex.h \
 		..\..\src\scattering\ScatteringNonConvex.h \
+		..\..\src\scattering\Splitting.h \
 		..\..\src\bigint\BigInteger.hh \
 		..\..\src\bigint\BigIntegerAlgorithms.hh \
 		..\..\src\bigint\BigIntegerLibrary.hh \
@@ -170,21 +175,19 @@ DIST          = classes.qmodel \
 		..\..\src\bigint\BigUnsigned.hh \
 		..\..\src\bigint\BigUnsignedInABase.hh \
 		..\..\src\bigint\NumberlikeArray.hh ..\BS_test\tst_po.cpp \
-		..\..\src\Beam.cpp \
-		..\..\src\CalcTimer.cpp \
-		..\..\src\Handler.cpp \
-		..\..\src\ScatteringFiles.cpp \
-		..\..\src\Splitting.cpp \
-		..\..\src\Tracer.cpp \
-		..\..\src\TracerBackScatterPoint.cpp \
-		..\..\src\TracerGO.cpp \
-		..\..\src\TracerPO.cpp \
 		..\..\src\Tracks.cpp \
 		..\..\src\math\compl.cpp \
 		..\..\src\math\JonesMatrix.cpp \
 		..\..\src\math\matrix.cpp \
 		..\..\src\math\Mueller.cpp \
 		..\..\src\math\PhysMtr.cpp \
+		..\..\src\handler\Handler.cpp \
+		..\..\src\handler\HandlerBackScatterPoint.cpp \
+		..\..\src\handler\HandlerGO.cpp \
+		..\..\src\handler\HandlerPO.cpp \
+		..\..\src\handler\HandlerPOTotal.cpp \
+		..\..\src\handler\HandlerTotalGO.cpp \
+		..\..\src\handler\HandlerTracksGO.cpp \
 		..\..\src\particle\Bullet.cpp \
 		..\..\src\particle\BulletRosette.cpp \
 		..\..\src\particle\CertainAggregate.cpp \
@@ -197,12 +200,16 @@ DIST          = classes.qmodel \
 		..\..\src\geometry\geometry_lib.cpp \
 		..\..\src\geometry\Intersection.cpp \
 		..\..\src\geometry\Polygon.cpp \
+		..\..\src\common\Beam.cpp \
+		..\..\src\common\CalcTimer.cpp \
 		..\..\src\common\common.cpp \
 		..\..\src\common\Matrix4x4.cpp \
 		..\..\src\common\MullerMatrix.cpp \
+		..\..\src\common\ScatteringFiles.cpp \
 		..\..\src\scattering\Scattering.cpp \
 		..\..\src\scattering\ScatteringConvex.cpp \
 		..\..\src\scattering\ScatteringNonConvex.cpp \
+		..\..\src\scattering\Splitting.cpp \
 		..\..\src\bigint\BigInteger.cc \
 		..\..\src\bigint\BigIntegerAlgorithms.cc \
 		..\..\src\bigint\BigIntegerUtils.cc \
@@ -227,18 +234,18 @@ qmake: FORCE
 qmake_all: FORCE
 
 dist:
-	$(ZIP) mbs.zip $(SOURCES) $(DIST) ..\BS_test\BS_test.pro ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\spec_pre.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\qdevice.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\device_config.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\g++-base.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\angle.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\sanitize.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\gcc-base.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\qconfig.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3danimation.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3danimation_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dcore.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dcore_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dextras.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dextras_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dinput.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dinput_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dlogic.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dlogic_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquick.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquick_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickanimation.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickanimation_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickextras.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickextras_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickinput.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickinput_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickrender.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickrender_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickscene2d.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickscene2d_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3drender.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3drender_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_accessibility_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axbase.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axbase_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axcontainer.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axcontainer_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axserver.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axserver_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_bluetooth.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_bluetooth_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_bootstrap_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_charts.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_charts_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_concurrent.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_concurrent_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_core.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_core_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_datavisualization.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_datavisualization_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_dbus.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_dbus_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_designer.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_designer_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_designercomponents_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_devicediscovery_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_egl_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_fb_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_fontdatabase_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gamepad.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gamepad_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gui.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gui_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_help.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_help_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_location.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_location_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimedia.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimedia_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimediawidgets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimediawidgets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_network.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_network_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_networkauth.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_networkauth_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_nfc.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_nfc_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_opengl.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_opengl_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_openglextensions.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_openglextensions_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_packetprotocol_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_platformcompositor_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_positioning.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_positioning_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_printsupport.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_printsupport_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qml.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qml_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmldebug_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmldevtools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmltest.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmltest_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quick.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quick_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickcontrols2.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickcontrols2_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickparticles_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quicktemplates2_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickwidgets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickwidgets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_remoteobjects.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_remoteobjects_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_repparser.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_repparser_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_script.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_script_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scripttools.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scripttools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scxml.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scxml_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sensors.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sensors_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialbus.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialbus_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialport.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialport_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sql.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sql_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_svg.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_svg_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_testlib.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_testlib_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_texttospeech.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_texttospeech_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_theme_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_uiplugin.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_uitools.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_uitools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_webchannel.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_webchannel_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_websockets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_websockets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_widgets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_widgets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_winextras.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_winextras_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xml.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xml_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xmlpatterns.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xmlpatterns_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qt_functions.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qt_config.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\win32-g++\qmake.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\spec_post.prf .qmake.stash ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\exclusive_builds.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\toolchain.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\default_pre.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\win32\default_pre.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\resolve_config.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\exclusive_builds_post.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\default_post.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\build_pass.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\resolve_target.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\testcase.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\warn_on.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\win32\console.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qt.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\resources.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\moc.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\testlib_defines.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qml_debug.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\precompile_header.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qmake_use.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\file_copies.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\testcase_targets.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\exceptions.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\yacc.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\lex.prf ..\BS_test\BS_test.pro ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\lib\Qt5Test.prl ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\lib\Qt5Core.prl   ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\data\dummy.cpp ..\..\src\ArgPP.h ..\..\src\Beam.h ..\..\src\CalcTimer.h ..\..\src\Handler.h ..\..\src\PhisBeam.h ..\..\src\ScatteringFiles.h ..\..\src\Splitting.h ..\..\src\test.h ..\..\src\Tracer.h ..\..\src\TracerBackScatterPoint.h ..\..\src\TracerGO.h ..\..\src\TracerPO.h ..\..\src\Tracks.h ..\..\src\math\compl.hpp ..\..\src\math\matrix.hpp ..\..\src\math\Mueller.hpp ..\..\src\math\PhysMtr.hpp ..\..\src\math\service.hpp ..\..\src\math\JonesMatrix.h ..\..\src\particle\Bullet.h ..\..\src\particle\BulletRosette.h ..\..\src\particle\CertainAggregate.h ..\..\src\particle\ConcaveHexagonal.h ..\..\src\particle\Hexagonal.h ..\..\src\particle\HexagonalAggregate.h ..\..\src\particle\Particle.h ..\..\src\particle\TiltedHexagonal.h ..\..\src\geometry\Facet.h ..\..\src\geometry\geometry_lib.h ..\..\src\geometry\Intersection.h ..\..\src\geometry\Polygon.h ..\..\src\common\global.h ..\..\src\common\macro.h ..\..\src\common\Matrix4x4.h ..\..\src\common\MullerMatrix.h ..\..\src\scattering\Scattering.h ..\..\src\scattering\ScatteringConvex.h ..\..\src\scattering\ScatteringNonConvex.h ..\..\src\bigint\BigInteger.hh ..\..\src\bigint\BigIntegerAlgorithms.hh ..\..\src\bigint\BigIntegerLibrary.hh ..\..\src\bigint\BigIntegerUtils.hh ..\..\src\bigint\BigUnsigned.hh ..\..\src\bigint\BigUnsignedInABase.hh ..\..\src\bigint\NumberlikeArray.hh ..\BS_test\tst_po.cpp ..\..\src\Beam.cpp ..\..\src\CalcTimer.cpp ..\..\src\Handler.cpp ..\..\src\ScatteringFiles.cpp ..\..\src\Splitting.cpp ..\..\src\Tracer.cpp ..\..\src\TracerBackScatterPoint.cpp ..\..\src\TracerGO.cpp ..\..\src\TracerPO.cpp ..\..\src\Tracks.cpp ..\..\src\math\compl.cpp ..\..\src\math\JonesMatrix.cpp ..\..\src\math\matrix.cpp ..\..\src\math\Mueller.cpp ..\..\src\math\PhysMtr.cpp ..\..\src\particle\Bullet.cpp ..\..\src\particle\BulletRosette.cpp ..\..\src\particle\CertainAggregate.cpp ..\..\src\particle\ConcaveHexagonal.cpp ..\..\src\particle\Hexagonal.cpp ..\..\src\particle\HexagonalAggregate.cpp ..\..\src\particle\Particle.cpp ..\..\src\particle\TiltedHexagonal.cpp ..\..\src\geometry\Facet.cpp ..\..\src\geometry\geometry_lib.cpp ..\..\src\geometry\Intersection.cpp ..\..\src\geometry\Polygon.cpp ..\..\src\common\common.cpp ..\..\src\common\Matrix4x4.cpp ..\..\src\common\MullerMatrix.cpp ..\..\src\scattering\Scattering.cpp ..\..\src\scattering\ScatteringConvex.cpp ..\..\src\scattering\ScatteringNonConvex.cpp ..\..\src\bigint\BigInteger.cc ..\..\src\bigint\BigIntegerAlgorithms.cc ..\..\src\bigint\BigIntegerUtils.cc ..\..\src\bigint\BigUnsigned.cc ..\..\src\bigint\BigUnsignedInABase.cc     
+	$(ZIP) mbs.zip $(SOURCES) $(DIST) ..\BS_test\BS_test.pro ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\spec_pre.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\qdevice.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\device_config.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\g++-base.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\angle.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\sanitize.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\common\gcc-base.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\qconfig.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3danimation.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3danimation_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dcore.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dcore_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dextras.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dextras_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dinput.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dinput_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dlogic.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dlogic_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquick.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquick_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickanimation.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickanimation_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickextras.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickextras_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickinput.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickinput_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickrender.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickrender_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickscene2d.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3dquickscene2d_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3drender.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_3drender_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_accessibility_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axbase.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axbase_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axcontainer.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axcontainer_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axserver.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_axserver_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_bluetooth.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_bluetooth_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_bootstrap_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_charts.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_charts_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_concurrent.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_concurrent_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_core.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_core_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_datavisualization.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_datavisualization_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_dbus.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_dbus_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_designer.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_designer_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_designercomponents_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_devicediscovery_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_egl_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_fb_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_fontdatabase_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gamepad.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gamepad_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gui.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_gui_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_help.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_help_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_location.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_location_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimedia.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimedia_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimediawidgets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_multimediawidgets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_network.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_network_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_networkauth.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_networkauth_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_nfc.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_nfc_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_opengl.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_opengl_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_openglextensions.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_openglextensions_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_packetprotocol_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_platformcompositor_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_positioning.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_positioning_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_printsupport.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_printsupport_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qml.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qml_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmldebug_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmldevtools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmltest.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qmltest_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quick.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quick_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickcontrols2.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickcontrols2_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickparticles_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quicktemplates2_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickwidgets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_quickwidgets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_remoteobjects.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_remoteobjects_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_repparser.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_repparser_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_script.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_script_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scripttools.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scripttools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scxml.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_scxml_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sensors.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sensors_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialbus.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialbus_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialport.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_serialport_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sql.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_sql_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_svg.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_svg_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_testlib.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_testlib_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_texttospeech.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_texttospeech_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_theme_support_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_uiplugin.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_uitools.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_uitools_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_webchannel.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_webchannel_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_websockets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_websockets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_widgets.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_widgets_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_winextras.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_winextras_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xml.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xml_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xmlpatterns.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\modules\qt_lib_xmlpatterns_private.pri ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qt_functions.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qt_config.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\win32-g++\qmake.conf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\spec_post.prf .qmake.stash ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\exclusive_builds.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\toolchain.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\default_pre.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\win32\default_pre.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\resolve_config.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\exclusive_builds_post.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\default_post.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\build_pass.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\resolve_target.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\testcase.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\warn_on.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\win32\console.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qt.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\resources.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\moc.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\testlib_defines.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qml_debug.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\precompile_header.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\qmake_use.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\file_copies.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\testcase_targets.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\exceptions.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\yacc.prf ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\lex.prf ..\BS_test\BS_test.pro ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\lib\Qt5Test.prl ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\lib\Qt5Core.prl   ..\..\..\..\Qt\5.9.1\5.9.1\mingw53_32\mkspecs\features\data\dummy.cpp ..\..\src\Tracks.h ..\..\src\math\compl.hpp ..\..\src\math\matrix.hpp ..\..\src\math\Mueller.hpp ..\..\src\math\PhysMtr.hpp ..\..\src\math\service.hpp ..\..\src\math\JonesMatrix.h ..\..\src\handler\Handler.h ..\..\src\handler\HandlerBackScatterPoint.h ..\..\src\handler\HandlerGO.h ..\..\src\handler\HandlerPO.h ..\..\src\handler\HandlerPOTotal.h ..\..\src\handler\HandlerTotalGO.h ..\..\src\handler\HandlerTracksGO.h ..\..\src\particle\Bullet.h ..\..\src\particle\BulletRosette.h ..\..\src\particle\CertainAggregate.h ..\..\src\particle\ConcaveHexagonal.h ..\..\src\particle\Hexagonal.h ..\..\src\particle\HexagonalAggregate.h ..\..\src\particle\Particle.h ..\..\src\particle\TiltedHexagonal.h ..\..\src\geometry\Facet.h ..\..\src\geometry\geometry_lib.h ..\..\src\geometry\Intersection.h ..\..\src\geometry\Polygon.h ..\..\src\common\ArgPP.h ..\..\src\common\Beam.h ..\..\src\common\CalcTimer.h ..\..\src\common\global.h ..\..\src\common\macro.h ..\..\src\common\Matrix4x4.h ..\..\src\common\MullerMatrix.h ..\..\src\common\ScatteringFiles.h ..\..\src\common\test.h ..\..\src\scattering\Scattering.h ..\..\src\scattering\ScatteringConvex.h ..\..\src\scattering\ScatteringNonConvex.h ..\..\src\scattering\Splitting.h ..\..\src\bigint\BigInteger.hh ..\..\src\bigint\BigIntegerAlgorithms.hh ..\..\src\bigint\BigIntegerLibrary.hh ..\..\src\bigint\BigIntegerUtils.hh ..\..\src\bigint\BigUnsigned.hh ..\..\src\bigint\BigUnsignedInABase.hh ..\..\src\bigint\NumberlikeArray.hh ..\BS_test\tst_po.cpp ..\..\src\Tracks.cpp ..\..\src\math\compl.cpp ..\..\src\math\JonesMatrix.cpp ..\..\src\math\matrix.cpp ..\..\src\math\Mueller.cpp ..\..\src\math\PhysMtr.cpp ..\..\src\handler\Handler.cpp ..\..\src\handler\HandlerBackScatterPoint.cpp ..\..\src\handler\HandlerGO.cpp ..\..\src\handler\HandlerPO.cpp ..\..\src\handler\HandlerPOTotal.cpp ..\..\src\handler\HandlerTotalGO.cpp ..\..\src\handler\HandlerTracksGO.cpp ..\..\src\particle\Bullet.cpp ..\..\src\particle\BulletRosette.cpp ..\..\src\particle\CertainAggregate.cpp ..\..\src\particle\ConcaveHexagonal.cpp ..\..\src\particle\Hexagonal.cpp ..\..\src\particle\HexagonalAggregate.cpp ..\..\src\particle\Particle.cpp ..\..\src\particle\TiltedHexagonal.cpp ..\..\src\geometry\Facet.cpp ..\..\src\geometry\geometry_lib.cpp ..\..\src\geometry\Intersection.cpp ..\..\src\geometry\Polygon.cpp ..\..\src\common\Beam.cpp ..\..\src\common\CalcTimer.cpp ..\..\src\common\common.cpp ..\..\src\common\Matrix4x4.cpp ..\..\src\common\MullerMatrix.cpp ..\..\src\common\ScatteringFiles.cpp ..\..\src\scattering\Scattering.cpp ..\..\src\scattering\ScatteringConvex.cpp ..\..\src\scattering\ScatteringNonConvex.cpp ..\..\src\scattering\Splitting.cpp ..\..\src\bigint\BigInteger.cc ..\..\src\bigint\BigIntegerAlgorithms.cc ..\..\src\bigint\BigIntegerUtils.cc ..\..\src\bigint\BigUnsigned.cc ..\..\src\bigint\BigUnsignedInABase.cc     
 
 clean: compiler_clean 
-	-$(DEL_FILE) release\tst_po.o release\Beam.o release\CalcTimer.o release\Handler.o release\ScatteringFiles.o release\Splitting.o release\Tracer.o release\TracerBackScatterPoint.o release\TracerGO.o release\TracerPO.o release\Tracks.o release\compl.o release\JonesMatrix.o release\matrix.o release\Mueller.o release\PhysMtr.o release\Bullet.o release\BulletRosette.o release\CertainAggregate.o release\ConcaveHexagonal.o release\Hexagonal.o release\HexagonalAggregate.o release\Particle.o release\TiltedHexagonal.o release\Facet.o release\geometry_lib.o release\Intersection.o release\Polygon.o release\common.o release\Matrix4x4.o release\MullerMatrix.o release\Scattering.o release\ScatteringConvex.o release\ScatteringNonConvex.o release\BigInteger.o release\BigIntegerAlgorithms.o release\BigIntegerUtils.o release\BigUnsigned.o release\BigUnsignedInABase.o
+	-$(DEL_FILE) release\tst_po.o release\Tracks.o release\compl.o release\JonesMatrix.o release\matrix.o release\Mueller.o release\PhysMtr.o release\Handler.o release\HandlerBackScatterPoint.o release\HandlerGO.o release\HandlerPO.o release\HandlerPOTotal.o release\HandlerTotalGO.o release\HandlerTracksGO.o release\Bullet.o release\BulletRosette.o release\CertainAggregate.o release\ConcaveHexagonal.o release\Hexagonal.o release\HexagonalAggregate.o release\Particle.o release\TiltedHexagonal.o release\Facet.o release\geometry_lib.o release\Intersection.o release\Polygon.o release\Beam.o release\CalcTimer.o release\common.o release\Matrix4x4.o release\MullerMatrix.o release\ScatteringFiles.o release\Scattering.o release\ScatteringConvex.o release\ScatteringNonConvex.o release\Splitting.o release\BigInteger.o release\BigIntegerAlgorithms.o release\BigIntegerUtils.o release\BigUnsigned.o release\BigUnsignedInABase.o
 
 distclean: clean 
-	-$(DEL_FILE) C:\Projects\Beam-Splitting-concave\test\build-BS_test-Desktop-Debug\target_wrapper.bat .qmake.stash
+	-$(DEL_FILE) C:\Projects\Beam-Splitting-develop\test\build-BS_test-Desktop-Debug\target_wrapper.bat .qmake.stash
 	-$(DEL_FILE) $(DESTDIR_TARGET)
 	-$(DEL_FILE) Makefile.Release
 
 check: first
-	call C:\Projects\Beam-Splitting-concave\test\build-BS_test-Desktop-Debug\target_wrapper.bat $(TESTRUNNER) release\$(TARGET) $(TESTARGS)
+	call C:\Projects\Beam-Splitting-develop\test\build-BS_test-Desktop-Debug\target_wrapper.bat $(TESTRUNNER) release\$(TARGET) $(TESTARGS)
 
 mocclean: compiler_moc_header_clean compiler_moc_source_clean
 
@@ -540,30 +547,38 @@ release/tst_po.moc: ../../../../Qt/5.9.1/5.9.1/mingw53_32/include/QtTest/QtTest 
 		../../../../Qt/5.9.1/5.9.1/mingw53_32/include/QtWidgets/QSizePolicy \
 		../../../../Qt/5.9.1/5.9.1/mingw53_32/include/QtCore/QMetaEnum \
 		../../../../Qt/5.9.1/5.9.1/mingw53_32/include/QtTest/qttestversion.h \
-		../../src/scattering/ScatteringNonConvex.h \
+		../../src/scattering/ScatteringConvex.h \
 		../../src/scattering/Scattering.h \
-		../../src/Beam.h \
+		../../src/Tracks.h \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/common/Beam.h \
 		../../src/common/global.h \
 		../../src/math/compl.hpp \
 		../../src/math/service.hpp \
 		../../src/math/JonesMatrix.h \
 		../../src/math/matrix.hpp \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
 		../../src/geometry/geometry_lib.h \
 		../../src/geometry/Polygon.h \
 		../../src/particle/Particle.h \
 		../../src/geometry/Facet.h \
 		../../src/geometry/Intersection.h \
 		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
+		../../src/scattering/Splitting.h \
 		../../src/particle/BulletRosette.h \
 		../../src/particle/Hexagonal.h \
+		../../src/handler/Handler.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h \
+		../../src/handler/HandlerPOTotal.h \
+		../../src/handler/HandlerPO.h \
 		../BS_test/tst_po.cpp \
 		release/moc_predefs.h \
 		../../../../Qt/5.9.1/5.9.1/mingw53_32/bin/moc.exe
-	C:\Qt\5.9.1\5.9.1\mingw53_32\bin\moc.exe $(DEFINES) --include release/moc_predefs.h -IC:/Qt/5.9.1/5.9.1/mingw53_32/mkspecs/win32-g++ -IC:/Projects/Beam-Splitting-concave/test/BS_test -IC:/Projects/Beam-Splitting-concave/src -IC:/Projects/Beam-Splitting-concave/src/math -IC:/Projects/Beam-Splitting-concave/src/common -IC:/Projects/Beam-Splitting-concave/src/particle -IC:/Projects/Beam-Splitting-concave/src/geometry -IC:/Projects/Beam-Splitting-concave/src/scattering -IC:/Projects/Beam-Splitting-concave/src/tracer -IC:/Projects/Beam-Splitting-concave/src/bigint -IC:/Qt/5.9.1/5.9.1/mingw53_32/include -IC:/Qt/5.9.1/5.9.1/mingw53_32/include/QtTest -IC:/Qt/5.9.1/5.9.1/mingw53_32/include/QtCore -I. -IC:/Qt/5.9.1_tool/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include -IC:/Qt/5.9.1_tool/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include-fixed -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include/c++ -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include/c++/i686-w64-mingw32 -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include/c++/backward ..\BS_test\tst_po.cpp -o release\tst_po.moc
+	C:\Qt\5.9.1\5.9.1\mingw53_32\bin\moc.exe $(DEFINES) --include release/moc_predefs.h -IC:/Qt/5.9.1/5.9.1/mingw53_32/mkspecs/win32-g++ -IC:/Projects/Beam-Splitting-develop/test/BS_test -IC:/Projects/Beam-Splitting-develop/src -IC:/Projects/Beam-Splitting-develop/src/math -IC:/Projects/Beam-Splitting-develop/src/handler -IC:/Projects/Beam-Splitting-develop/src/common -IC:/Projects/Beam-Splitting-develop/src/particle -IC:/Projects/Beam-Splitting-develop/src/geometry -IC:/Projects/Beam-Splitting-develop/src/scattering -IC:/Projects/Beam-Splitting-develop/src/tracer -IC:/Projects/Beam-Splitting-develop/src/bigint -IC:/Qt/5.9.1/5.9.1/mingw53_32/include -IC:/Qt/5.9.1/5.9.1/mingw53_32/include/QtTest -IC:/Qt/5.9.1/5.9.1/mingw53_32/include/QtCore -I. -IC:/Qt/5.9.1_tool/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include -IC:/Qt/5.9.1_tool/Tools/mingw492_32/lib/gcc/i686-w64-mingw32/4.9.2/include-fixed -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include/c++ -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include/c++/i686-w64-mingw32 -IC:/Qt/5.9.1_tool/Tools/mingw492_32/i686-w64-mingw32/include/c++/backward ..\BS_test\tst_po.cpp -o release\tst_po.moc
 
 compiler_no_pch_compiler_make_all:
 compiler_no_pch_compiler_clean:
@@ -860,213 +875,42 @@ release/tst_po.o: ../BS_test/tst_po.cpp ../../../../Qt/5.9.1/5.9.1/mingw53_32/in
 		../../../../Qt/5.9.1/5.9.1/mingw53_32/include/QtWidgets/QSizePolicy \
 		../../../../Qt/5.9.1/5.9.1/mingw53_32/include/QtCore/QMetaEnum \
 		../../../../Qt/5.9.1/5.9.1/mingw53_32/include/QtTest/qttestversion.h \
-		../../src/scattering/ScatteringNonConvex.h \
+		../../src/scattering/ScatteringConvex.h \
 		../../src/scattering/Scattering.h \
-		../../src/Beam.h \
+		../../src/Tracks.h \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/common/Beam.h \
 		../../src/common/global.h \
 		../../src/math/compl.hpp \
 		../../src/math/service.hpp \
 		../../src/math/JonesMatrix.h \
 		../../src/math/matrix.hpp \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
 		../../src/geometry/geometry_lib.h \
 		../../src/geometry/Polygon.h \
 		../../src/particle/Particle.h \
 		../../src/geometry/Facet.h \
 		../../src/geometry/Intersection.h \
 		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
+		../../src/scattering/Splitting.h \
 		../../src/particle/BulletRosette.h \
 		../../src/particle/Hexagonal.h \
+		../../src/handler/Handler.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h \
+		../../src/handler/HandlerPOTotal.h \
+		../../src/handler/HandlerPO.h \
 		release/tst_po.moc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\tst_po.o ..\BS_test\tst_po.cpp
-
-release/Beam.o: ../../src/Beam.cpp ../../src/Beam.h \
-		../../src/common/global.h \
-		../../src/math/compl.hpp \
-		../../src/math/service.hpp \
-		../../src/math/JonesMatrix.h \
-		../../src/math/matrix.hpp \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
-		../../src/geometry/geometry_lib.h \
-		../../src/geometry/Polygon.h \
-		../../src/common/macro.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Beam.o ..\..\src\Beam.cpp
-
-release/CalcTimer.o: ../../src/CalcTimer.cpp ../../src/CalcTimer.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\CalcTimer.o ..\..\src\CalcTimer.cpp
-
-release/Handler.o: ../../src/Handler.cpp ../../src/Handler.h \
-		../../src/Beam.h \
-		../../src/common/global.h \
-		../../src/math/compl.hpp \
-		../../src/math/service.hpp \
-		../../src/math/JonesMatrix.h \
-		../../src/math/matrix.hpp \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
-		../../src/geometry/geometry_lib.h \
-		../../src/geometry/Polygon.h \
-		../../src/scattering/Scattering.h \
-		../../src/particle/Particle.h \
-		../../src/geometry/Facet.h \
-		../../src/geometry/Intersection.h \
-		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
-		../../src/math/PhysMtr.hpp \
-		../../src/common/MullerMatrix.h \
-		../../src/common/Matrix4x4.h \
-		../../src/Tracks.h \
-		../../src/ScatteringFiles.h \
-		../../src/math/Mueller.hpp
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Handler.o ..\..\src\Handler.cpp
-
-release/ScatteringFiles.o: ../../src/ScatteringFiles.cpp ../../src/ScatteringFiles.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\ScatteringFiles.o ..\..\src\ScatteringFiles.cpp
-
-release/Splitting.o: ../../src/Splitting.cpp ../../src/Splitting.h \
-		../../src/Beam.h \
-		../../src/common/global.h \
-		../../src/math/compl.hpp \
-		../../src/math/service.hpp \
-		../../src/math/JonesMatrix.h \
-		../../src/math/matrix.hpp \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
-		../../src/geometry/geometry_lib.h \
-		../../src/geometry/Polygon.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Splitting.o ..\..\src\Splitting.cpp
-
-release/Tracer.o: ../../src/Tracer.cpp ../../src/Tracer.h \
-		../../src/geometry/geometry_lib.h \
-		../../src/CalcTimer.h \
-		../../src/math/Mueller.hpp \
-		../../src/math/matrix.hpp \
-		../../src/math/compl.hpp \
-		../../src/math/service.hpp \
-		../../src/math/JonesMatrix.h \
-		../../src/common/Matrix4x4.h \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
-		../../src/Handler.h \
-		../../src/Beam.h \
-		../../src/common/global.h \
-		../../src/geometry/Polygon.h \
-		../../src/scattering/Scattering.h \
-		../../src/particle/Particle.h \
-		../../src/geometry/Facet.h \
-		../../src/geometry/Intersection.h \
-		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
-		../../src/math/PhysMtr.hpp \
-		../../src/common/MullerMatrix.h \
-		../../src/Tracks.h \
-		../../src/ScatteringFiles.h \
-		../../src/common/macro.h \
-		../../src/scattering/ScatteringConvex.h \
-		../../src/scattering/ScatteringNonConvex.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Tracer.o ..\..\src\Tracer.cpp
-
-release/TracerBackScatterPoint.o: ../../src/TracerBackScatterPoint.cpp ../../src/TracerBackScatterPoint.h \
-		../../src/TracerPO.h \
-		../../src/Tracer.h \
-		../../src/geometry/geometry_lib.h \
-		../../src/CalcTimer.h \
-		../../src/math/Mueller.hpp \
-		../../src/math/matrix.hpp \
-		../../src/math/compl.hpp \
-		../../src/math/service.hpp \
-		../../src/math/JonesMatrix.h \
-		../../src/common/Matrix4x4.h \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
-		../../src/Handler.h \
-		../../src/Beam.h \
-		../../src/common/global.h \
-		../../src/geometry/Polygon.h \
-		../../src/scattering/Scattering.h \
-		../../src/particle/Particle.h \
-		../../src/geometry/Facet.h \
-		../../src/geometry/Intersection.h \
-		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
-		../../src/math/PhysMtr.hpp \
-		../../src/common/MullerMatrix.h \
-		../../src/Tracks.h \
-		../../src/ScatteringFiles.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\TracerBackScatterPoint.o ..\..\src\TracerBackScatterPoint.cpp
-
-release/TracerGO.o: ../../src/TracerGO.cpp ../../src/TracerGO.h \
-		../../src/Tracer.h \
-		../../src/geometry/geometry_lib.h \
-		../../src/CalcTimer.h \
-		../../src/math/Mueller.hpp \
-		../../src/math/matrix.hpp \
-		../../src/math/compl.hpp \
-		../../src/math/service.hpp \
-		../../src/math/JonesMatrix.h \
-		../../src/common/Matrix4x4.h \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
-		../../src/Handler.h \
-		../../src/Beam.h \
-		../../src/common/global.h \
-		../../src/geometry/Polygon.h \
-		../../src/scattering/Scattering.h \
-		../../src/particle/Particle.h \
-		../../src/geometry/Facet.h \
-		../../src/geometry/Intersection.h \
-		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
-		../../src/math/PhysMtr.hpp \
-		../../src/common/MullerMatrix.h \
-		../../src/Tracks.h \
-		../../src/ScatteringFiles.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\TracerGO.o ..\..\src\TracerGO.cpp
-
-release/TracerPO.o: ../../src/TracerPO.cpp ../../src/TracerPO.h \
-		../../src/Tracer.h \
-		../../src/geometry/geometry_lib.h \
-		../../src/CalcTimer.h \
-		../../src/math/Mueller.hpp \
-		../../src/math/matrix.hpp \
-		../../src/math/compl.hpp \
-		../../src/math/service.hpp \
-		../../src/math/JonesMatrix.h \
-		../../src/common/Matrix4x4.h \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
-		../../src/Handler.h \
-		../../src/Beam.h \
-		../../src/common/global.h \
-		../../src/geometry/Polygon.h \
-		../../src/scattering/Scattering.h \
-		../../src/particle/Particle.h \
-		../../src/geometry/Facet.h \
-		../../src/geometry/Intersection.h \
-		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
-		../../src/math/PhysMtr.hpp \
-		../../src/common/MullerMatrix.h \
-		../../src/Tracks.h \
-		../../src/ScatteringFiles.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\TracerPO.o ..\..\src\TracerPO.cpp
 
 release/Tracks.o: ../../src/Tracks.cpp ../../src/Tracks.h \
 		../../src/bigint/BigInteger.hh \
 		../../src/bigint/BigUnsigned.hh \
 		../../src/bigint/NumberlikeArray.hh \
-		../../src/Beam.h \
+		../../src/common/Beam.h \
 		../../src/common/global.h \
 		../../src/math/compl.hpp \
 		../../src/math/service.hpp \
@@ -1104,6 +948,195 @@ release/PhysMtr.o: ../../src/math/PhysMtr.cpp ../../src/math/PhysMtr.hpp \
 		../../src/math/compl.hpp \
 		../../src/math/service.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\PhysMtr.o ..\..\src\math\PhysMtr.cpp
+
+release/Handler.o: ../../src/handler/Handler.cpp ../../src/handler/Handler.h \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/scattering/Scattering.h \
+		../../src/Tracks.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h \
+		../../src/math/Mueller.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Handler.o ..\..\src\handler\Handler.cpp
+
+release/HandlerBackScatterPoint.o: ../../src/handler/HandlerBackScatterPoint.cpp ../../src/handler/HandlerBackScatterPoint.h \
+		../../src/handler/HandlerPO.h \
+		../../src/handler/Handler.h \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/scattering/Scattering.h \
+		../../src/Tracks.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\HandlerBackScatterPoint.o ..\..\src\handler\HandlerBackScatterPoint.cpp
+
+release/HandlerGO.o: ../../src/handler/HandlerGO.cpp ../../src/handler/HandlerGO.h \
+		../../src/handler/Handler.h \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/scattering/Scattering.h \
+		../../src/Tracks.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h \
+		../../src/math/Mueller.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\HandlerGO.o ..\..\src\handler\HandlerGO.cpp
+
+release/HandlerPO.o: ../../src/handler/HandlerPO.cpp ../../src/handler/HandlerPO.h \
+		../../src/handler/Handler.h \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/scattering/Scattering.h \
+		../../src/Tracks.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h \
+		../../src/math/Mueller.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\HandlerPO.o ..\..\src\handler\HandlerPO.cpp
+
+release/HandlerPOTotal.o: ../../src/handler/HandlerPOTotal.cpp ../../src/handler/HandlerPOTotal.h \
+		../../src/handler/HandlerPO.h \
+		../../src/handler/Handler.h \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/scattering/Scattering.h \
+		../../src/Tracks.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h \
+		../../src/math/Mueller.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\HandlerPOTotal.o ..\..\src\handler\HandlerPOTotal.cpp
+
+release/HandlerTotalGO.o: ../../src/handler/HandlerTotalGO.cpp ../../src/handler/HandlerTotalGO.h \
+		../../src/handler/HandlerGO.h \
+		../../src/handler/Handler.h \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/scattering/Scattering.h \
+		../../src/Tracks.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\HandlerTotalGO.o ..\..\src\handler\HandlerTotalGO.cpp
+
+release/HandlerTracksGO.o: ../../src/handler/HandlerTracksGO.cpp ../../src/handler/HandlerTracksGO.h \
+		../../src/handler/HandlerGO.h \
+		../../src/handler/Handler.h \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/scattering/Scattering.h \
+		../../src/Tracks.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/math/PhysMtr.hpp \
+		../../src/common/MullerMatrix.h \
+		../../src/common/Matrix4x4.h \
+		../../src/common/ScatteringFiles.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\HandlerTracksGO.o ..\..\src\handler\HandlerTracksGO.cpp
 
 release/Bullet.o: ../../src/particle/Bullet.cpp ../../src/particle/Bullet.h \
 		../../src/particle/Hexagonal.h \
@@ -1193,6 +1226,7 @@ release/geometry_lib.o: ../../src/geometry/geometry_lib.cpp ../../src/particle/P
 		../../src/geometry/geometry_lib.h \
 		../../src/geometry/Facet.h \
 		../../src/geometry/Polygon.h \
+		../../src/geometry/Intersection.h \
 		../../src/geometry/intrinsic/intrinsics.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\geometry_lib.o ..\..\src\geometry\geometry_lib.cpp
 
@@ -1204,6 +1238,23 @@ release/Intersection.o: ../../src/geometry/Intersection.cpp ../../src/geometry/I
 release/Polygon.o: ../../src/geometry/Polygon.cpp ../../src/geometry/Polygon.h \
 		../../src/geometry/geometry_lib.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Polygon.o ..\..\src\geometry\Polygon.cpp
+
+release/Beam.o: ../../src/common/Beam.cpp ../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/common/macro.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Beam.o ..\..\src\common\Beam.cpp
+
+release/CalcTimer.o: ../../src/common/CalcTimer.cpp ../../src/common/CalcTimer.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\CalcTimer.o ..\..\src\common\CalcTimer.cpp
 
 release/common.o: ../../src/common/common.cpp ../../src/common/global.h \
 		../../src/common/macro.h
@@ -1220,49 +1271,79 @@ release/MullerMatrix.o: ../../src/common/MullerMatrix.cpp ../../src/common/Mulle
 		../../src/math/service.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\MullerMatrix.o ..\..\src\common\MullerMatrix.cpp
 
+release/ScatteringFiles.o: ../../src/common/ScatteringFiles.cpp ../../src/common/ScatteringFiles.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\ScatteringFiles.o ..\..\src\common\ScatteringFiles.cpp
+
 release/Scattering.o: ../../src/scattering/Scattering.cpp ../../src/scattering/Scattering.h \
-		../../src/Beam.h \
+		../../src/Tracks.h \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/common/Beam.h \
 		../../src/common/global.h \
 		../../src/math/compl.hpp \
 		../../src/math/service.hpp \
 		../../src/math/JonesMatrix.h \
 		../../src/math/matrix.hpp \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
 		../../src/geometry/geometry_lib.h \
 		../../src/geometry/Polygon.h \
 		../../src/particle/Particle.h \
 		../../src/geometry/Facet.h \
 		../../src/geometry/Intersection.h \
 		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
+		../../src/scattering/Splitting.h \
 		../../src/common/macro.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Scattering.o ..\..\src\scattering\Scattering.cpp
 
 release/ScatteringConvex.o: ../../src/scattering/ScatteringConvex.cpp ../../src/scattering/ScatteringConvex.h \
 		../../src/scattering/Scattering.h \
-		../../src/Beam.h \
+		../../src/Tracks.h \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/common/Beam.h \
 		../../src/common/global.h \
 		../../src/math/compl.hpp \
 		../../src/math/service.hpp \
 		../../src/math/JonesMatrix.h \
 		../../src/math/matrix.hpp \
-		../../src/bigint/BigInteger.hh \
-		../../src/bigint/BigUnsigned.hh \
-		../../src/bigint/NumberlikeArray.hh \
 		../../src/geometry/geometry_lib.h \
 		../../src/geometry/Polygon.h \
 		../../src/particle/Particle.h \
 		../../src/geometry/Facet.h \
 		../../src/geometry/Intersection.h \
 		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h
+		../../src/scattering/Splitting.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\ScatteringConvex.o ..\..\src\scattering\ScatteringConvex.cpp
 
 release/ScatteringNonConvex.o: ../../src/scattering/ScatteringNonConvex.cpp ../../src/scattering/ScatteringNonConvex.h \
 		../../src/scattering/Scattering.h \
-		../../src/Beam.h \
+		../../src/Tracks.h \
+		../../src/bigint/BigInteger.hh \
+		../../src/bigint/BigUnsigned.hh \
+		../../src/bigint/NumberlikeArray.hh \
+		../../src/common/Beam.h \
+		../../src/common/global.h \
+		../../src/math/compl.hpp \
+		../../src/math/service.hpp \
+		../../src/math/JonesMatrix.h \
+		../../src/math/matrix.hpp \
+		../../src/geometry/geometry_lib.h \
+		../../src/geometry/Polygon.h \
+		../../src/particle/Particle.h \
+		../../src/geometry/Facet.h \
+		../../src/geometry/Intersection.h \
+		../../src/geometry/intrinsic/intrinsics.h \
+		../../src/scattering/Splitting.h \
+		../../src/common/macro.h \
+		../../src/bigint/BigIntegerLibrary.hh \
+		../../src/bigint/BigIntegerAlgorithms.hh \
+		../../src/bigint/BigUnsignedInABase.hh \
+		../../src/bigint/BigIntegerUtils.hh
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\ScatteringNonConvex.o ..\..\src\scattering\ScatteringNonConvex.cpp
+
+release/Splitting.o: ../../src/scattering/Splitting.cpp ../../src/scattering/Splitting.h \
+		../../src/common/Beam.h \
 		../../src/common/global.h \
 		../../src/math/compl.hpp \
 		../../src/math/service.hpp \
@@ -1272,27 +1353,8 @@ release/ScatteringNonConvex.o: ../../src/scattering/ScatteringNonConvex.cpp ../.
 		../../src/bigint/BigUnsigned.hh \
 		../../src/bigint/NumberlikeArray.hh \
 		../../src/geometry/geometry_lib.h \
-		../../src/geometry/Polygon.h \
-		../../src/particle/Particle.h \
-		../../src/geometry/Facet.h \
-		../../src/geometry/Intersection.h \
-		../../src/geometry/intrinsic/intrinsics.h \
-		../../src/Splitting.h \
-		../../src/common/macro.h \
-		../../src/bigint/BigIntegerLibrary.hh \
-		../../src/bigint/BigIntegerAlgorithms.hh \
-		../../src/bigint/BigUnsignedInABase.hh \
-		../../src/bigint/BigIntegerUtils.hh \
-		../../src/Tracer.h \
-		../../src/CalcTimer.h \
-		../../src/math/Mueller.hpp \
-		../../src/common/Matrix4x4.h \
-		../../src/Handler.h \
-		../../src/math/PhysMtr.hpp \
-		../../src/common/MullerMatrix.h \
-		../../src/Tracks.h \
-		../../src/ScatteringFiles.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\ScatteringNonConvex.o ..\..\src\scattering\ScatteringNonConvex.cpp
+		../../src/geometry/Polygon.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\Splitting.o ..\..\src\scattering\Splitting.cpp
 
 release/BigInteger.o: ../../src/bigint/BigInteger.cc ../../src/bigint/BigInteger.hh \
 		../../src/bigint/BigUnsigned.hh \

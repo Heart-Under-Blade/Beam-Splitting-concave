@@ -14,10 +14,11 @@ public:
 
 	Arr2D M;				// Mueller matrices
 
+	matrixC ApplyDiffraction(const Beam &beam, const BeamInfo &info,
+							 const Vector3d &direction, const Vector3d &vf);
+
 protected:
 	virtual void AddToMueller();
-
-	void ComputeOpticalLengths(const Beam &beam, BeamInfo &info);
 
 	void RotateJones(const Beam &beam, const BeamInfo &info,
 					 const Vector3d &vf, const Vector3d &direction,
@@ -25,11 +26,6 @@ protected:
 	void CleanJ();
 	matrixC ComputeFnJones(const Matrix2x2c &matrix, const BeamInfo &info,
 						   const Vector3d &direction);
-
-	matrixC ApplyDiffraction(const Beam &beam, const BeamInfo &info,
-							 const Vector3d &direction, const Vector3d &vf);
-
-	BeamInfo ComputeBeamInfo(const Beam &beam);
 
 
 protected:

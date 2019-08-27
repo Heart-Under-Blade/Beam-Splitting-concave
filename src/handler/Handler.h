@@ -200,6 +200,11 @@ struct BeamInfo
 	Point3d horAxis;
 	Point3d verAxis;
 	Point3d lenIndices;
+
+	BeamInfo()
+	{
+
+	}
 };
 
 class Handler
@@ -224,6 +229,9 @@ public:
 	std::ofstream m_logFile;
 
 	int m_nBadBeams;
+	bool m_isBadBeam;
+
+	BeamInfo ComputeBeamInfo(const Beam &beam);
 
 protected:
 	double BeamCrossSection(const Beam &beam) const;
@@ -242,7 +250,6 @@ protected:
 	complex DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 							   const Point3d &direction) const;
 
-
 	Point3d ChangeCoordinateSystem(const Point3d& hor, const Point3d& ver,
 								   const Point3d& normal,
 								   const Point3d& point) const;
@@ -254,6 +261,8 @@ protected:
 									 Point3d &hor, Point3d &ver) const;
 
 	void ComputeLengthIndices(const Beam &beam, BeamInfo &info);
+
+	void ComputeOpticalLengths(const Beam &beam, BeamInfo &info);
 
 protected:
 	Scattering *m_scattering;
@@ -278,8 +287,6 @@ protected:
 	double m_eps1;
 	double m_eps2;
 	double m_eps3;
-
-	bool m_isBadBeam;
 
 private:
 	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);

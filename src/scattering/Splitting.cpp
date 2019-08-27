@@ -19,9 +19,9 @@ void Splitting::ComputeRiParams(const complex &ri)
 
 void Splitting::ComputeSplittingParams(const Point3f &dir, const Point3f &normal)
 {
-	r = dir/cosA - normal;
+	m_r = dir/cosA - normal;
 	reRiEff = ComputeEffectiveReRi();
-	s = 1.0/(reRiEff*cosA*cosA) - Norm(r);
+	s = 1.0/(reRiEff*cosA*cosA) - Norm(m_r);
 }
 
 bool Splitting::IsCompleteReflection()
@@ -67,7 +67,7 @@ double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &fac
 void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentBeam,
 									Beam &inBeam)
 {
-	Point3f reflDir = r - normal;
+	Point3f reflDir = m_r - normal;
 	Normalize(reflDir);
 	inBeam.SetLight(reflDir, incidentBeam.polarizationBasis);
 
@@ -81,8 +81,8 @@ void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentB
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 #ifdef _DEBUG // DEB
-//		inBeam.ops = incidentBeam.ops;
-//		inBeam.ops.push_back(path);
+		inBeam.ops = incidentBeam.ops;
+		inBeam.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
@@ -109,9 +109,8 @@ void Splitting::ComputeRegularJonesParams(const Point3f &normal, const Beam &inc
 	inBeam.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
 }
 
-void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
-												   const Vector3f &normal,
-												   Vector3f &dir)
+void Splitting::RefractIn(const Vector3f &r, const Vector3f &normal,
+						  Vector3f &newDir)
 {
 	double cosA2 = cosA * cosA;
 	double tmp = m_cRiRe + cosA2 - 1.0;
@@ -125,8 +124,8 @@ void Splitting::ComputeInternalRefractiveDirection(const Vector3f &r,
 	tmp = (tmp/cosA2);
 	tmp -= Norm(r);
 	tmp = sqrt(tmp);
-	dir = (r/tmp) - normal;
-	Normalize(dir);
+	newDir = (r/tmp) - normal;
+	Normalize(newDir);
 }
 
 void Splitting::ComputeCRJonesParams(complex &cv, complex &ch)
@@ -151,11 +150,11 @@ void Splitting::ComputeRegularBeamsParams(const Point3f &normal,
 										  const Beam &incidentBeam,
 										  Beam &inBeam, Beam &outBeam)
 {
-	Point3f reflDir = r - normal;
+	Point3f reflDir = m_r - normal;
 	Normalize(reflDir);
 	inBeam.SetLight(reflDir, incidentBeam.polarizationBasis);
 
-	Point3f refrDir = r/sqrt(s) + normal;
+	Point3f refrDir = m_r/sqrt(s) + normal;
 	Normalize(refrDir);
 	outBeam.SetLight(refrDir, incidentBeam.polarizationBasis);
 
@@ -165,10 +164,9 @@ void Splitting::ComputeRegularBeamsParams(const Point3f &normal,
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 #ifdef _DEBUG // DEB
-//		inBeam.ops = incidentBeam.ops;
-//		outBeam.ops = incidentBeam.ops;
-//		inBeam.ops.push_back(path);
-//		outBeam.ops.push_back(path);
+		inBeam.ops = incidentBeam.ops;
+		outBeam.ops = incidentBeam.ops;
+		outBeam.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
@@ -194,15 +192,15 @@ void Splitting::ComputeNormalBeamParams(const Beam &incidentBeam,
 	temp = (1.0 - m_ri)/(1.0 + m_ri); // OPT: вынести целиком
 	inBeam.MultiplyJonesMatrix(temp, -temp);
 
-	if (m_isOpticalPath)
+//	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 		path += incidentBeam.opticalPath;
 #ifdef _DEBUG // DEB
-//		inBeam.ops = incidentBeam.ops;
-//		inBeam.ops.push_back(path);
-//		outBeam.ops = incidentBeam.ops;
-//		outBeam.ops.push_back(path);
+		inBeam.ops = incidentBeam.ops;
+		inBeam.ops.push_back(path);
+		outBeam.ops = incidentBeam.ops;
+		outBeam.ops.push_back(path);
 #endif
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
@@ -239,7 +237,7 @@ void Splitting::ComputeRegularBeamParamsExternal(const Point3f &facetNormal,
 	refrDir = r - facetNormal;
 	Normalize(refrDir);
 
-	ComputeInternalRefractiveDirection(r, -facetNormal, inBeam.direction);
+	RefractIn(r, -facetNormal, inBeam.direction);
 
 	outBeam.SetLight(refrDir, incidentBeam.polarizationBasis);
 
@@ -270,42 +268,81 @@ double Splitting::ComputeOutgoingOpticalPath(const Beam &beam)
 	return FAR_ZONE_DISTANCE + beam.front;
 }
 
+void Splitting::ReflectExternal(const Vector3f &oldDir, const Vector3f &normal,
+						   Vector3f &newDir)
+{
+	Vector3f r = normal + oldDir/cosA;
+	newDir = normal + r;
+	Normalize(newDir);
+}
+
+void Splitting::ReflectInternal(const Vector3f &oldDir, const Vector3f &normal,
+								Vector3f &newDir)
+{
+	ComputeCosA(oldDir, normal);
+	ComputeSplittingParams(oldDir, normal);
+	newDir = m_r - normal;
+	Normalize(newDir);
+}
+
+void Splitting::RefractOut(const Vector3f &oldDir, const Vector3f &normal, Vector3f &newDir)
+{
+	ComputeCosA(oldDir, normal);
+	ComputeSplittingParams(oldDir, normal);
+	newDir = m_r/sqrt(s) + normal;
+	Normalize(newDir);
+}
+
+Point3f Splitting::ChangeBeamDirectionConvex(const Vector3f &oldDir,
+											 const Vector3f &normal,
+											 Location loc)
+{
+	Point3f newDir;
+
+	if (loc == Location::Out)
+	{
+		ComputeCosA(oldDir, -normal);
+		Vector3f r = normal + oldDir/cosA;
+		RefractIn(r, normal, newDir);
+	}
+	else
+	{
+		ReflectInternal(oldDir, normal, newDir);
+	}
+
+	return newDir;
+}
+
 Point3f Splitting::ChangeBeamDirection(const Vector3f &oldDir,
 									   const Vector3f &normal,
 									   Location oldLoc, Location loc)
 {
 	Point3f newDir;
 
-	if (oldLoc == Location::Out) // refraction
+	if (oldLoc == loc)
 	{
-		ComputeCosA(oldDir, -normal);
-		Vector3f r = normal + oldDir/cosA;
-
-		if (oldLoc == loc)
+		if (oldLoc == Location::Out)
 		{
-			newDir = normal + r;
-			Normalize(newDir);
+			ComputeCosA(oldDir, -normal);
+			ReflectExternal(oldDir, normal, newDir);
 		}
 		else
 		{
-			ComputeInternalRefractiveDirection(r, normal, newDir);
+			ReflectInternal(oldDir, normal, newDir);
 		}
 	}
-	else // reflection
+	else
 	{
-		ComputeCosA(oldDir, normal);
-		ComputeSplittingParams(oldDir, normal);
-
-		if (oldLoc == loc)
+		if (oldLoc == Location::Out)
 		{
-			newDir = r - normal;
+			ComputeCosA(oldDir, -normal);
+			Vector3f r = normal + oldDir/cosA;
+			RefractIn(r, normal, newDir);
 		}
 		else
 		{
-			newDir = r/sqrt(s) + normal;
+			RefractOut(oldDir, normal, newDir);
 		}
-
-		Normalize(newDir);
 	}
 
 	return newDir;
