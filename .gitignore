@@ -64,3 +64,4 @@ test/build-BS_test-Desktop-Debug/
 backup/
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 src_bcp/
+test/build-BS_test-Desktop-Release/
