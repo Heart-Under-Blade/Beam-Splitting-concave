@@ -33,7 +33,7 @@
 */
 class Arr2D {
 private:
-	int
+	unsigned int
 		N, M,	///< N,M - Dimensions of array
 		n, m;	///< n,m - Dimensions of matrixes
 	double*** ptr;	///< Pointer to the array
@@ -42,7 +42,7 @@ private:
 public:
 	// constructors
 	///Creates the array with (_N-rows x _M-columns) dimensions of small real-value matrixes with (_n x _m) dimensions
-	 Arr2D(int _N, int _M, int _n, int _m)
+	 Arr2D(unsigned int _N, unsigned int _M, unsigned int _n, unsigned int _m)
 		{ this->N=_N; this->M=_M; this->n=_n; this->m=_m; this->AllocMem(); }
 	 Arr2D(void)
 		{ this->N=0; this->M=0; this->n=0; this->m=0; this->AllocMem(); }
@@ -50,14 +50,14 @@ public:
 	// destructor
 	 ~Arr2D(void) { this->FreeMem(); }
 	// members
-	matrix operator() (int, int) const; ///< Returns the matrix stored in the array by address (_N,_M)
+	matrix operator() (unsigned int, unsigned int) const; ///< Returns the matrix stored in the array by address (_N,_M)
 
 	///Returns a reference to the matrix element (_n,_m) stored in the array by address (_N,_M)
-	double& operator() (int _N, int _M, int _n, int _m)
+	double& operator() (unsigned int _N, unsigned int _M, unsigned int _n, unsigned int _m)
 		{ return this->ptr[_N][_M][_n*this->n+_m]; }
 
 	/// Returns the matrix element (_n,_m) stored in the array by address (_N,_M)
-	double operator() (int _N, int _M, int _n, int _m) const
+	double operator() (unsigned int _N, unsigned int _M, unsigned int _n, unsigned int _m) const
 		{ return this->ptr[_N][_M][_n*this->n+_m]; }
 	Arr2D operator=(const Arr2D &);
 	Arr2D operator+=(const Arr2D &);
@@ -74,7 +74,7 @@ public:
 	@param mt: adding matrix
 	@return none
 	*/
-	void insert(int _N, int _M, const matrix & mt);
+	void insert(unsigned int _N, unsigned int _M, const matrix & mt);
 
 	/**
 	@brief The function replaces existing matrix, located in the array by address (_N,_M), by the matrix mt
@@ -82,7 +82,7 @@ public:
 	@param mt: new matrix
 	@return none
 	*/
-	void replace(int _N, int _M, const matrix & mt);
+	void replace(unsigned int _N, unsigned int _M, const matrix & mt);
 
 	/**
 	@brief The function returns the maximal value of all elements contained in the array
@@ -103,7 +103,7 @@ public:
 	@param Arr: pointer to the array
 	@return row counts, (Arr.N)
 	*/
-	friend int StrArr(const Arr2D& Arr) 
+	friend unsigned int StrArr(const Arr2D& Arr) 
 		{ return Arr.N; }
 	
 	/**
@@ -111,7 +111,7 @@ public:
 	@param Arr: pointer to the array
 	@return column counts, (Arr.M)
 	*/
-	friend int ColArr(const Arr2D& Arr) 
+	friend unsigned int ColArr(const Arr2D& Arr) 
 		{ return Arr.M; }
 };
 //------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ public:
  @endcode
  */
 class Arr2DC {
-	int 
+	unsigned int 
 		N, M,	///< N,M - Dimensions of array
 		n, m;	///< n,m - Dimensions of matrixes
 	complex*** ptr;	///< Pointer to the array
@@ -145,7 +145,7 @@ class Arr2DC {
 public:
 	// constructors
 	///Creates the array with (_N-rows x _M-columns) dimensions of small real-value matrixes with (_n x _m) dimensions
-	Arr2DC(int _N, int _M, int _n, int _m)
+	Arr2DC(unsigned int _N, unsigned int _M, unsigned int _n, unsigned int _m)
 		{ this->N=_N; this->M=_M; this->n=_n; this->m=_m; this->AllocMem(); }
 	Arr2DC(void)
 		{ this->N=0; this->M=0; this->n=0; this->m=0; this->AllocMem(); }
@@ -154,14 +154,14 @@ public:
 	~Arr2DC(void) { this->FreeMem(); }
 	// members
 	/// Returns the matrix stored in the array by address (_N,_M)
-	matrixC operator() (int, int) const;
+	matrixC operator() (unsigned int, unsigned int) const;
 	
 	///Returns a reference to the matrix element (_n,_m) stored in the array by address (_N,_M)
-	complex& operator() (int _N, int _M, int _n, int _m) 
+	complex& operator() (unsigned int _N, unsigned int _M, unsigned int _n, unsigned int _m) 
 		{ return this->ptr[_N][_M][_n*this->n+_m]; }
 	
 	/// Returns the matrix element (_n,_m) stored in the array by address (_N,_M)
-	complex operator() (int _N, int _M, int _n, int _m) const
+	complex operator() (unsigned int _N, unsigned int _M, unsigned int _n, unsigned int _m) const
 		{ return this->ptr[_N][_M][_n*this->n+_m]; }
 	Arr2DC operator=(const Arr2DC &);
 	Arr2DC operator+=(const Arr2DC &);
@@ -178,7 +178,7 @@ public:
 	@param mt: adding matrix
 	@return none
 	*/
-	void insert(int, int, const matrixC &);
+	void insert(unsigned int, unsigned int, const matrixC &);
 	
 	/**
 	@brief The function replaces existing matrix, located in the array by address (_N,_M), by the matrix mt
@@ -186,7 +186,7 @@ public:
 	@param mt: new matrix
 	@return none
 	*/
-	void replace(int, int, const matrixC &);
+	void replace(unsigned int, unsigned int, const matrixC &);
 	// friends
 	
 	/**
@@ -201,14 +201,14 @@ public:
 	@param Arr: pointer to the array
 	@return row counts, (Arr.N)
 	*/
-	friend int StrArr(const Arr2DC& Arr) { return Arr.N; }
+	friend unsigned int StrArr(const Arr2DC& Arr) { return Arr.N; }
 	
 	/**
 	@brief The function returns column counts
 	@param Arr: pointer to the array
 	@return column counts, (Arr.M)
 	*/
-	friend int ColArr(const Arr2DC& Arr) { return Arr.M; }
+	friend unsigned int ColArr(const Arr2DC& Arr) { return Arr.M; }
 };
 //------------------------------------------------------------------------------
 ///@}

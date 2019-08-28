@@ -1,5 +1,4 @@
 #include "Handler.h"
-<<<<<<< HEAD
 
 #include "Mueller.hpp"
 #include <iostream>
@@ -26,26 +25,10 @@ Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
 
 	m_eps1 = 1e9*DBL_EPSILON;
 	m_eps2 = 1e6*DBL_EPSILON;
-	m_eps3 = 1e-4;
+	m_eps3 = 1e2;
 
 	m_logFile.open("log1.txt", std::ios::out);
 	m_logFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-=======
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <string>
-
-using namespace std;
-
-Handler::Handler(Particle *particle, Light *incidentLight, float wavelength)
-	: m_incidentLight(incidentLight),
-	  m_particle(particle),
-	  m_wavelength(wavelength),
-	  m_hasAbsorbtion(false),
-	  m_normIndex(1)
-{
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }
 
 void Handler::HandleBeams(std::vector<Beam> &/*beams*/)
@@ -54,7 +37,6 @@ void Handler::HandleBeams(std::vector<Beam> &/*beams*/)
 
 void Handler::SetTracks(Tracks *tracks)
 {
-<<<<<<< HEAD
 //	if (!m_tracks)
 //	{
 //		std::cerr << "Tracks are not set" << std::endl;
@@ -98,7 +80,7 @@ void Handler::ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr)
 
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		double d = m_scattering->ComputeInternalOpticalPath(
+		double d = m_scattering->MeasureOpticalPath(
 					beam, beam.arr[i], tr);
 		lengths.push_back(d);
 	}
@@ -137,7 +119,7 @@ void Handler::ApplyAbsorption(Beam &beam)
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
 //	double opAbs = CalcOpticalPathAbsorption(beam);
-	double path = m_scattering->ComputeInternalOpticalPath(beam, beam.Center(), tr);
+	double path = m_scattering->MeasureOpticalPath(beam, beam.Center(), tr);
 
 #ifdef _DEBUG // DEB
 //	double ddd = fabs(path - beam.opticalPath);
@@ -192,8 +174,6 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 			p2.x*p1.y + p2.x*p3.y +
 			p3.x*p1.y - p3.x*p2.y;
 
-	m_isBadBeam = false;
-
 	if (fabs(den) < 1e-3)
 	{
 		m_isBadBeam = true;
@@ -211,6 +191,56 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 	info.lenIndices.y = -(lens[0]*p2.x - lens[0]*p3.x -
 			lens[1]*p1.x + lens[1]*p3.x +
 			lens[2]*p1.x - lens[2]*p2.x) / den;
+}
+
+BeamInfo Handler::ComputeBeamInfo(const Beam &beam)
+{
+	BeamInfo info;
+	info.normal = beam.Normal();
+	info.normald = Point3d(info.normal.cx, info.normal.cy, info.normal.cz);
+
+	info.order = DotProduct(info.normal, beam.direction) > 0;
+
+	if (!info.order)
+	{
+		info.normal = -info.normal;
+		info.normald = -info.normald;
+	}
+
+	ComputeCoordinateSystemAxes(info.normald, info.horAxis, info.verAxis);
+
+	info.centerf = beam.Center();
+	info.center = info.centerf;
+	info.projectedCenter = ChangeCoordinateSystem(info.horAxis, info.verAxis,
+												  info.normald, info.center);
+	if (m_hasAbsorption && beam.lastFacetId != INT_MAX)
+	{
+		ComputeOpticalLengths(beam, info);
+		ComputeLengthIndices(beam, info);
+	}
+
+	info.area = beam.Area();
+
+	info.projLenght = beam.opticalPath + DotProductD(info.center, beam.direction);
+
+	info.beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
+	info.beamBasis = info.beamBasis/Length(info.beamBasis); // basis of beam
+
+	return info;
+}
+
+void Handler::ComputeOpticalLengths(const Beam &beam, BeamInfo &info)
+{
+	std::vector<int> tr;
+	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+//	std::cout << tr.size() << std::endl;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		info.opticalLengths[i] = m_scattering->MeasureOpticalPath(
+					beam, beam.arr[i], tr);
+	}
+	//	ExtropolateOpticalLenght(beam, tr);
 }
 
 Tracks *Handler::GetTracks() const
@@ -272,13 +302,14 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis,
 										info.normald, beam.arr[i]) - info.projectedCenter;
 
-			if (fabs(p1.x - p2.x) < m_eps3)
+			const double ai = (p1.y - p2.y)/(p1.x - p2.x);
+
+			if (fabs(ai) > m_eps3)
 			{
 				p1 = p2;
 				continue;
 			}
 
-			const double ai = (p1.y - p2.y)/(p1.x - p2.x);
 			complex Ci = A + ai*B;
 
 			complex tmp;
@@ -312,10 +343,6 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 		}
 
 		s /= B;
-#ifdef _DEBUG // DEB
-		if (isnan(real(s)))
-			int fff = 0;
-#endif
 	}
 	else
 	{
@@ -324,13 +351,14 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis, info.normald,
 										beam.arr[i]) - info.projectedCenter;
 
-			if (fabs(p1.y - p2.y) < m_eps3)
+			const double ci = (p1.x - p2.x)/(p1.y - p2.y);
+
+			if (fabs(ci) > m_eps3)
 			{
 				p1 = p2;
 				continue;
 			}
 
-			const double ci = (p1.x - p2.x)/(p1.y - p2.y);
 			const complex Ei = A*ci + B;
 
 			complex tmp;
@@ -353,18 +381,18 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 			double kDi = m_wavenumber*di;
 			s += exp_im(kDi*real(A)) * exp(-kDi*imag(A)) * tmp;
 
-			p1 = p2;
-		}
-
-		s /= -A;
 #ifdef _DEBUG // DEB
 		if (isnan(real(s)))
 			int fff = 0;
 #endif
+			p1 = p2;
+		}
+
+		s /= -A;
 	}
 
-#ifdef _DEBUG // DEB
-	double dddd = exp(m_absMag*info.lenIndices.z);
+#ifndef _DEBUG // DEB
+//	double dddd = exp(m_absMag*info.lenIndices.z);
 #endif
 	return m_complWave * s * exp(m_absMag*info.lenIndices.z);
 }
@@ -503,119 +531,4 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 	}
 
 	return m_complWave * s;
-=======
-	if (!m_tracks)
-	{
-		std::cerr << "Tracks are not set" << std::endl;
-		throw std::exception();
-	}
-
-	m_tracks = tracks;
-}
-
-double Handler::BeamCrossSection(const Beam &beam)
-{
-	const double eps = 1e7*DBL_EPSILON;
-
-	Point3f normal = beam.facet->ex_normal; // normal of last facet of beam
-	double cosA = Point3f::DotProduct(normal, beam.direction);
-	double e = fabs(cosA);
-
-	if (e < eps)
-	{
-		return 0;
-	}
-
-	double area = beam.Area();
-	double len = Point3f::Length(normal);
-	return (e*area)/len;
-}
-
-void Handler::WriteMatricesToFile(string &/*destName*/)
-{
-}
-
-void Handler::SetNormIndex(double normIndex)
-{
-	m_normIndex = normIndex;
-}
-
-void Handler::SetAbsorbtionAccounting(bool value)
-{
-	m_hasAbsorbtion = value;
-	m_cAbs = -M_2PI*imag(m_particle->GetRefractiveIndex())/m_wavelength;
-
-	m_absLogFile.open("abslog1.txt", ios::out);
-	m_absLogFile << setprecision(10);
-	m_absLogFile << "No" << ' '
-				 << "CtrPath" << ' '
-				 << "AvgPath" << ' '
-				 << "Max-Min" << ' '
-				 << "Nact" << ' '
-				 << "Npt" << ' '
-				 << "Tr" << ' '
-				 << endl;
-}
-
-void Handler::SetScattering(Scattering *scattering)
-{
-	m_scattering = scattering;
-}
-
-void Handler::OutputPaths(const Beam &beam, const OpticalPath &path)
-{
-	vector<int> track;
-	m_tracks->RecoverTrack(beam, track);
-
-	vector<double> ps;
-	double sum = 0;
-
-	for (int i = 0; i < beam.nVertices; ++i)
-	{
-		OpticalPath p0 = m_scattering->ComputeOpticalPath(beam, beam.vertices[i],
-														  track);
-		ps.push_back(p0.internal);
-		sum += p0.internal;
-	}
-
-	double maxPath = *std::max_element(ps.begin(), ps.end());
-	double minPath = *std::min_element(ps.begin(), ps.end());
-	double delta = fabs(path.internal - sum/ps.size());
-
-	if (delta >= 10e-4)
-	{
-		m_absLogFile << ++count << ' '
-					 << path.internal << ' '
-					 << sum/ps.size() << ' '
-					 << maxPath - minPath << ' '
-					 << beam.actNo << ' '
-					 << beam.nVertices << ' '
-					 << Tracks::TrackToStr(track)
-					 << endl;
-	}
-}
-
-OpticalPath Handler::ComputeOpticalPath(const Beam &beam)
-{
-	vector<int> track;
-	m_tracks->RecoverTrack(beam, track);
-//	double opAbs = CalcOpticalPathAbsorption(beam);
-	return m_scattering->ComputeOpticalPath(beam, beam.Center(), track);
-}
-
-void Handler::ApplyAbsorbtion(Beam &beam)
-{
-	auto path = ComputeOpticalPath(beam);
-
-	if (path.internal > DBL_EPSILON)
-	{
-#ifdef _DEBUG // DEB
-//		OutputPaths(beam, path);
-//		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
-//			int ggg = 0;
-#endif
-		double abs = exp(m_cAbs*path.internal);
-		beam.Jones *= abs;
-	}
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }

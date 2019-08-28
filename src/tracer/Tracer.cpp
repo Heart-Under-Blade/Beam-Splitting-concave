@@ -3,72 +3,63 @@
 #include <ostream>
 #include <iostream>
 #include <assert.h>
-#include "common.h"
+#include "global.h"
 #include "macro.h"
 //#ifdef _TRACK_ALLOW
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 //#endif
 
+#include "ScatteringConvex.h"
+#include "ScatteringNonConvex.h"
+
 using namespace std;
 
-LightTracer::LightTracer(Particle *particle, Scattering *scattering,
-						 const string &resultFileName)
-	: m_particle(particle),
-	  m_resultDirName(resultFileName),
-	  m_scattering(scattering)
+Tracer::Tracer(Particle *particle, int nActs, const string &resultFileName)
+	: m_resultDirName(resultFileName)
+{
+	SetIncidentLight(particle);
+
+	if (particle->IsConcave())
+	{
+		m_scattering = new ScatteringNonConvex(particle, &m_incidentLight, true, nActs);
+	}
+	else
+	{
+		m_scattering = new ScatteringConvex(particle, &m_incidentLight, true, nActs);
+	}
+
+	m_particle = m_scattering->m_particle;
+	m_symmetry = m_particle->GetSymmetry();
+}
+
+Tracer::~Tracer()
 {
 }
 
-LightTracer::~LightTracer()
+void Tracer::SetIncidentLight(Particle *particle)
 {
-}
+	m_incidentLight.direction = Point3f(0, 0, -1);
+	m_incidentLight.polarizationBasis = Point3f(0, 1, 0);
 
-void LightTracer::TraceFixed(const Orientation &orientation)
-{
-	Orientation orient = orientation.ToRadian();
-
-	vector<Beam> outBeams;
-	m_particle->Rotate(orient);
-	m_scattering->ScatterLight(outBeams);
-//	m_particle->Output();
-	m_handler->HandleBeams(outBeams);
-	outBeams.clear();
-
-//	double D_tot = CalcTotalScatteringEnergy();
-
-	m_handler->WriteMatricesToFile(m_resultDirName);
-//	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
-}
-
-<<<<<<< HEAD
 	Point3f point = m_incidentLight.direction * particle->MaximalDimention()/2;
 	m_incidentLight.direction.d_param = DotProduct(point, m_incidentLight.direction);
-=======
-void LightTracer::TraceRandom(const AngleRange &/*betaRange*/,
-							  const AngleRange &/*gammaRange*/)
-{
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }
 
-void LightTracer::OutputOrientationToLog(int i, int j, ostream &logfile)
+void Tracer::OutputOrientationToLog(int i, int j, ostream &logfile)
 {
 	logfile << "i: " << i << ", j: " << j << endl;
 	logfile.flush();
 }
 
-void LightTracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
+void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
 {
 	EraseConsoleLine(50);
 	cout << (count*100)/(betaNumber+1) << '%'
 		 << '\t' << timer.Elapsed();
 }
 
-<<<<<<< HEAD
 
 void Tracer::OutputLogPO(CalcTimer &timer, long long orNumber, const string &path)
-=======
-void LightTracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -93,12 +84,11 @@ void LightTracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const
 	cout << m_log;
 }
 
-void LightTracer::SetIsOutputGroups(bool value)
+void Tracer::SetIsOutputGroups(bool value)
 {
 	isOutputGroups = value;
 }
 
-<<<<<<< HEAD
 //REF: объединить с предыдущим
 //void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
 //							  const Tracks &tracks, double wave)
@@ -151,21 +141,17 @@ void LightTracer::SetIsOutputGroups(bool value)
 //}
 
 void Tracer::OutputStartTime(CalcTimer &timer)
-=======
-void LightTracer::OutputStartTime(CalcTimer &timer)
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 {
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 }
 
-void LightTracer::SetHandler(Handler *handler)
+void Tracer::SetHandler(Handler *handler)
 {
 	m_handler = handler;
 	m_handler->SetScattering(m_scattering);
 }
 
-<<<<<<< HEAD
 //void Tracer::HandleBeamsPO2(vector<Beam> &outBeams, const Conus &bsCone, int groupID)
 //{
 //	for (unsigned int i = 0; i < outBeams.size(); ++i)
@@ -212,5 +198,3 @@ void LightTracer::SetHandler(Handler *handler)
 //	}
 //}
 
-=======
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46

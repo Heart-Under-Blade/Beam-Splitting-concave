@@ -54,12 +54,12 @@ void Matrix4x4d::operator *= (double value)
 	}
 }
 
-double Matrix4x4d::operator ()(int i, int j) const
+double Matrix4x4d::operator ()(unsigned int i, unsigned int j) const
 {
 	return m_array[i][j];
 }
 
-double &Matrix4x4d::operator ()(int i, int j)
+double &Matrix4x4d::operator ()(unsigned int i, unsigned int j)
 {
 	return m_array[i][j];
 }

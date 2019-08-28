@@ -44,13 +44,11 @@ void Beam::Copy(const Beam &other)
 	nActs = other.nActs;
 	location = other.location;
 	locations = other.locations;
-#ifdef _DEBUG // DEB
+	id = other.id;
+#ifndef _DEBUG // DEB
 //	pols = other.pols;
 //	ops = other.ops;
 //	dirs = other.dirs;
-#endif
-#ifdef _TRACK_ALLOW
-	id = other.id;
 #endif
 }
 
@@ -266,9 +264,9 @@ void Beam::RotateJMatrix(const Vector3f &newBasis)
 
 void Beam::SetPolygon(const Polygon &other)
 {
-    nVertices = other.nVertices;
+	nVertices = other.nVertices;
 
-    for (int i = 0; i < other.nVertices; ++i)
+	for (int i = 0; i < other.nVertices; ++i)
 	{
 		arr[i] = other.arr[i];
 	}

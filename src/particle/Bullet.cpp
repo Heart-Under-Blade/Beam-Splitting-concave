@@ -1,38 +1,41 @@
 #include "Bullet.h"
-#include "common.h"
+#include "global.h"
 
 Bullet::Bullet()
 {
 
 }
 
-Bullet::Bullet(const complex &refrIndex, const Size &size, double peakHeight)
-	: Column(13, refrIndex, size, false)
+Bullet::Bullet(const complex &refrIndex, double diameter, double height, double peakHeight)
 {
+	isConcave = false;
+	SetSize(diameter, height);
+	Init(13, refrIndex);
+
 	SetSymmetry(M_PI/2, M_PI/3);
 	SetFacetParams();
 
 	Facet baseTop;
-	SetBases(baseTop, elems[7].original);
-	SetSides(baseTop, elems[7].original);
-	Point3f peak = Point3f(0, 0, m_size.height/2 + peakHeight);
-	SetPeakFacets(8, 13, baseTop.vertices, peak); // top facets (triangles)
+	SetBases(baseTop, defaultFacets[7]);
+	SetSides(baseTop, defaultFacets[7]);
+	Point3f peak = Point3f(0, 0, m_height/2 + peakHeight);
+	SetPeakFacets(8, 13, baseTop.arr, peak); // top facets (triangles)
 
 	SetDefaultNormals();
 	SetDefaultCenters();
-	ResetPosition();
+	Reset();
 }
 
 void Bullet::SetBaseFacet(Facet &facet)
 {
-	double radius = m_size.diameter/2;
-	double halfHeight = m_size.height/2;
+	double radius = m_diameter/2;
+	double halfHeight = m_height/2;
 
 	double halfRadius = radius/2;
 	double inRadius = (sqrt(3) * radius) / 2;
 
 	// top base facet
-	Point3f *polygon = facet.vertices;
+	Point3f *polygon = facet.arr;
 	SetTwoDiagonalPoints(0, polygon, halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(1, polygon, -halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(2, polygon, -radius, 0, halfHeight);
@@ -44,17 +47,17 @@ void Bullet::SetPeakFacets(int start, int end, const Point3f *baseFacet,
 	// base facet point indices
 	int p0 = BASE_VERTEX_NUM-1;
 	int p1 = 0;
-	elems[0].original.vertices[0] = baseFacet[p0];
-	elems[0].original.vertices[1] = baseFacet[p1];
-	elems[0].original.vertices[2] = peakPoint;
+	defaultFacets[0].arr[0] = baseFacet[p0];
+	defaultFacets[0].arr[1] = baseFacet[p1];
+	defaultFacets[0].arr[2] = peakPoint;
 	p0 = p1;
 	++p1;
 
 	for (int i = start; i != end; ++i)
 	{
-		elems[i].original.vertices[0] = baseFacet[p0];
-		elems[i].original.vertices[1] = baseFacet[p1];
-		elems[i].original.vertices[2] = peakPoint;
+		defaultFacets[i].arr[0] = baseFacet[p0];
+		defaultFacets[i].arr[1] = baseFacet[p1];
+		defaultFacets[i].arr[2] = peakPoint;
 		p0 = p1;
 		++p1;
 	}
@@ -62,32 +65,20 @@ void Bullet::SetPeakFacets(int start, int end, const Point3f *baseFacet,
 
 void Bullet::SetFacetParams()
 {
-	for (int i = 0; i < nElems; ++i)
+	for (int i = 0; i < nFacets; ++i)
 	{
-		elems[i].actual.isOverlayedIn = true;
-		elems[i].actual.isOverlayedOut = true;
+		facets[i].isVisibleIn = false;
+		facets[i].isVisibleOut = false;
 	}
 
-<<<<<<< HEAD
 	defaultFacets[0].nVertices = 3;
 
 	for (int i = 8; i < 13; ++i)
 	{
 		defaultFacets[i].nVertices = 3;
-=======
-	elems[0].original.nVertices = 3;
-
-	for (int i = 8; i < 13; ++i)
-	{
-		elems[i].original.nVertices = 3;
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 	}
 
 	SetSideFacetParams(1, 7);
 
-<<<<<<< HEAD
 	defaultFacets[7].nVertices = 6;
-=======
-	elems[7].original.nVertices = BASE_VERTEX_NUM;
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }

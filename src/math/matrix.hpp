@@ -24,14 +24,14 @@ class matrixC;
 */
 
 class matrix {
-	int n, m; ///< n, m - Dimensions of array
+	unsigned int n, m; ///< n, m - Dimensions of array
 	double** ptr; ///< Pointer to the array
 	void AllocMem(void); // memory operation
 	void FreeMem(void);
 	matrix(void) {} ///< This constructor MUST BE private!
 public:
 	/// Creates and initializes new matrix
-	matrix(int _n, int _m)
+	matrix(unsigned int _n, unsigned int _m)
 		{ this->n=_n; this->m=_m; this->AllocMem(); }
 	matrix(const matrix &); // copy constructor
 	// destroys matrix
@@ -46,7 +46,7 @@ public:
 	matrix	operator-=(const matrix &m) { return *this = m-*this; }
 
 	/// The operator returns a pointer to the i-th row of the array.
-	double*	operator[] (int i) const { return this->ptr[i]; }
+	double*	operator[] (unsigned int i) const { return this->ptr[i]; }
 	matrix	operator*(double) const;
 	matrix	operator*(const matrix &) const;
 	matrix	operator*=(double);
@@ -62,7 +62,7 @@ public:
 	/// The function sets all the elements of the principal diagonal to one and all other elements to zero. The function do not check if the matrix is square.
 	void	Identity(void);
 	/// The function exchanges two rows
-	void	Exchange(int i, int j) // exchanging of rows
+	void	Exchange(unsigned int i, unsigned int j) // exchanging of rows
 		{ double* const p = this->ptr[i];
 		this->ptr[i] = this->ptr[j]; this->ptr[j] = p; }
 
@@ -78,19 +78,19 @@ public:
 	@param m: the array
 	@return row counts, (m.n)
 	*/
-	friend int Str(const matrix& m) { return m.n; }
+	friend unsigned int Str(const matrix& m) { return m.n; }
 	/**
 	@brief The function returns column counts
 	@param m: the array
 	@return row counts, (m.m)
 	*/
-	friend int Col(const matrix& m) { return m.m; }
+	friend unsigned int Col(const matrix& m) { return m.m; }
 
 	/// The operator outputs all elements of the array to the file separated by space
 	friend std::ofstream& operator<<(std::ofstream&, const matrix &);
 
-	int getN() const;
-	int getM() const;
+	unsigned int getN() const;
+	unsigned int getM() const;
 };
 //------------------------------------------------------------------------------
 
@@ -100,14 +100,14 @@ Size of the array can't be changed.
 
 */
 class matrixC {
-	int n, m; ///< n, m - Dimensions of array
+	unsigned int n, m; ///< n, m - Dimensions of array
 	complex** ptr; ///< Pointer to the array
 	void	AllocMem(void); // memory operation
 	void	FreeMem(void);
 	matrixC(void) {} ///< This constructor MUST BE private!
 public:
 	/// Creates and initializes new matrix
-	matrixC(int _n, int _m)
+	matrixC(unsigned int _n, unsigned int _m)
 		{ this->n=_n; this->m=_m; this->AllocMem(); }
 	matrixC(const matrixC &); // copy constructor
 	// destroys matixC
@@ -120,7 +120,7 @@ public:
 	matrixC		operator-=(const matrixC &m) { return *this = m-*this; }
 
 	/// The operator returns a pointer to the i-th row of the array.
-	complex*	operator[](int N) const { return this->ptr[N]; }
+	complex*	operator[](unsigned int N) const { return this->ptr[N]; }
 	matrixC		operator*(const complex &) const;
 	matrixC		operator*(const matrix &) const;
 	matrixC		operator*(const matrixC &) const;
@@ -135,7 +135,7 @@ public:
 	/// The function sets all the elements of the principal diagonal to one and all other elements to zero. The function do not check if the matrix is square.
 	void		Identity(void);
 	/// The function exchanges two rows
-	void		Exchange(int i, int j) // exchanging of rows
+	void		Exchange(unsigned int i, unsigned int j) // exchanging of rows
 	{ complex* const p = this->ptr[i];
 	this->ptr[i] = this->ptr[j]; this->ptr[j] = p; }
 	// friends
@@ -148,13 +148,13 @@ public:
 	@param m: the array
 	@return row counts, (m.n)
 	*/
-	friend int Str(const matrixC& m) { return m.n; }
+	friend unsigned int Str(const matrixC& m) { return m.n; }
 	/**
 	@brief The function returns column counts
 	@param m: the array
 	@return row counts, (m.m)
 	*/
-	friend int Col(const matrixC& m) { return m.m; }
+	friend unsigned int Col(const matrixC& m) { return m.m; }
 	friend matrixC operator*(const complex& z, const matrixC &m)
 	{ return m*z; }
 	/// The operator outputs all elements of the array to the file separated by space. Real and Imagen parts are separated by comma.

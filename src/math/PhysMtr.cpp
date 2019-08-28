@@ -6,11 +6,11 @@
 void Arr2D::AllocMem(double*** _ptr)
 {
 	this->ptr = new double**[this->N];
-	for(int i=0, nm = this->n*this->m; i<this->N; i++){
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++){
 		this->ptr[i] = new double*[this->M];
-        for(int j=0; j<this->M; j++){
+        for(unsigned int j=0; j<this->M; j++){
 			this->ptr[i][j] = new double[nm];
-			for(int k=0; k<nm; k++)
+			for(unsigned int k=0; k<nm; k++)
 				this->ptr[i][j][k] = (_ptr == NULL ? 0 : _ptr[i][j][k]);
 		}
 	}
@@ -18,8 +18,8 @@ void Arr2D::AllocMem(double*** _ptr)
 
 void Arr2D::FreeMem(void)
 {
-	for(int i=0; i<this->N; i++){
-		for(int j=0; j<this->M; j++) delete[] this->ptr[i][j];
+	for(unsigned int i=0; i<this->N; i++){
+		for(unsigned int j=0; j<this->M; j++) delete[] this->ptr[i][j];
 		delete[] this->ptr[i];
 	}
 	delete[] this->ptr;
@@ -29,12 +29,12 @@ void Arr2D::FreeMem(void)
 {
 	this->N=Arr.N; this->M=Arr.M; this->n=Arr.n; this->m=Arr.m;
 	this->AllocMem();
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
 }
 
-matrix Arr2D::operator() (int _N, int _M) const
+matrix Arr2D::operator() (unsigned int _N, unsigned int _M) const
 {
 	#ifdef _DEBUG
 	if(_N>=this->N || _M>=this->M)
@@ -42,8 +42,8 @@ matrix Arr2D::operator() (int _N, int _M) const
 	#endif
 	double* const pt = this->ptr[_N][_M];
 	matrix mt(this->n, this->m);
-	for(int i=0; i<this->n; i++)
-		for(int j=0; j<this->m; j++)	mt[i][j] = pt[i*n+j];
+	for(unsigned int i=0; i<this->n; i++)
+		for(unsigned int j=0; j<this->m; j++)	mt[i][j] = pt[i*n+j];
 	return mt;
 }
 
@@ -53,9 +53,9 @@ Arr2D Arr2D::operator=(const Arr2D &Arr)
 	this->FreeMem();
 	this->N=Arr.N; this->M=Arr.M; this->n=Arr.n; this->m=Arr.m;
 	this->AllocMem();
-	for(int i=0, nm = this->n*this->m; i<this->N; i++){
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++){
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
 	}
 	return *this;
 }
@@ -66,39 +66,39 @@ Arr2D Arr2D::operator+=(const Arr2D &arr)
 	if(arr.n!=this->n || arr.m!=this->m || arr.N!=this->N || arr.M!=this->M)
 		throw " Arr2D::operator+= : Incorrect assignment! ";
 	#endif
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++)	this->ptr[i][j][k] += arr.ptr[i][j][k];
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++)	this->ptr[i][j][k] += arr.ptr[i][j][k];
 	return *this;
 }
 
 void Arr2D::ClearArr(void) const
 {
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++)	this->ptr[i][j][k] = 0;
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++)	this->ptr[i][j][k] = 0;
 }
 
-void Arr2D::insert(int _N, int _M, const matrix& mt)
+void Arr2D::insert(unsigned int _N, unsigned int _M, const matrix& mt)
 {
 	#ifdef _DEBUG
 	if(Str(mt)!=this->n || Col(mt)!=this->m || _N>=this->N || _M>=this->M)
 		throw " Arr2D::insert() : Incorrect insertion! ";
 	#endif
 	double* const pt = this->ptr[_N][_M];
-	for(int i=0; i<this->n; i++)
-		for(int j=0; j<this->m; j++)	pt[i*this->n+j] += mt[i][j];
+	for(unsigned int i=0; i<this->n; i++)
+		for(unsigned int j=0; j<this->m; j++)	pt[i*this->n+j] += mt[i][j];
 }
 
-void Arr2D::replace(int _N, int _M, const matrix& mt)
+void Arr2D::replace(unsigned int _N, unsigned int _M, const matrix& mt)
 {
 	#ifdef _DEBUG
 	if(Str(mt)!=this->n || Col(mt)!=this->m || _N>=this->N || _M>=this->M)
 		throw " Arr2D::replace() : Incorrect insertion! ";
 	#endif
 	double* const pt = this->ptr[_N][_M];
-	for(int i=0; i<this->n; i++)
-		for(int j=0; j<this->m; j++)	pt[i*this->n+j] = mt[i][j];
+	for(unsigned int i=0; i<this->n; i++)
+		for(unsigned int j=0; j<this->m; j++)	pt[i*this->n+j] = mt[i][j];
 }
 
 
@@ -106,10 +106,10 @@ void Arr2D::replace(int _N, int _M, const matrix& mt)
 double Max(const Arr2D& Arr)
 {
 	double mx = 0;
-	for(int i=0; i<Arr.n; i++)
-		for(int j=0; j<Arr.m; j++)
-			for(int ii=0; ii<StrArr(Arr); ii++)
-				for(int jj=0; jj<ColArr(Arr); jj++){
+	for(unsigned int i=0; i<Arr.n; i++)
+		for(unsigned int j=0; j<Arr.m; j++)
+			for(unsigned int ii=0; ii<StrArr(Arr); ii++)
+				for(unsigned int jj=0; jj<ColArr(Arr); jj++){
 					double bf = Arr.ptr[ii][jj][i*Arr.n+j];
 					if(bf > mx) mx = bf;
 				}
@@ -119,11 +119,11 @@ double Max(const Arr2D& Arr)
 matrix SumArr(const Arr2D& Arr)
 {
 	matrix mt(Arr.n, Arr.m);
-	for(int i=0; i<Arr.n; i++)
-		for(int j=0; j<Arr.m; j++){
+	for(unsigned int i=0; i<Arr.n; i++)
+		for(unsigned int j=0; j<Arr.m; j++){
 			mt[i][j] = 0;
-			for(int ii=0; ii<StrArr(Arr); ii++)
-				for(int jj=0; jj<ColArr(Arr); jj++)
+			for(unsigned int ii=0; ii<StrArr(Arr); ii++)
+				for(unsigned int jj=0; jj<ColArr(Arr); jj++)
 					mt[i][j] += Arr.ptr[ii][jj][i*Arr.n+j];
 		}
 	return mt;
@@ -133,9 +133,9 @@ Arr2D Arr2D::operator*(double x)
 {
 	Arr2D tmp(this->N,this->M,this->n,this->m);
 
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++)
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++)
 				tmp.ptr[i][j][k] = this->ptr[i][j][k]*x;
 	return tmp;
 }
@@ -145,11 +145,11 @@ Arr2D Arr2D::operator*(double x)
 void Arr2DC::AllocMem(complex*** _ptr)
 {
 	this->ptr = new complex**[this->N];
-	for(int i=0, nm = this->n*this->m; i<this->N; i++){
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++){
 		this->ptr[i] = new complex*[this->M];
-		for(int j=0; j<this->M; j++){
+		for(unsigned int j=0; j<this->M; j++){
 			this->ptr[i][j] = new complex[nm];
-			for(int k=0; k<nm; k++)
+			for(unsigned int k=0; k<nm; k++)
 				this->ptr[i][j][k] = (_ptr == NULL ? complex(0.0) : _ptr[i][j][k]);
 		}
 	}
@@ -157,8 +157,8 @@ void Arr2DC::AllocMem(complex*** _ptr)
 
 void Arr2DC::FreeMem(void)
 {
-	for(int i=0; i<this->N; i++){
-		for(int j=0; j<this->M; j++) delete[] this->ptr[i][j];
+	for(unsigned int i=0; i<this->N; i++){
+		for(unsigned int j=0; j<this->M; j++) delete[] this->ptr[i][j];
 			delete[] this->ptr[i];
 	}
 	delete[] this->ptr;
@@ -168,12 +168,12 @@ void Arr2DC::FreeMem(void)
 {
 	this->N=Arr.N; this->M=Arr.M; this->n=Arr.n; this->m=Arr.m;
 	this->AllocMem();
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
 }
 
-matrixC Arr2DC::operator() (int _N, int _M) const
+matrixC Arr2DC::operator() (unsigned int _N, unsigned int _M) const
 {
 	#ifdef _DEBUG
 	if(_N>=this->N || _M>=this->M)
@@ -181,8 +181,8 @@ matrixC Arr2DC::operator() (int _N, int _M) const
 	#endif
 	complex* const pt = this->ptr[_N][_M];
 	matrixC mt(this->n, this->m);
-	for(int i=0; i<this->n; i++)
-		for(int j=0; j<this->m; j++)	mt[i][j] = pt[i*n+j];
+	for(unsigned int i=0; i<this->n; i++)
+		for(unsigned int j=0; j<this->m; j++)	mt[i][j] = pt[i*n+j];
 	return mt;
 }
 
@@ -192,9 +192,9 @@ Arr2DC Arr2DC::operator=(const Arr2DC &Arr)
 	this->FreeMem();
 	this->N=Arr.N; this->M=Arr.M; this->n=Arr.n; this->m=Arr.m;
 	this->AllocMem();
-	for(int i=0, nm = this->n*this->m; i<this->N; i++){
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++){
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++) this->ptr[i][j][k] = Arr.ptr[i][j][k];
 	}
 	return *this;
 }
@@ -205,39 +205,39 @@ Arr2DC Arr2DC::operator+=(const Arr2DC &arr)
 	if(arr.n!=this->n || arr.m!=this->m || arr.N!=this->N || arr.M!=this->M)
 		throw " Arr2DC::operator+= : Incorrect assignment! ";
 	#endif
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++)	this->ptr[i][j][k] += arr.ptr[i][j][k];
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++)	this->ptr[i][j][k] += arr.ptr[i][j][k];
 	return *this;
 }
 
 void Arr2DC::ClearArr(void) const
 {
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++)	this->ptr[i][j][k] = 0;
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++)	this->ptr[i][j][k] = 0;
 }
 
-void Arr2DC::insert(int _N, int _M, const matrixC& mt)
+void Arr2DC::insert(unsigned int _N, unsigned int _M, const matrixC& mt)
 {
 	#ifdef _DEBUG
 	if(Str(mt)!=this->n || Col(mt)!=this->m || _N>=this->N || _M>=this->M)
 		throw " Arr2DC::insert() : Incorrect insertion! ";
 	#endif
 	complex* const pt = this->ptr[_N][_M];
-	for(int i=0; i<this->n; i++)
-		for(int j=0; j<this->m; j++)	pt[i*this->n+j] += mt[i][j];
+	for(unsigned int i=0; i<this->n; i++)
+		for(unsigned int j=0; j<this->m; j++)	pt[i*this->n+j] += mt[i][j];
 }
 
-void Arr2DC::replace(int _N, int _M, const matrixC& mt)
+void Arr2DC::replace(unsigned int _N, unsigned int _M, const matrixC& mt)
 {
 	#ifdef _DEBUG
 	if(Str(mt)!=this->n || Col(mt)!=this->m || _N>=this->N || _M>=this->M)
 		throw " Arr2DC::replace() : Incorrect insertion! ";
 	#endif
 	complex* const pt = this->ptr[_N][_M];
-	for(int i=0; i<this->n; i++)
-		for(int j=0; j<this->m; j++)	pt[i*this->n+j] = mt[i][j];
+	for(unsigned int i=0; i<this->n; i++)
+		for(unsigned int j=0; j<this->m; j++)	pt[i*this->n+j] = mt[i][j];
 }
 
 
@@ -245,11 +245,11 @@ void Arr2DC::replace(int _N, int _M, const matrixC& mt)
 matrixC SumArr(const Arr2DC& Arr)
 {
 	matrixC mt(Arr.n, Arr.m);
-	for(int i=0; i<Arr.n; i++)
-		for(int j=0; j<Arr.m; j++){
+	for(unsigned int i=0; i<Arr.n; i++)
+		for(unsigned int j=0; j<Arr.m; j++){
 			mt[i][j] = 0;
-			for(int ii=0; ii<StrArr(Arr); ii++)
-				for(int jj=0; jj<ColArr(Arr); jj++)
+			for(unsigned int ii=0; ii<StrArr(Arr); ii++)
+				for(unsigned int jj=0; jj<ColArr(Arr); jj++)
 					 mt[i][j] += Arr.ptr[ii][jj][i*Arr.n+j];
 		}
 	return mt;
@@ -257,9 +257,9 @@ matrixC SumArr(const Arr2DC& Arr)
 
 Arr2DC Arr2DC::operator/=(double x)
 {
-	for(int i=0, nm = this->n*this->m; i<this->N; i++)
-		for(int j=0; j<this->M; j++)
-			for(int k=0; k<nm; k++)	this->ptr[i][j][k] /= x;
+	for(unsigned int i=0, nm = this->n*this->m; i<this->N; i++)
+		for(unsigned int j=0; j<this->M; j++)
+			for(unsigned int k=0; k<nm; k++)	this->ptr[i][j][k] /= x;
 	return *this;
 }
 //------------------------------------------------------------------------------

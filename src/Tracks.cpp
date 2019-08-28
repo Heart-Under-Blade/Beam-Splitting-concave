@@ -6,7 +6,7 @@
 
 int Tracks::FindGroupByTrackId(const IdType &trackId) const
 {
-	for (int i = 0; i < size(); ++i)
+	for (size_t i = 0; i < size(); ++i)
 	{
 		for (int j = 0; j < (*this)[i].size; ++j)
 		{
@@ -27,7 +27,6 @@ int Tracks::FindGroupByTrackId(const IdType &trackId) const
 
 void Tracks::ImportTracks(int nFacets, const std::string &filename)
 {
-	m_nFacets = nFacets;
 	const int bufSize = 1024;
 	std::ifstream trackFile(filename, std::ios::in);
 
@@ -50,7 +49,7 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 		char *ptr, *trash;
 		ptr = strtok(buff, " ");
 
-		int groupIndex = 0;
+		size_t groupIndex = 0;
 		bool haveGroup = false;
 
 		while (ptr != NULL)
@@ -63,7 +62,7 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 
 				if (groupIndex >= size())
 				{
-					for (int i = size(); i <= groupIndex; ++i)
+					for (size_t i = size(); i <= groupIndex; ++i)
 					{
 						(*this).push_back(TrackGroup());
 					}
@@ -100,8 +99,6 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 		track.clear();
 	}
 
-	trackFile.close();
-
 	if (buffGroup.size != 0) // добавляем треки без группы в отдельные группы
 	{
 		for (int i = 0; i < buffGroup.size; ++i)
@@ -115,25 +112,17 @@ void Tracks::ImportTracks(int nFacets, const std::string &filename)
 	}
 }
 
-void Tracks::RecoverTrack(const Beam &beam, std::vector<int> &track)
+void Tracks::RecoverTrack(const Beam &beam, int facetNum,
+						  std::vector<int> &track)
 {
-	RecoverTrack(m_nFacets, beam, track);
-}
-
-void Tracks::RecoverTrack(int nFacets, const Beam &beam, std::vector<int> &track)
-{
-	int coef = nFacets + 1;
+	int coef = facetNum + 1;
 	std::vector<int> tmp_track;
 
 	auto tmpId = beam.id/coef;
 
-	for (int i = 0; i <= beam.actNo; ++i)
+	for (int i = 0; i <= beam.nActs; ++i)
 	{
-#ifdef _DEBUG // DEB
-		int tmp = (tmpId%coef);
-#else
 		int tmp = (tmpId%coef).toInt();
-#endif
 		tmpId -= tmp;
 		tmpId /= coef;
 		tmp -= 1;
@@ -144,16 +133,4 @@ void Tracks::RecoverTrack(int nFacets, const Beam &beam, std::vector<int> &track
 	{
 		track.push_back(tmp_track.at(i));
 	}
-}
-
-std::string Tracks::TrackToStr(const std::vector<int> &track)
-{
-	std::string str;
-
-	for (int p : track)
-	{
-		str += std::to_string(p) + ' ';
-	}
-
-	return str;
 }

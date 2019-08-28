@@ -76,14 +76,14 @@ public:
 		rest += m;
 	}
 
-	void AddToGroup(const Matrix2x2c &jones, int groupId)
+	void AddToGroup(const Matrix2x2c &jones, size_t groupId)
 	{
 		groupJones[groupId] += jones;
 	}
 
 	void SumGroupTotal()
 	{
-		for (int gr = 0; gr < m_nGroups; ++gr)
+		for (size_t gr = 0; gr < m_nGroups; ++gr)
 		{
 			MuellerMatrix m(groupJones[gr]);
 			m *= m_normIndex;
@@ -115,7 +115,7 @@ public:
 		return rest;
 	}
 
-	const MuellerMatrix &GetGroupMueller(int groupID)
+	const MuellerMatrix &GetGroupMueller(size_t groupID)
 	{
 		return groupMuellers.at(groupID);
 	}
@@ -140,7 +140,7 @@ private:
 	MuellerMatrix rest;
 	MuellerMatrix total;
 
-	int m_nGroups;
+	size_t m_nGroups;
 	double m_normIndex;
 
 	void ResetJones()
@@ -151,6 +151,7 @@ private:
 		}
 	}
 };
+
 
 class ContributionGO
 {
@@ -192,6 +193,7 @@ struct BeamInfo
 	double projLenght;
 	double opticalLengths[3];
 	Point3f beamBasis;
+	Point3f centerf;
 	Point3d center;
 	Point3d projectedCenter;
 	Point3f normal;
@@ -200,8 +202,6 @@ struct BeamInfo
 	Point3d verAxis;
 	Point3d lenIndices;
 };
-
-<<<<<<< HEAD
 
 class Handler
 {
@@ -225,10 +225,11 @@ public:
 	std::ofstream m_logFile;
 
 	int m_nBadBeams;
+	bool m_isBadBeam;
+
+	BeamInfo ComputeBeamInfo(const Beam &beam);
 
 protected:
-	void OutputPaths(const Beam &beam, const OpticalPath &path);
-
 	double BeamCrossSection(const Beam &beam) const;
 
 	void ApplyAbsorption(Beam &beam);
@@ -245,7 +246,6 @@ protected:
 	complex DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 							   const Point3d &direction) const;
 
-
 	Point3d ChangeCoordinateSystem(const Point3d& hor, const Point3d& ver,
 								   const Point3d& normal,
 								   const Point3d& point) const;
@@ -258,10 +258,11 @@ protected:
 
 	void ComputeLengthIndices(const Beam &beam, BeamInfo &info);
 
+	void ComputeOpticalLengths(const Beam &beam, BeamInfo &info);
+
 protected:
 	Scattering *m_scattering;
 	Tracks *m_tracks;
-	std::ofstream m_absLogFile;
 
 	Particle *m_particle;
 	double m_wavelength; // must be double type!!!
@@ -277,13 +278,11 @@ protected:
 
 	complex m_complWave;
 	complex m_invComplWave;
+	double m_absMag;
 
 	double m_eps1;
 	double m_eps2;
 	double m_eps3;
-
-	bool m_isBadBeam;
-	long long count = 0;
 
 private:
 	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);

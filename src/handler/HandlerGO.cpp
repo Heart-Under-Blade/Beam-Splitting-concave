@@ -1,6 +1,5 @@
 #include "HandlerGO.h"
 
-<<<<<<< HEAD
 #include <limits>
 #include <iostream>
 #include <iomanip>
@@ -10,35 +9,6 @@
 HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, double wavelength)
 	: Handler(particle, incidentLight, wavelength)
 {
-=======
-#include "Particle.h"
-#include "Mueller.hpp"
-
-#include <limits>
-#include <iomanip>
-
-#define BIN_SIZE			M_PI/SPHERE_RING_NUM
-
-using namespace std;
-
-HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, float wavelength)
-	: Handler(particle, incidentLight, wavelength)
-{
-	m_logFile.open("log1.txt", ios::out);
-	m_logFile << setprecision(numeric_limits<long double>::digits10 + 1);
-}
-
-double HandlerGO::ComputeTotalScatteringEnergy()
-{
-	double D_tot = m_totalContrib.back[0][0] + m_totalContrib.forward[0][0];
-
-	for (int i = 0; i <= SPHERE_RING_NUM; ++i)
-	{
-		D_tot += m_totalContrib.muellers(0, i, 0, 0);
-	}
-
-	return D_tot * m_normIndex;
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }
 
 void HandlerGO::SetTracks(Tracks *tracks)
@@ -114,7 +84,6 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib,
 	}
 }
 
-<<<<<<< HEAD
 void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
 	double cross = BeamCrossSection(beam);
@@ -129,33 +98,6 @@ matrix HandlerGO::ComputeMueller(float zenAng, Beam &beam)
 	if (zenAng < 180-FLT_EPSILON && zenAng > FLT_EPSILON)
 	{
 		const float &y = beam.direction.cy;
-=======
-void HandlerGO::WriteLog(const string &str)
-{
-	m_logFile << str;
-}
-
-void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
-{
-	double cross = BeamCrossSection(beam);
-	double area = cross*m_sinAngle;
-	m *= area;
-}
-
-void HandlerGO::WriteMatricesToFile(string &destName)
-{
-	AverageOverAlpha(true, m_normIndex, m_totalContrib, destName);
-	WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
-}
-
-matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
-{
-	matrix m = Mueller(beam.Jones);
-
-	if (zenAng < 180 && zenAng > 0)
-	{
-		const float &y = beam.direction.coordinates[1];
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
 		if (y*y > DBL_EPSILON)
 		{	// rotate the Mueller matrix of the beam to appropriate coordinate system
@@ -174,13 +116,8 @@ matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
 
 void HandlerGO::RotateMuller(const Point3f &dir, matrix &bf)
 {
-<<<<<<< HEAD
 	const float &x = dir.cx;
 	const float &y = dir.cy;
-=======
-	const float &x = dir.coordinates[0];
-	const float &y = dir.coordinates[1];
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
 	double tmp = y*y;
 	tmp = acos(x/sqrt(x*x+tmp));
@@ -197,7 +134,6 @@ void HandlerGO::RotateMuller(const Point3f &dir, matrix &bf)
 void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 							const std::string &filename)
 {
-<<<<<<< HEAD
 	std::string name = CreateUniqueFileName(filename);
 	std::ofstream allFile(name, std::ios::out);
 
@@ -205,16 +141,6 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 				"M21/M11 M22/M11 M23/M11 M24/M11 "\
 				"M31/M11 M32/M11 M33/M11 M34/M11 "\
 				"M41/M11 M42/M11 M43/M11 M44/M11";
-=======
-	string name = CreateUniqueFileName(filename);
-	ofstream allFile(name, std::ios::out);
-
-	allFile << "tetta"\
-				   "M11 M12/M11 M13/M11 M14/M11 "\
-			   "M21/M11 M22/M11 M23/M11 M24/M11 "\
-			   "M31/M11 M32/M11 M33/M11 M34/M11 "\
-			   "M21/M41 M42/M11 M43/M11 M44/M11 ";
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
 	for (int j = SPHERE_RING_NUM; j >= 0; j--)
 	{
@@ -222,22 +148,13 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 		double tmp1 = (j == 0) ? -(0.25*180.0)/SPHERE_RING_NUM : 0;
 		double tmp2 = (j == (int)SPHERE_RING_NUM) ? (0.25*180.0)/SPHERE_RING_NUM : 0;
 
-<<<<<<< HEAD
-=======
-		// Special case in first and last step
-		allFile << '\n' << tmp0 + tmp1 + tmp2;
-
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 		double sn = (j == 0 || j == (int)SPHERE_RING_NUM)
 				? 1-cos(BIN_SIZE/2.0)
 				: (cos((j-0.5)*BIN_SIZE)-cos((j+0.5)*BIN_SIZE));
 
-<<<<<<< HEAD
 		// Special case in first and last step
 		allFile << '\n' << tmp0 + tmp1 + tmp2 << ' ' << (M_2PI*sn);
 
-=======
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 		matrix bf = contrib.muellers(0, j);
 
 		if (bf[0][0] <= DBL_EPSILON)
@@ -268,7 +185,6 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 	allFile.close();
 }
 
-<<<<<<< HEAD
 Point3f HandlerGO::CalcK(std::vector<int> &tr)
 {	// OPT: сделать из переменных ссылки
 	Point3f k, tmp;
@@ -284,23 +200,6 @@ Point3f HandlerGO::CalcK(std::vector<int> &tr)
 	}
 
 	Normalize(k);
-=======
-Point3f HandlerGO::CalcK(vector<int> &tr)
-{	// OPT: сделать из переменных ссылки
-	Point3f k, tmp;
-	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
-	Point3f nq = m_particle->GetActualFacet(tr[tr.size()-1])->in_normal;
-	Point3f::CrossProduct(nq, n1, tmp);
-	Point3f::CrossProduct(tmp, nq, k);
-
-	for (int i = tr.size()-2; i > 0; --i)
-	{
-		Point3f ni = m_particle->GetActualFacet(tr[i])->in_normal;
-		k = k - ni*2*fabs(Point3f::DotProduct(ni, k));
-	}
-
-	Point3f::Normalize(k);
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 	return k;
 }
 
@@ -308,7 +207,6 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 {	// OPT: вынести переменные из цикла
 	double opticalPath = 0;
 
-<<<<<<< HEAD
 	std::vector<int> tr;
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
@@ -340,22 +238,4 @@ double HandlerGO::ComputeTotalScatteringEnergy()
 void HandlerGO::WriteLog(const std::string &str)
 {
 	m_logFile << str;
-=======
-	vector<int> tr;
-	m_tracks->RecoverTrack(beam, tr);
-
-	Point3f k = CalcK(tr);
-
-	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
-
-	for (int i = 0; i < beam.nVertices; ++i)
-	{
-		double delta = Point3f::Length(beam.Center() - beam.vertices[i])/Point3f::Length(k);
-		opticalPath += (delta*Point3f::DotProduct(k, n1))/Point3f::DotProduct(beam.direction, n1);
-	}
-
-	opticalPath /= beam.nVertices;
-
-	return opticalPath;
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 }

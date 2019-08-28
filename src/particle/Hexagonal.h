@@ -2,32 +2,25 @@
 
 #include "Particle.h"
 
-struct Size
-{
-	Size() {}
-	Size(double d, double h) {diameter = d; height = h;}
-	double diameter;
-	double height;
-};
-
 /**
- * @brief The Column class
+ * @brief The Hexagon class
+ * The prism particle with 6 side facets.
  */
-class Column : public Particle
+class Hexagonal : public Particle
 {
 public:
-	Column();
-	Column(int nFacets, const complex &refrIndex, const Size &size,
-		   bool isNonConvex);
+	Hexagonal();
+	Hexagonal(const complex &refrIndex, double diameter, double height);
 
 protected:
-	static const int BASE_NUM = 2;			///< number of bases
+	static const int BASE_NUM		 = 2;	///< number hexagon's of bases
 	static const int SIDE_VERTEX_NUM = 4;	///< number of vertex of the each side facet
 	static const int BASE_VERTEX_NUM = 6;	///< number of side facets
 
 protected:
 	Couple<int> m_sideFacetIDs;
-	Size m_size;
+	double m_diameter;
+	double m_height;
 
 protected:
 	void SetFacetParams() override;
@@ -36,5 +29,6 @@ protected:
 							  double x, double y, double z);
 	void SetSides(Facet &baseTop, Facet &baseBottom);
 	void SetSideFacetParams(int first, int last);
+	void SetSize(double diameter, double height);
 };
 

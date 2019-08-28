@@ -1,40 +1,40 @@
 #pragma once
 
 #include <math.h>
-#include <vector>
 
 #include "compl.hpp"
 #include "geometry_lib.h"
 #include "Facet.h"
-#include "Rotator.h"
+#include <vector>
 
-struct ParticleFacet
+#define ROT_MTR_RANK 3
+
+class Angle
 {
-	Facet original; // facet with origin coordinates of points
-	Facet actual; // facet with actual coordinates of points
+public:
+	double alpha;
+	double beta;
+	double gamma;
 };
 
 /**
- * @brief The Particle class is the base class inherited
- * by other concrete particle classes.
+ * @brief The Particle class
+ * The base class inherited by other concrete particle classes.
  * Vertices are ordered by counterclock-wise direction if you see from outside.
  */
-class Particle : public Array<ParticleFacet>
+class Particle
 {
 public:
 	Particle();
-	Particle(int nFacets, const complex &refrIndex, bool isNonConvex = false);
 
-	Facet *GetActualFacet(int i);
-	void SetFromFile(const std::string &filename, double reduceSize = -1);
+	void SetFromFile(const std::string &filename);
 
-	void Rotate(const Orientation &orientation);
+	void Rotate(double beta, double gamma, double alpha);
 	void Move(float dx, float dy, float dz);
-	void Scale(double ratio);
+	void Fix();
+	void Resize(double size);
 
 	void Concate(const std::vector<Particle> &parts);
-	void RemoveFacet(int index);
-	void CommitState();
 
 	/**
 	 * @brief LongRadius
@@ -42,33 +42,6 @@ public:
 	 * to the farthest point of particle.
 	 */
 	double LongRadius() const;
-
-	/**
-	 * @brief Area of the particle. Computes with summarising areas
-	 * of all facets of the particle
-	 * @return value of area
-	 */
-	double Area() const;
-
-	/**
-	 * @brief Compute the volume of the particle
-	 * with splitting into tetrahedrons
-	 * @return volume of the particle
-	 */
-	double Volume() const;
-
-	/**
-	 * @brief Distance between two the most distant vertices of the particle
-	 * @return value of distance
-	 */
-	double MaximalDimension() const;
-
-	/**
-	 * @brief Geomertical center of the particle
-	 * @return coordinates of center
-	 */
-	Point3f Center() const;
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
 	/**
 	 * @brief A sum of areas of each facet of the particle
@@ -81,48 +54,50 @@ public:
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 
-<<<<<<< HEAD
 	const Symmetry &GetSymmetry() const;
 	virtual void GetParticalFacetIdRangeByFacetId(
 			int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
 	bool IsConcave() const;
-=======
-	const Orientation &GetSymmetry() const;
-	virtual void GetParticalFacetIdRange(Facet */*id*/,
-										 int &/*begin*/, int &/*end*/) const {}
->>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
-	bool IsNonConvex() const;
 	void Output();
 
 public:
+	Facet facets[MAX_FACET_NUM];	///< all facets of particle
+	int nFacets;					///< number of facets
 	bool isAggregated = false;
-	Orientation rotAngle;
+
+	Angle rotAngle;
 
 protected:
-	Orientation m_symmetry;		///< angle of particle symmetry
+	Facet defaultFacets[MAX_FACET_NUM];
 
-	// REF move this to somewhere
+	Symmetry m_symmetry;		///< angle of particle symmetry
+
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
-
-	bool m_isNonConvex;
+	bool isConcave;
 
 protected:
-	void ReduceSmallEdges(double minSize);
+	void Init(int facetCount, const complex &refrIndex);
+
 	void SetDefaultNormals();
 	void SetDefaultCenters();
-	void ResetPosition();
-	void SetSymmetry(double beta, double gamma);
+	void Reset();
+	void Scale(double ratio);
+	void SetSymmetry(double beta, double gamma, double alpha = 0);
+
 	virtual void SetFacetParams() {}
 
 private:
 	void SetDParams();
 	void RotateNormals();
-	void SetFacetIndices();
-	int ReduceEdge(int facetNo, int i1, int i2);
+	void RotatePoint(const Point3f &point, Point3f &result);
+	void RotateCenters();
+	void SetRotateMatrix(double beta, double gamma, double alpha);
 
 private:
-	LocalRotator m_rotator;
+	double m_rotMatrix[ROT_MTR_RANK][ROT_MTR_RANK];	///< rotation matrix for vertices
+	void ReadSymmetry(const int bufSize, char *trash, char *buff,
+					  std::ifstream pfile, char *ptr);
 };
 

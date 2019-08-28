@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Column.h"
+#include "Hexagonal.h"
 
-class HexagonalAggregate : public Column
+class HexagonalAggregate : public Hexagonal
 {
 public:
-	HexagonalAggregate(const complex &refrIndex, const Size &size,
+	HexagonalAggregate(const complex &refrIndex, double diameter, double height,
 					   int particleNumber);
 protected:
 	void SetFacetParams() override;

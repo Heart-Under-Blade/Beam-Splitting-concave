@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "global.h"
 #include "compl.hpp"
 #include "JonesMatrix.h"
 #include "float.h"
@@ -23,6 +23,8 @@ public:
 //#else
 	BigInteger id = 0;
 //#endif
+
+	// OPT бесполезно для выпуклых частиц (там всегда пучок внутри)
 	int locations;		///< each bit of variable represents location of beam after an r/r act from left to right
 						///< "0" when beam location is "inside" and "1" if it's "outside"
 
@@ -78,10 +80,10 @@ public:
 	double opticalPath;	///< optical path of beam
 	double front;		///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
-#ifdef _DEBUG // DEB
+#ifndef _DEBUG // DEB
 //	std::vector<Polygon> pols;
 //	std::vector<Point3f> dirs;
-//	std::vector<double> ops;
+	std::vector<double> ops;
 #endif
 
 private:

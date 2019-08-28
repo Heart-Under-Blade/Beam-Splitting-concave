@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Column.h"
+#include "Hexagonal.h"
 
-class Bullet : public Column
+class Bullet : public Hexagonal
 {
 public:
 	Bullet();
-	Bullet(const complex &refrIndex, const Size &size, double peakHeight);
+	Bullet(const complex &refrIndex, double diameter, double height, double peakHeight);
 
 private:
 	void SetBaseFacet(Facet &facet);

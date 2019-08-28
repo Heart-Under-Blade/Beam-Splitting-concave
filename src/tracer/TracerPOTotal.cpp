@@ -59,11 +59,17 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 		{
 			gamma = j*gammaRange.step;
 
+#ifdef _DEBUG // DEB
+//			m_particle->Rotate(179.34, 37, 0);
+#endif
 			m_particle->Rotate(M_PI-beta, M_PI+gamma, 0);
-			m_scattering->FormShadowBeam(outBeams);
+
+			m_scattering->ExtractShadowBeam(outBeams);
 			m_scattering->ScatterLight(M_PI-beta, M_PI+gamma, outBeams);
+//			std::cout << "0" << std::endl;
 
 			m_handler->HandleBeams(outBeams);
+//			std::cout << "exit" << std::endl;
 
 			outBeams.clear();
 

@@ -3,69 +3,78 @@
 #include "Scattering.h"
 
 /** NOTE: пучки выходят со случайно ориентированным порядком вершин */
-
-/**
- * @brief Provide methods for non-convex type of particles.
- */
 class ScatteringNonConvex : public Scattering
 {
 public:
-	ScatteringNonConvex(Particle *particle, const Light &incidentLight, int maxActNo);
-	~ScatteringNonConvex();
+	ScatteringNonConvex(Particle *particle, Light *incidentLight,
+						bool isOpticalPath, int nActs);
 
-protected:
-	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;
+	void ScatterLight(double beta, double gamma, std::vector<Beam> &scaterredBeams) override;
+	void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+							 std::vector<Beam> &scaterredBeams) override;
 
-	void ReleaseBeam(Beam &beam) override;
-	bool IsTerminalAct(const Beam &beam) override;
-	bool isTerminalFacet(int index, Array<Facet*> &facets) override;
-	void PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
-						   bool hasOutBeam) override;
-	void SelectVisibleFacets(const Beam &beam, Array<Facet*> &facets) override;
-
-	void PushBeamToBuffer(Beam &beam, const PolygonStack &beamParts,
-						  std::vector<Beam> &scatteredBeams);
-
+	double MeasureOpticalPath(const Beam &beam, const Point3f sourcePoint, const std::vector<int> &track) override;
 private:
-	/**
-	 * @brief Sorts facets of the Particle by distance from the beginnig of
-	 * latest beam splitting in descending order.
-	 * @param beamDir beam direction
-	 * @param facets unordered facets
-	 */
-	void SortFacetsByDistance(const Vector3f &beamDir, Array<Facet*> &facets) const;
+	void SortFacets_faster(const Point3f &beamDir, IntArray &facetIDs);
+	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir);
+	void CutBeamByFacet(const Facet &facet, Beam &beam,
+						PolygonArray &result);
 
-	/**
-	 * @brief Finds vertex of the Facet polygon that located more near than
-	 * others to beginnig of the Beam.
-	 * @param facet facet polygon
-	 * @param beamDir beam direction
-	 * @return index of the closest vertex in the beam polygon
-	 */
-	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir) const;
+	double CalcMinDistanceToFacet(const Polygon &polygon, const Point3f &beamDir);
+	void SortFacets(const Point3f &beamDir, IntArray &facetIds); ///< use 'Fast sort' algorithm
 
-	bool FindRestOfBeamShape(Facet *facet, const Beam &beam, PolygonStack &rest);
+	void CutExternalBeam(const Beam &beam, std::vector<Beam> &scaterredBeams);
 
-	double CalcMinDistanceToFacet(Polygon *facet, const Point3f &beamDir);
-	void SortFacets(const Point3f &beamDir, Array<Facet*> &facets); ///< use 'Fast sort' algorithm
+	void FindVisibleFacets(const Beam &beam, IntArray &facetIds);
+	void FindVisibleFacetsForLight(IntArray &facetIDs);
 
-	bool FindLightedFacetPolygon(const Array<Facet*> &facets, int nCheckedFacets,
-								 PolygonStack &pols);
+	void SelectVisibleFacets(const Beam &beam, IntArray &facetIDs);
+	void SelectVisibleFacetsForLight(IntArray &facetIDs);
 
-	void PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,
-						 const PolygonStack &polygons,
-						 std::vector<Beam> &scatteredBeams);
+	bool SetOpticalBeamParams(const Facet &facet, const Beam &incidentBeam,
+							  Beam &inBeam, Beam &outBeam);
+
+	void IntersectWithFacet(const IntArray &facetIds, int prevFacetNum,
+							PolygonArray &resFacets);
+
+	void SplitLightToBeams();
+
+	bool IsOutgoingBeam(Beam &incidentBeam);
+
+	int FindFacetId(int facetId, const IntArray &arr);
+
+	void TraceFirstBeamFixedFacet(int facetID, bool &isIncident);
+
+	void PushBeamsToTree(int facetId, const PolygonArray &polygons,
+						 Beam &inBeam, Beam &outBeam);
+
+	bool IsVisibleFacet(int facetID, const Beam &beam);
+
+	void SplitByFacet(const IntArray &facetIDs, int facetIndex);
+
+	bool SplitBeamByFacet(const Polygon &intersection, int facetId,
+						  Beam &beam);
+
+	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
+						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
 
 	void CutPolygonByFacets(const Polygon &pol,
-							const Array<Facet*> &facets, int size,
+							const IntArray &facetIds, size_t size,
 							const Vector3f &polNormal, const Vector3f &clipNormal,
-							const Vector3f &dir, PolygonStack &pols);
+							const Vector3f &dir,
+							PolygonArray &pols);
 
-	void PushBeamPartsToBuffer(const Beam &beam, const PolygonStack &parts);
+	void PushBeamPartsToTree(const Beam &beam,
+							 const PolygonArray &parts);
+	template<class T>
+	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
+						const T &newId, int facetId,
+						Location loc);
+
+protected:
+	void SplitBeams(std::vector<Beam> &scaterredBeams);
 
 private:
-	bool m_isDivided;
-	PolygonStack m_intersectionBuffer;	///< Buffer for result of Polygon intersection functions
-	PolygonStack m_differenceBuffer;	///< Buffer for result of Polygon differencefunctions
+	PolygonArray m_polygonBuffer;
 };
 

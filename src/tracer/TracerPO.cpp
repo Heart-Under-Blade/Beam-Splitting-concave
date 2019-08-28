@@ -2,43 +2,61 @@
 
 using namespace std;
 
-TracerPO::TracerPO(Particle *particle, Scattering *scattering,
-				   const string &resultFileName)
-	: LightTracer(particle, scattering, resultFileName)
+TracerPO::TracerPO(Particle *particle, int nActs, const string &resultFileName)
+	: Tracer(particle, nActs, resultFileName)
 {
 }
 
-void TracerPO::TraceRandom(const AngleRange &zenithRange,
-						   const AngleRange &azimuthRange)
+void TracerPO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange)
 {
-	vector<Beam> outBeams;
-	Orientation angle;
-
 	CalcTimer timer;
-	OutputStartTime(timer);
+	long long count = 0;
 
 	ofstream outFile(m_resultDirName, ios::out);
 
-	int halfGammaNum = azimuthRange.number/2;
+	vector<Beam> outBeams;
+	double beta, gamma;
+	int halfGammaNum = gammaRange.number/2;
 
-	for (int i = 0; i <= zenithRange.number; ++i)
+	double normIndex = gammaRange.step/gammaRange.norm;
+	m_handler->SetNormIndex(normIndex);
+
+	timer.Start();
+
+	for (int i = 0; i <= betaRange.number; ++i)
 	{
-		angle.zenith = i*zenithRange.step;
+		beta = i*betaRange.step;
 
 		for (int j = -halfGammaNum; j <= halfGammaNum; ++j)
 		{
-			angle.azimuth = j*azimuthRange.step;
+			gamma = j*gammaRange.step;
 
-			m_particle->Rotate(angle);
-			m_scattering->ScatterLight(outBeams);
+			m_scattering->ScatterLight(beta, gamma, outBeams);
+
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
 		}
 
 		m_handler->WriteMatricesToFile(m_resultDirName);
 
-		OutputProgress(zenithRange.number, i, timer);
+		OutputProgress(betaRange.number, count, timer);
+		++count;
 	}
 
+	outFile.close();
+}
+
+void TracerPO::TraceFixed(const double &beta, const double &gamma)
+{
+	ofstream outFile(m_resultDirName, ios::out);
+	vector<Beam> outBeams;
+
+	double b = DegToRad(beta);
+	double g = DegToRad(gamma);
+	m_scattering->ScatterLight(b, g, outBeams);
+
+	m_handler->HandleBeams(outBeams);
+	outBeams.clear();
+	m_handler->WriteMatricesToFile(m_resultDirName);
 	outFile.close();
 }

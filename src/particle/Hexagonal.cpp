@@ -1,59 +1,75 @@
-#include "Column.h"
-#include "common.h"
+#include "Hexagonal.h"
+#include "global.h"
 #include <algorithm>
 
-Column::Column() {}
+Hexagonal::Hexagonal() {}
 
-Column::Column(int nElems, const complex &refrIndex, const Size &size,
-			   bool isNonConvex)
-	: Particle(nElems, refrIndex, isNonConvex),
-	  m_size(size)
+Hexagonal::Hexagonal(const complex &refrIndex, double diameter, double height)
 {
+	isConcave = false;
+	SetSize(diameter, height);
+	Init(8, refrIndex);
+
+	SetSymmetry(M_PI/2, M_PI/3);
+	SetFacetParams();
+
+	SetBases(defaultFacets[0], defaultFacets[7]);
+	SetSides(defaultFacets[0], defaultFacets[7]);
+
+	SetDefaultNormals();
+	Reset();
+	SetDefaultCenters();
 }
 
-void Column::SetFacetParams()
+void Hexagonal::SetSize(double diameter, double height)
 {
-	SetSideFacetParams(1, nElems-1);
+	m_diameter = diameter;
+	m_height = height;
+}
+
+void Hexagonal::SetFacetParams()
+{
+	SetSideFacetParams(1, nFacets-1);
 
 	// base facet number
-	elems[0].original.nVertices = BASE_VERTEX_NUM;
-	elems[nElems-1].original.nVertices = BASE_VERTEX_NUM;
+	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
+	defaultFacets[nFacets-1].nVertices = BASE_VERTEX_NUM;
 }
 
-void Column::SetSideFacetParams(int first, int last)
+void Hexagonal::SetSideFacetParams(int first, int last)
 {
 	m_sideFacetIDs = Couple<int>{first, last};// REF: как-нибудь избавиться от этого
 
 	for (int i = first; i < last; ++i)
 	{
-		elems[i].original.nVertices = SIDE_VERTEX_NUM;
+		defaultFacets[i].nVertices = SIDE_VERTEX_NUM;
 	}
 }
 
-void Column::SetBases(Facet &top, Facet &bottom)
+void Hexagonal::SetBases(Facet &top, Facet &bottom)
 {
 	Point3f *facet;
 
-	double radius = m_size.diameter/2;
-	double halfHeight = m_size.height/2;
+	double radius = m_diameter/2;
+	double halfHeight = m_height/2;
 
 	double halfRadius = radius/2;
 	double inRadius = (sqrt(3) * radius) / 2;
 
 	// top base facet
-	facet = top.vertices;
+	facet = top.arr;
 	SetTwoDiagonalPoints(0, facet, halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(1, facet, -halfRadius, inRadius, halfHeight);
 	SetTwoDiagonalPoints(2, facet, -radius, 0, halfHeight);
 
 	// bottom base facet
-	facet = bottom.vertices;
+	facet = bottom.arr;
 	SetTwoDiagonalPoints(0, facet, radius, 0, -halfHeight);
 	SetTwoDiagonalPoints(1, facet, halfRadius, -inRadius, -halfHeight);
 	SetTwoDiagonalPoints(2, facet, -halfRadius, -inRadius, -halfHeight);
 }
 
-void Column::SetTwoDiagonalPoints(int index, Point3f *facet,
+void Hexagonal::SetTwoDiagonalPoints(int index, Point3f *facet,
 									 double x, double y, double z)
 {
 	int halfNumber = BASE_VERTEX_NUM/2;
@@ -62,10 +78,10 @@ void Column::SetTwoDiagonalPoints(int index, Point3f *facet,
 	facet[endIndex] = Point3f(-x, -y, z);
 }
 
-void Column::SetSides(Facet &baseTop, Facet &baseBottom)
+void Hexagonal::SetSides(Facet &baseTop, Facet &baseBottom)
 {
-	const Point3f *top = baseTop.vertices;
-	const Point3f *bot = baseBottom.vertices;
+	const Point3f *top = baseTop.arr;
+	const Point3f *bot = baseBottom.arr;
 
 	int endIndex = BASE_VERTEX_NUM-1;
 
@@ -74,7 +90,7 @@ void Column::SetSides(Facet &baseTop, Facet &baseBottom)
 
 	for (int i = m_sideFacetIDs.first; i < m_sideFacetIDs.last; ++i)
 	{
-		Point3f *facet = elems[i].original.vertices;
+		Point3f *facet = defaultFacets[i].arr;
 
 		facet[0] = top[i2];
 		facet[1] = top[i1];
