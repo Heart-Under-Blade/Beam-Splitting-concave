@@ -57,7 +57,8 @@ void TracerBackScatterPoint::Trace(const AngleRange &betaRange, const AngleRange
 		for (int j = 0; j <= gammaRange.number; ++j)
 		{
 			gamma = gammaRange.min + gammaRange.step*j;
-			m_scattering->ScatterLight(beta, gamma, outBeams);
+			m_particle->Rotate(beta, gamma, 0);
+			m_scattering->ScatterLight(outBeams);
 
 			m_incomingEnergy += m_scattering->GetIncedentEnergy();
 

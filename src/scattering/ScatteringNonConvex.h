@@ -9,8 +9,8 @@ public:
 	ScatteringNonConvex(Particle *particle, Light *incidentLight,
 						bool isOpticalPath, int nActs);
 
-	void ScatterLight(double beta, double gamma, std::vector<Beam> &scaterredBeams) override;
-	void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+	void ScatterLight(std::vector<Beam> &scaterredBeams) override;
+	void ScatterLight(const std::vector<std::vector<int>> &tracks,
 							 std::vector<Beam> &scaterredBeams) override;
 
 	double MeasureOpticalPath(const Beam &beam, const Point3f sourcePoint, const std::vector<int> &track) override;

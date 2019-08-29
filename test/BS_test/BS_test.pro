@@ -26,4 +26,6 @@ SRC = ../../src
 SOURCES +=
     $$SRC/*.cpp \
 
+INCLUDEPATH += $$SRC
+
 include(../../pro/MBS.pri)

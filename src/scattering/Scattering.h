@@ -54,8 +54,8 @@ public:
 	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 			   int nActs);
 
-	virtual void ScatterLight(double /*beta*/, double /*gamma*/, std::vector<Beam> &/*scaterredBeams*/) {}
-	virtual void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+	virtual void ScatterLight(std::vector<Beam> &/*scaterredBeams*/) {}
+	virtual void ScatterLight(const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
 	virtual void ExtractShadowBeam(std::vector<Beam> &scaterredBeams);

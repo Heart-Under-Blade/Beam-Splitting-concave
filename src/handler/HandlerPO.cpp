@@ -130,8 +130,8 @@ void HandlerPO::SetScatteringSphere(const ScatteringSphere &grid)
 
 void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 {
-//	int cc = 0;
 #ifdef _DEBUG // DEB
+//	int cc = 0;
 #endif
 	CleanJ();
 	int groupId = 0;
@@ -140,7 +140,7 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 	{
 //		std::cout << cc++ << std::endl;
 		m_isBadBeam = false;
-#ifndef _DEBUG // DEB
+#ifdef _DEBUG // DEB
 //		cc++;
 //		if (cc == 330)
 //			int ddddddd = 0;
