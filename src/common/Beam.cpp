@@ -47,7 +47,7 @@ void Beam::Copy(const Beam &other)
 	id = other.id;
 #ifndef _DEBUG // DEB
 //	pols = other.pols;
-//	ops = other.ops;
+	ops = other.ops;
 //	dirs = other.dirs;
 #endif
 }

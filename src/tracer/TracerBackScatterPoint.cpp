@@ -1,7 +1,7 @@
 #include "TracerBackScatterPoint.h"
 #include "global.h"
 #include "ScatteringFiles.h"
-#include "HandlerBackScatterPoint.h"
+#include "handler/HandlerBackScatterPoint.h"
 #include <iostream>
 
 using namespace std;

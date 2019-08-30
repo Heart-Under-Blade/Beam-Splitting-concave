@@ -233,7 +233,6 @@ void Handler::ComputeOpticalLengths(const Beam &beam, BeamInfo &info)
 {
 	std::vector<int> tr;
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
-//	std::cout << tr.size() << std::endl;
 
 	for (int i = 0; i < 3; ++i)
 	{

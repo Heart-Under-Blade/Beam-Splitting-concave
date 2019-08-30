@@ -21,7 +21,6 @@ CONFIG(debug,	debug|release): {
 INCLUDEPATH += \
     ../src \
     ../src/math \
-    ../src/incidence \
     ../src/common \
     ../src/particle \
     ../src/geometry \
@@ -33,7 +32,6 @@ INCLUDEPATH += \
 SOURCES += \
     ../src/*.cpp \
     ../src/math/*.cpp \
-    ../src/incidence/*.cpp \
     ../src/tracer/*.cpp \
     ../src/particle/*.cpp \
     ../src/geometry/*.cpp \
@@ -47,7 +45,6 @@ SOURCES -= ../src/Beam.cpp
 HEADERS += \
     ../src/*.h \
     ../src/math/*.hpp \
-    ../src/incidence/*.h \
     ../src/tracer/*.h \
     ../src/math/*.h \
     ../src/particle/*.h \

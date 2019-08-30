@@ -201,6 +201,11 @@ struct BeamInfo
 	Point3d horAxis;
 	Point3d verAxis;
 	Point3d lenIndices;
+
+	BeamInfo()
+	{
+
+	}
 };
 
 class Handler

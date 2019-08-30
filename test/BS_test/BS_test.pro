@@ -6,13 +6,12 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES += tst_po.cpp
-
 QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 
+DEFINES += _TEST
+
 CONFIG(release, debug|release): {
-    DEFINES += _NDEBUG
     TARGET = mbs_tst
 }
 
@@ -23,7 +22,12 @@ CONFIG(debug,	debug|release): {
 
 SRC = ../../src
 
-SOURCES +=
-    $$SRC/*.cpp \
+INCLUDEPATH += $$SRC
+
+SOURCES += tst_po.cpp  \
+    $$SRC/Tracks.cpp \
+
+HEADERS += \
+    $$SRC/*.h \
 
 include(../../pro/MBS.pri)

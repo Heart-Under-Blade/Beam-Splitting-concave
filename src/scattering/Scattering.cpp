@@ -562,6 +562,6 @@ double Scattering::MeasureOpticalPath(const Beam &beam,
 {
 }
 
-double Scattering::MesureFullOpticalPath(const Beam &beam, const Point3f sourcePoint, const std::vector<int> &track)
+double Scattering::MeasureFullOpticalPath(const Beam &beam, const Point3f sourcePoint, const std::vector<int> &track)
 {
 }

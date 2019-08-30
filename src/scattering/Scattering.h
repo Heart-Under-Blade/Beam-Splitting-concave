@@ -65,8 +65,8 @@ public:
 	virtual double MeasureOpticalPath(const Beam &beam, const Point3f sourcePoint,
 									 const std::vector<int> &track);
 
-	virtual double MesureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
-										 const std::vector<int> &track);
+	virtual double MeasureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
+										  const std::vector<int> &track);
 //	double CrossSection(const Point3f &beamDir) const;
 
 	void SetSplitting(Particle *p);

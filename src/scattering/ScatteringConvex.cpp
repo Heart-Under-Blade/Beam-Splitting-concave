@@ -121,14 +121,14 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 			m_splitting.ComputeRegularBeamsParams(normal, incidentBeam,
 												  inBeam, outBeam);
 			outBeam.nActs = incidentBeam.nActs + 1;
-//#ifdef _DEBUG // DEB
+
+#ifdef _DEBUG // DEB
 //			double p = m_splitting.ComputeOutgoingOpticalPath(outBeam);
 //			outBeam.opticalPath += p;
 //			outBeam.ops.push_back(p);
-//#else
-//			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
-//#endif
+#else
 			outBeam.opticalPath += m_splitting.ComputeOutgoingOpticalPath(outBeam); // добираем оптический путь
+#endif
 			outBeam.lastFacetId = facetID;
 			outBeams.push_back(outBeam);
 		}
@@ -158,7 +158,6 @@ bool ScatteringConvex::SplitSecondaryBeams(Beam &incidentBeam, int facetID,
 	return true;
 }
 
-
 double ScatteringConvex::MeasureOpticalPath(const Beam &beam,
 											const Point3f sourcePoint,
 											const std::vector<int> &track)
@@ -170,7 +169,6 @@ double ScatteringConvex::MeasureOpticalPath(const Beam &beam,
 	Point3f p1 = sourcePoint;
 	Point3f p2;
 
-//	std::cout << track[1] << std::endl;
 	// back tracing
 	for (int i = track.size()-1; i > 0; --i)
 	{
@@ -185,7 +183,6 @@ double ScatteringConvex::MeasureOpticalPath(const Beam &beam,
 		p1 = p2;
 		loc = Location::In;
 	}
-//	std::cout << "!!" << std::endl;
 
 	lastPoint = p2;
 
@@ -193,9 +190,9 @@ double ScatteringConvex::MeasureOpticalPath(const Beam &beam,
 	return path;
 }
 
-double ScatteringConvex::MesureFullOpticalPath(const Beam &beam,
-											   const Point3f sourcePoint,
-											   const std::vector<int> &track)
+double ScatteringConvex::MeasureFullOpticalPath(const Beam &beam,
+												const Point3f sourcePoint,
+												const std::vector<int> &track)
 {
 	double path = MeasureOpticalPath(beam, sourcePoint, track);
 
