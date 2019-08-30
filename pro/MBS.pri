@@ -1,11 +1,11 @@
 INCLUDEPATH += \
     $$SRC/math \
+    $$SRC/handler \
     $$SRC/common \
     $$SRC/particle \
     $$SRC/geometry \
     $$SRC/scattering \
     $$SRC/tracer \
-    $$SRC/handler \
     $$SRC/incidence \
     $$SRC/bigint
 

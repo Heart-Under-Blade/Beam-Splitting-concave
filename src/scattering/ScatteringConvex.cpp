@@ -70,7 +70,6 @@ void ScatteringConvex::SplitOriginalBeam(std::vector<Beam> &externalBeams)
 	for (int i = 0; i < m_visibleFacets.nElems; ++i)
 	{
 		Facet *facet = m_visibleFacets.elems[i];
-
 		ComputeOpticalBeamParams(facet, m_originalBeam, *facet);
 		PushBeamsToBuffer(facet, m_splitting.beams, externalBeams);
 	}

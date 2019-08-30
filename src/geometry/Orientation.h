@@ -30,3 +30,12 @@ public:
     static double RadToDeg(double rad);
 };
 
+class OrientationRange
+{
+public:
+	int nZenith;
+	int nAzimuth;
+	Orientation from;
+	Orientation to;
+	Orientation step;
+};

@@ -1,24 +1,23 @@
 #include "HandlerTotalGO.h"
 
-using namespace std;
-
-HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight, float wavelength)
+HandlerTotalGO::HandlerTotalGO(Particle *particle, Light *incidentLight,
+							   float wavelength)
 	: HandlerGO(particle, incidentLight, wavelength)
 {
 }
 
 void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 {
-	m_sinAngle = sin(m_particle->rotAngle.zenith);
+	m_sinZenith = sin(m_particle->rotAngle.zenith);
 
 	for (Beam &beam : beams)
 	{
 		beam.RotateSpherical(-m_incidentLight->direction,
 							 m_incidentLight->polarizationBasis);
-		// absorbtion
-		if (m_hasAbsorbtion && beam.actNo > 0)
+		// absorption
+		if (m_hasAbsorption && beam.actNo > 0)
 		{
-			ApplyAbsorbtion(beam);
+			ApplyAbsorption(beam);
 		}
 
 		const float &z = beam.direction.coordinates[2];
@@ -26,4 +25,10 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 		matrix m = ComputeMueller(zenith, beam);
 		m_totalContrib.AddMueller(z, zenith, m);
 	}
+}
+
+void HandlerTotalGO::WriteMatricesToFile(std::string &destName)
+{
+	AverageOverAlpha(true, m_normIndex, m_totalContrib, destName);
+	WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
 }

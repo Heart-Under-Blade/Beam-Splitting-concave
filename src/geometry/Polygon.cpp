@@ -161,6 +161,7 @@ Point3f Polygon::Normal() const
 		start = (start + 1 != nVertices) ? start + 1 : 0;
 		first = (start + 1 != nVertices) ? start + 1 : 0;
 		next  = (first + 1 != nVertices) ? first + 1 : 0;
+
 		Point3f p1 = vertices[first] - vertices[start];
 		Point3f p2 = vertices[next] - vertices[start];
 		Point3f::CrossProduct(p1, p2, normal);

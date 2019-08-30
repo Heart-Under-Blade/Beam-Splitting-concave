@@ -45,6 +45,28 @@ public:
 	friend std::ostream & operator << (std::ostream &os, const Polygon &beam);
 };
 
+class Polygon512
+{
+public:
+	Point3f elems[512];
+	size_t nElems = 0;
+
+	Polygon512() {}
+
+	void AddVertex(const Point3f &v)
+	{
+		elems[nElems++] = v;
+	}
+
+	void Concat(const Polygon &other)
+	{
+		for (int i = 0; i < other.nVertices; ++i)
+		{
+			AddVertex(other.vertices[i]);
+		}
+	}
+};
+
 class PolygonStack
 {
 public:

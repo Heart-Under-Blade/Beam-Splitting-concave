@@ -38,11 +38,11 @@ public:
 	void CommitState();
 
 	/**
-	 * @brief Distance from beginning of the center of
-	 * coordinate system to the most distant point of the particle
-	 * @return value of distance
+	 * @brief LongRadius
+	 * @return The distance from beginning of the center of coordinate system
+	 * to the farthest point of particle.
 	 */
-	double RotationRadius() const;
+	double LongRadius() const;
 
 	/**
 	 * @brief Area of the particle. Computes with summarising areas
@@ -69,12 +69,6 @@ public:
 	 * @return coordinates of center
 	 */
 	Point3f Center() const;
-
-	/**
-	 * @brief A sum of areas of each facet of the particle
-	 * @return value of area
-	 */
-	double Area();
 
 	const Orientation &GetSymmetry() const;
 	virtual void GetPartByFacet(Facet */*facet*/, Array<Facet*> &facets);

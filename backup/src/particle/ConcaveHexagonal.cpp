@@ -38,14 +38,14 @@ void ConcaveHexagonal::SetFacetParams()
 	// top facet (triangles)
 	for (int i = 0; i < BASE_VERTEX_NUM; ++i)
 	{
-		defaultFacets[i].size = CAVITY_FACET_VERTEX_NUM;
+		defaultFacets[i].nVertices = CAVITY_FACET_VERTEX_NUM;
 		facets[i].isVisibleOut = false;
 	}
 
 	// bottom facet (triangles)
 	for (int i = 2*BASE_VERTEX_NUM; i < 3*BASE_VERTEX_NUM; ++i)
 	{
-		defaultFacets[i].size = CAVITY_FACET_VERTEX_NUM;
+		defaultFacets[i].nVertices = CAVITY_FACET_VERTEX_NUM;
 		facets[i].isVisibleOut = false;
 	}
 

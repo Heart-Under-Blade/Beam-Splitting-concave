@@ -1,33 +1,22 @@
-#include "HandlerBackscatterPoint.h"
+#include "HandlerBackScatterPoint.h"
 
-#define BEAM_DIR_LIM		0.9396
-
-using namespace std;
+#define BEAM_DIR_LIM 0.9396 // cos(20)
 
 HandlerBackScatterPoint::HandlerBackScatterPoint(Particle *particle,
 												 Light *incidentLight,
-												 float wavelength)
+												 double wavelength)
 	: HandlerPO(particle, incidentLight, wavelength)
 {
 }
 
 void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 {
-	Point3d vr(0, 0, 1);
+	Point3d backDirection(0, 0, 1);
 	Point3d vf = -m_incidentLight->polarizationBasis;
 
-#ifdef _DEBUG // DEB
-	int c = 0;
-#endif
 	for (Beam &beam : beams)
 	{
-#ifdef _DEBUG // DEB
-		++c;
-//		vector<int> tr;
-//		m_tracks->RecoverTrack(beam, tr);
-#endif
-
-		if (con20 && beam.direction.coordinates[2] < BEAM_DIR_LIM)
+		if (beam.direction.coordinates[2] < BEAM_DIR_LIM)
 		{
 			continue;
 		}
@@ -41,48 +30,25 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 
 		beam.polarizationBasis = beam.RotateSpherical(-m_incidentLight->direction,
 													  m_incidentLight->polarizationBasis);
-#ifdef _DEBUG // DEB
-//		double cross = BeamCrossSection(beam);
-//		double area = cross*m_sinAngle;
-//		vector<int> track;
-//		double ddd = m[0][0];
-		int zenith = round((acos(beam.direction.coordinates[2])*SPHERE_RING_NUM)/M_PI);
-#endif
-		// absorbtion
-		if (m_hasAbsorbtion && beam.actNo > 0)
-		{
-			ApplyAbsorbtion(beam);
-		}
 
-		Point3f beamBasis = Point3f::CrossProduct(beam.polarizationBasis, beam.direction);
-		beamBasis = beamBasis/Point3f::Length(beamBasis);
+		BeamInfo info = ComputeBeamInfo(beam);
 
-		Point3f center = beam.Center();
-		auto path = ComputeOpticalPath(beam);
-		double projLenght = path.GetTotal() + Point3f::DotProduct(center, beam.direction);
-
-		matrixC jones(2, 2);
-		matrixC fnJones = ComputeFnJones(beam.Jones, center, vr, projLenght);
-		ApplyDiffraction(beam, beamBasis, vf, vr, fnJones, jones);
+		matrixC diffractedMatrix = ApplyDiffraction(beam, info, backDirection, vf);
 
 		// correction
-		Matrix2x2c jonesCor = jones;
-
-#ifdef _DEBUG // DEB
-//		correctedContrib->AddToMueller(jonesCor);
-#endif
+		Matrix2x2c jonesCor = diffractedMatrix;
 		jonesCor.m12 -= jonesCor.m21;
 		jonesCor.m12 /= 2;
 		jonesCor.m21 = -jonesCor.m12;
 
 		if (groupId < 0 && !m_tracks->shouldComputeTracksOnly)
 		{
-			originContrib->AddToMueller(jones);
+			originContrib->AddToMueller(diffractedMatrix);
 			correctedContrib->AddToMueller(jonesCor);
 		}
 		else
 		{
-			originContrib->AddToGroup(jones, groupId);
+			originContrib->AddToGroup(diffractedMatrix, groupId);
 			correctedContrib->AddToGroup(jonesCor, groupId);
 		}
 	}
@@ -101,36 +67,36 @@ void HandlerBackScatterPoint::SetTracks(Tracks *tracks)
 void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
 												 double angle, double energy,
 												 bool isOutputGroups,
-												 string prefix)
+												 std::string prefix)
 {
 	PointContribution *contrib = (prefix == "") ? originContrib : correctedContrib;
 	contrib->SumTotal();
 
 	energy *= m_normIndex;
 
-	ofstream *all = files.GetMainFile(prefix + "all");
+	std::ofstream *all = files.GetMainFile(prefix + "all");
 	*(all) << angle << ' ' << energy << ' ';
-	*(all) << contrib->GetTotal() << endl;
+	*(all) << contrib->GetTotal() << std::endl;
 //cout << endl << endl << contrib->GetRest()(0,0) << endl << endl ;
 	if (isOutputGroups)
 	{
-		for (int gr = 0; gr < m_tracks->size(); ++gr)
+		for (size_t gr = 0; gr < m_tracks->size(); ++gr)
 		{
-			ofstream &file = *(files.GetGroupFile(gr));
+			std::ofstream &file = *(files.GetGroupFile(gr));
 			file << angle << ' ' << energy << ' ';
-			file << contrib->GetGroupMueller(gr) << endl;
+			file << contrib->GetGroupMueller(gr) << std::endl;
 		}
 	}
 
 	if (!m_tracks->shouldComputeTracksOnly)
 	{
-		ofstream &other = *(files.GetMainFile(prefix + "other"));
+		std::ofstream &other = *(files.GetMainFile(prefix + "other"));
 		other << angle << ' ' << energy << ' ';
-		other << contrib->GetRest() << endl;
+		other << contrib->GetRest() << std::endl;
 
-		ofstream &diff = *(files.GetMainFile(prefix + "difference"));
+		std::ofstream &diff = *(files.GetMainFile(prefix + "difference"));
 		diff << angle << ' ' << energy << ' ';
-		diff << contrib->GetGroupTotal() << endl;
+		diff << contrib->GetGroupTotal() << std::endl;
 	}
 
 	contrib->Reset();

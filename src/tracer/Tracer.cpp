@@ -5,25 +5,27 @@
 #include <assert.h>
 #include "common.h"
 #include "macro.h"
+
 //#ifdef _TRACK_ALLOW
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 //#endif
 
 using namespace std;
 
-LightTracer::LightTracer(Particle *particle, Scattering *scattering,
+Tracer::Tracer(Particle *particle, Scattering *scattering,
 						 const string &resultFileName)
 	: m_particle(particle),
 	  m_resultDirName(resultFileName),
 	  m_scattering(scattering)
 {
+	m_symmetry = m_particle->GetSymmetry();
 }
 
-LightTracer::~LightTracer()
+Tracer::~Tracer()
 {
 }
 
-void LightTracer::TraceFixed(const Orientation &orientation)
+void Tracer::TraceFixed(const Orientation &orientation)
 {
 	Orientation orient = orientation.ToRadians();
 
@@ -40,25 +42,32 @@ void LightTracer::TraceFixed(const Orientation &orientation)
 //	WriteStatisticsToFileGO(1, D_tot, 1, timer); // TODO: раскомментить
 }
 
-void LightTracer::TraceRandom(const AngleRange &/*betaRange*/,
-							  const AngleRange &/*gammaRange*/)
+void Tracer::TraceRandom(const OrientationRange &/*range*/)
 {
 }
 
-void LightTracer::OutputOrientationToLog(int i, int j, ostream &logfile)
+void Tracer::OutputOrientationToLog(int i, int j, ostream &logfile)
 {
 	logfile << "i: " << i << ", j: " << j << endl;
 	logfile.flush();
 }
 
-void LightTracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
+void Tracer::OutputProgress(long long nOrientation, long long count,
+							CalcTimer &timer)
 {
-	EraseConsoleLine(50);
-	cout << (count*100)/(betaNumber+1) << '%'
-		 << '\t' << timer.Elapsed();
+	auto now = timer.SecondsElapsed();
+
+	if (now - m_timeElapsed > 1)
+	{
+		m_timeElapsed = now;
+		EraseConsoleLine(50);
+		cout << (count*100)/nOrientation
+			 << "%, orientations remains: " << nOrientation - count
+			 << ", time left: " << timer.Elapsed();
+	}
 }
 
-void LightTracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
+void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -83,18 +92,18 @@ void LightTracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const
 	cout << m_summary;
 }
 
-void LightTracer::SetIsOutputGroups(bool value)
+void Tracer::SetIsOutputGroups(bool value)
 {
 	isOutputGroups = value;
 }
 
-void LightTracer::OutputStartTime(CalcTimer &timer)
+void Tracer::OutputStartTime(CalcTimer &timer)
 {
 	m_startTime = timer.Start();
 	cout << "Started at " << ctime(&m_startTime) << endl;
 }
 
-void LightTracer::SetHandler(Handler *handler)
+void Tracer::SetHandler(Handler *handler)
 {
 	m_handler = handler;
 	m_handler->SetScattering(m_scattering);

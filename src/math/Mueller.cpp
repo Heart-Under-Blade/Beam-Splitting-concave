@@ -8,7 +8,7 @@ matrix Mueller(const matrixC& in)
 	matrix M(4,4);
     const double a11 = norm(in[0][0]), a12 = norm(in[0][1]),
 				 a21 = norm(in[1][0]), a22 = norm(in[1][1]);
-	//----------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// first & second lines
 	double A1 = a11+a21, 	A2 = a12+a22;
 	M[0][0] = (A1+A2)/2.0; 	M[0][1] = (A1-A2)/2.0;
@@ -17,7 +17,7 @@ matrix Mueller(const matrixC& in)
 	complex C1 = in[0][0]*conj(in[0][1]), 	C2 = in[1][1]*conj(in[1][0]);
 	M[0][2] = -real(C1)-real(C2); 			M[0][3] = imag(C2)-imag(C1);
 	M[1][2] = real(C2)-real(C1); 			M[1][3] = -imag(C1)-imag(C2);
-	//----------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// forth & third lines
 	C1 = in[0][0]*conj(in[1][0]); 			C2 = in[1][1]*conj(in[0][1]);
 	M[2][0] = -real(C1)-real(C2); 			M[2][1] = real(C2)-real(C1);
@@ -31,33 +31,53 @@ matrix Mueller(const matrixC& in)
 matrix Mueller(const Matrix2x2c& in)
 {
 	matrix M(4,4);
-	const double a11 = norm(in.m11), a12 = norm(in.m12),
-				 a21 = norm(in.m21), a22 = norm(in.m22);
-	//----------------------------------------------------------------------------
+	const double a11 = norm(in.m11),
+			a12 = norm(in.m12),
+			a21 = norm(in.m21),
+			a22 = norm(in.m22);
+
 	// first & second lines
-	double A1 = a11+a21, 	A2 = a12+a22;
-	M[0][0] = (A1+A2)/2.0; 	M[0][1] = (A1-A2)/2.0;
-	A1 = a11-a21; 			A2 = a12-a22;
-	M[1][0] = (A1+A2)/2.0; 	M[1][1] = (A1-A2)/2.0;
-	complex C1 = in.m11*conj(in.m12), 	C2 = in.m22*conj(in.m21);
-	M[0][2] = -real(C1)-real(C2); 			M[0][3] = imag(C2)-imag(C1);
-	M[1][2] = real(C2)-real(C1); 			M[1][3] = -imag(C1)-imag(C2);
-	//----------------------------------------------------------------------------
+	double A1 = a11+a21,
+			A2 = a12+a22;
+	M[0][0] = (A1+A2)/2.0;
+	M[0][1] = (A1-A2)/2.0;
+
+	A1 = a11-a21;
+	A2 = a12-a22;
+	M[1][0] = (A1+A2)/2.0;
+	M[1][1] = (A1-A2)/2.0;
+
+	complex C1 = in.m11*conj(in.m12),
+			C2 = in.m22*conj(in.m21);
+	M[0][2] = -real(C1)-real(C2);
+	M[0][3] = imag(C2)-imag(C1);
+	M[1][2] = real(C2)-real(C1);
+	M[1][3] = -imag(C1)-imag(C2);
+
 	// forth & third lines
-	C1 = in.m11*conj(in.m21); 			C2 = in.m22*conj(in.m12);
-	M[2][0] = -real(C1)-real(C2); 			M[2][1] = real(C2)-real(C1);
-	M[3][0] = imag(C1)-imag(C2); 			M[3][1] = imag(C2)+imag(C1);
-	C1 = in.m11*conj(in.m22); 			C2 = in.m12*conj(in.m21);
-	M[2][2] = real(C1)+real(C2); 			M[2][3] = imag(C1)-imag(C2);
-	M[3][2] = -imag(C1)-imag(C2); 			M[3][3] = real(C1)-real(C2);
+	C1 = in.m11*conj(in.m21);
+	C2 = in.m22*conj(in.m12);
+	M[2][0] = -real(C1)-real(C2);
+	M[2][1] = real(C2)-real(C1);
+	M[3][0] = imag(C1)-imag(C2);
+	M[3][1] = imag(C2)+imag(C1);
+
+	C1 = in.m11*conj(in.m22);
+	C2 = in.m12*conj(in.m21);
+	M[2][2] = real(C1)+real(C2);
+	M[2][3] = imag(C1)-imag(C2);
+	M[3][2] = -imag(C1)-imag(C2);
+	M[3][3] = real(C1)-real(C2);
 	return M;
 }
-//==============================================================================
 
 void RightRotateMueller(matrix& m, double cs, double sn)
 {
 	// do not change first and last columns
-	const double A01 = m[0][1], A11 = m[1][1], A21 = m[2][1], A31 = m[3][1];
+	const double A01 = m[0][1],
+			A11 = m[1][1],
+			A21 = m[2][1],
+			A31 = m[3][1];
 	// second column
 	m[0][1] = A01*cs - m[0][2]*sn;
 	m[1][1] = A11*cs - m[1][2]*sn;

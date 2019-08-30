@@ -99,7 +99,7 @@ void Particle::SetFromFile(const std::string &filename, double reduceSize)
 	pfile.close();
 
 	// correction of number of facet
-	if (elems[nElems-1].original.nVertices == 0)
+	while (elems[nElems-1].original.nVertices == 0)
 	{
 		--nElems;
 	}
@@ -190,7 +190,7 @@ void Particle::RemoveFacet(int index)
 	SetFacetIndices();
 }
 
-double Particle::RotationRadius() const
+double Particle::LongRadius() const
 {
 	Point3f p0(0, 0, 0);
 

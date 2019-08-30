@@ -2,12 +2,13 @@
 
 #include <float.h>
 #include <assert.h>
+#include <algorithm>
 
 #include "macro.h"
 #include "geometry_lib.h"
 
 #ifdef _DEBUG // DEB
-#include <iostream>
+//#include <iostream>
 #endif
 
 #define NORM_CEIL	FLT_EPSILON + 1
@@ -27,6 +28,15 @@ Scattering::Scattering(Particle *particle, const Light &incidentLight,
 {
 	m_particle->GetPartByFacet(nullptr, m_workFacets);
 	CreateOriginalBeam(incidentLight.direction, incidentLight.polarizationBasis);
+
+	Matrix2x2c jones;
+	jones.m11 = -jones.m11;
+	jones.m22 = -jones.m22;
+	m_shadowBeam.SetMatrix(jones);
+
+	m_shadowBeam.direction = incidentLight.direction;
+	m_shadowBeam.polarizationBasis = incidentLight.polarizationBasis;
+	m_shadowBeam.facet->index = INT_MAX;
 }
 
 Scattering::~Scattering()
@@ -64,11 +74,6 @@ void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 	{
 		Beam beam = m_propagatingBeams[--m_treeSize];
 
-//		if (m_hasTracks)
-//		{
-//			m_trackTreeNode = m_trackTreeNode->FindNode(beam.facet->index);
-//		}
-
 		SplitBeamByVisibleFacets(beam);
 
 		if (IsFinalAct(beam))
@@ -76,6 +81,109 @@ void Scattering::SplitSecondaryBeams(std::vector<Beam> &scatteredBeams)
 			ReleaseBeam(beam);
 		}
 	}
+}
+
+void Scattering::OrderVertices2f(std::vector<Point2f> &vertices,
+								 Polygon &orderedPolygon)
+{
+	orderedPolygon.Clear();
+
+	// define base point
+	int baseIndex = 0;
+	double minX = vertices[baseIndex].x;
+
+	for (int i = 1; i < vertices.size(); ++i)
+	{
+		if (vertices[i].x < minX)
+		{
+			baseIndex = i;
+			minX = vertices[i].x;
+		}
+	}
+
+	std::swap(vertices[baseIndex], vertices.back());
+	Point2f base = vertices.back();
+
+	int iBase = 0;
+
+	for (int i = 0; iBase != vertices.size()-1 && i < vertices.size(); ++i)
+	{
+		iBase = i;
+		Point2f vBase = vertices[iBase] - base;
+
+		for (int j = i + 1; j <= vertices.size(); ++j)
+		{
+			int iNext = (j == vertices.size()) ? 0 : j;
+			Point2f vNext = vertices[iNext] - base;
+
+			if (vBase.CrossProduct(vNext) > 0)
+			{
+				iBase = iNext;
+				vBase = vNext;
+			}
+		}
+
+		std::swap(vertices[iBase], vertices[i]);
+		base = vertices[i];
+		orderedPolygon.AddVertex(Point3f(base.x, base.y, 10000));
+	}
+}
+
+void Scattering::ProjectParticleToXY(std::vector<Point2f> &projected)
+{
+	Point3f n(0, 0, 1, 10000);
+	n.d_param = m_particle->MaximalDimension();
+
+	for (int i = 0; i < m_particle->nElems; i++)
+	{
+		auto &f = m_particle->elems[i].actual;
+
+		if (Point3f::DotProduct(f.in_normal, -n) < EPS_COS_90)
+		{
+			for (int j = 0; j < f.nVertices; j++)
+			{
+//				auto p = ProjectPointToPlane(f.arr[j], -m_incidentDir, n);
+//				projected.push_back(Point2f(-p.coordinates[0], -p.coordinates[1]));
+				double tmp = (n.d_param - Point3f::DotProduct(n, f.vertices[j]));
+				auto p = f.vertices[j] + n*tmp;
+				projected.push_back(Point2f(p.coordinates[0], p.coordinates[1]));
+			}
+		}
+	}
+}
+
+void Scattering::RemoveDublicatedVertices2f(const std::vector<Point2f> &projected,
+											std::vector<Point2f> &cleared)
+{
+	for (int i = 0; i < projected.size(); ++i)
+	{
+		bool isUnique = true;
+
+		for (int j = i + 1; j < projected.size(); ++j)
+		{
+			if (projected[i].IsEqualTo(projected[j], 0.0001))
+			{
+				isUnique = false;
+			}
+		}
+
+		if (isUnique)
+		{
+			cleared.push_back(projected[i]);
+		}
+	}
+}
+
+const Beam &Scattering::SetShadowBeam()
+{
+	std::vector<Point2f> projected;
+	ProjectParticleToXY(projected);
+
+	std::vector<Point2f> projectedCleared;
+	RemoveDublicatedVertices2f(projected, projectedCleared);
+
+	OrderVertices2f(projectedCleared, m_shadowBeam);
+	return m_shadowBeam;
 }
 
 void Scattering::SetIncidence()
@@ -307,10 +415,6 @@ void Scattering::PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
 	tr.Update(facet);
 	tr.RecomputeTrackId(facet->index, m_particle->nElems);
 
-#ifdef _DEBUG // DEB
-	if (tr.id == 4222009)
-		int fff = 0;
-#endif
 	beams.internal.CopyTrack(tr);
 	beams.internal.SetLocation(true);
 	PushBeamToTree(beams.internal);

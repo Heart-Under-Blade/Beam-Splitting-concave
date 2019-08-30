@@ -12,5 +12,5 @@ public:
 
 protected:
 	double CalcNorm(long long orNum);
-	void OutputSummary(int orNumber, double D_tot, double NRM, CalcTimer &timer);
+	void OutputSummary(int orNumber, double NRM, CalcTimer &timer);
 };

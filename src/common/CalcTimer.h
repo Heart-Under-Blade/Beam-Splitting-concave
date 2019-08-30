@@ -17,6 +17,7 @@ public:
 	void Reset();
 	std::string ToString();
 	std::string Elapsed();
+	long long SecondsElapsed();
 
 private:
 	std::chrono::time_point<std::chrono::system_clock> m_startPoint;

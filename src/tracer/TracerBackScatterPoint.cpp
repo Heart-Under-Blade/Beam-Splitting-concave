@@ -14,8 +14,7 @@ TracerBackScatterPoint::TracerBackScatterPoint(Particle *particle, Scattering *s
 {
 }
 
-void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
-										 const AngleRange &gammaRange)
+void TracerBackScatterPoint::TraceRandom(const OrientationRange &range)
 {
 	int nGroups = m_handler->m_tracks->size();
 
@@ -24,7 +23,7 @@ void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
 	long long count = 0;
 
 	string dir = CreateFolder(m_resultDirName);
-	string tableHead = GetTableHead(betaRange);
+	string tableHead = GetTableHead(range);
 
 	string fulldir = dir + m_resultDirName + '\\';
 	ofstream logfile(fulldir + "log.txt", ios::out);
@@ -49,16 +48,16 @@ void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
 
 	Orientation angle;
 
-	for (int i = 0; i <= betaRange.number; ++i)
+	for (int i = 0; i <= range.nZenith; ++i)
 	{
 		m_incomingEnergy = 0;
-		OutputProgress(betaRange.number, ++count, timer);
+		OutputProgress(range.nZenith, ++count, timer);
 
-		angle.zenith = betaRange.min + betaRange.step*i;
+		angle.zenith = range.from.zenith + range.step.zenith*i;
 
-		for (int j = 0; j <= gammaRange.number; ++j)
+		for (int j = 0; j <= range.nAzimuth; ++j)
 		{
-			angle.azimuth = gammaRange.min + gammaRange.step*j;
+			angle.azimuth = range.from.azimuth + range.step.azimuth*j;
 #ifdef _DEBUG // DEB
 //			angle.beta = Angle::DegToRad(179.34);
 //			angle.gamma = Angle::DegToRad(37);
@@ -72,7 +71,7 @@ void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
 
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
-			OutputOrientationToLog(i, j, logfile);		
+			OutputOrientationToLog(i, j, logfile);
 
 			if (isNan)
 			{
@@ -109,16 +108,19 @@ void TracerBackScatterPoint::TraceRandom(const AngleRange &betaRange,
 		}
 	}
 
-	long long orNumber = betaRange.number * gammaRange.number;
-	OutputStatisticsPO(timer, orNumber, m_resultDirName);
+	long long nOrientations = range.nZenith * range.nAzimuth;
+	OutputStatisticsPO(timer, nOrientations, m_resultDirName);
 }
 
-string TracerBackScatterPoint::GetTableHead(const AngleRange &range)
+string TracerBackScatterPoint::GetTableHead(const OrientationRange &range)
 {
-	return to_string(range.number) + ' '
-			+ to_string(Orientation::RadToDeg(range.max)) + ' '
-			+ to_string(Orientation::RadToDeg(range.step)) + '\n'
-			+ "beta cr_sec M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 M41 M42 M43 M44"
+	return to_string(range.nZenith) + ' '
+			+ to_string(Orientation::RadToDeg(range.to.zenith)) + ' '
+			+ to_string(Orientation::RadToDeg(range.step.zenith)) + '\n'
+			+ "beta cr_sec M11 M12 M13 M14\
+							M21 M22 M23 M24\
+							M31 M32 M33 M34\
+							M41 M42 M43 M44"
 			+ '\n';
 }
 

@@ -2,9 +2,6 @@
 
 #include <float.h>
 
-#define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
-#define EPS_COS_00		0.99999999998254670756866631966593		//1 - cos(89.99999999)
-
 Splitting::Splitting(bool isOpticalPath)
 {
 	m_isOpticalPath = isOpticalPath;
@@ -45,12 +42,6 @@ bool Splitting::IsIncident()
 double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &facetPoint) const
 {
 	double tmp = DotProductD(beam.direction, facetPoint);
-#ifdef _DEBUG // DEB
-//	if (tmp + beam.front < 0)
-//		int fff = 0;
-	Point3f dd = beam.Center();
-	Point3f pd = beam.Center() + (beam.direction * 10);
-#endif
 
 	double path = fabs(tmp + beam.front); // refractive index of external media = 1
 
@@ -90,8 +81,8 @@ void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentB
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 #ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
+//		inBeam.ops = incidentBeam.ops;
+//		inBeam.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
@@ -174,10 +165,10 @@ void Splitting::ComputeRegularBeamsParams(const Point3f &normal,
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 #ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		outBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
-		outBeam.ops.push_back(path);
+//		inBeam.ops = incidentBeam.ops;
+//		outBeam.ops = incidentBeam.ops;
+//		inBeam.ops.push_back(path);
+//		outBeam.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
@@ -208,10 +199,10 @@ void Splitting::ComputeNormalBeamParams(const Beam &incidentBeam,
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 		path += incidentBeam.opticalPath;
 #ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
-		outBeam.ops = incidentBeam.ops;
-		outBeam.ops.push_back(path);
+//		inBeam.ops = incidentBeam.ops;
+//		inBeam.ops.push_back(path);
+//		outBeam.ops = incidentBeam.ops;
+//		outBeam.ops.push_back(path);
 #endif
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);

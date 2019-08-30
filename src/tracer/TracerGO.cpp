@@ -8,30 +8,33 @@ using namespace std;
 
 TracerGO::TracerGO(Particle *particle, Scattering *scattering,
 				   const std::string &resultFileName)
-	: LightTracer(particle, scattering, resultFileName)
+	: Tracer(particle, scattering, resultFileName)
 {
 }
 
-void TracerGO::TraceRandom(const AngleRange &zenithRange,
-						   const AngleRange &azimuthRange)
+void TracerGO::TraceRandom(const OrientationRange &range)
 {
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
 #endif
+	long long orNum = range.nZenith * range.nAzimuth;
+
 	vector<Beam> beams;
 	Orientation orientation;
 
 	CalcTimer timer;
 	OutputStartTime(timer);
 
-	for (int i = 0; i < zenithRange.number; ++i)
-	{
-		orientation.zenith = (i + 0.5)*zenithRange.step;
+	long long count = 0;
 
-		for (int j = 0; j < azimuthRange.number; ++j)
+	for (int i = 0; i < range.nZenith; ++i)
+	{
+		orientation.zenith = (i + 0.5)*range.step.zenith;
+
+		for (int j = 0; j < range.nAzimuth; ++j)
 		{
-			orientation.azimuth = (j + 0.5)*azimuthRange.step;
+			orientation.azimuth = (j + 0.5)*range.step.azimuth;
 #ifdef _DEBUG // DEB
 //			angle.beta = Angle::DegToRad(179.34);
 //			angle.gamma = Angle::DegToRad(37);
@@ -46,12 +49,10 @@ void TracerGO::TraceRandom(const AngleRange &zenithRange,
 #endif
 //			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
+			OutputProgress(orNum, count++, timer);
 		}
-
-		OutputProgress(zenithRange.number, i, timer);
 	}
 
-	long long orNum = azimuthRange.number * zenithRange.number;
 	double norm = CalcNorm(orNum);
 	m_handler->SetNormIndex(norm);
 

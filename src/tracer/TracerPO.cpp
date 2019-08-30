@@ -4,30 +4,30 @@ using namespace std;
 
 TracerPO::TracerPO(Particle *particle, Scattering *scattering,
 				   const string &resultFileName)
-	: LightTracer(particle, scattering, resultFileName)
+	: Tracer(particle, scattering, resultFileName)
 {
 }
 
-void TracerPO::TraceRandom(const AngleRange &zenithRange,
-						   const AngleRange &azimuthRange)
+void TracerPO::TraceRandom(const OrientationRange &range)
 {
 	vector<Beam> outBeams;
 	Orientation angle;
+	long long nOrientations = range.nZenith * range.nAzimuth;
 
 	CalcTimer timer;
 	OutputStartTime(timer);
 
 	ofstream outFile(m_resultDirName, ios::out);
 
-	int halfGammaNum = azimuthRange.number/2;
+	int halfGammaNum = range.nAzimuth/2;
 
-	for (int i = 0; i <= zenithRange.number; ++i)
+	for (int i = 0; i <= range.nZenith; ++i)
 	{
-		angle.zenith = i*zenithRange.step;
+		angle.zenith = i*range.step.zenith;
 
 		for (int j = -halfGammaNum; j <= halfGammaNum; ++j)
 		{
-			angle.azimuth = j*azimuthRange.step;
+			angle.azimuth = j*range.step.azimuth;
 
 			m_particle->Rotate(angle);
 			m_scattering->ScatterLight(outBeams);
@@ -37,7 +37,7 @@ void TracerPO::TraceRandom(const AngleRange &zenithRange,
 
 		m_handler->WriteMatricesToFile(m_resultDirName);
 
-		OutputProgress(zenithRange.number, i, timer);
+		OutputProgress(nOrientations, i, timer);
 	}
 
 	outFile.close();

@@ -1,5 +1,6 @@
 #include "Particle.h"
 
+<<<<<<< HEAD
 #include "common.h"
 #include "ArgPP.h"
 #include "Converter.h"
@@ -37,6 +38,17 @@ struct ParticleProperties
 	}
 };
 
+=======
+//#include "common.h"
+#include "ArgPP.h"
+#include "Converter.h"
+
+#include <limits.h>
+#include <fstream>
+
+#define SIZE_INDEX 1
+
+>>>>>>> origin/feature/voronoi
 using namespace std;
 
 void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
@@ -53,6 +65,7 @@ void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
 		  << 0 << std::endl
 		  << 180 << ' ' << 360 << std::endl << std::endl;
 
+<<<<<<< HEAD
 	ofile << facets.at(0);
 
 	for (int i = 1; i < facets.size(); ++i)
@@ -118,6 +131,8 @@ void ParticleToCrystal(Particle *particle, std::vector<Facet> &mergedCrystal)
           << 180 << ' ' << 360 << std::endl << std::endl;
 >>>>>>> a35fd73175c41f758864fc5b7ba0285a19c70315
 
+=======
+>>>>>>> origin/feature/voronoi
 //	Point3f center(0, 0, 0);
 
 //	for (Facet &facet : facets)
@@ -127,8 +142,18 @@ void ParticleToCrystal(Particle *particle, std::vector<Facet> &mergedCrystal)
 
 //	center = center/facets.size();
 
+<<<<<<< HEAD
 	for (Facet &facet : facets)
     {
+=======
+	ofile << facets.at(0);
+
+	for (int i = 1; i < facets.size(); ++i)
+	{
+		ofile << std::endl;
+//	for (Facet &facet : facets)
+//    {
+>>>>>>> origin/feature/voronoi
 //		const Point3f n = facet.Normal();
 
 //		if (Point3f::DotProduct(facet.Center()-center, n) > 0)
@@ -149,7 +174,11 @@ void ParticleToCrystal(Particle *particle, std::vector<Facet> &mergedCrystal)
 //		if (facet.Area() < 3)
 //			continue;
 #endif
+<<<<<<< HEAD
 		ofile << facet /*<< facet.arr[0]*/ << std::endl;
+=======
+		ofile << facets.at(i) /*<< facet.arr[0]*/;
+>>>>>>> origin/feature/voronoi
 	}
 
 //	center = center/facets.size();
@@ -157,6 +186,7 @@ void ParticleToCrystal(Particle *particle, std::vector<Facet> &mergedCrystal)
 	ofile.close();
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 bool IsConvex(const Facet &merged)
@@ -323,6 +353,42 @@ void Triangulate(const std::vector<Facet> &crystal,
 	}
 
 <<<<<<< HEAD
+=======
+void Verify(const std::vector<Facet> &triangles,
+			double &minLen, double &minArea, int &minNFacet, int &minLenNFacet)
+{
+	minLen = LONG_LONG_MAX;
+	minArea = LONG_LONG_MAX;
+	minNFacet = INT_MAX;
+	minLenNFacet = INT_MAX;
+	double newMin;
+
+	for (const Facet &tr : triangles)
+	{
+		for (int i = 1; i <= tr.nVertices; ++i)
+		{
+			newMin = (i == tr.nVertices)
+					? Point3f::Length(tr.arr[0] - tr.arr[i-1])
+					: Point3f::Length(tr.arr[i] - tr.arr[i-1]);
+
+			if (newMin < minLen)
+			{
+				minLenNFacet = tr.index;
+				minLen = newMin;
+			}
+		}
+
+		double newArea = tr.Area();
+
+		if (newArea < minArea)
+		{
+			minNFacet = tr.index;
+			minArea = newArea;
+		}
+	}
+}
+
+>>>>>>> origin/feature/voronoi
 int main(int argc, const char *argv[])
 {
 	bool isStl = true;
@@ -349,6 +415,16 @@ int main(int argc, const char *argv[])
 	std::vector<std::string> filelist = FindFiles(mask);
 	std::string	dir = CreateDir("out");
 
+<<<<<<< HEAD
+=======
+	std::ofstream ofile("data/files.dat", std::ios::out);
+	if (!ofile.is_open())
+	{
+		std::cerr << "File \"" << "data/files.dat" << "\" is not found" << std::endl;
+		throw std::exception();
+	}
+
+>>>>>>> origin/feature/voronoi
 	if (isStl)
 	{
 		for (auto filename : filelist)
@@ -357,11 +433,14 @@ int main(int argc, const char *argv[])
 			std::vector<Facet> triangles;
 			converter.ReadStl("data/" + filename, triangles);
 
+<<<<<<< HEAD
 			if (triangles.empty())
 			{
 				continue;
 			}
 
+=======
+>>>>>>> origin/feature/voronoi
 			filename = CutSubstring(filename, ".stl");
 			filename = dir + filename;
 			//	OutputFacets(triangles);
@@ -369,17 +448,28 @@ int main(int argc, const char *argv[])
 			std::vector<Facet> crystal;
 			converter.MergeCrystal(triangles, crystal);
 
+<<<<<<< HEAD
+=======
+			int facetNo = 0;
+
+>>>>>>> origin/feature/voronoi
 			for (Facet &facet : crystal)
 			{
 				for (int i = 0; i < facet.nVertices; ++i)
 				{
 					facet.arr[i] = facet.arr[i]*SIZE_INDEX;
 				}
+<<<<<<< HEAD
+=======
+
+				facet.index = facetNo++;
+>>>>>>> origin/feature/voronoi
 			}
 
 			WriteCry(crystal, filename + "_mbs");
 			converter.WriteNat(crystal, filename + "_nat");
 
+<<<<<<< HEAD
 			triangles.clear();
 			Triangulate(crystal, triangles);
 
@@ -510,6 +600,24 @@ int main()
 >>>>>>> a35fd73175c41f758864fc5b7ba0285a19c70315
 =======
 			OutputSummary(&ofile, mergedCrystal, filename, particle);
+=======
+			double minLen;
+			double minArea;
+			int minLenNFacet;
+			int minNFacet;
+			Verify(crystal, minLen, minArea, minNFacet, minLenNFacet);
+
+			Particle *particle = new Particle;
+			particle->SetFromFile(filename + "_mbs.dat");
+
+			ofile << filename
+				  << " : min length = " << minLen
+				  << "(facet " << minLenNFacet << ")"
+				  << ", min area = " << minArea
+				  << "(facet " << minNFacet
+				  << "), Dmax = " << particle->ComputeDmax()
+				  << std::endl;
+>>>>>>> origin/feature/voronoi
 
 			if (triangles.empty())
 			{
@@ -517,7 +625,12 @@ int main()
 			}
 
 			triangles.clear();
+<<<<<<< HEAD
 			converter.Triangulate(mergedCrystal, triangles);
+=======
+			Triangulate(crystal, triangles);
+
+>>>>>>> origin/feature/voronoi
 			converter.WriteStl(triangles, filename);
 		}
 	}
@@ -525,6 +638,7 @@ int main()
 	{
 		for (auto filename : filelist)
 		{
+<<<<<<< HEAD
 			std::vector<Facet> mergedCrystal;
 			std::vector<Facet> triangles;
 
@@ -561,6 +675,20 @@ int main()
 			OutputSummary(&ofile, mergedCrystal, filename, particle);
 
 			converter.Triangulate(mergedCrystal, triangles);
+=======
+			std::vector<Facet> crystal;
+			std::vector<Facet> triangles;
+
+			Particle *particle = new Particle;
+			particle->SetFromFile("data/" + filename);
+
+			for (int i = 0; i < particle->nElems; ++i)
+			{
+				crystal.push_back(particle->elems[i].origin);
+			}
+
+			Triangulate(crystal, triangles);
+>>>>>>> origin/feature/voronoi
 			converter.WriteStl(triangles, filename);
 		}
 	}
@@ -569,6 +697,9 @@ int main()
 
 	std::cout << "Done." << std::endl << "Press <Enter> to exit...";
 	getchar();
+<<<<<<< HEAD
 >>>>>>> feature/track_tree
+=======
+>>>>>>> origin/feature/voronoi
 	return 0;
 }

@@ -14,7 +14,7 @@ CONFIG(release, debug|release): {
 }
 
 CONFIG(debug, debug|release): {
-	DEFINES += _DEBUG
+    DEFINES += _DEBUG
     TARGET = mbs_d
 }
 

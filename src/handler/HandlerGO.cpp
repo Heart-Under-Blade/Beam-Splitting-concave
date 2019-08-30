@@ -6,11 +6,11 @@
 #include <limits>
 #include <iomanip>
 
-#define BIN_SIZE			M_PI/SPHERE_RING_NUM
+#define BIN_SIZE	M_PI/SPHERE_RING_NUM
 
 using namespace std;
 
-HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, float wavelength)
+HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, double wavelength)
 	: Handler(particle, incidentLight, wavelength)
 {
 	m_logFile.open("log1.txt", ios::out);
@@ -106,11 +106,10 @@ void HandlerGO::WriteLog(const string &str)
 {
 	m_logFile << str;
 }
-
 void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
 	double cross = BeamCrossSection(beam);
-	double area = cross*m_sinAngle;
+	double area = cross*m_sinZenith;
 	m *= area;
 }
 
@@ -120,11 +119,11 @@ void HandlerGO::WriteMatricesToFile(string &destName)
 	WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
 }
 
-matrix HandlerGO::ComputeMueller(int zenAng, Beam &beam)
+matrix HandlerGO::ComputeMueller(float zenAng, Beam &beam)
 {
 	matrix m = Mueller(beam.Jones);
 
-	if (zenAng < 180 && zenAng > 0)
+	if (zenAng < 180-FLT_EPSILON && zenAng > FLT_EPSILON)
 	{
 		const float &y = beam.direction.coordinates[1];
 
@@ -163,14 +162,13 @@ void HandlerGO::RotateMuller(const Point3f &dir, matrix &bf)
 void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 							const std::string &filename)
 {
-	string name = CreateUniqueFileName(filename);
-	ofstream allFile(name, std::ios::out);
+	std::string name = CreateUniqueFileName(filename);
+	std::ofstream allFile(name, std::ios::out);
 
-	allFile << "tetta"\
-				   "M11 M12/M11 M13/M11 M14/M11 "\
-			   "M21/M11 M22/M11 M23/M11 M24/M11 "\
-			   "M31/M11 M32/M11 M33/M11 M34/M11 "\
-			   "M21/M41 M42/M11 M43/M11 M44/M11 ";
+	allFile << "tetta dS M11 M12/M11 M13/M11 M14/M11 "\
+				"M21/M11 M22/M11 M23/M11 M24/M11 "\
+				"M31/M11 M32/M11 M33/M11 M34/M11 "\
+				"M41/M11 M42/M11 M43/M11 M44/M11";
 
 	for (int j = SPHERE_RING_NUM; j >= 0; j--)
 	{
@@ -178,12 +176,12 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 		double tmp1 = (j == 0) ? -(0.25*180.0)/SPHERE_RING_NUM : 0;
 		double tmp2 = (j == (int)SPHERE_RING_NUM) ? (0.25*180.0)/SPHERE_RING_NUM : 0;
 
-		// Special case in first and last step
-		allFile << '\n' << tmp0 + tmp1 + tmp2;
-
 		double sn = (j == 0 || j == (int)SPHERE_RING_NUM)
 				? 1-cos(BIN_SIZE/2.0)
 				: (cos((j-0.5)*BIN_SIZE)-cos((j+0.5)*BIN_SIZE));
+
+		// Special case in first and last step
+		allFile << '\n' << tmp0 + tmp1 + tmp2 << ' ' << (M_2PI*sn);
 
 		matrix bf = contrib.muellers(0, j);
 
@@ -241,13 +239,14 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 	m_tracks->RecoverTrack(beam, tr);
 
 	Point3f k = CalcK(tr);
-
 	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
 
 	for (int i = 0; i < beam.nVertices; ++i)
 	{
-		double delta = Point3f::Length(beam.Center() - beam.vertices[i])/Point3f::Length(k);
-		opticalPath += (delta*Point3f::DotProduct(k, n1))/Point3f::DotProduct(beam.direction, n1);
+		double delta = Point3f::Length(beam.Center() - beam.vertices[i]) /
+				Point3f::Length(k);
+		opticalPath += (delta*Point3f::DotProduct(k, n1)) /
+				Point3f::DotProduct(beam.direction, n1);
 	}
 
 	opticalPath /= beam.nVertices;

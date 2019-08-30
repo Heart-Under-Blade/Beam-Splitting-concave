@@ -7,7 +7,8 @@
 #define EPS_LAYONLINE		0.05
 
 const float EPS_INTERSECT = 0.08;
-const float EPS_MERGE = 0.08;
+//const float EPS_MERGE = 0.08;
+const float EPS_MERGE = 0.1;
 const float EPS_INSIDE = -0.06;
 
 inline bool is_inside_i(__m128 x, __m128 p1, __m128 p2, __m128 normal)
@@ -44,6 +45,47 @@ inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
 	__m128 _normal_to_line = _cross_product(_v_b, _normal_to_facet);
 
 	// normalize normal
+	__m128 _normal_n = _normalize(_normal_to_line);
+
+	// intersection vector and new plane
+	__m128 _dp0 = _mm_dp_ps(_v_a, _normal_n, MASK_FULL);
+
+	__m128 _sign_mask = _mm_set1_ps(-0.f);
+	__m128 _abs_dp = _mm_andnot_ps(_sign_mask, _dp0);
+
+	if (_abs_dp[0] < EPS_INTERSECT)
+	{
+		ok = false;
+		return _dp0;
+	}
+
+	__m128 _dp1 = _mm_dp_ps(_a1, _normal_n, MASK_FULL);
+	__m128 m_d_param = _mm_dp_ps(_b1, _normal_n, MASK_FULL);
+
+	__m128 _add = _mm_sub_ps(_dp1, m_d_param);
+	__m128 _t = _mm_div_ps(_add, _dp0);
+
+	__m128 _mul = _mm_mul_ps(_t, _v_a);
+
+	ok = true;
+	return _mm_sub_ps(_a1, _mul);
+}
+
+/**
+ * @brief Intersects two vectors laid on the same plane
+ * @param _a1 point in first vector
+ * @param _b1 point in second vector
+ * @param _v_a first vector
+ * @param _v_b second vector
+ * @param _normal_to_facet normal to plane
+ * @param ok true if vectors are not parallel
+ * @return intersection point
+ */
+inline __m128 intersect_iv(__m128 _a1, __m128 _b1, __m128 _v_a, __m128 _v_b,
+						   __m128 _normal_to_facet, bool &ok)
+{
+	// normal of new plane // OPT: try to do buffer for other variables from this
+	__m128 _normal_to_line = _cross_product(_v_b, _normal_to_facet);
 	__m128 _normal_n = _normalize(_normal_to_line);
 
 	// intersection vector and new plane

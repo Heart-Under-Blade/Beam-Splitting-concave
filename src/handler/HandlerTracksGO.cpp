@@ -9,7 +9,7 @@ HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float
 
 void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 {
-	m_sinAngle = sin(m_particle->rotAngle.zenith);
+	m_sinZenith = sin(m_particle->rotAngle.zenith);
 
 	for (Beam &beam : beams)
 	{
@@ -30,16 +30,22 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 	}
 }
 
-void HandlerTracksGO::WriteMatricesToFile(string &destName)
+void HandlerTracksGO::WriteMatricesToFile(std::string &destName)
 {
-	for (size_t i = 0; i < m_tracksContrib.size(); ++i)
-	{
-		if ((*m_tracks)[i].size != 0)
-		{
-			string subname = (*m_tracks)[i].CreateGroupName();
-			WriteToFile(m_tracksContrib[i], m_normIndex, destName + '_' +  subname);
-		}
-	}
+//	string dir = CreateFolder(destName);
+//	dir += destName + "\\";
 
-	HandlerGO::WriteMatricesToFile(destName);
+    for (size_t i = 0; i < m_tracksContrib.size(); ++i)
+    {
+        if ((*m_tracks)[i].size != 0)
+        {
+            std::string subname = (*m_tracks)[i].CreateGroupName();
+//			AverageOverAlpha(true, m_normIndex, m_tracksContrib[i]);
+            WriteToFile(m_tracksContrib[i], m_normIndex, destName + '_' +  subname);
+        }
+    }
+
+    AverageOverAlpha(true, m_normIndex, m_totalContrib, destName);
+    WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
 }
+

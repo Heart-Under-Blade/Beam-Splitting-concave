@@ -55,7 +55,6 @@ void Beam::Copy(const Beam &other)
 
 	direction = other.direction;
 	polarizationBasis = other.polarizationBasis;
-
 	isInside = other.isInside;
 }
 
@@ -102,6 +101,11 @@ Vector3f Beam::RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis)
 
 	RotateJones(newBasis);
 	return newBasis;
+}
+
+void Beam::SetMatrix(const Matrix2x2c &matrix)
+{
+	Jones = matrix;
 }
 
 Beam &Beam::operator = (const Beam &other)
@@ -164,6 +168,11 @@ void Beam::SetLocation(bool isIn)
 		loc <<= actNo;
 		locations |= loc;
 	}
+}
+
+bool Beam::IsShadow() const
+{
+	return facet->index == INT_MAX;
 }
 
 // REF: перенести в Matrix2x2c

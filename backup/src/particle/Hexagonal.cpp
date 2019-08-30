@@ -32,8 +32,8 @@ void Hexagonal::SetFacetParams()
 	SetSideFacetParams(1, nFacets-1);
 
 	// base facet number
-	defaultFacets[0].size = BASE_VERTEX_NUM;
-	defaultFacets[nFacets-1].size = BASE_VERTEX_NUM;
+	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
+	defaultFacets[nFacets-1].nVertices = BASE_VERTEX_NUM;
 }
 
 void Hexagonal::SetSideFacetParams(int first, int last)
@@ -42,7 +42,7 @@ void Hexagonal::SetSideFacetParams(int first, int last)
 
 	for (int i = first; i < last; ++i)
 	{
-		defaultFacets[i].size = SIDE_VERTEX_NUM;
+		defaultFacets[i].nVertices = SIDE_VERTEX_NUM;
 	}
 }
 

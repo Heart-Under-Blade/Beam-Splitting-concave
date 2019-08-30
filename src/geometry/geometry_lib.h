@@ -3,6 +3,7 @@
 #include "Polygon.h"
 #include "Intersection.h"
 #include <ostream>
+#include <math.h>
 
 #define CLIP_RESULT_SINGLE 1
 

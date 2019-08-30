@@ -54,6 +54,16 @@ std::string CalcTimer::Elapsed()
 	return ToString();
 }
 
+long long CalcTimer::SecondsElapsed()
+{
+	m_nowPoint = system_clock::now();
+	auto dur = m_nowPoint - m_startPoint;
+	long long sec = duration_cast<seconds>(dur).count();
+
+	m_seconds = sec;
+	return m_seconds;
+}
+
 long long CalcTimer::Duration()
 {
 	auto dur = m_nowPoint - m_startPoint;

@@ -65,6 +65,8 @@ public:
 	void ScatterLight(TrackNode */*trackTree*/,
 					  std::vector<Beam> &/*scatteredBeams*/);
 
+	virtual const Beam &SetShadowBeam();
+
 	double GetIncidentEnergy() const;
 
 	/**
@@ -95,6 +97,7 @@ protected:
 	LightFacetChecker m_lightChecker;
 	BeamFacetChecker m_beamChecker;
 
+	Beam m_shadowBeam;
 	Beam m_originalBeam;	///< The first beam that incident on a Particle.
 							///< It has no boundaries (i.e. Polygon is empty)
 	Beam m_propagatingBeams[MAX_BEAM_NUM];	///< Beams that are waiting for the next r/r act
@@ -107,6 +110,15 @@ protected:
 	double m_incidentEnergy;
 	const double EPS_BEAM_ENERGY = 2e-12;
 
+	void OrderVertices2f(std::vector<Point2f> &vertices,
+						 Polygon &orderedPolygon);
+
+	void ProjectParticleToXY(std::vector<Point2f> &projected);
+
+	void RemoveDublicatedVertices2f(const std::vector<Point2f> &projected,
+								  std::vector<Point2f> &cleared);
+
+protected:
 	TrackNode *m_trackTreeNode;
 	bool m_hasTracks;
 

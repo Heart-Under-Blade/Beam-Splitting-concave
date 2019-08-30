@@ -1,6 +1,9 @@
 #include <math.h>
 #include "Particle.h"
 
+#include "Intersection.h"
+#include "intrinsic/intrinsics.h"
+
 Point3f Geometry::ProjectPointToPlane(const Point3f &point,
 									  const Vector3f &direction,
 									  const Vector3f &planeNormal)
@@ -10,6 +13,39 @@ Point3f Geometry::ProjectPointToPlane(const Point3f &point,
 	tmp += planeNormal.d_param;
 	tmp /= dp;
 	return point - (direction * tmp);
+}
+
+double Norm(const Vector3f &p)
+{
+	return	  p.coordinates[0] * p.coordinates[0]
+			+ p.coordinates[1] * p.coordinates[1]
+			+ p.coordinates[2] * p.coordinates[2];
+}
+
+Point3f IntersectVectors(const Point3f &c1, const Point3f &c2,
+						 const Point3f &v1, const Point3f &v2,
+						 const Point3f &normalToFacet, bool &isOk)
+{
+	__m128 _c1 = _mm_setr_ps(c1.coordinates[0], c1.coordinates[1], c1.coordinates[2], 0.0);
+	__m128 _c2 = _mm_setr_ps(c2.coordinates[0], c2.coordinates[1], c2.coordinates[2], 0.0);
+	__m128 _v1 = _mm_setr_ps(v1.coordinates[0], v1.coordinates[1], v1.coordinates[2], 0.0);
+	__m128 _v2 = _mm_setr_ps(v2.coordinates[0], v2.coordinates[1], v2.coordinates[2], 0.0);
+	__m128 _en = _mm_setr_ps(normalToFacet.coordinates[0],
+							 normalToFacet.coordinates[1],
+							 normalToFacet.coordinates[2], 0.0);
+
+	__m128 _x = intersect_iv(_c1, _c2, _v1, _v2, _en, isOk);
+	return Point3f(_x[0], _x[1], _x[2]);
+}
+
+// OPT:
+Point3d CrossProductD(const Point3d &v1, const Point3d &v2)
+{
+	Point3d res;
+	res.x = v1.y*v2.z - v1.z*v2.y;
+	res.y = v1.z*v2.x - v1.x*v2.z;
+	res.z = v1.x*v2.y - v1.y*v2.x;
+	return res;
 }
 
 void Geometry::DifferPolygons(const Polygon &subject, const Vector3f &subjNormal,

@@ -119,6 +119,7 @@ public:
 
 	Vector3f RotateSpherical(const Vector3f &dir, const Vector3f &polarBasis);
 
+	void SetMatrix(const Matrix2x2c &matrix);
 	void SetPolygon(const Polygon &other); // REF: мб просто искользовать "="?
 	virtual void Clear();
 	void CopyTrack(const Track &other);
@@ -129,6 +130,7 @@ public:
 	Beam & operator = (Beam &&other);
 
 	void SetLocation(bool isIn);
+	bool IsShadow() const;
 
 	void MultiplyJonesMatrix(const complex &f1, const complex &f2);
 	void RotateJones(const Vector3f &normal);

@@ -5,27 +5,19 @@ ArgumentParser::ArgumentParser(ArgPP *parser)
 {
 }
 
-AngleRange ArgumentParser::GetRange(const std::string &key,
-									const Orientation &symmetry)
+OrientationRange ArgumentParser::GetRange(const Orientation &symmetry)
 {
-	AngleRange range;
+	OrientationRange range;
 
-	if (key == "b")
-	{
-		range.number = m_parser->GetIntValue("random", 0);
-	}
-	else if (key == "g")
-	{
-		range.number = m_parser->GetIntValue("random", 1);
-	}
-	else
-	{
-		std::cerr << "Error! " << __FUNCTION__;
-		throw std::exception();
-	}
+	int nZenith = m_parser->GetIntValue("random", 0);
+	GetRangeParams(symmetry, "b", range.from.zenith, range.to.zenith);
 
-	GetRangeParams(symmetry, key, range.min, range.max);
-	range.Setup();
+	int nAzimuth = m_parser->GetIntValue("random", 1);
+	GetRangeParams(symmetry, "g", range.from.azimuth, range.to.azimuth);
+
+	range.step.zenith = (range.to.zenith - range.from.zenith)/nZenith;
+	range.step.azimuth = (range.to.azimuth - range.from.azimuth)/nAzimuth;
+
 	return range;
 }
 

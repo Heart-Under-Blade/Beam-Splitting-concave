@@ -31,7 +31,7 @@ Point3f &Point3f::operator = (const Point3f &other)
 	coordinates[1] = other.coordinates[1];
 	coordinates[2] = other.coordinates[2];
 
-    return *this;
+	return *this;
 }
 
 Point3f Point3f::operator * (double value) const
@@ -184,7 +184,7 @@ double Point3f::Norm(const Point3f &v)
 
 void Point3f::Normalize(Point3f &v)
 {
-	double lenght = sqrt(Norm(v));
+	double lenght = Length(v);
 	v.coordinates[0] /= lenght;
 	v.coordinates[1] /= lenght;
 	v.coordinates[2] /= lenght;
@@ -200,6 +200,11 @@ bool Point3f::IsEqualTo(const Point3f &other, float eps) const
 	return (fabs(coordinates[0] - other.coordinates[0]) +
 			fabs(coordinates[1] - other.coordinates[1]) +
 			fabs(coordinates[2] - other.coordinates[2]))/3 < eps;
+}
+
+double Point3f::AbsSum() const
+{
+	return fabs(coordinates[0]) + fabs(coordinates[1]) + fabs(coordinates[2]);
 }
 
 Point3f Point3f::operator - (const Point3f &value) const
