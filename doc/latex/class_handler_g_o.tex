@@ -1,0 +1,68 @@
+\hypertarget{class_handler_g_o}{}\section{Handler\+GO Class Reference}
+\label{class_handler_g_o}\index{Handler\+GO@{Handler\+GO}}
+
+
+Inheritance diagram for Handler\+GO\+:
+% FIG 0
+
+
+Collaboration diagram for Handler\+GO\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a45c45f6377f684d741c59f787948ac13}\label{class_handler_g_o_a45c45f6377f684d741c59f787948ac13}} 
+{\bfseries Handler\+GO} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, float wavelength=0)
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a8392befdf6e4cef1d06d7e46b79155f3}\label{class_handler_g_o_a8392befdf6e4cef1d06d7e46b79155f3}} 
+void {\bfseries Set\+Tracks} (\mbox{\hyperlink{class_tracks}{Tracks}} $\ast$tracks) override
+\item 
+\mbox{\Hypertarget{class_handler_g_o_ad5c3f91af1f7c07be11a9a679804cfa0}\label{class_handler_g_o_ad5c3f91af1f7c07be11a9a679804cfa0}} 
+double {\bfseries Compute\+Total\+Scattering\+Energy} ()
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a5b6812ce2b1f202085f12aeb19eaa663}\label{class_handler_g_o_a5b6812ce2b1f202085f12aeb19eaa663}} 
+void {\bfseries Write\+Log} (const std\+::string \&str)
+\item 
+\mbox{\Hypertarget{class_handler_g_o_aec3a04f8bb8188f61acd6a3602a603d1}\label{class_handler_g_o_aec3a04f8bb8188f61acd6a3602a603d1}} 
+void {\bfseries Multiply\+Mueller} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{classmatrix}{matrix}} \&m)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a5e2e96b14ef9e4152e0b141b68b33cba}\label{class_handler_g_o_a5e2e96b14ef9e4152e0b141b68b33cba}} 
+\mbox{\hyperlink{classmatrix}{matrix}} {\bfseries Compute\+Mueller} (int zen\+Ang, \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_handler_g_o_aad730fa5c3975f3fdff91d4e376d3ec8}\label{class_handler_g_o_aad730fa5c3975f3fdff91d4e376d3ec8}} 
+void {\bfseries Rotate\+Muller} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&dir, \mbox{\hyperlink{classmatrix}{matrix}} \&bf)
+\item 
+\mbox{\Hypertarget{class_handler_g_o_aa0cbf44e161a8c194eae8f9d6e484b25}\label{class_handler_g_o_aa0cbf44e161a8c194eae8f9d6e484b25}} 
+void {\bfseries Average\+Over\+Alpha} (int E\+DF, double norm, \mbox{\hyperlink{class_contribution_g_o}{Contribution\+GO}} \&contrib)
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a287fa480c7124872fc1cd251e7db8c5f}\label{class_handler_g_o_a287fa480c7124872fc1cd251e7db8c5f}} 
+void {\bfseries Write\+To\+File} (\mbox{\hyperlink{class_contribution_g_o}{Contribution\+GO}} \&contrib, double norm, const std\+::string \&filename)
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a4b3c47d02003912688d2aee60c274f21}\label{class_handler_g_o_a4b3c47d02003912688d2aee60c274f21}} 
+double {\bfseries Compute\+Optical\+Path\+Absorption} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a189f1f533f10a64afa5b9aac207d85fe}\label{class_handler_g_o_a189f1f533f10a64afa5b9aac207d85fe}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries CalcK} (std\+::vector$<$ int $>$ \&tr)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_handler_g_o_afa1081e6a7cbdde1f843c90ddac65778}\label{class_handler_g_o_afa1081e6a7cbdde1f843c90ddac65778}} 
+\mbox{\hyperlink{class_contribution_g_o}{Contribution\+GO}} {\bfseries m\+\_\+total\+Contrib}
+\item 
+\mbox{\Hypertarget{class_handler_g_o_ad381fe7c0a1c4031e46b8660a2cfe630}\label{class_handler_g_o_ad381fe7c0a1c4031e46b8660a2cfe630}} 
+std\+::vector$<$ \mbox{\hyperlink{class_contribution_g_o}{Contribution\+GO}} $>$ {\bfseries m\+\_\+tracks\+Contrib}
+\item 
+\mbox{\Hypertarget{class_handler_g_o_a6c7a6e0a06070cc89495d0276092ed2f}\label{class_handler_g_o_a6c7a6e0a06070cc89495d0276092ed2f}} 
+double {\bfseries m\+\_\+sin\+Angle}
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+common/Handler.\+h\item 
+common/Handler.\+cpp\end{DoxyCompactItemize}

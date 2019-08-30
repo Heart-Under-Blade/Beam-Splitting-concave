@@ -1,0 +1,90 @@
+\hypertarget{class_splitting}{}\section{Splitting Class Reference}
+\label{class_splitting}\index{Splitting@{Splitting}}
+
+
+Collaboration diagram for Splitting\+:
+% FIG 0
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_splitting_a982460510ba1af22a9a7929b86e7cc76}\label{class_splitting_a982460510ba1af22a9a7929b86e7cc76}} 
+{\bfseries Splitting} (const \mbox{\hyperlink{classcomplex}{complex}} \&ri)
+\item 
+\mbox{\Hypertarget{class_splitting_a2f4c3a2f4986721a06661c8eb863836f}\label{class_splitting_a2f4c3a2f4986721a06661c8eb863836f}} 
+\mbox{\hyperlink{class_incidence}{Incidence}} $\ast$ {\bfseries Get\+Incidence} () const
+\item 
+\mbox{\Hypertarget{class_splitting_ad58e9648f451bcf66769a8ac8ffd4838}\label{class_splitting_ad58e9648f451bcf66769a8ac8ffd4838}} 
+void {\bfseries Compute\+Params} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&normal, bool is\+Inside)
+\item 
+\mbox{\Hypertarget{class_splitting_a28c135768ff76d288ddab6f3178573bf}\label{class_splitting_a28c135768ff76d288ddab6f3178573bf}} 
+void {\bfseries Compute\+Polarisation\+Params} (\mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_splitting_a3842400b405dc510ec0828749c87f19a}\label{class_splitting_a3842400b405dc510ec0828749c87f19a}} 
+void {\bfseries Compute\+Reflected\+Direction} (\mbox{\hyperlink{struct_point3f}{Vector3f}} \&dir) const
+\item 
+\mbox{\Hypertarget{class_splitting_a3aac5abb798e891b1481fd51b53b9764}\label{class_splitting_a3aac5abb798e891b1481fd51b53b9764}} 
+void {\bfseries Compute\+Refracted\+Direction} (\mbox{\hyperlink{struct_point3f}{Vector3f}} \&dir) const
+\item 
+\mbox{\Hypertarget{class_splitting_a7112b68ba0d5c715628916c780e93f95}\label{class_splitting_a7112b68ba0d5c715628916c780e93f95}} 
+void {\bfseries Set\+Beams} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&beam\+Shape)
+\item 
+\mbox{\Hypertarget{class_splitting_aa1252b1e8aee523ea0ab4ee722ef7467}\label{class_splitting_aa1252b1e8aee523ea0ab4ee722ef7467}} 
+void {\bfseries Set\+Normal} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&normal)
+\item 
+\mbox{\Hypertarget{class_splitting_ad4060c2453300335aac5f4433df576f3}\label{class_splitting_ad4060c2453300335aac5f4433df576f3}} 
+bool {\bfseries Has\+Out\+Beam} ()
+\item 
+\mbox{\Hypertarget{class_splitting_a758d5a6c2893c082764112986455f8bb}\label{class_splitting_a758d5a6c2893c082764112986455f8bb}} 
+double {\bfseries Compute\+Effective\+Re\+Ri} () const
+\item 
+\mbox{\Hypertarget{class_splitting_a5dbc1990cfed9334c579bc3b0a882e52}\label{class_splitting_a5dbc1990cfed9334c579bc3b0a882e52}} 
+double {\bfseries Compute\+Incident\+Optical\+Path} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&direction, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&facet\+Point)
+\item 
+\mbox{\Hypertarget{class_splitting_a354a90a3b99b3428b165843e45512542}\label{class_splitting_a354a90a3b99b3428b165843e45512542}} 
+double {\bfseries Compute\+Outgoing\+Optical\+Path} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_splitting_abd26e93fb5f2386407ff26f29707c699}\label{class_splitting_abd26e93fb5f2386407ff26f29707c699}} 
+double {\bfseries Compute\+Segment\+Optical\+Path} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&facet\+Point) const
+\item 
+\mbox{\Hypertarget{class_splitting_a7be9d71b2d09439747480d4f3446cc2f}\label{class_splitting_a7be9d71b2d09439747480d4f3446cc2f}} 
+\mbox{\hyperlink{classcomplex}{complex}} {\bfseries Get\+Ri} () const
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_splitting_a5ad3670ea5bad3271257b1a1b172c6e2}\label{class_splitting_a5ad3670ea5bad3271257b1a1b172c6e2}} 
+double {\bfseries cosA}
+\item 
+\mbox{\Hypertarget{class_splitting_a51fbaaebc6e331b2b63badf58b4f26f4}\label{class_splitting_a51fbaaebc6e331b2b63badf58b4f26f4}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries r}
+\item 
+\mbox{\Hypertarget{class_splitting_a9c3cf49e0ec2a19786559201f336218a}\label{class_splitting_a9c3cf49e0ec2a19786559201f336218a}} 
+double {\bfseries re\+Ri\+Eff}
+\item 
+\mbox{\Hypertarget{class_splitting_abf2b5dd1827d171541ca0b4b61f3bd51}\label{class_splitting_abf2b5dd1827d171541ca0b4b61f3bd51}} 
+double {\bfseries s}
+\item 
+\mbox{\Hypertarget{class_splitting_adb288b7319755e4333284b4216beffcd}\label{class_splitting_adb288b7319755e4333284b4216beffcd}} 
+\mbox{\hyperlink{class_beam}{Beam}} {\bfseries in\+Beam}
+\item 
+\mbox{\Hypertarget{class_splitting_af898997a89ace94a278f1e67427e6aaf}\label{class_splitting_af898997a89ace94a278f1e67427e6aaf}} 
+\mbox{\hyperlink{class_beam}{Beam}} {\bfseries out\+Beam}
+\item 
+\mbox{\Hypertarget{class_splitting_a6a42f8997eeb3f7bd6c7aaf7b5744a23}\label{class_splitting_a6a42f8997eeb3f7bd6c7aaf7b5744a23}} 
+\mbox{\hyperlink{classcomplex}{complex}} \mbox{\hyperlink{class_splitting_a6a42f8997eeb3f7bd6c7aaf7b5744a23}{m\+\_\+ri}}
+\begin{DoxyCompactList}\small\item\em Refractive index of a \mbox{\hyperlink{class_particle}{Particle}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_splitting_a28d7c420adda7a82dd53a2ba71a5fd59}\label{class_splitting_a28d7c420adda7a82dd53a2ba71a5fd59}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries m\+\_\+normal}
+\item 
+\mbox{\Hypertarget{class_splitting_a9f2a68b14bf9a4069453b2f04451dec1}\label{class_splitting_a9f2a68b14bf9a4069453b2f04451dec1}} 
+\mbox{\hyperlink{class_incidence}{Incidence}} $\ast$ {\bfseries m\+\_\+incidence}
+\item 
+\mbox{\Hypertarget{class_splitting_a414e93aea45af1e8ce0cebcfb977a077}\label{class_splitting_a414e93aea45af1e8ce0cebcfb977a077}} 
+const double \mbox{\hyperlink{class_splitting_a414e93aea45af1e8ce0cebcfb977a077}{F\+A\+R\+\_\+\+Z\+O\+N\+E\+\_\+\+D\+I\+S\+T\+A\+N\+CE}} = 10000.\+0
+\begin{DoxyCompactList}\small\item\em Distance from the center of coordinate system to the \char`\"{}far zone\char`\"{}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+common/Splitting.\+h\item 
+common/Splitting.\+cpp\end{DoxyCompactItemize}

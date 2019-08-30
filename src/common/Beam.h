@@ -80,7 +80,7 @@ public:
 	double opticalPath;	///< optical path of beam
 	double front;		///< current position of phase front from Ax+By+Cz+D=0 (where D is front)
 
-#ifdef _DEBUG // DEB
+#ifndef _DEBUG // DEB
 //	std::vector<Polygon> pols;
 //	std::vector<Point3f> dirs;
 	std::vector<double> ops;

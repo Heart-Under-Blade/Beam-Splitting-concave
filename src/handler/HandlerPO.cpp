@@ -88,7 +88,8 @@ matrixC HandlerPO::ApplyDiffraction(const Beam &beam, const BeamInfo &info,
 	matrixC jones_rot(2, 2);
 	RotateJones(beam, info, vf, direction, jones_rot);
 
-	complex fresnel = (m_hasAbsorption && beam.lastFacetId != INT_MAX)
+	complex fresnel = (m_hasAbsorption && beam.lastFacetId != INT_MAX &&
+			beam.nActs > 0)
 			? DiffractInclineAbs(info, beam, direction)
 			: DiffractIncline(info, beam, direction);
 
@@ -130,19 +131,19 @@ void HandlerPO::SetScatteringSphere(const ScatteringSphere &grid)
 void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 {
 #ifdef _DEBUG // DEB
-	int cc = 0;
+//	int cc = 0;
 #endif
 	CleanJ();
 	int groupId = 0;
 
 	for (Beam &beam : beams)
 	{
+//		std::cout << cc++ << std::endl;
 		m_isBadBeam = false;
-
 #ifdef _DEBUG // DEB
-		cc++;
-		if (cc == 330)
-			int ddddddd = 0;
+//		cc++;
+//		if (cc == 330)
+//			int ddddddd = 0;
 //		std::vector<int> tr;
 //		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 //		if (tr.size() == 2 && tr[0] == 2 && tr[1] == 4)
@@ -164,17 +165,21 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 
 		BeamInfo info = ComputeBeamInfo(beam);
 
+//		if (cc == 3)
+//			std::cout << "-" << std::endl;
+
 		if (m_isBadBeam)
 		{
 			continue;
 		}
-//		std::cout << "2" << std::endl;
-//		if (beam.lastFacetId != INT_MAX)
+
+//		if (beam.lastFacetId != INT_MAX && beam.nActs > 0)
 //		{
 //			std::vector<int> tr;
 //			Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
-//			double path = m_scattering->ComputeInternalOpticalPath(beam, beam.Center(), tr);
+////			std::cout << tr.size() << std::endl;
+//			double path = m_scattering->MeasureOpticalPath(beam, info.centerf, tr);
 
 //			if (path > DBL_EPSILON)
 //			{
@@ -193,7 +198,8 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 #ifdef _DEBUG // DEB
 				complex fff = diffractedMatrix[0][0];
 				if (isnan(real(fff)))
-					m_logFile << cc << std::endl;
+					int fff = 0;
+//					m_logFile << cc << std::endl;
 #endif
 				m_diffractedMatrices[groupId].insert(i, j, diffractedMatrix);
 			}

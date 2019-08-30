@@ -54,19 +54,19 @@ public:
 	Scattering(Particle *particle, Light *incidentLight, bool isOpticalPath,
 			   int nActs);
 
-	virtual void ScatterLight(double /*beta*/, double /*gamma*/, std::vector<Beam> &/*scaterredBeams*/) {}
-	virtual void ScatterLight(double beta, double gamma, const std::vector<std::vector<int>> &tracks,
+	virtual void ScatterLight(std::vector<Beam> &/*scaterredBeams*/) {}
+	virtual void ScatterLight(const std::vector<std::vector<int>> &tracks,
 									 std::vector<Beam> &scaterredBeams);
 
 	virtual void ExtractShadowBeam(std::vector<Beam> &scaterredBeams);
 
 	double GetIncedentEnergy() const;
 
-	virtual double MesureOpticalPath(const Beam &beam, const Point3f sourcePoint,
+	virtual double MeasureOpticalPath(const Beam &beam, const Point3f sourcePoint,
 									 const std::vector<int> &track);
 
-	virtual double MesureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
-										 const std::vector<int> &track);
+	virtual double MeasureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
+										  const std::vector<int> &track);
 //	double CrossSection(const Point3f &beamDir) const;
 
 	void SetSplitting(Particle *p);

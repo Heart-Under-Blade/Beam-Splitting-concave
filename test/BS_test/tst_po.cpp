@@ -3,8 +3,7 @@
 #include "ScatteringConvex.h"
 #include "BulletRosette.h"
 #include "Tracks.h"
-#include "Handler.h"
-#include "HandlerPOTotal.h"
+#include "handler/HandlerPO.h"
 #include "global.h"
 
 using namespace std;
@@ -20,6 +19,7 @@ public:
 private slots:
 	void test_Absorption();
 	void test_Nan();
+	void test_NanCol();
 
 private:
 	HandlerPO *h;
@@ -62,7 +62,7 @@ void PO::test_Absorption()
 
 	vector<Beam> outBeams;
 	pt->Rotate(179.34, 37, 0);
-	sc->ScatterLight(179.34, 37, outBeams);
+	sc->ScatterLight(outBeams);
 
 	QVERIFY(outBeams.size() == 434);
 
@@ -76,7 +76,7 @@ void PO::test_Absorption()
 			vector<int> tr;
 			Tracks::RecoverTrack(beam, pt->nFacets, tr);
 
-			double path = sc->MesureFullOpticalPath(beam, beam.Center(), tr);
+			double path = sc->MeasureFullOpticalPath(beam, beam.Center(), tr);
 #ifdef _DEBUG // DEB
 			if (fabs(path - beam.opticalPath) >= /*10e-4*/0.015)
 				int ggg = 0;
@@ -94,8 +94,7 @@ void PO::test_Nan()
 	vector<Beam> outBeams;
 	pt->Rotate(M_PI-6*0.15707963267948966,
 			   M_PI+65*0.15707963267948966, 0);
-	sc->ScatterLight(M_PI-6*0.15707963267948966,
-					 M_PI+65*0.15707963267948966, outBeams);
+	sc->ScatterLight(outBeams);
 
 	QVERIFY(outBeams.size() == 359);
 	QVERIFY(outBeams[3].nVertices == 6);
@@ -129,6 +128,47 @@ void PO::test_Nan()
 					int fff = 0;
 #endif
 				QVERIFY(!isnan(ddd));
+			}
+		}
+	}
+}
+
+void PO::test_NanCol()
+{
+	delete pt;
+	pt = new Hexagonal(complex(1.2893, 3.5365e-4), 68.9, 100);
+	sc->SetSplitting(pt);
+
+	vector<Beam> outBeams;
+	pt->Rotate(M_PI-0.15707963267948966,
+			   M_PI+1.5707963267948966, 0);
+	sc->ScatterLight(outBeams);
+
+	for (Beam &beam : outBeams)
+	{
+		h->m_isBadBeam = false;
+
+		beam.polarizationBasis = beam.RotateSpherical(
+					-incidentLight.direction,
+					incidentLight.polarizationBasis);
+
+		BeamInfo info = h->ComputeBeamInfo(beam);
+
+		if (h->m_isBadBeam)
+		{
+			continue;
+		}
+
+		for (int i = 0; i <= h->m_sphere.nAzimuth; ++i)
+		{
+			for (int j = 0; j <= h->m_sphere.nZenith; ++j)
+			{
+				Point3d &dir = h->m_sphere.directions[i][j];
+				Point3d &vf = (j == 0) ? h->m_sphere.vf.back() : h->m_sphere.vf[i];
+				matrixC diffractedMatrix = h->ApplyDiffraction(beam, info, dir, vf);
+
+				complex fff = diffractedMatrix[0][0];
+				QVERIFY(!isnan(real(fff)));
 			}
 		}
 	}

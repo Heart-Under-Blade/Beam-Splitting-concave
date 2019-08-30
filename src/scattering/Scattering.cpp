@@ -7,10 +7,6 @@
 #include "macro.h"
 #include "geometry_lib.h"
 
-#ifdef _DEBUG // DEB
-//#include <iostream>
-#endif
-
 #define NORM_CEIL	FLT_EPSILON + 1
 
 using namespace std;
@@ -96,9 +92,9 @@ void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 		double path = m_splitting.ComputeIncidentOpticalPath(m_incidentDir, p);
 		inBeam.opticalPath = 0;
 		outBeam.opticalPath = 0;
-#ifdef _DEBUG // DEB
-		inBeam.ops.push_back(path);
-		outBeam.ops.push_back(path);
+#ifndef _DEBUG // DEB
+//		inBeam.ops.push_back(path);
+//		outBeam.ops.push_back(path);
 #endif
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);
@@ -114,7 +110,7 @@ void Scattering::ComputeFacetEnergy(int facetId, const Polygon &lightedPolygon)
 }
 
 // TODO: пофиксить
-void Scattering::ScatterLight(double /*beta*/, double /*gamma*/, const std::vector<std::vector<int>> &/*tracks*/,
+void Scattering::ScatterLight(const std::vector<std::vector<int>> &/*tracks*/,
 								  std::vector<Beam> &/*outBeams*/)
 {
 //	m_particle->Rotate(beta, gamma, 0);
@@ -560,12 +556,12 @@ double Scattering::GetIncedentEnergy() const
 	return m_incidentEnergy;
 }
 
-double Scattering::MesureOpticalPath(const Beam &beam,
+double Scattering::MeasureOpticalPath(const Beam &beam,
 									 const Point3f sourcePoint,
 									 const vector<int> &track)
 {
 }
 
-double Scattering::MesureFullOpticalPath(const Beam &beam, const Point3f sourcePoint, const std::vector<int> &track)
+double Scattering::MeasureFullOpticalPath(const Beam &beam, const Point3f sourcePoint, const std::vector<int> &track)
 {
 }

@@ -1,0 +1,83 @@
+\hypertarget{struct_point3f}{}\section{Point3f Struct Reference}
+\label{struct_point3f}\index{Point3f@{Point3f}}
+
+
+The Point3 struct 3D coordinate point.  
+
+
+
+
+{\ttfamily \#include $<$Point.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{struct_point3f_a2231f77480a981cfb2b0a274dd929305}\label{struct_point3f_a2231f77480a981cfb2b0a274dd929305}} 
+\mbox{\hyperlink{struct_point3f_a2231f77480a981cfb2b0a274dd929305}{Point3f}} ()
+\begin{DoxyCompactList}\small\item\em coordinates \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_point3f_ab50836bbe2c4d404ef1fc82610ff327b}\label{struct_point3f_ab50836bbe2c4d404ef1fc82610ff327b}} 
+{\bfseries Point3f} (float x, float y, float z)
+\item 
+\mbox{\Hypertarget{struct_point3f_a869413308c599aa7b86d7ce7c1f72e9f}\label{struct_point3f_a869413308c599aa7b86d7ce7c1f72e9f}} 
+{\bfseries Point3f} (float x, float y, float z, float d)
+\item 
+\mbox{\Hypertarget{struct_point3f_a696c86a9b57a53c939f937d4378e05ab}\label{struct_point3f_a696c86a9b57a53c939f937d4378e05ab}} 
+{\bfseries Point3f} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&other)
+\item 
+\mbox{\Hypertarget{struct_point3f_a6d35bbcaec9edaa3f018fd44556bb8dc}\label{struct_point3f_a6d35bbcaec9edaa3f018fd44556bb8dc}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} \& {\bfseries operator=} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&other)
+\item 
+\mbox{\Hypertarget{struct_point3f_a9c08cd8213970030f6bd22607d6749ed}\label{struct_point3f_a9c08cd8213970030f6bd22607d6749ed}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries operator$\ast$} (double value) const
+\item 
+\mbox{\Hypertarget{struct_point3f_af8824ee316210610951c6233eccd8018}\label{struct_point3f_af8824ee316210610951c6233eccd8018}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries operator/} (double value) const
+\item 
+\mbox{\Hypertarget{struct_point3f_a14b63b81244e7b7e1b71b68a927a8770}\label{struct_point3f_a14b63b81244e7b7e1b71b68a927a8770}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries operator-\/} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&value) const
+\item 
+\mbox{\Hypertarget{struct_point3f_ab51a7ed83409b4608465b0ad2c73e30e}\label{struct_point3f_ab51a7ed83409b4608465b0ad2c73e30e}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries operator+} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&value) const
+\item 
+\mbox{\Hypertarget{struct_point3f_ac77dc02dc54a17dc5fa496c2013c677a}\label{struct_point3f_ac77dc02dc54a17dc5fa496c2013c677a}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries operator+=} (double value)
+\item 
+\mbox{\Hypertarget{struct_point3f_a134dba0411bda961caf71a80690cf88e}\label{struct_point3f_a134dba0411bda961caf71a80690cf88e}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries operator-\/} () const
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{struct_point3f_ab6bc6585f4038a710d17f85daf8d9a9f}\label{struct_point3f_ab6bc6585f4038a710d17f85daf8d9a9f}} 
+static float {\bfseries Dot\+Product} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&v1, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&v2)
+\item 
+\mbox{\Hypertarget{struct_point3f_ab7a0686c13c8c8e8c793e86564c78071}\label{struct_point3f_ab7a0686c13c8c8e8c793e86564c78071}} 
+static void {\bfseries Cross\+Product} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&v1, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&v2, \mbox{\hyperlink{struct_point3f}{Point3f}} \&res)
+\item 
+\mbox{\Hypertarget{struct_point3f_a8200da0f3177c088c3d861529b4ee45b}\label{struct_point3f_a8200da0f3177c088c3d861529b4ee45b}} 
+static \mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries Cross\+Product} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&v1, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&v2)
+\item 
+\mbox{\Hypertarget{struct_point3f_a37fa5b749602271aa69e7e8e005fa751}\label{struct_point3f_a37fa5b749602271aa69e7e8e005fa751}} 
+static double {\bfseries Norm} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&point)
+\item 
+\mbox{\Hypertarget{struct_point3f_ad61c0f7cc9951725b699f5e7a6051538}\label{struct_point3f_ad61c0f7cc9951725b699f5e7a6051538}} 
+static void {\bfseries Normalize} (\mbox{\hyperlink{struct_point3f}{Point3f}} \&v)
+\item 
+\mbox{\Hypertarget{struct_point3f_aae9dbed1a41dd62e8bd420e62c3822ef}\label{struct_point3f_aae9dbed1a41dd62e8bd420e62c3822ef}} 
+static double {\bfseries Length} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&v)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{struct_point3f_a237b76269ac9e8eb01186641e65971f7}\label{struct_point3f_a237b76269ac9e8eb01186641e65971f7}} 
+float {\bfseries point} \mbox{[}4\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The Point3 struct 3D coordinate point. 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+geometry/Point.\+h\item 
+geometry/Point.\+cpp\end{DoxyCompactItemize}

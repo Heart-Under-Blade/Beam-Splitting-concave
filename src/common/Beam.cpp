@@ -44,11 +44,11 @@ void Beam::Copy(const Beam &other)
 	nActs = other.nActs;
 	location = other.location;
 	locations = other.locations;
-#ifdef _DEBUG // DEB
+	id = other.id;
+#ifndef _DEBUG // DEB
 //	pols = other.pols;
 	ops = other.ops;
 //	dirs = other.dirs;
-	id = other.id;
 #endif
 }
 

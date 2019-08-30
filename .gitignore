@@ -1,4 +1,4 @@
-pro/BeamSplitting.pro.user.18
+﻿pro/BeamSplitting.pro.user.18
 pro/BeamSplitting.pro.user.3.0-pre1
 build/
 bin/M2.dat
@@ -13,7 +13,6 @@ bin/compare2000or/
 build-maki_particle_builder-Desktop-Debug/
 bin/h10_p4_or100.bat
 bin/compare800or_5/
-=======
 bin/compare800or/
 bin/compare200or/
 *.crystal
@@ -48,13 +47,17 @@ log.txt
 bin/btm_d.exe
 doc/macke-code-src/rt-crystal/rt-crystal.prj
 doc/macke-code-src/rt-crystal/Makefile
-tool/StlToCry - копия/main.cpp
-tool/StlToCry - копия/StlToCry.pro
-tool/StlToCry - копия/Converter.h
-tool/StlToCry - копия/Converter.cpp
+tool/StlToCry - копия/
 bin/mbs_without.exe
 bin/mbs_with.exe
+<<<<<<< HEAD
 src_bcp/
 test/build-BS_test-Desktop-Release/
 test/build-BS_test-Desktop-Debug/log1.txt
 test/build-BS_test-Desktop-Debug/
+=======
+test/build-BS_test-Desktop-Debug/
+*.txt
+backup/
+test/build-BS_test-Desktop-Release/
+>>>>>>> fix

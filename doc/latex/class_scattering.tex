@@ -1,0 +1,205 @@
+\hypertarget{class_scattering}{}\section{Scattering Class Reference}
+\label{class_scattering}\index{Scattering@{Scattering}}
+
+
+Produce a set of beams from a light that incident on a \mbox{\hyperlink{class_particle}{Particle}}.  
+
+
+
+
+{\ttfamily \#include $<$Scattering.\+h$>$}
+
+
+
+Inheritance diagram for Scattering\+:
+% FIG 0
+
+
+Collaboration diagram for Scattering\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_aa7c9e78a57111fd2cbf858f1c453283f}\label{class_scattering_aa7c9e78a57111fd2cbf858f1c453283f}} 
+{\bfseries Scattering} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, const \mbox{\hyperlink{class_light}{Light}} \&incident\+Light, int max\+Act\+No)
+\item 
+void \mbox{\hyperlink{class_scattering_ab428bc4f6c26d02bcf7044e653cdf523}{Scatter\+Light}} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scaterred\+Beams)
+\begin{DoxyCompactList}\small\item\em Tranform incident light into beams after throwing the \mbox{\hyperlink{class_particle}{Particle}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_afb9b9c16fc45f08a0a2b1bdaa14fdb9a}\label{class_scattering_afb9b9c16fc45f08a0a2b1bdaa14fdb9a}} 
+double {\bfseries Get\+Incident\+Energy} () const
+\item 
+\mbox{\Hypertarget{class_scattering_ac628a914ca4f93914df8cc3e64b03636}\label{class_scattering_ac628a914ca4f93914df8cc3e64b03636}} 
+\mbox{\hyperlink{struct_optical_path}{Optical\+Path}} {\bfseries Compute\+Optical\+Path} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&start\+Point, std\+::vector$<$ int $>$ track)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_a4b891bd6dcd276e42f2697cf6cd35f2b}\label{class_scattering_a4b891bd6dcd276e42f2697cf6cd35f2b}} 
+virtual void {\bfseries Split\+Origin\+Beam} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams)=0
+\item 
+virtual void \mbox{\hyperlink{class_scattering_a6fa2a9f952577d5310d8a8e617f2c8f8}{Release\+Beam}} (\mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\begin{DoxyCompactList}\small\item\em Final handling of beam and throwing it out of the \mbox{\hyperlink{class_particle}{Particle}}. \end{DoxyCompactList}\item 
+virtual bool \mbox{\hyperlink{class_scattering_abe93cd1898e52b1601c96735020454fe}{Is\+Terminal\+Act}} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\begin{DoxyCompactList}\small\item\em Checks if beam has been to release out of \mbox{\hyperlink{class_particle}{Particle}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_a9223cd083c3567785d7aa6cf1c48264f}\label{class_scattering_a9223cd083c3567785d7aa6cf1c48264f}} 
+virtual bool {\bfseries is\+Terminal\+Facet} (int index, \mbox{\hyperlink{class_array}{Array}}$<$ \mbox{\hyperlink{class_facet}{Facet}} $\ast$$>$ \&facets)
+\item 
+\mbox{\Hypertarget{class_scattering_a3e69b875202c73dfff77d7c4e7f9cc2a}\label{class_scattering_a3e69b875202c73dfff77d7c4e7f9cc2a}} 
+virtual void {\bfseries Select\+Visible\+Facets} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{class_array}{Array}}$<$ \mbox{\hyperlink{class_facet}{Facet}} $\ast$$>$ \&facets)=0
+\item 
+\mbox{\Hypertarget{class_scattering_a8c8b0bcf34e7b810fdc589130adec1d6}\label{class_scattering_a8c8b0bcf34e7b810fdc589130adec1d6}} 
+virtual void {\bfseries Push\+Beams\+To\+Buffer} (\mbox{\hyperlink{class_beam}{Beam}} \&parent\+Beam, \mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, bool has\+Out\+Beam)
+\item 
+\mbox{\Hypertarget{class_scattering_aee7284ceaca09534124e9a204897745c}\label{class_scattering_aee7284ceaca09534124e9a204897745c}} 
+void {\bfseries Split\+Secondary\+Beams} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&scattered\+Beams)
+\item 
+\mbox{\Hypertarget{class_scattering_a122537e571cab317861d6dd37a4ce5bf}\label{class_scattering_a122537e571cab317861d6dd37a4ce5bf}} 
+void {\bfseries Split\+Beam\+By\+Visible\+Facets} (\mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_scattering_ad6ca3dd6451a0d0976ba593cdf68c0f4}\label{class_scattering_ad6ca3dd6451a0d0976ba593cdf68c0f4}} 
+void {\bfseries Find\+Visible\+Facets} (const \mbox{\hyperlink{class_beam}{Beam}} \&beam, \mbox{\hyperlink{class_facet_checker}{Facet\+Checker}} \&checker, int begin, int end, \mbox{\hyperlink{class_array}{Array}}$<$ \mbox{\hyperlink{class_facet}{Facet}} $\ast$$>$ \&facets)
+\item 
+\mbox{\Hypertarget{class_scattering_ac80e5b8c758fcf6c04d6af47b7c87a56}\label{class_scattering_ac80e5b8c758fcf6c04d6af47b7c87a56}} 
+bool {\bfseries Compute\+Optical\+Beam\+Params} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, \mbox{\hyperlink{class_beam}{Beam}} beam)
+\item 
+void \mbox{\hyperlink{class_scattering_abdf7a6563ec37996654fa59ab99bab3f}{Set\+Polygon\+By\+Facet}} (\mbox{\hyperlink{class_facet}{Facet}} $\ast$facet, \mbox{\hyperlink{class_polygon}{Polygon}} \&polygon) const
+\item 
+\mbox{\Hypertarget{class_scattering_acccb70145215368218d90cf4bd93b63b}\label{class_scattering_acccb70145215368218d90cf4bd93b63b}} 
+\mbox{\hyperlink{struct_point3f}{Point3f}} {\bfseries Compute\+Beam\+Direction} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&old\+Dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&normal, bool is\+In1, bool is\+In2)
+\item 
+\mbox{\Hypertarget{class_scattering_ac1b11b96eaa2a09c4595f4d0f65c5dbe}\label{class_scattering_ac1b11b96eaa2a09c4595f4d0f65c5dbe}} 
+void {\bfseries Compute\+Facet\+Energy} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&facet\+Normal, const \mbox{\hyperlink{class_polygon}{Polygon}} \&lighted\+Polygon)
+\item 
+\mbox{\Hypertarget{class_scattering_a005cde1e87267a9e4c009958d6ee311a}\label{class_scattering_a005cde1e87267a9e4c009958d6ee311a}} 
+void {\bfseries Push\+Beam\+To\+Tree} (\mbox{\hyperlink{class_beam}{Beam}} \&beam)
+\item 
+\mbox{\Hypertarget{class_scattering_aacb21df97d1762f127b78da0cb2471a2}\label{class_scattering_aacb21df97d1762f127b78da0cb2471a2}} 
+void {\bfseries Create\+Origin\+Beam} (const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&dir, const \mbox{\hyperlink{struct_point3f}{Vector3f}} \&basis)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scattering_aabab038d88c737bb87dd777175b9d541}\label{class_scattering_aabab038d88c737bb87dd777175b9d541}} 
+\mbox{\hyperlink{class_particle}{Particle}} $\ast$ \mbox{\hyperlink{class_scattering_aabab038d88c737bb87dd777175b9d541}{m\+\_\+particle}}
+\begin{DoxyCompactList}\small\item\em The crystal for a light scattering. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_a208510c2d17cdcf221d372ef09441c61}\label{class_scattering_a208510c2d17cdcf221d372ef09441c61}} 
+int \mbox{\hyperlink{class_scattering_a208510c2d17cdcf221d372ef09441c61}{m\+\_\+max\+Act\+No}}
+\begin{DoxyCompactList}\small\item\em Maximal number of reflection/refraction acts. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_aa4535b7a8928911c533fb4f6f026e75d}\label{class_scattering_aa4535b7a8928911c533fb4f6f026e75d}} 
+\mbox{\hyperlink{class_splitting}{Splitting}} {\bfseries m\+\_\+splitting}
+\item 
+\mbox{\Hypertarget{class_scattering_a807c34a5a7fdf1cf3bb9939b06d1d063}\label{class_scattering_a807c34a5a7fdf1cf3bb9939b06d1d063}} 
+\mbox{\hyperlink{class_light_facet_checker}{Light\+Facet\+Checker}} {\bfseries m\+\_\+light\+Checker}
+\item 
+\mbox{\Hypertarget{class_scattering_ad211279d6de0e1e825a44c28927b6acc}\label{class_scattering_ad211279d6de0e1e825a44c28927b6acc}} 
+\mbox{\hyperlink{class_beam_facet_checker}{Beam\+Facet\+Checker}} {\bfseries m\+\_\+beam\+Checker}
+\item 
+\mbox{\hyperlink{class_beam}{Beam}} \mbox{\hyperlink{class_scattering_a82f0c3297cbde80cd091a503428f2dc5}{m\+\_\+origin\+Beam}}
+\item 
+\mbox{\Hypertarget{class_scattering_adac874d581f21d2e90eb8004e50f3086}\label{class_scattering_adac874d581f21d2e90eb8004e50f3086}} 
+\mbox{\hyperlink{class_beam}{Beam}} \mbox{\hyperlink{class_scattering_adac874d581f21d2e90eb8004e50f3086}{m\+\_\+propagating\+Beams}} \mbox{[}M\+A\+X\+\_\+\+B\+E\+A\+M\+\_\+\+N\+UM\mbox{]}
+\begin{DoxyCompactList}\small\item\em Beams that are waiting for the next r/r act. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_scattering_adb62197742a6ee9e1b9c3e988a4a89ee}\label{class_scattering_adb62197742a6ee9e1b9c3e988a4a89ee}} 
+int {\bfseries m\+\_\+tree\+Size}
+\item 
+\mbox{\Hypertarget{class_scattering_ac35fa41714a7784304eead96b8186532}\label{class_scattering_ac35fa41714a7784304eead96b8186532}} 
+std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ $\ast$ {\bfseries m\+\_\+scattered\+Beams}
+\item 
+\mbox{\Hypertarget{class_scattering_a7a80cb232adf041261fe02811c5cdfd5}\label{class_scattering_a7a80cb232adf041261fe02811c5cdfd5}} 
+\mbox{\hyperlink{class_array}{Array}}$<$ \mbox{\hyperlink{class_facet}{Facet}} $\ast$ $>$ {\bfseries m\+\_\+visible\+Facets}
+\item 
+\mbox{\Hypertarget{class_scattering_a698c33191f5e87477b37b27e36bca0a2}\label{class_scattering_a698c33191f5e87477b37b27e36bca0a2}} 
+double {\bfseries m\+\_\+incident\+Energy}
+\item 
+\mbox{\Hypertarget{class_scattering_a172f9184deb0e131762f21cd33a02788}\label{class_scattering_a172f9184deb0e131762f21cd33a02788}} 
+const double {\bfseries E\+P\+S\+\_\+\+B\+E\+A\+M\+\_\+\+E\+N\+E\+R\+GY} = 2e-\/12
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Produce a set of beams from a light that incident on a \mbox{\hyperlink{class_particle}{Particle}}. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_scattering_abe93cd1898e52b1601c96735020454fe}\label{class_scattering_abe93cd1898e52b1601c96735020454fe}} 
+\index{Scattering@{Scattering}!Is\+Terminal\+Act@{Is\+Terminal\+Act}}
+\index{Is\+Terminal\+Act@{Is\+Terminal\+Act}!Scattering@{Scattering}}
+\subsubsection{\texorpdfstring{Is\+Terminal\+Act()}{IsTerminalAct()}}
+{\footnotesize\ttfamily bool Scattering\+::\+Is\+Terminal\+Act (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_beam}{Beam}} \&}]{beam }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Checks if beam has been to release out of \mbox{\hyperlink{class_particle}{Particle}}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em beam} & checked beam \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if beam has been to release, false otherwise 
+\end{DoxyReturn}
+
+
+Reimplemented in \mbox{\hyperlink{class_scattering_non_convex_aeda4103d997bc16e155fcc8281a51b05}{Scattering\+Non\+Convex}}.
+
+Here is the caller graph for this function\+:
+% FIG 2
+\mbox{\Hypertarget{class_scattering_a6fa2a9f952577d5310d8a8e617f2c8f8}\label{class_scattering_a6fa2a9f952577d5310d8a8e617f2c8f8}} 
+\index{Scattering@{Scattering}!Release\+Beam@{Release\+Beam}}
+\index{Release\+Beam@{Release\+Beam}!Scattering@{Scattering}}
+\subsubsection{\texorpdfstring{Release\+Beam()}{ReleaseBeam()}}
+{\footnotesize\ttfamily void Scattering\+::\+Release\+Beam (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_beam}{Beam}} \&}]{beam }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Final handling of beam and throwing it out of the \mbox{\hyperlink{class_particle}{Particle}}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em beam} & throwed beam \\
+\hline
+{\em scattered\+Beams} & output buffer \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented in \mbox{\hyperlink{class_scattering_non_convex_a574f2c4d503c6751f374e37e632f584a}{Scattering\+Non\+Convex}}.
+
+Here is the caller graph for this function\+:
+% FIG 3
+\mbox{\Hypertarget{class_scattering_ab428bc4f6c26d02bcf7044e653cdf523}\label{class_scattering_ab428bc4f6c26d02bcf7044e653cdf523}} 
+\index{Scattering@{Scattering}!Scatter\+Light@{Scatter\+Light}}
+\index{Scatter\+Light@{Scatter\+Light}!Scattering@{Scattering}}
+\subsubsection{\texorpdfstring{Scatter\+Light()}{ScatterLight()}}
+{\footnotesize\ttfamily void Scattering\+::\+Scatter\+Light (\begin{DoxyParamCaption}\item[{std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&}]{scaterred\+Beams }\end{DoxyParamCaption})}
+
+
+
+Tranform incident light into beams after throwing the \mbox{\hyperlink{class_particle}{Particle}}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em scaterred\+Beams} & result beams \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_scattering_abdf7a6563ec37996654fa59ab99bab3f}\label{class_scattering_abdf7a6563ec37996654fa59ab99bab3f}} 
+\index{Scattering@{Scattering}!Set\+Polygon\+By\+Facet@{Set\+Polygon\+By\+Facet}}
+\index{Set\+Polygon\+By\+Facet@{Set\+Polygon\+By\+Facet}!Scattering@{Scattering}}
+\subsubsection{\texorpdfstring{Set\+Polygon\+By\+Facet()}{SetPolygonByFacet()}}
+{\footnotesize\ttfamily void Scattering\+::\+Set\+Polygon\+By\+Facet (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_facet}{Facet}} $\ast$}]{facet,  }\item[{\mbox{\hyperlink{class_polygon}{Polygon}} \&}]{polygon }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [protected]}}
+
+N\+O\+TE\+: Result beams are ordered in inverse direction 
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{class_scattering_a82f0c3297cbde80cd091a503428f2dc5}\label{class_scattering_a82f0c3297cbde80cd091a503428f2dc5}} 
+\index{Scattering@{Scattering}!m\+\_\+origin\+Beam@{m\+\_\+origin\+Beam}}
+\index{m\+\_\+origin\+Beam@{m\+\_\+origin\+Beam}!Scattering@{Scattering}}
+\subsubsection{\texorpdfstring{m\+\_\+origin\+Beam}{m\_originBeam}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_beam}{Beam}} Scattering\+::m\+\_\+origin\+Beam\hspace{0.3cm}{\ttfamily [protected]}}
+
+The first beam that incident on a \mbox{\hyperlink{class_particle}{Particle}}. It has no boundaries (i.\+e. \mbox{\hyperlink{class_polygon}{Polygon}} is empty) 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+scattering/Scattering.\+h\item 
+scattering/Scattering.\+cpp\end{DoxyCompactItemize}

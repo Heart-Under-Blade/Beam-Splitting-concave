@@ -6,11 +6,25 @@
 
 struct EdgeLine
 {
+<<<<<<< HEAD
 	int facetNo;
+=======
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 	Vector3f vector;
 	Point3f beginPoint;
 };
 
+<<<<<<< HEAD
+=======
+typedef Point3f Intersection;
+//struct Intersection
+//{
+//	Point3f point;
+//	int firstPlaneId;
+//	int secondPlaneId;
+//};
+
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 struct Cell
 {
 	int id;	///< id of site or cell
@@ -32,8 +46,11 @@ struct OrthoPlane
 	Cell *cell;
 	Point3f normal;  ///< Normal of planes
 	Point3f center;  ///< Center of planes
+<<<<<<< HEAD
 	double dParam;
 	double distance;
+=======
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 };
 
 struct SiteIndex
@@ -104,10 +121,16 @@ public:
 		return cells[index.i][index.j][index.k];
 	}
 
+<<<<<<< HEAD
 	Lattice(double latticeSize, int splitRatio, int removedLayers)
 	{
 		int sr = splitRatio - removedLayers;
 		size = sr*sr*sr;
+=======
+	Lattice(double latticeSize, int splitRatio)
+	{
+		size = splitRatio*splitRatio*splitRatio;
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 		cellSize = latticeSize/splitRatio;
 
 		// add one layer of points to make borders
@@ -189,6 +212,10 @@ private:
 		return from + static_cast<float>(rand())/
 				(static_cast<float>(RAND_MAX/(to-from)));
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 };
 
 /**
@@ -213,7 +240,10 @@ public:
 	VoronoiLattice(double latticeSize, int splitRatio);
 
 private:
+<<<<<<< HEAD
 	int m_maxSiteDistance;
+=======
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 	double m_size; ///< Lattice size
 
 	/**
@@ -233,7 +263,11 @@ private:
 
 	void DefineIntersections(const std::vector<EdgeLine> &edgeLines,
 							 const Vector3f &planeNormal,
+<<<<<<< HEAD
 							 std::list<Point3f> &points);
+=======
+							 std::list<Intersection> &points);
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 
 	/**
 	 * @brief Remove intersection points are situated in space in front of each
@@ -242,6 +276,7 @@ private:
 	 * @param points intersection points that become vertices of the facet
 	 */
 	void RemoveExternalPoints(const std::vector<OrthoPlane> &sitePlanes,
+<<<<<<< HEAD
 							 std::list<Point3f> &points);
 
 	void RemoveDuplicatedPoints(std::list<Point3f> &points);
@@ -261,4 +296,21 @@ private:
 	void RemovePlane(int planeNo, std::vector<OrthoPlane> &sitePlanes);
 	void AddBorderPlane(std::vector<OrthoPlane> &sitePlanes, const Point3f &n,
 						const Point3f &c, double r, Cell &cell);
+=======
+							 std::list<Intersection> &points);
+
+	void RemoveDuplicatedPoints(std::list<Intersection> &points);
+	void RemoveSameLinePoints(std::list<Intersection> &points);
+
+	void OrderPoints(const Vector3f &planeNormal,
+					 std::list<Intersection> &points) const;
+
+	void OutputFacets(const std::string &filename,
+					  std::vector<std::vector<Point3f>> &facets);
+	void FixPointsOrder(const Vector3f &normal, std::list<Point3f> &points);
+	bool RemoveDistantPlanes(const std::list<Intersection> &points,
+							const OrthoPlane &currentPlane,
+							std::vector<OrthoPlane> &sitePlanes);
+	void RemovePlane(int planeNo, std::vector<OrthoPlane> &sitePlanes);
+>>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 };

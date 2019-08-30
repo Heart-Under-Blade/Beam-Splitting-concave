@@ -7,10 +7,6 @@
 
 #include "BigIntegerLibrary.hh"
 
-//#ifdef _DEBUG // DEB
-//#include "Tracer.h"
-//#endif
-
 #define EPS_ORTO_FACET 0.0001
 
 #ifdef _DEBUG
@@ -26,10 +22,8 @@ ScatteringNonConvex::ScatteringNonConvex(Particle *particle, Light *incidentLigh
 {
 }
 
-void ScatteringNonConvex::ScatterLight(double beta, double gamma,
-									   std::vector<Beam> &scaterredBeams)
+void ScatteringNonConvex::ScatterLight(std::vector<Beam> &scaterredBeams)
 {
-//	m_particle->Rotate(beta, gamma, 0);
 	SplitLightToBeams();
 	SplitBeams(scaterredBeams);
 }
@@ -726,13 +720,13 @@ void ScatteringNonConvex::PushBeamsToBuffer(int facetID, const Beam &beam, bool 
 	passed.push_back(inBeam);
 }
 
-double ScatteringNonConvex::MesureOpticalPath(const Beam &beam,
+double ScatteringNonConvex::MeasureOpticalPath(const Beam &beam,
 											  const Point3f sourcePoint,
 											  const std::vector<int> &track)
 {
-#ifdef _DEBUG // DEB
+#ifndef _DEBUG // DEB
 //	std::vector<double> lens;
-	double path1 = 0;
+//	double path1 = 0;
 #endif
 	double path = 0;
 	Point3f dir = -beam.direction; // back direction
@@ -772,22 +766,21 @@ double ScatteringNonConvex::MesureOpticalPath(const Beam &beam,
 		loc = nextLoc;
 	}
 
-#ifdef _DEBUG // DEB
+#ifndef _DEBUG // DEB
 //	path *= real(m_splitting.GetRi());
-	Point3f nFar1 = m_incidentDir;
-	Point3f nFar2 = -beam.direction;
-	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
-	double dd2 = fabs(DotProductD(sourcePoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
-	path += dd1;
-	path += dd2;
-	if (fabs(path - beam.opticalPath) > 1)
-		int ff = 0;
+//	Point3f nFar1 = m_incidentDir;
+//	Point3f nFar2 = -beam.direction;
+//	double dd1 = m_splitting.FAR_ZONE_DISTANCE + DotProductD(p2, nFar1);
+//	double dd2 = fabs(DotProductD(sourcePoint, nFar2) + m_splitting.FAR_ZONE_DISTANCE);
+//	path += dd1;
+//	path += dd2;
+//	if (fabs(path - beam.opticalPath) > 1)
+//		int ff = 0;
 #endif
 	return path;
 }
 
-void ScatteringNonConvex::ScatterLight(double beta, double gamma,
-									   const std::vector<std::vector<int>> &tracks,
+void ScatteringNonConvex::ScatterLight(const std::vector<std::vector<int>> &tracks,
 									   std::vector<Beam> &scaterredBeams)
 {
 //	m_particle->Rotate(beta, gamma, 0);

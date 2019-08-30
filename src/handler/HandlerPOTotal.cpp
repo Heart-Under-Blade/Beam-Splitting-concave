@@ -97,7 +97,7 @@ void HandlerPOTotal::AddToMueller()
 			for (int p = 0; p < m_sphere.nAzimuth; ++p)
 			{
 				matrix m = Mueller(diffM(p, t));
-#ifdef _DEBUG // DEB
+#ifndef _DEBUG // DEB
 				complex ddd[4];
 				ddd[0] = diffM(p, t)[0][0];
 				ddd[1] = diffM(p, t)[0][1];

@@ -1,0 +1,62 @@
+\hypertarget{class_beam_clipper}{}\section{Beam\+Clipper Class Reference}
+\label{class_beam_clipper}\index{Beam\+Clipper@{Beam\+Clipper}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_beam_clipper_aa1b23b57cf992f6fad5e05b1e5e9c16a}\label{class_beam_clipper_aa1b23b57cf992f6fad5e05b1e5e9c16a}} 
+Axis {\bfseries Get\+Swap\+Axis} (const \mbox{\hyperlink{struct_point3f}{Point3f}} \&normal) const
+\item 
+void \mbox{\hyperlink{class_beam_clipper_a8afe4452a3ed644e467df223da280c2c}{Swap\+Coords}} (Axis ax1, Axis ax2, Clipper\+Lib\+::\+Paths \&origin) const
+\begin{DoxyCompactList}\small\item\em Swap\+Coords Заменяем координаты, для устранения погрешности при клиппинге \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_beam_clipper_ac67b36e2de28a35be87e233bba9b461f}\label{class_beam_clipper_ac67b36e2de28a35be87e233bba9b461f}} 
+void {\bfseries Polygon\+To\+Path} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&pol, Clipper\+Lib\+::\+Paths \&path) const
+\item 
+\mbox{\Hypertarget{class_beam_clipper_a306bc753adf8daf53dcc4e126f8a88b4}\label{class_beam_clipper_a306bc753adf8daf53dcc4e126f8a88b4}} 
+void {\bfseries Path\+To\+Polygon} (const Clipper\+Lib\+::\+Path \&path, \mbox{\hyperlink{class_polygon}{Polygon}} \&polygon) const
+\item 
+\mbox{\Hypertarget{class_beam_clipper_a62a4466ae3951c636dab63f795779f8c}\label{class_beam_clipper_a62a4466ae3951c636dab63f795779f8c}} 
+double {\bfseries Area\+Of\+Concave\+Polygon} (const \mbox{\hyperlink{class_polygon}{Polygon}} \&beam, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&normal) const
+\item 
+\mbox{\Hypertarget{class_beam_clipper_afec0872b412ee6653d8a0e0f10c457ce}\label{class_beam_clipper_afec0872b412ee6653d8a0e0f10c457ce}} 
+void {\bfseries Difference} (const Clipper\+Lib\+::\+Paths \&subject, const Clipper\+Lib\+::\+Paths \&clip, Clipper\+Lib\+::\+Paths \&difference)
+\item 
+\mbox{\Hypertarget{class_beam_clipper_ad2f4275446958ac5bf0473cb063592f8}\label{class_beam_clipper_ad2f4275446958ac5bf0473cb063592f8}} 
+void {\bfseries Remove\+Hole} (Clipper\+Lib\+::\+Paths \&result) const
+\item 
+\mbox{\Hypertarget{class_beam_clipper_a288079b1c1031b1bdcdaaaf67e067318}\label{class_beam_clipper_a288079b1c1031b1bdcdaaaf67e067318}} 
+void {\bfseries Remove\+Empty\+Paths} (Clipper\+Lib\+::\+Paths \&result) const
+\item 
+\mbox{\Hypertarget{class_beam_clipper_a8cae032f9278d61e5e3604d532e61642}\label{class_beam_clipper_a8cae032f9278d61e5e3604d532e61642}} 
+void {\bfseries Handle\+Result\+Paths} (Axis axis, Clipper\+Lib\+::\+Paths \&result) const
+\item 
+\mbox{\Hypertarget{class_beam_clipper_a87e2b0717f23447e10a5104431d74cc4}\label{class_beam_clipper_a87e2b0717f23447e10a5104431d74cc4}} 
+void {\bfseries Cut\+Beam\+By\+Polygon} (Clipper\+Lib\+::\+Paths \&beam\+Pol, const \mbox{\hyperlink{class_polygon}{Polygon}} \&polygon, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&direction, const \mbox{\hyperlink{struct_point3f}{Point3f}} \&pol\+Normal, Clipper\+Lib\+::\+Paths \&result)
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_beam_clipper_a8afe4452a3ed644e467df223da280c2c}\label{class_beam_clipper_a8afe4452a3ed644e467df223da280c2c}} 
+\index{Beam\+Clipper@{Beam\+Clipper}!Swap\+Coords@{Swap\+Coords}}
+\index{Swap\+Coords@{Swap\+Coords}!Beam\+Clipper@{Beam\+Clipper}}
+\subsubsection{\texorpdfstring{Swap\+Coords()}{SwapCoords()}}
+{\footnotesize\ttfamily void Beam\+Clipper\+::\+Swap\+Coords (\begin{DoxyParamCaption}\item[{Axis}]{ax1,  }\item[{Axis}]{ax2,  }\item[{Clipper\+Lib\+::\+Paths \&}]{origin }\end{DoxyParamCaption}) const}
+
+
+
+Swap\+Coords Заменяем координаты, для устранения погрешности при клиппинге 
+
+
+\begin{DoxyParams}{Parameters}
+{\em old\+Axis} & Первая ось обмена координат \\
+\hline
+{\em new\+Axis} & Вторая ось обмена координат \\
+\hline
+{\em origin} & Результирующий полигон \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+geometry/clipper/Beam\+Clipper.\+h\item 
+geometry/clipper/Beam\+Clipper.\+cpp\end{DoxyCompactItemize}

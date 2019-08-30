@@ -1,0 +1,24 @@
+digraph "Particle"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node0 [label="Particle",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node1 -> Node0 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="Array\< ParticleFacet \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_array.html"];
+  Node0 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="BulletRosette",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_bullet_rosette.html"];
+  Node0 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="CertainAggregate",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_certain_aggregate.html"];
+  Node0 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="Column",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_column.html",tooltip="The Column class. "];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="Bullet",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_bullet.html"];
+  Node4 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="DistortedColumn",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_distorted_column.html",tooltip="The Hexagon class The prism particle with 6 number of side facets. "];
+  Node4 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="HexagonalAggregate",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_hexagonal_aggregate.html"];
+  Node4 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="HollowColumn",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_hollow_column.html",tooltip="The ConcaveHexagonal class The prism particle with 6 number of side facets and 2 cavities on the base..."];
+  Node4 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="RegularColumn",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_regular_column.html"];
+}

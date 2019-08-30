@@ -1,11 +1,10 @@
 TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
-#CONFIG -= qt
 
 DESTDIR = ../bin
 
-VERSION = 1.2.0
+VERSION = 2.0.0
 
 QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
@@ -56,5 +55,4 @@ HEADERS += \
     ../src/bigint/*.hh
 
 DISTFILES += \
-    classes.qmodel \
-    sequence.qmodel
+    *.qmodel

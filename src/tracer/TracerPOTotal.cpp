@@ -1,6 +1,6 @@
 #include "TracerPOTotal.h"
 
-#include "HandlerPO.h"
+#include "handler/HandlerPO.h"
 #include "Mueller.hpp"
 #include "PhysMtr.hpp"
 #include "MullerMatrix.h"
@@ -58,16 +58,14 @@ void TracerPOTotal::TraceRandom(const AngleRange &betaRange,
 //		for (int j = 65; j < 67/*gammaRange.number*/; ++j)
 		{
 			gamma = j*gammaRange.step;
-
-#ifdef _DEBUG // DEB
-			m_particle->Rotate(179.34, 37, 0);
-#else
+//			m_particle->Rotate(179.34, 37, 0);
 			m_particle->Rotate(M_PI-beta, M_PI+gamma, 0);
-#endif
 			m_scattering->ExtractShadowBeam(outBeams);
-			m_scattering->ScatterLight(M_PI-beta, M_PI+gamma, outBeams);
+			m_scattering->ScatterLight(outBeams);
+//			std::cout << "0" << std::endl;
 
 			m_handler->HandleBeams(outBeams);
+//			std::cout << "exit" << std::endl;
 
 			outBeams.clear();
 

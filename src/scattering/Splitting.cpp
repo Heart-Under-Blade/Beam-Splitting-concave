@@ -80,9 +80,9 @@ void Splitting::ComputeCRBeamParams(const Point3f &normal, const Beam &incidentB
 	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
-#ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
+#ifndef _DEBUG // DEB
+//		inBeam.ops = incidentBeam.ops;
+//		inBeam.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
@@ -163,10 +163,10 @@ void Splitting::ComputeRegularBeamsParams(const Point3f &normal,
 	if (m_isOpticalPath)
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
-#ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		outBeam.ops = incidentBeam.ops;
-		outBeam.ops.push_back(path);
+#ifndef _DEBUG // DEB
+//		inBeam.ops = incidentBeam.ops;
+//		outBeam.ops = incidentBeam.ops;
+//		outBeam.ops.push_back(path);
 #endif
 		path += incidentBeam.opticalPath;
 		inBeam.AddOpticalPath(path);
@@ -196,11 +196,11 @@ void Splitting::ComputeNormalBeamParams(const Beam &incidentBeam,
 	{
 		double path = ComputeSegmentOpticalPath(incidentBeam, inBeam.Center());
 		path += incidentBeam.opticalPath;
-#ifdef _DEBUG // DEB
-		inBeam.ops = incidentBeam.ops;
-		inBeam.ops.push_back(path);
-		outBeam.ops = incidentBeam.ops;
-		outBeam.ops.push_back(path);
+#ifndef _DEBUG // DEB
+//		inBeam.ops = incidentBeam.ops;
+//		inBeam.ops.push_back(path);
+//		outBeam.ops = incidentBeam.ops;
+//		outBeam.ops.push_back(path);
 #endif
 		inBeam.AddOpticalPath(path);
 		outBeam.AddOpticalPath(path);

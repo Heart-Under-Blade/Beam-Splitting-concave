@@ -1,0 +1,49 @@
+\hypertarget{class_tracing_convex}{}\section{Tracing\+Convex Class Reference}
+\label{class_tracing_convex}\index{Tracing\+Convex@{Tracing\+Convex}}
+Inheritance diagram for Tracing\+Convex\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_tracing_convex}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tracing_convex_af740406e6033d8546b57ff144231d79d}\label{class_tracing_convex_af740406e6033d8546b57ff144231d79d}} 
+{\bfseries Tracing\+Convex} (\mbox{\hyperlink{class_particle}{Particle}} $\ast$particle, \mbox{\hyperlink{class_light}{Light}} $\ast$incident\+Light, bool is\+Optical\+Path, int inter\+Reflection\+Number)
+\item 
+void \mbox{\hyperlink{class_tracing_convex_a6af4ffe46712b46b5472a7d7c930fb04}{Split\+Beam\+By\+Particle}} (double beta, double gamma, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&out\+Beams) override
+\item 
+\mbox{\Hypertarget{class_tracing_convex_a67d185bea9fed4c2500496495659fc2b}\label{class_tracing_convex_a67d185bea9fed4c2500496495659fc2b}} 
+void {\bfseries Split\+Beam\+By\+Particle} (double, double, const std\+::vector$<$ std\+::vector$<$ int $>$$>$ \&, std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&) override
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tracing_convex_a089c68d6a92e53aa7a1741586c46ee3c}\label{class_tracing_convex_a089c68d6a92e53aa7a1741586c46ee3c}} 
+void \mbox{\hyperlink{class_tracing_convex_a089c68d6a92e53aa7a1741586c46ee3c}{Trace\+Internal\+Beams}} (std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&out\+Beams)
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+for predefined trajectories \end{quote}
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_tracing_convex_a6af4ffe46712b46b5472a7d7c930fb04}\label{class_tracing_convex_a6af4ffe46712b46b5472a7d7c930fb04}} 
+\index{Tracing\+Convex@{Tracing\+Convex}!Split\+Beam\+By\+Particle@{Split\+Beam\+By\+Particle}}
+\index{Split\+Beam\+By\+Particle@{Split\+Beam\+By\+Particle}!Tracing\+Convex@{Tracing\+Convex}}
+\subsubsection{\texorpdfstring{Split\+Beam\+By\+Particle()}{SplitBeamByParticle()}}
+{\footnotesize\ttfamily void Tracing\+Convex\+::\+Split\+Beam\+By\+Particle (\begin{DoxyParamCaption}\item[{double}]{beta,  }\item[{double}]{gamma,  }\item[{std\+::vector$<$ \mbox{\hyperlink{class_beam}{Beam}} $>$ \&}]{out\+Beams }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+first extermal beam
+
+beam is not incident to this facet 
+
+Reimplemented from \mbox{\hyperlink{class_tracing}{Tracing}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+tracing/Tracing\+Convex.\+h\item 
+tracing/Tracing\+Convex.\+cpp\end{DoxyCompactItemize}
