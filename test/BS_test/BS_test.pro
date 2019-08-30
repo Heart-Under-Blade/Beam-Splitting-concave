@@ -30,4 +30,6 @@ SOURCES += tst_po.cpp  \
 HEADERS += \
     $$SRC/*.h \
 
+INCLUDEPATH += $$SRC
+
 include(../../pro/MBS.pri)

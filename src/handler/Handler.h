@@ -186,9 +186,36 @@ public:
 	matrix forward;		///< Mueller matrix in forward direction
 };
 
+struct VertexOrder
+{
+	int begin;
+	int startIndex;
+	int endIndex;
+	int inc;
+
+	VertexOrder() {}
+
+	void SetOrder(bool isCcw, int nVertices)
+	{
+		if (isCcw)
+		{
+			begin = 0;
+			startIndex = nVertices-1;
+			endIndex = -1;
+			inc = -1;
+		}
+		else
+		{
+			begin = nVertices-1;
+			startIndex = 0;
+			endIndex = nVertices;
+			inc = 1;
+		}
+	}
+};
+
 struct BeamInfo
 {
-	bool order;
 	double area;
 	double projLenght;
 	double opticalLengths[3];
@@ -201,11 +228,7 @@ struct BeamInfo
 	Point3d horAxis;
 	Point3d verAxis;
 	Point3d lenIndices;
-
-	BeamInfo()
-	{
-
-	}
+	VertexOrder order;
 };
 
 class Handler
@@ -274,6 +297,7 @@ protected:
 	bool m_hasAbsorption;
 	double m_normIndex;
 	double m_cAbs;
+	complex m_cAbsExp;
 
 	complex m_ri;
 	double m_riIm;
@@ -283,7 +307,6 @@ protected:
 
 	complex m_complWave;
 	complex m_invComplWave;
-	double m_absMag;
 
 	double m_eps1;
 	double m_eps2;
