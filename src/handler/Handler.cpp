@@ -17,7 +17,7 @@ Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
 	  m_nBadBeams(0)
 {
 	m_wavenumber = M_2PI/m_wavelength;
-	m_wi2 = m_wavenumber*m_wavenumber;
+	m_wn2 = m_wavenumber*m_wavenumber;
 
 	complex one(0, -1);
 	m_complWave = (one * m_wavelength) / SQR(M_2PI);
@@ -37,12 +37,6 @@ void Handler::HandleBeams(std::vector<Beam> &/*beams*/)
 
 void Handler::SetTracks(Tracks *tracks)
 {
-//	if (!m_tracks)
-//	{
-//		std::cerr << "Tracks are not set" << std::endl;
-//		throw std::exception();
-//	}
-
 	m_tracks = tracks;
 }
 
@@ -87,12 +81,11 @@ void Handler::ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr)
 	Vector3f _n = beam.Normal();
 	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
 
-	Point3d hor;
-	Point3d ver;
-	ComputeCoordinateSystemAxes(n, hor, ver);
+	Axes csAxes;
+	ComputeCoordinateSystemAxes(n, csAxes);
 
 	Point3f cntr = beam.Center();
-	Point3d center = ChangeCoordinateSystem(hor, ver, n,
+	Point3d center = ChangeCoordinateSystem(csAxes, n,
 											Point3d(cntr.cx, cntr.cy, cntr.cz));
 	double ls[3];
 	ls[0] = lengths[0];
@@ -133,28 +126,29 @@ void Handler::ApplyAbsorption(Beam &beam)
 	}
 }
 
-Point3d Handler::ChangeCoordinateSystem(const Point3d& hor, const Point3d& ver,
-										const Point3d& normal,
+Point3d Handler::ChangeCoordinateSystem(const Axes &axes, const Point3d& normal,
 										const Point3d& point) const
 {
 	// расчёт коор-т в СК наблюдателя
 	const Point3d p_pr = point - normal*DotProductD(normal, point);
-	return Point3d(DotProductD(p_pr, hor), DotProductD(p_pr, ver), 0);
+
+	return Point3d(DotProductD(p_pr, axes.horisontal),
+				   DotProductD(p_pr, axes.vertical), 0);
 }
 
 void Handler::ComputeCoordinateSystemAxes(const Point3d& normal,
-										  Point3d &hor, Point3d &ver) const
+										  Axes &axes) const
 {
 	if (fabs(normal.z) > 1-DBL_EPSILON)
 	{
-		hor = Point3d(0, -normal.z, 0);
-		ver = Point3d(1, 0, 0);
+		axes.horisontal = Point3d(0, -normal.z, 0);
+		axes.vertical = Point3d(1, 0, 0);
 	}
 	else
 	{
 		const double tmp = sqrt(SQR(normal.x) + SQR(normal.y));
-		hor = Point3d(normal.y/tmp, -normal.x/tmp, 0);
-		ver = CrossProductD(normal, hor);
+		axes.horisontal = Point3d(normal.y/tmp, -normal.x/tmp, 0);
+		axes.vertical = CrossProductD(normal, axes.horisontal);
 	}
 }
 
@@ -162,12 +156,12 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 {
 	auto *lens = info.opticalLengths;
 
-	Point3d p1 = ChangeCoordinateSystem(info.horAxis, info.verAxis, info.normald,
-										beam.arr[0]) - info.projectedCenter;
-	Point3d p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis, info.normald,
-										beam.arr[1]) - info.projectedCenter;
-	Point3d p3 = ChangeCoordinateSystem(info.horAxis, info.verAxis, info.normald,
-										beam.arr[2]) - info.projectedCenter;
+	Point3d p1 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[0])
+			- info.projectedCenter;
+	Point3d p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[1])
+			- info.projectedCenter;
+	Point3d p3 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[2])
+			- info.projectedCenter;
 
 	double den = p1.x*p2.y - p1.x*p3.y -
 			p2.x*p1.y + p2.x*p3.y +
@@ -207,12 +201,12 @@ BeamInfo Handler::ComputeBeamInfo(const Beam &beam)
 		info.normald = -info.normald;
 	}
 
-	ComputeCoordinateSystemAxes(info.normald, info.horAxis, info.verAxis);
+	ComputeCoordinateSystemAxes(info.normald, info.csAxes);
 
 	info.centerf = beam.Center();
 	info.center = info.centerf;
-	info.projectedCenter = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-												  info.normald, info.center);
+	info.projectedCenter = ChangeCoordinateSystem(info.csAxes, info.normald,
+												  info.center);
 	if (m_hasAbsorption && beam.lastFacetId != INT_MAX)
 	{
 		ComputeOpticalLengths(beam, info);
@@ -251,150 +245,120 @@ Tracks *Handler::GetTracks() const
 Point3d Handler::ChangeCoordinateSystem(const Point3d& normal,
 										const Point3d &point) const
 {
-	Point3d hor;  // условная горизонталь СК экрана в СК тела
-	Point3d ver;  // третья ось (условная вертикаль СК экрана)
-	ComputeCoordinateSystemAxes(normal, hor, ver);
-	return ChangeCoordinateSystem(hor, ver, normal, point);
+	Axes csAxes;  /* условная горизонталь СК экрана в СК тела и
+					третья ось (условная вертикаль СК экрана)*/
+	ComputeCoordinateSystemAxes(normal, csAxes);
+	return ChangeCoordinateSystem(csAxes, normal, point);
+}
+
+complex Handler::ComputeAvgBeamEnergy(const Polygon &pol, const BeamInfo &info,
+									  Point3d &p1, Point3d &p2,
+									  double &p11, double &p12,
+									  double &p21, double &p22,
+									  const complex &c1, const complex &c2) const
+{
+	complex s(0, 0);
+	complex tmp;
+	double ai;
+	complex ci;
+
+	const VertexOrder &order = info.order;
+
+	for (int i = order.startIndex; i != order.endIndex; i += order.inc)
+	{
+		p2 = ChangeCoordinateSystem(info.csAxes, info.normald, pol.arr[i])
+				- info.projectedCenter;
+
+		ai = (p12 - p22)/(p11 - p21);
+
+		if (fabs(ai) < m_eps3)
+		{
+			ci = c1 + ai*c2;
+
+			if (abs(ci) < m_eps1)
+			{
+				double mul = (p21*p21 - p11*p11)/2.0;
+				tmp = complex(-m_wn2*real(ci)*mul,
+							  m_wavenumber*(p21 - p11) + m_wn2*imag(ci)*mul);
+			}
+			else
+			{
+				double cRe = m_wavenumber*real(ci);
+				double cIm = -m_wavenumber*imag(ci);
+				tmp = (exp_im(cRe*p21)*exp(cIm*p21) -
+					   exp_im(cRe*p11)*exp(cIm*p11))/ci;
+			}
+
+			double kDi = m_wavenumber*(p12 - ai*p11);
+			s += exp_im(kDi*real(c2)) * exp(-kDi*imag(c2)) * tmp;
+#ifdef _DEBUG // DEB
+		if (isnan(real(s)))
+			int fff = 0;
+#endif
+		}
+
+		p1 = p2;
+	}
+
+	s /= c2;
+	return s;
 }
 
 complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 									const Point3d &direction) const
 {
-	const Point3f &dir = beam.direction;
-	Point3d k_k0 = -direction + Point3d(dir.cx, dir.cy, dir.cz);
+	const Point3f &beamDir = beam.direction;
+	Point3d k_k0 = -direction + Point3d(beamDir.cx, beamDir.cy, beamDir.cz);
 
-	Point3d	pProj = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-										   info.normald, k_k0);
+	Point3d	pProj = ChangeCoordinateSystem(info.csAxes, info.normald, k_k0);
 
 	const complex A(pProj.x, info.lenIndices.x*m_riIm);
 	const complex B(pProj.y, info.lenIndices.y*m_riIm);
 
-	if (abs(A) < m_eps2 && abs(B) < m_eps2)
+	if (abs(A) > m_eps2 || abs(B) > m_eps2)
 	{
-		return m_invComplWave * info.area;
-	}
+		Point3d p1 = ChangeCoordinateSystem(info.csAxes, info.normald,
+											beam.arr[info.order.begin])
+				- info.projectedCenter;
+		Point3d p2;
 
-	complex s(0, 0);
+		complex s(0, 0);
 
-	const VertexOrder &order = info.order;
-
-	Point3d p1 = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-										info.normald, beam.arr[order.begin]) - info.projectedCenter;
-	Point3d p2;
-
-	if (abs(B) > abs(A))
-	{
-		for (int i = order.startIndex; i != order.endIndex; i += order.inc)
+		if (abs(B) > abs(A))
 		{
-			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis, info.normald,
-										beam.arr[i]) - info.projectedCenter;
-
-			const double ci = (p1.y - p2.y)/(p1.x - p2.x);
-
-			if (fabs(ci) > m_eps3)
-			{
-				p1 = p2;
-				continue;
-			}
-
-			double bi = m_wavenumber*(p1.y - ci*p1.x);
-
-			complex Ei = A + ci*B;
-			complex tmp;
-
-			if (abs(Ei) < m_eps1)
-			{
-				double mul = (p2.x*p2.x - p1.x*p1.x)/2.0;
-				tmp = complex(-m_wi2*real(Ei)*mul,
-							  m_wavenumber*(p2.x - p1.x) + m_wi2*imag(Ei)*mul);
-			}
-			else
-			{
-				double kReCi = m_wavenumber*real(Ei);
-				double kImCi = -m_wavenumber*imag(Ei);
-				tmp = (exp_im(kReCi*p2.x)*exp(kImCi*p2.x) -
-					   exp_im(kReCi*p1.x)*exp(kImCi*p1.x))/Ei;
-			}
-
-			s += exp_im(bi*real(B)) * tmp * exp(-bi*imag(B));
-
-#ifdef _DEBUG // DEB
-		if (isnan(real(s)))
-			int fff = 0;
-#endif
-			p1 = p2;
+			s = ComputeAvgBeamEnergy(beam, info, p1, p2, p1.x, p2.x, p1.y, p2.y,
+									 A, B);
+		}
+		else
+		{
+			s = -ComputeAvgBeamEnergy(beam, info, p1, p2, p1.y, p2.y, p1.x, p2.x,
+									  B, A);
 		}
 
-		s /= B;
+		return s * m_cAbsExp;
 	}
 	else
 	{
-		for (int i = order.startIndex; i != order.endIndex; i += order.inc)
-		{
-			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis, info.normald,
-										beam.arr[i]) - info.projectedCenter;
-
-			const double ci = (p1.x - p2.x)/(p1.y - p2.y);
-
-			if (fabs(ci) > m_eps3)
-			{
-				p1 = p2;
-				continue;
-			}
-
-			double bi = m_wavenumber*(p1.x - ci*p1.y);
-
-			complex Ei = B + A*ci;
-			complex tmp;
-
-			if (abs(Ei) < m_eps1)
-			{
-				double mul = (p2.y*p2.y - p1.y*p1.y)/2.0;
-				tmp = complex(-m_wi2*real(Ei)*mul,
-							  m_wavenumber*(p2.y - p1.y) + m_wi2*imag(Ei)*mul);
-			}
-			else
-			{
-				double kReEi = m_wavenumber*real(Ei);
-				double kImEi = -m_wavenumber*imag(Ei);
-				tmp = (exp_im(kReEi*p2.y)*exp(kImEi*p2.y) -
-					   exp_im(kReEi*p1.y)*exp(kImEi*p1.y))/Ei;
-			}
-
-			s += exp_im(bi*real(A)) * exp(-bi*imag(A)) * tmp;
-
-#ifdef _DEBUG // DEB
-		if (isnan(real(s)))
-			int fff = 0;
-#endif
-			p1 = p2;
-		}
-
-		s /= -A;
+		return m_invComplWave * info.area;
 	}
-
-#ifndef _DEBUG // DEB
-//	double dddd = exp(m_absMag*info.lenIndices.z);
-#endif
-	return s * m_cAbsExp;
 }
 
 double Handler::BeamCrossSection(const Beam &beam) const
 {
-	const double eps = 1e7*DBL_EPSILON;
-
 	Point3f normal = m_particle->facets[beam.lastFacetId].ex_normal; // normal of last facet of beam
 	double cosA = DotProduct(normal, beam.direction);
 	double e = fabs(cosA);
 
-	if (e < eps)
+	if (e > m_eps1)
+	{
+		double area = beam.Area();
+		double len = Length(normal);
+		return (e*area)/len;
+	}
+	else
 	{
 		return 0;
 	}
-
-	double area = beam.Area();
-	double len = Length(normal);
-	return (e*area)/len;
 }
 
 complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
@@ -403,8 +367,7 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 	const Point3f &dir = beam.direction;
 	Point3d k_k0 = -direction + Point3d(dir.cx, dir.cy, dir.cz);
 
-	Point3d	pt_proj = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-											 info.normald, k_k0);
+	Point3d	pt_proj = ChangeCoordinateSystem(info.csAxes, info.normald, k_k0);
 	const double A = pt_proj.x;
 	const double B = pt_proj.y;
 
@@ -417,43 +380,45 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 	}
 
 	complex s(0, 0);
-	const VertexOrder &order = info.order;
 
-	Point3d p1 = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-										info.normald, beam.arr[order.begin]) - info.projectedCenter;
+	Point3d p1 = ChangeCoordinateSystem(info.csAxes, info.normald,
+										beam.arr[info.order.begin])
+			- info.projectedCenter;
 	Point3d p2;
 
 	if (absB > absA)
 	{
-		for (int i = order.startIndex; i != order.endIndex; i += order.inc)
+		for (int i = info.order.startIndex; i != info.order.endIndex; i += info.order.inc)
 		{
-			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-										info.normald, beam.arr[i]) - info.projectedCenter;
-
-			if (fabs(p1.x - p2.x) < m_eps1)
-			{
-				p1 = p2;
-				continue;
-			}
+			p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[i])
+					- info.projectedCenter;
 
 			const double ai = (p1.y - p2.y)/(p1.x - p2.x);
 			const double Ci = A+ai*B;
 
 			complex tmp;
 
-			if (fabs(Ci) < m_eps1)
+			if (fabs(p1.x - p2.x) > m_eps1)
 			{
-				tmp = complex(-m_wi2*Ci*(p2.x*p2.x - p1.x*p1.x)/2.0,
-							  m_wavenumber*(p2.x - p1.x));
-			}
-			else
-			{
-				double kCi = m_wavenumber*Ci;
-				tmp = (exp_im(kCi*p2.x) - exp_im(kCi*p1.x))/Ci;
-			}
+				const double ai = (p1.y - p2.y)/(p1.x - p2.x);
+				const double Ci = A+ai*B;
 
-			const double bi = p1.y - ai*p1.x;
-			s += exp_im(m_wavenumber*B*bi) * tmp;
+				complex tmp;
+
+				if (fabs(Ci) < m_eps1)
+				{
+					tmp = complex(-m_wn2*Ci*(p2.x*p2.x - p1.x*p1.x)/2.0,
+								  m_wavenumber*(p2.x - p1.x));
+				}
+				else
+				{
+					double kCi = m_wavenumber*Ci;
+					tmp = (exp_im(kCi*p2.x) - exp_im(kCi*p1.x))/Ci;
+				}
+
+				const double bi = p1.y - ai*p1.x;
+				s += exp_im(m_wavenumber*B*bi) * tmp;
+			}
 
 			p1 = p2;
 		}
@@ -462,35 +427,32 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 	}
 	else
 	{
-		for (int i = order.startIndex; i != order.endIndex; i += order.inc)
+		for (int i = info.order.startIndex; i != info.order.endIndex; i += info.order.inc)
 		{
-			p2 = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-										info.normald, beam.arr[i]) - info.projectedCenter;
+			p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[i])
+					- info.projectedCenter;
 
-			if (fabs(p1.y - p2.y) < m_eps1)
+			if (fabs(p1.y - p2.y) > m_eps1)
 			{
-				p1 = p2;
-				continue;
+				const double ci = (p1.x - p2.x)/(p1.y - p2.y);
+				const double Ei = A*ci+B;
+
+				complex tmp;
+
+				if (fabs(Ei) < m_eps1)
+				{
+					tmp = complex(-m_wn2*Ei*(p2.y*p2.y - p1.y*p1.y)/2.0,
+								  m_wavenumber*(p2.y - p1.y));
+				}
+				else
+				{
+					double kEi = m_wavenumber*Ei;
+					tmp = (exp_im(kEi*p2.y) - exp_im(kEi*p1.y))/Ei;
+				}
+
+				const double di = p1.x - ci*p1.y;
+				s += exp_im(m_wavenumber*A*di) * tmp;
 			}
-
-			const double ci = (p1.x - p2.x)/(p1.y - p2.y);
-			const double Ei = A*ci+B;
-
-			complex tmp;
-
-			if (fabs(Ei) < m_eps1)
-			{
-				tmp = complex(-m_wi2*Ei*(p2.y*p2.y - p1.y*p1.y)/2.0,
-							  m_wavenumber*(p2.y - p1.y));
-			}
-			else
-			{
-				double kEi = m_wavenumber*Ei;
-				tmp = (exp_im(kEi*p2.y) - exp_im(kEi*p1.y))/Ei;
-			}
-
-			const double di = p1.x - ci*p1.y;
-			s += exp_im(m_wavenumber*A*di) * tmp;
 
 			p1 = p2;
 		}

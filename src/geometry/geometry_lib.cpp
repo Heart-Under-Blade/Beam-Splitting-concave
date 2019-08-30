@@ -104,10 +104,10 @@ double LengthD(const Vector3d &v)
 
 void Normalize(Vector3f &v)
 {
-	double lenght = sqrt(Norm(v));
-	v.cx /= lenght;
-	v.cy /= lenght;
-	v.cz /= lenght;
+	double len = Length(v);
+	v.cx /= len;
+	v.cy /= len;
+	v.cz /= len;
 }
 
 Vector3d NormalizeD(const Vector3d &v)
