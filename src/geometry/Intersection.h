@@ -35,7 +35,6 @@ inline bool is_layOnLine_i(__m128 _x, __m128 _a, __m128 _b)
 	return (sqr_len_ax[0] + sqr_len_bx[0] < sqr_len_ab[0] + sqr_len_ab[0]*EPS_LAYONLINE);
 }
 
-// OPT: try to return 'ok' insted 'x'
 inline __m128 intersect_i(__m128 _a1, __m128 _a2, __m128 _b1, __m128 _b2,
 						  __m128 _normal_to_facet, bool &ok)
 {

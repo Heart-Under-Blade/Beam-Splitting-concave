@@ -10,4 +10,3 @@ public:
 	void HandleBeams(std::vector<Beam> &beams) override;
 	void WriteMatricesToFile(std::string &destName) override;
 };
-

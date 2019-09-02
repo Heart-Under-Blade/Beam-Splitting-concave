@@ -43,10 +43,17 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 
 	int &nP = m_sphere.nAzimuth;
 
+<<<<<<< HEAD
 	for (int t = nT-1; t >= 0; --t)
 	{
 		sum.Fill(0.0);
 		double tt = 180.0 - RadToDeg(t*dT);
+=======
+    for (int t = nT; t >= 0; --t)
+    {
+        sum.Fill(0.0);
+		double tt = 180.0 - Orientation::RadToDeg(t*dT);
+>>>>>>> origin/refactor
 
 		for (int p = 0; p <= nP; ++p)
 		{

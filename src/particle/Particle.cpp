@@ -6,7 +6,32 @@
 
 Particle::Particle()
 {
+<<<<<<< HEAD
 	isConcave = false;
+=======
+	SetFacetIndices();
+}
+
+Particle::Particle(int nFacets, bool isNonConvex)
+	: m_isNonConvex(isNonConvex)
+{
+	nElems = nFacets;
+	SetFacetIndices();
+}
+
+void Particle::SetFacetIndices()
+{
+	for (int i = 0; i < MAX_FACET_NUM; ++i)
+	{
+		elems[i].original.index = i;
+		elems[i].actual.index = i;
+	}
+}
+
+Facet *Particle::GetActualFacet(int i)
+{
+	return &elems[i].actual;
+>>>>>>> origin/refactor
 }
 
 void Particle::SetFromFile(const std::string &filename)
@@ -61,7 +86,12 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
+<<<<<<< HEAD
 			facet->arr[facet->nVertices].coordinates[c_i++] = strtod(ptr, &trash);
+=======
+			double value = strtod(ptr, &trash);
+			facet->vertices[facet->nVertices].coordinates[c_i++] = value;
+>>>>>>> origin/refactor
 			ptr = strtok(NULL, " ");
 		}
 
@@ -71,7 +101,16 @@ void Particle::SetFromFile(const std::string &filename)
 	pfile.close();
 
 	// correction of number of facet
+<<<<<<< HEAD
 	while (defaultFacets[nFacets-1].nVertices == 0)
+=======
+	while (elems[nElems-1].original.nVertices == 0)
+	{
+		--nElems;
+	}
+
+	if (reduceSize > 0)
+>>>>>>> origin/refactor
 	{
 		--nFacets;
 	}
@@ -114,7 +153,14 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 	// REF: слить всё в один цикл
 	for (int i = 0; i < nFacets; ++i)
 	{
+<<<<<<< HEAD
 		for (int j = 0; j < facets[i].nVertices; ++j)
+=======
+		auto &original = elems[i].original;
+		auto &actual = elems[i].actual;
+
+		for (int j = 0; j < original.nVertices; ++j)
+>>>>>>> origin/refactor
 		{
 			RotatePoint(defaultFacets[i].arr[j], facets[i].arr[j]);
 		}
@@ -124,6 +170,7 @@ void Particle::Rotate(double beta, double gamma, double alpha)
 	RotateCenters();
 }
 
+<<<<<<< HEAD
 void Particle::Fix()
 {
 	for (int i = 0; i < nFacets; ++i)
@@ -136,10 +183,17 @@ void Particle::Fix()
 }
 
 void Particle::Scale(double ratio)
+=======
+void Particle::CommitState()
+>>>>>>> origin/refactor
 {
 	for (int i = 0; i < nFacets; ++i)
 	{
+<<<<<<< HEAD
 		for (int j = 0; j < defaultFacets[i].nVertices; ++j)
+=======
+		for (int j = 0; j < elems[i].actual.nVertices; ++j)
+>>>>>>> origin/refactor
 		{
 			defaultFacets[i].arr[j].cx *= ratio;
 			defaultFacets[i].arr[j].cy *= ratio;
@@ -148,6 +202,7 @@ void Particle::Scale(double ratio)
 	}
 }
 
+<<<<<<< HEAD
 void Particle::Resize(double size)
 {
 	double dMax = MaximalDimention();
@@ -156,6 +211,8 @@ void Particle::Resize(double size)
 	Reset();
 }
 
+=======
+>>>>>>> origin/refactor
 void Particle::Concate(const std::vector<Particle> &parts)
 {
 	int i = 0;
@@ -174,6 +231,21 @@ void Particle::Concate(const std::vector<Particle> &parts)
 	isAggregated = true;
 }
 
+<<<<<<< HEAD
+=======
+void Particle::RemoveFacet(int index)
+{
+	for (int i = index+1; i < nElems; ++i)
+	{
+		elems[i-1] = elems[i];
+	}
+
+	--nElems;
+
+	SetFacetIndices();
+}
+
+>>>>>>> origin/refactor
 double Particle::LongRadius() const
 {
 	Point3f p0(0, 0, 0);
@@ -182,7 +254,13 @@ double Particle::LongRadius() const
 
 	for (int i = 0; i < nFacets; ++i)
 	{
+<<<<<<< HEAD
 		for (int j = 0; j < facets[i].nVertices; ++j)
+=======
+		const Facet &facet = elems[i].actual;
+
+		for (int j = 0; j < facet.nVertices; ++j)
+>>>>>>> origin/refactor
 		{
 			Point3f v_len = facets[i].arr[j] - p0;
 			double len = Length(v_len);
@@ -197,6 +275,7 @@ double Particle::LongRadius() const
 	return radius;
 }
 
+<<<<<<< HEAD
 double Particle::MaximalDimention() const
 {
 	double Dmax = 0;
@@ -226,6 +305,9 @@ double Particle::MaximalDimention() const
 }
 
 double Particle::Area()
+=======
+double Particle::Area() const
+>>>>>>> origin/refactor
 {
 	double area = 0;
 
@@ -237,21 +319,127 @@ double Particle::Area()
 	return area;
 }
 
+<<<<<<< HEAD
 const complex &Particle::GetRefractiveIndex() const
+=======
+Point3f Particle::Center() const
 {
-	return m_refractiveIndex;
+	Point3f center = Point3f(0, 0, 0);
+	int nVertices = 0;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		auto &facet = elems[i].original;
+		nVertices += facet.nVertices;
+
+		for (int j = 0; j < facet.nVertices; ++j)
+		{
+			center += facet.vertices[j];
+		}
+	}
+
+	center /= nVertices;
+	return center;
 }
 
-const Symmetry &Particle::GetSymmetry() const
+double Particle::Volume() const
+{
+	double volume = 0;
+	Point3f center = Center();
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		const Facet &facet = elems[i].original;
+
+		Point3f p = Geometry::ProjectPointToPlane(center, facet.ex_normal,
+												  facet.in_normal);
+		double h = Point3f::Length(p - center);
+		volume += (facet.Area()*h)/3;
+	}
+
+	return volume;
+}
+
+void Particle::Scale(double ratio)
+{
+	for (int i = 0; i < nElems; ++i)
+	{
+		for (int j = 0; j < elems[i].original.nVertices; ++j)
+		{
+			elems[i].original.vertices[j] *= ratio;
+		}
+	}
+
+	SetDefaultNormals();
+	SetDParams();
+	ResetPosition();
+	SetDefaultCenters();
+}
+
+double Particle::MaximalDimension() const
+{
+	double Dmax = 0;
+	double newDmax;
+
+	Polygon pol;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		pol.Concat(elems[i].original);
+	}
+
+	for (int i = 0; i < pol.nVertices; ++i)
+	{
+		for (int j = 0; j < pol.nVertices; ++j)
+		{
+			newDmax = Point3f::Length(pol.vertices[j] - pol.vertices[i]);
+
+			if (newDmax > Dmax)
+			{
+				Dmax = newDmax;
+			}
+		}
+	}
+
+	return Dmax;
+}
+
+const Orientation &Particle::GetSymmetry() const
+>>>>>>> origin/refactor
 {
 	return m_symmetry;
+}
+
+<<<<<<< HEAD
+const Symmetry &Particle::GetSymmetry() const
+=======
+void Particle::GetFacets(int end, int begin, Array<Facet*> &facets)
+>>>>>>> origin/refactor
+{
+	for (int i = begin; i < end; ++i)
+	{
+		Facet *f = &(elems[i].actual);
+		facets.Add(f);
+	}
+}
+
+void Particle::GetPartByFacet(Facet */*facet*/, Array<Facet*> &facets)
+{
+	GetFacets(0, nElems, facets);
 }
 
 void Particle::Move(float dx, float dy, float dz)
 {
 	for (int i = 0; i < nFacets; ++i)
 	{
+<<<<<<< HEAD
 		for (int j = 0; j < defaultFacets[i].nVertices; ++j)
+=======
+		auto &origin = elems[i].original;
+		auto &actual = elems[i].actual;
+
+		for (int j = 0; j < origin.nVertices; ++j)
+>>>>>>> origin/refactor
 		{
 			facets[i].arr[j] = defaultFacets[i].arr[j] + Point3f(dx, dy, dz);
 		}
@@ -269,6 +457,7 @@ void Particle::Output()
 
 	for (int i = 0; i < nFacets; ++i)
 	{
+<<<<<<< HEAD
 		for (int j = 0; j < facets[i].nVertices; ++j)
 		{
 			Point3f p = facets[i].arr[j];
@@ -276,6 +465,17 @@ void Particle::Output()
 							<< p.coordinates[1] << ' '
 							<< p.coordinates[2] << ' '
 							<< i ;
+=======
+		Facet &facet = elems[i].actual;
+
+		for (int j = 0; j < facet.nVertices; ++j)
+		{
+			Point3f p = facet.vertices[j];
+			M << p.coordinates[0]
+					<< ' ' << p.coordinates[1]
+					<< ' ' << p.coordinates[2]
+					<< ' ' << i ;
+>>>>>>> origin/refactor
 			M << std::endl;
 		}
 
@@ -285,9 +485,114 @@ void Particle::Output()
 	M.close();
 }
 
+<<<<<<< HEAD
 void Particle::SetRefractiveIndex(const complex &value)
 {
 	m_refractiveIndex = value;
+=======
+int Particle::ReduceEdge(int facetNo, int i1, int i2)
+{
+	auto &p1 = elems[facetNo].original.vertices[i1];
+	auto &p2 = elems[facetNo].original.vertices[i2];
+
+	double eps = 0.001;
+	Point3f newVertex = (p2 + p1)/2;
+
+	int removedVertices = 0;
+	int sameEdgeFacetNo = -1;
+
+	for (int i = 0; i < nElems; ++i)
+	{
+		if (i != facetNo)
+		{
+			auto &facet = elems[i].original;
+			int nFoundVertices = 0;
+
+			for (int j = 0; j < facet.nVertices && nFoundVertices < 2; ++j)
+			{
+				auto &v = facet.vertices[j];
+
+				if (v.IsEqualTo(p1, eps) || v.IsEqualTo(p2, eps))
+				{
+					++nFoundVertices;
+
+					if (nFoundVertices < 2)
+					{
+						v = newVertex;
+					}
+					else
+					{
+						facet.RemoveVertex(j);
+						++removedVertices;
+						sameEdgeFacetNo = i;
+					}
+				}
+			}
+		}
+	}
+
+#ifdef _DEBUG // DEB
+	if (removedVertices != 1)
+	{
+		int fff = 0;
+	}
+#endif
+
+	elems[facetNo].original.vertices[i1] = newVertex;
+	elems[facetNo].original.RemoveVertex(i2);
+
+	return sameEdgeFacetNo;
+}
+
+void Particle::ReduceSmallEdges(double minSize)
+{
+	bool isReduced;
+
+	do
+	{
+		isReduced = false;
+
+		for (int i = 0; i < nElems; ++i)
+		{
+			auto &facet = elems[i].original;
+			int jPrev = facet.nVertices-1;
+
+			for (int j = 0; j < facet.nVertices; ++j)
+			{
+				Vector3f v = facet.vertices[j] - facet.vertices[jPrev];
+
+				if (Point3f::Length(v) < minSize)
+				{
+#ifdef _DEBUG // DEB
+					int nv = elems[i].original.nVertices;
+
+					if (nv == 1)
+						int ff = 1;
+#endif
+					int sameEdgeFacetNo = ReduceEdge(i, jPrev, j);
+					isReduced = true;
+
+					if (elems[i].original.nVertices < 3)
+					{
+						RemoveFacet(i);
+					}
+
+					if (sameEdgeFacetNo > 0)
+					{
+						if (elems[sameEdgeFacetNo].original.nVertices < 3)
+						{
+							RemoveFacet(sameEdgeFacetNo);
+						}
+					}
+
+					break;
+				}
+
+				jPrev = j;
+			}
+		}
+	} while (isReduced);
+>>>>>>> origin/refactor
 }
 
 void Particle::SetDefaultNormals()

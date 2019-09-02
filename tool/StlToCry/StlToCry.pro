@@ -4,10 +4,17 @@ CONFIG -= app_bundle
 QT -= gui
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 DESTDIR = ../build
 
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+DESTDIR = ../build
+
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 QMAKE_CXXFLAGS += -std=gnu++11
 QMAKE_CXXFLAGS += -march=corei7 -msse4.2
 

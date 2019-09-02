@@ -152,40 +152,6 @@ private:
 	}
 };
 
-
-class ContributionGO
-{
-public:
-	ContributionGO() : muellers(0, 0, 0, 0), back(4, 4), forward(4, 4)
-	{
-		muellers = Arr2D(1, 180 + 1/*TODO: this is 'thetaNum',
-				   should i do smth with it?*/, 4, 4);
-		muellers.ClearArr();
-		back.Fill(0);
-		forward.Fill(0);
-	}
-
-	void AddMueller(float fAngle, int angle, const matrix &m)
-	{
-		if (fAngle >= 180-FLT_EPSILON)
-		{
-			forward += m;
-		}
-		else if (fAngle <= FLT_EPSILON)
-		{
-			back += m;
-		}
-		else
-		{
-			muellers.insert(0, angle, m);
-		}
-	}
-
-	Arr2D muellers;		///< Scattering matrices
-	matrix back;		///< Mueller matrix in backward direction
-	matrix forward;		///< Mueller matrix in forward direction
-};
-
 struct Axes
 {
 	Point3d horisontal;

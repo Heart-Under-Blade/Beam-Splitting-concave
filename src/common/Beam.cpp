@@ -16,7 +16,7 @@ std::ostream& operator << (std::ostream &os, const Beam &beam)
 
 	os << "level: " << beam.nActs << endl
 	   << "last facet: " << beam.lastFacetId << endl
-	   << "location: " << beam.location << endl
+	   << "location: " << beam.isInside << endl
 	   << "direction: "
 	   << beam.direction.cx << ", "
 	   << beam.direction.cy << ", "
@@ -42,7 +42,7 @@ void Beam::Copy(const Beam &other)
 
 	lastFacetId = other.lastFacetId;
 	nActs = other.nActs;
-	location = other.location;
+	isInside = other.isInside;
 	locations = other.locations;
 	id = other.id;
 #ifndef _DEBUG // DEB
@@ -177,7 +177,7 @@ void Beam::SetDefault(Beam &other)
 
 	other.lastFacetId = 0;
 	other.nActs = 0;
-	other.location = Location::Out;
+	other.isInside = Location::Out;
 	other.locations = 0;
 
 #ifdef _TRACK_ALLOW
@@ -198,11 +198,11 @@ Beam &Beam::operator = (Beam &&other)
 	return *this;
 }
 
-void Beam::SetTracingParams(int facetId, int actN, Location loc)
+void Beam::SetTracingParams(int facetId, int actN, bool loc)
 {
 	lastFacetId = facetId;
 	nActs = actN;
-	location = loc;
+	isInside = loc;
 
 	if (loc == Location::Out)
 	{	// write location

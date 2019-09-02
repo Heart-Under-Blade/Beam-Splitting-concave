@@ -1,13 +1,19 @@
 #include "CertainAggregate.h"
 #include "global.h"
 
+<<<<<<< HEAD
 CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
+=======
+CertainAggregate::CertainAggregate()
+	: Particle(64, true)
+>>>>>>> origin/refactor
 {
 	isConcave = true;
 	Init(64, refrIndex);
 
 	SetSymmetry(M_PI, 2*M_PI);
 	SetFacetParams();
+
 	isAggregated = true;
 	{
 	defaultFacets[0].arr[0] = Point3f(66.11043637052107, -60.41464034745621, 18.34343028407722);
@@ -314,6 +320,7 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 	defaultFacets[63].arr[5] = Point3f(-35.21954898107649, -119.5204177598127, -19.06404150458911);
 	}
 
+<<<<<<< HEAD
 	Scale(sizeIndex);
 
 	for (int i = 0; i < nFacets; ++i)
@@ -321,6 +328,13 @@ CertainAggregate::CertainAggregate(const complex &refrIndex, double sizeIndex)
 		int last = defaultFacets[i].nVertices-1;
 
 		for (int j = 0; j < defaultFacets[i].nVertices/2; ++j)
+=======
+	for (int i = 0; i < nElems; ++i)
+	{
+		int last = elems[i].original.nVertices-1;
+
+		for (int j = 0; j < elems[i].original.nVertices/2; ++j)
+>>>>>>> origin/refactor
 		{
 			Point3f buf = defaultFacets[i].arr[j];
 			defaultFacets[i].arr[j] = defaultFacets[i].arr[last-j];
@@ -347,20 +361,40 @@ void CertainAggregate::SetFacetParams()
 	{
 		if (i%8 == 7 || i%8 == 0 || i == 0)
 		{
+<<<<<<< HEAD
 			defaultFacets[i].nVertices = 6;
 		}
 		else
 		{
 			defaultFacets[i].nVertices = 4;
+=======
+			elems[i].original.nVertices = 6;
+		}
+		else
+		{
+			elems[i].original.nVertices = 4;
+>>>>>>> origin/refactor
 		}
 	}
 
 }
 
+<<<<<<< HEAD
 void CertainAggregate::GetParticalFacetIdRangeByFacetId(int id, int &begin, int &end) const
 {
 	// REF: make universal
 	if (id < 8)
+=======
+void CertainAggregate::GetPartByFacet(Facet *facet, Array<Facet *> &facets)
+{
+	// REF: упростить
+	int &index = facet->index;
+
+	int begin;
+	int end;
+
+	if (index < 8)
+>>>>>>> origin/refactor
 	{
 		begin = 0;
 		end = 8;
@@ -400,4 +434,6 @@ void CertainAggregate::GetParticalFacetIdRangeByFacetId(int id, int &begin, int 
 		begin = 56;
 		end = 64;
 	}
+
+	GetFacets(begin, end, facets);
 }

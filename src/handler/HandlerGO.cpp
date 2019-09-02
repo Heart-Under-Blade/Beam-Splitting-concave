@@ -1,14 +1,43 @@
 #include "HandlerGO.h"
 
+<<<<<<< HEAD
 #include <limits>
 #include <iostream>
 #include <iomanip>
 
 #include "Mueller.hpp"
+=======
+#include "Particle.h"
+#include "Mueller.hpp"
+
+#include <limits>
+#include <iomanip>
+
+#define BIN_SIZE	M_PI/SPHERE_RING_NUM
+
+using namespace std;
+>>>>>>> origin/refactor
 
 HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, double wavelength)
 	: Handler(particle, incidentLight, wavelength)
 {
+<<<<<<< HEAD
+=======
+	m_logFile.open("log1.txt", ios::out);
+	m_logFile << setprecision(numeric_limits<long double>::digits10 + 1);
+}
+
+double HandlerGO::ComputeTotalScatteringEnergy()
+{
+	double D_tot = m_totalContrib.back[0][0] + m_totalContrib.forward[0][0];
+
+	for (int i = 0; i <= SPHERE_RING_NUM; ++i)
+	{
+		D_tot += m_totalContrib.muellers(0, i, 0, 0);
+	}
+
+	return D_tot * m_normIndex;
+>>>>>>> origin/refactor
 }
 
 void HandlerGO::SetTracks(Tracks *tracks)
@@ -84,6 +113,13 @@ void HandlerGO::AverageOverAlpha(int EDF, double norm, ContributionGO &contrib,
 	}
 }
 
+<<<<<<< HEAD
+=======
+void HandlerGO::WriteLog(const string &str)
+{
+	m_logFile << str;
+}
+>>>>>>> origin/refactor
 void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 {
 	double cross = BeamCrossSection(beam);
@@ -91,13 +127,26 @@ void HandlerGO::MultiplyMueller(const Beam &beam, matrix &m)
 	m *= area;
 }
 
+<<<<<<< HEAD
+=======
+void HandlerGO::WriteMatricesToFile(string &destName)
+{
+	AverageOverAlpha(true, m_normIndex, m_totalContrib, destName);
+	WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
+}
+
+>>>>>>> origin/refactor
 matrix HandlerGO::ComputeMueller(float zenAng, Beam &beam)
 {
-	matrix m = Mueller(beam.J);
+	matrix m = Mueller(beam.Jones);
 
 	if (zenAng < 180-FLT_EPSILON && zenAng > FLT_EPSILON)
 	{
+<<<<<<< HEAD
 		const float &y = beam.direction.cy;
+=======
+		const float &y = beam.direction.coordinates[1];
+>>>>>>> origin/refactor
 
 		if (y*y > DBL_EPSILON)
 		{	// rotate the Mueller matrix of the beam to appropriate coordinate system
@@ -116,8 +165,13 @@ matrix HandlerGO::ComputeMueller(float zenAng, Beam &beam)
 
 void HandlerGO::RotateMuller(const Point3f &dir, matrix &bf)
 {
+<<<<<<< HEAD
 	const float &x = dir.cx;
 	const float &y = dir.cy;
+=======
+	const float &x = dir.coordinates[0];
+	const float &y = dir.coordinates[1];
+>>>>>>> origin/refactor
 
 	double tmp = y*y;
 	tmp = acos(x/sqrt(x*x+tmp));
@@ -185,6 +239,7 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 	allFile.close();
 }
 
+<<<<<<< HEAD
 Point3f HandlerGO::CalcK(std::vector<int> &tr)
 {	// OPT: сделать из переменных ссылки
 	Point3f k, tmp;
@@ -200,6 +255,23 @@ Point3f HandlerGO::CalcK(std::vector<int> &tr)
 	}
 
 	Normalize(k);
+=======
+Point3f HandlerGO::CalcK(vector<int> &tr)
+{	// OPT: сделать из переменных ссылки
+	Point3f k, tmp;
+	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
+	Point3f nq = m_particle->GetActualFacet(tr[tr.size()-1])->in_normal;
+	Point3f::CrossProduct(nq, n1, tmp);
+	Point3f::CrossProduct(tmp, nq, k);
+
+	for (int i = tr.size()-2; i > 0; --i)
+	{
+		Point3f ni = m_particle->GetActualFacet(tr[i])->in_normal;
+		k = k - ni*2*fabs(Point3f::DotProduct(ni, k));
+	}
+
+	Point3f::Normalize(k);
+>>>>>>> origin/refactor
 	return k;
 }
 
@@ -207,6 +279,7 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 {	// OPT: вынести переменные из цикла
 	double opticalPath = 0;
 
+<<<<<<< HEAD
 	std::vector<int> tr;
 	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
 
@@ -238,4 +311,23 @@ double HandlerGO::ComputeTotalScatteringEnergy()
 void HandlerGO::WriteLog(const std::string &str)
 {
 	m_logFile << str;
+=======
+	vector<int> tr;
+	m_tracks->RecoverTrack(beam, tr);
+
+	Point3f k = CalcK(tr);
+	Point3f n1 = m_particle->GetActualFacet(tr[0])->in_normal;
+
+	for (int i = 0; i < beam.nVertices; ++i)
+	{
+		double delta = Point3f::Length(beam.Center() - beam.vertices[i]) /
+				Point3f::Length(k);
+		opticalPath += (delta*Point3f::DotProduct(k, n1)) /
+				Point3f::DotProduct(beam.direction, n1);
+	}
+
+	opticalPath /= beam.nVertices;
+
+	return opticalPath;
+>>>>>>> origin/refactor
 }

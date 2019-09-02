@@ -10,21 +10,6 @@
 #define MAX_POLYGON_NUM 512		///< maximum number of polygons in array of polygons
 #define MAX_FACET_NUM 256
 
-enum Location: bool
-{
-	In, Out
-};
-
-class Orientation
-{
-public:
-	double beta;
-	double gamma;
-	double alpha;
-};
-
-typedef Orientation Symmetry;
-
 class IntArray
 {
 public:

@@ -4,7 +4,10 @@
 #include "CalcTimer.h"
 #include "Mueller.hpp"
 #include "BigInteger.hh"
-#include "handler/Handler.h"
+#include "Handler.h"
+#include "Particle.h"
+#include "Scattering.h"
+#include "Orientation.h"
 
 struct AngleRange
 {
@@ -24,15 +27,25 @@ struct AngleRange
 	}
 };
 
+/**
+ * @brief Scatters the light on a particle, collect result beams and handle them
+ */
 class Tracer
 {
 public:
-	Tracer(Particle *particle, int nActs, const std::string &resultFileName);
+	Tracer(Particle *particle, Scattering *scattering,
+		   const std::string &resultFileName);
 	~Tracer();
 
-	// REF: delete?
-//	void TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
-//						const Tracks &tracks, double wave);
+	/**
+	 * @brief Trace a light on a random oriented particle rotated by given angle ranges
+	 */
+	virtual void TraceRandom(const OrientationRange &/*range*/);
+	/**
+	 * @brief Trace a light on a fixed orienteted particle with given orientation
+	 * @param orientation value of a particle orientation
+	 */
+	void TraceFixed(const Orientation &orientation);
 
 	void SetHandler(Handler *handler);
 
@@ -53,15 +66,18 @@ protected:
 
 	std::string m_resultDirName;
 	double m_wavelength;
-	Symmetry m_symmetry;
+	Orientation m_symmetry;
 	time_t m_startTime;
 
 	// REF: заменить
 	bool isOutputGroups = false;
 
+	long long m_timeElapsed = 0;
+
 protected:
 	void OutputStartTime(CalcTimer &timer);
-	void OutputProgress(int betaNumber, long long count, CalcTimer &timer);
+	void OutputProgress(long long nOrientation, long long count,
+						CalcTimer &timer);
 	void OutputOrientationToLog(int i, int j, std::ostream &logfile);
 
 private:

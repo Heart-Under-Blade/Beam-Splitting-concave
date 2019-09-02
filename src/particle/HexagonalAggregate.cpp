@@ -1,8 +1,14 @@
 #include "HexagonalAggregate.h"
 #include "global.h"
 
+<<<<<<< HEAD
 HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter, double height,
 									   int particleNumber)
+=======
+HexagonalAggregate::HexagonalAggregate(const Size &size,
+									   int particleNumber)
+	: Column(8*particleNumber, size, true)
+>>>>>>> origin/refactor
 {
 	isConcave = true;
 	SetSize(diameter, height);
@@ -106,6 +112,7 @@ HexagonalAggregate::HexagonalAggregate(const complex &refrIndex, double diameter
 
 void HexagonalAggregate::SetFacetParams()
 {
+<<<<<<< HEAD
 	defaultFacets[0].nVertices = BASE_VERTEX_NUM;
 	defaultFacets[7].nVertices = BASE_VERTEX_NUM;
 
@@ -122,6 +129,24 @@ void HexagonalAggregate::SetFacetParams()
 	facets[15].isVisibleOut = false;
 
 	for (int i = 0; i < nFacets; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+=======
+	elems[0].original.nVertices = BASE_VERTEX_NUM;
+	elems[7].original.nVertices = BASE_VERTEX_NUM;
+
+	elems[8].original.nVertices = BASE_VERTEX_NUM;
+	elems[15].original.nVertices = BASE_VERTEX_NUM;
+
+	elems[1].actual.isOverlayedOut = true;
+	elems[2].actual.isOverlayedOut = true;
+	elems[3].actual.isOverlayedOut = true;
+	elems[7].actual.isOverlayedOut = true;
+	elems[10].actual.isOverlayedOut = true;
+	elems[11].actual.isOverlayedOut = true;
+	elems[12].actual.isOverlayedOut = true;
+	elems[15].actual.isOverlayedOut = true;
+
+	for (int i = 0; i < nElems; ++i) // OPT: кол-во затеняемых гарней на самом деле меньше
+>>>>>>> origin/refactor
 	{
 		facets[i].isVisibleIn = false;
 	}

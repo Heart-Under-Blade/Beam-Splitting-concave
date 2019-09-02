@@ -5,25 +5,21 @@
 class ScatteringConvex : public Scattering
 {
 public:
-	ScatteringConvex(Particle *particle, Light *incidentLight,
-					 bool isOpticalPath, int nActs);
+	ScatteringConvex(Particle *particle, const Light &incidentLight,
+					 int maxActNo, const complex &m_refractiveIndex);
 
-	void ScatterLight(std::vector<Beam> &outBeams) override;
-	void ScatterLight(const std::vector<std::vector<int>> &,
-					  std::vector<Beam> &) override; ///> for predefined trajectories
+	void ScatterLight(TrackNode *trackTree, std::vector<Beam> &scatteredBeams);
 
 	double MeasureOpticalPath(const Beam &beam, const Point3f sourcePoint,
 							 const std::vector<int> &track) override;
 
 	double MeasureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
 								  const std::vector<int> &track) override;
-
 protected:
-	void TraceInternalBeams(std::vector<Beam> &outBeams);
-
-	bool SplitSecondaryBeams(Beam &incidentBeam, int facetID,
-							 Beam &inBeam, std::vector<Beam> &outBeams);
-
+	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;
+	void SelectVisibleFacets(const Beam &beam, Array<Facet *> &facets) override;
+	void PushBeamsToBuffer(Facet *facet, BeamPair<Beam> &beams,
+						   std::vector<Beam> &scatteredBeams);
 private:
-	Point3f lastPoint;
+	void SetWorkFacetsFromTracks();
 };

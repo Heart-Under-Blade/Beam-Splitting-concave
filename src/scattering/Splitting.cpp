@@ -1,4 +1,5 @@
 #include "Splitting.h"
+#include "Facet.h"
 
 #include <float.h>
 
@@ -54,7 +55,7 @@ double Splitting::ComputeSegmentOpticalPath(const Beam &beam, const Point3f &fac
 		path = -path;
 	}
 
-	if (beam.location == Location::In)
+	if (beam.isInside == Location::In)
 	{
 		path *= sqrt(reRiEff);
 	}
@@ -295,11 +296,11 @@ void Splitting::RefractOut(const Vector3f &oldDir, const Vector3f &normal, Vecto
 
 Point3f Splitting::ChangeBeamDirectionConvex(const Vector3f &oldDir,
 											 const Vector3f &normal,
-											 Location loc)
+											 bool loc)
 {
 	Point3f newDir;
 
-	if (loc == Location::Out)
+	if (!loc)
 	{
 		ComputeCosA(oldDir, -normal);
 		Vector3f r = normal + oldDir/cosA;
@@ -315,13 +316,13 @@ Point3f Splitting::ChangeBeamDirectionConvex(const Vector3f &oldDir,
 
 Point3f Splitting::ChangeBeamDirection(const Vector3f &oldDir,
 									   const Vector3f &normal,
-									   Location oldLoc, Location loc)
+									   bool oldLoc, bool loc)
 {
 	Point3f newDir;
 
 	if (oldLoc == loc)
 	{
-		if (oldLoc == Location::Out)
+		if (!oldLoc)
 		{
 			ComputeCosA(oldDir, -normal);
 			ReflectExternal(oldDir, normal, newDir);
@@ -333,7 +334,7 @@ Point3f Splitting::ChangeBeamDirection(const Vector3f &oldDir,
 	}
 	else
 	{
-		if (oldLoc == Location::Out)
+		if (!oldLoc)
 		{
 			ComputeCosA(oldDir, -normal);
 			Vector3f r = normal + oldDir/cosA;
@@ -357,3 +358,46 @@ double Splitting::ComputeEffectiveReRi() const
 {
 	return (m_cRiRe + sqrt(m_cRiRe2 + m_cRiIm/(cosA*cosA)))/2.0;
 }
+
+
+class FacetChecker
+{
+public:
+	virtual bool IsVisibleFacet(Facet *facet, const Beam &beam)
+	{
+		if (facet->index != beam.facet->index)
+		{
+			const Point3f &facetNormal = facet->normal[beam.isInside];
+			double cosA = Point3f::DotProduct(facetNormal, beam.direction);
+			return cosA > FLT_EPSILON;
+		}
+		else
+		{
+			return false;
+		}
+	}
+};
+
+class LightFacetChecker : public FacetChecker
+{
+public:
+};
+
+class BeamFacetChecker : public FacetChecker
+{
+public:
+	bool IsVisibleFacet(Facet *facet, const Beam &beam) override
+	{
+		if (FacetChecker::IsVisibleFacet(facet, beam))
+		{
+			Point3f vectorFromBeamToFacet = facet->center - beam.facet->center;
+			const Point3f &beamNormal = beam.facet->normal[!beam.isInside];
+			double cosBF = Point3f::DotProduct(beamNormal, vectorFromBeamToFacet);
+			return (cosBF >= EPS_ORTO_FACET);
+		}
+		else
+		{
+			return false;
+		}
+	}
+};

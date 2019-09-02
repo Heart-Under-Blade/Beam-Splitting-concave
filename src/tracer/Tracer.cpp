@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "global.h"
 #include "macro.h"
+
 //#ifdef _TRACK_ALLOW
 //std::ofstream trackMapFile("tracks_deb.dat", std::ios::out);
 //#endif
@@ -14,6 +15,7 @@
 
 using namespace std;
 
+<<<<<<< HEAD
 Tracer::Tracer(Particle *particle, int nActs, const string &resultFileName)
 	: m_resultDirName(resultFileName)
 {
@@ -29,6 +31,14 @@ Tracer::Tracer(Particle *particle, int nActs, const string &resultFileName)
 	}
 
 	m_particle = m_scattering->m_particle;
+=======
+Tracer::Tracer(Particle *particle, Scattering *scattering,
+						 const string &resultFileName)
+	: m_particle(particle),
+	  m_resultDirName(resultFileName),
+	  m_scattering(scattering)
+{
+>>>>>>> origin/refactor
 	m_symmetry = m_particle->GetSymmetry();
 }
 
@@ -36,30 +46,68 @@ Tracer::~Tracer()
 {
 }
 
+<<<<<<< HEAD
 void Tracer::SetIncidentLight(Particle *particle)
 {
 	m_incidentLight.direction = Point3f(0, 0, -1);
 	m_incidentLight.polarizationBasis = Point3f(0, 1, 0);
+=======
+void Tracer::TraceFixed(const Orientation &orientation)
+{
+	Orientation orient = orientation.ToRadians();
+
+	vector<Beam> outBeams;
+	m_particle->Rotate(orient);
+	m_scattering->ScatterLight(outBeams);
+//	m_particle->Output();
+	m_handler->HandleBeams(outBeams);
+	outBeams.clear();
+
+//	double D_tot = CalcTotalScatteringEnergy();
+>>>>>>> origin/refactor
 
 	Point3f point = m_incidentLight.direction * particle->MaximalDimention()/2;
 	m_incidentLight.direction.d_param = DotProduct(point, m_incidentLight.direction);
 }
 
+<<<<<<< HEAD
+=======
+void Tracer::TraceRandom(const OrientationRange &/*range*/)
+{
+}
+
+>>>>>>> origin/refactor
 void Tracer::OutputOrientationToLog(int i, int j, ostream &logfile)
 {
 	logfile << "i: " << i << ", j: " << j << endl;
 	logfile.flush();
 }
 
+<<<<<<< HEAD
 void Tracer::OutputProgress(int betaNumber, long long count, CalcTimer &timer)
+=======
+void Tracer::OutputProgress(long long nOrientation, long long count,
+							CalcTimer &timer)
+>>>>>>> origin/refactor
 {
-	EraseConsoleLine(50);
-	cout << (count*100)/(betaNumber+1) << '%'
-		 << '\t' << timer.Elapsed();
+	auto now = timer.SecondsElapsed();
+
+	if (now - m_timeElapsed > 1)
+	{
+		m_timeElapsed = now;
+		EraseConsoleLine(50);
+		cout << (count*100)/nOrientation
+			 << "%, orientations remains: " << nOrientation - count
+			 << ", time left: " << timer.Elapsed();
+	}
 }
 
+<<<<<<< HEAD
 
 void Tracer::OutputLogPO(CalcTimer &timer, long long orNumber, const string &path)
+=======
+void Tracer::OutputStatisticsPO(CalcTimer &timer, long long orNumber, const string &path)
+>>>>>>> origin/refactor
 {
 	string startTime = ctime(&m_startTime);
 	string totalTime = timer.Elapsed();
@@ -89,6 +137,7 @@ void Tracer::SetIsOutputGroups(bool value)
 	isOutputGroups = value;
 }
 
+<<<<<<< HEAD
 //REF: объединить с предыдущим
 //void Tracer::TraceRandomPO2(int betaNumber, int gammaNumber, const Conus &bsCone,
 //							  const Tracks &tracks, double wave)
@@ -140,6 +189,8 @@ void Tracer::SetIsOutputGroups(bool value)
 //	outFile.close();
 //}
 
+=======
+>>>>>>> origin/refactor
 void Tracer::OutputStartTime(CalcTimer &timer)
 {
 	m_startTime = timer.Start();

@@ -5,7 +5,9 @@
 class TracerPO : public Tracer
 {
 public:
-	TracerPO(Particle *particle, int nActs, const std::string &resultFileName);
-	virtual void TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange);
+	TracerPO(Particle *particle, Scattering *scattering,
+			 const std::string &resultFileName);
+
+	void TraceRandom(const OrientationRange &range) override;
 	void TraceFixed(const double &beta, const double &gamma);
 };

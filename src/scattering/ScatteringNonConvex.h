@@ -6,12 +6,21 @@
 class ScatteringNonConvex : public Scattering
 {
 public:
-	ScatteringNonConvex(Particle *particle, Light *incidentLight,
-						bool isOpticalPath, int nActs);
+	ScatteringNonConvex(Particle *particle, const Light &incidentLight,
+						int maxActNo, const complex &refractiveIndex);
+	~ScatteringNonConvex();
 
-	void ScatterLight(std::vector<Beam> &scaterredBeams) override;
-	void ScatterLight(const std::vector<std::vector<int>> &tracks,
-							 std::vector<Beam> &scaterredBeams) override;
+	void ScatterLight(TrackNode *trackTree, std::vector<Beam> &scatteredBeams);
+
+protected:
+	void SplitOriginalBeam(std::vector<Beam> &scatteredBeams) override;
+
+	void ReleaseBeam(Beam &beam) override;
+	bool IsFinalAct(const Beam &beam) override;
+	bool isFinalFacet(int index, Array<Facet*> &facets) override;
+	void PushBeamsToBuffer(Beam &parentBeam, Facet *facet,
+						   bool hasOutBeam) override;
+	void SelectVisibleFacets(const Beam &beam, Array<Facet*> &visibleFacets) override;
 
 	double MeasureOpticalPath(const Beam &beam, const Point3f sourcePoint,
 							  const std::vector<int> &track) override;
@@ -59,6 +68,34 @@ private:
 
 	void PushBeamsToBuffer(int facetID, const Beam &beam, bool hasOutBeam,
 						   Beam &inBeam, Beam &outBeam, std::vector<Beam> &passed);
+	/**
+	 * @brief Sorts facets of the Particle by distance from the beginnig of
+	 * latest beam splitting in descending order.
+	 * @param beamDir beam direction
+	 * @param facets unordered facets
+	 */
+	void SortFacetsByDistance(const Vector3f &beamDir, Array<Facet*> &facets) const;
+
+	/**
+	 * @brief Finds vertex of the Facet polygon that located more near than
+	 * others to beginnig of the Beam.
+	 * @param facet facet polygon
+	 * @param beamDir beam direction
+	 * @return index of the closest vertex in the beam polygon
+	 */
+	int FindClosestVertex(const Polygon &facet, const Point3f &beamDir) const;
+
+	bool FindRestOfBeamShape(Facet *facet, const Beam &beam, PolygonStack &rest);
+
+	double CalcMinDistanceToFacet(Polygon *facet, const Point3f &beamDir);
+	void SortFacets(const Point3f &beamDir, Array<Facet*> &facets); ///< use 'Fast sort' algorithm
+
+	bool FindVisiblePartOfFacet(const Array<Facet*> &facets, int nCheckedFacets,
+								 PolygonStack &pols);
+
+	void PushBeamsToTree(Facet *facet, BeamPair<Beam> &beams,
+						 const PolygonStack &polygons,
+						 std::vector<Beam> &scatteredBeams);
 
 	void CutPolygonByFacets(const Polygon &pol,
 							const IntArray &facetIds, size_t size,
@@ -71,7 +108,7 @@ private:
 	template<class T>
 	void PushBeamToTree(Beam &beam, const Beam &oldBeam,
 						const T &newId, int facetId,
-						Location loc);
+						bool loc);
 
 protected:
 	void SplitBeams(std::vector<Beam> &scaterredBeams);

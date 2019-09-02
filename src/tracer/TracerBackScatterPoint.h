@@ -8,14 +8,13 @@ public:
 	TracerBackScatterPoint(Particle *particle, int reflNum,
 						   const std::string &resultFileName);
 
-	void Trace(const AngleRange &betaRange, const AngleRange &gammaRange,
-			   const Tracks &tracks, double wave);
+	void TraceRandom(const OrientationRange &range) override;
 
 private:
-	std::string GetTableHead(const AngleRange &range);
-	void CreateResultFiles(ScatteringFiles &files, const Tracks &tracks,
-						const std::string &subdir, const std::string &prefix = "");
-	void CreateGroupResultFiles(const Tracks &tracks, ScatteringFiles &files,
+	std::string GetTableHead(const OrientationRange &range);
+	void CreateResultFiles(ScatteringFiles &files, Tracks *tracks,
+						   const std::string &subdir, const std::string &prefix = "");
+	void CreateGroupResultFiles(ScatteringFiles &files, Tracks *tracks,
 								const std::string &subdir,
 								const std::string &prefix = "");
 	void AllocGroupMatrices(std::vector<Arr2D> &mtrcs, size_t maxGroupID);

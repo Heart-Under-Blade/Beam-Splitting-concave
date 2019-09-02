@@ -3,10 +3,14 @@
 
 Bullet::Bullet()
 {
-
 }
 
+<<<<<<< HEAD
 Bullet::Bullet(const complex &refrIndex, double diameter, double height, double peakHeight)
+=======
+Bullet::Bullet(const Size &size, double peakHeight)
+	: Column(13, size, false)
+>>>>>>> origin/refactor
 {
 	isConcave = false;
 	SetSize(diameter, height);
@@ -71,14 +75,26 @@ void Bullet::SetFacetParams()
 		facets[i].isVisibleOut = false;
 	}
 
+<<<<<<< HEAD
 	defaultFacets[0].nVertices = 3;
 
 	for (int i = 8; i < 13; ++i)
 	{
 		defaultFacets[i].nVertices = 3;
+=======
+	elems[0].original.nVertices = 3;
+
+	for (int i = 8; i < 13; ++i)
+	{
+		elems[i].original.nVertices = 3;
+>>>>>>> origin/refactor
 	}
 
 	SetSideFacetParams(1, 7);
 
+<<<<<<< HEAD
 	defaultFacets[7].nVertices = 6;
+=======
+	elems[7].original.nVertices = BASE_VERTEX_NUM;
+>>>>>>> origin/refactor
 }

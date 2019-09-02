@@ -16,14 +16,12 @@ void matrix::AllocMem(void)
 {
     this->ptr = new double*[this->n];
 	#ifdef _DEBUG
-	if(!ptr)
-		throw "matrix::AllocMem(): Error!";
+	if(!ptr) throw "matrix::AllocMem(): Error!";
 	#endif
 	for(unsigned int i=0; i<this->n; i++){
 		this->ptr[i] = new double[this->m];
 		#ifdef _DEBUG
-		if(!ptr[i])
-			throw "matrix::AllocMem(): Error!";
+		if(!ptr[i]) throw "matrix::AllocMem(): Error!";
     #endif
 	}
 }
@@ -71,8 +69,7 @@ matrix matrix::operator=(const matrix& mt)
 matrix matrix::operator+(const matrix &mt) const
 {
 	#ifdef _DEBUG
-	if(this->n!=mt.n || this->m!=mt.m)
-		throw " matrix::operator+ : Error! ";
+	if(this->n!=mt.n || this->m!=mt.m) throw " matrix::operator+ : Error! ";
 	#endif
 	matrix rez(*this);
 	for(unsigned int i=0; i<mt.n; i++)
@@ -83,8 +80,7 @@ matrix matrix::operator+(const matrix &mt) const
 matrix matrix::operator-(const matrix &mt) const
 {
 	#ifdef _DEBUG
-	if(this->n!=mt.n || this->m!=mt.m)
-		throw " matrix::operator- : Error! ";
+	if(this->n!=mt.n || this->m!=mt.m) throw " matrix::operator- : Error! ";
 	#endif
 	matrix rez(*this);
 	for(unsigned int i=0; i<mt.n; i++)
@@ -104,8 +100,7 @@ matrix matrix::operator*(double x) const
 matrix matrix::operator*(const matrix &mt) const
 {
 	#ifdef _DEBUG
-	if(this->m!=mt.n)
-		throw " matrix::operator* : Error! ";
+	if(this->m!=mt.n) throw " matrix::operator* : Error! ";
 	#endif
 	matrix rez(this->n, mt.m);
 	for(unsigned int i=0; i<rez.n; i++)
@@ -126,8 +121,7 @@ matrix matrix::operator*=(double x)
 matrix matrix::operator/(double x) const
 {
 	#ifdef _DEBUG
-	if(x+1 == 1)
-		throw " matrix::operator/ : Error! ";
+	if(x+1 == 1) throw " matrix::operator/ : Error! ";
 	#endif
 	matrix rez(this->n, this->m);
 	for(unsigned int i=0; i<rez.n; i++)
@@ -195,14 +189,12 @@ void matrixC::AllocMem(void)
 {
 	this->ptr = new complex*[this->n];
 	#ifdef _DEBUG
-	if(!ptr)
-		throw "matrixC::AllocMem(): Error!";
+	if(!ptr) throw "matrixC::AllocMem(): Error!";
 	#endif
 	for(unsigned int i=0; i<this->n; i++){
 		this->ptr[i] = new complex[this->m];
 		#ifdef _DEBUG
-		if(!ptr[i])
-			throw "matrixC::AllocMem(): Error!";
+		if(!ptr[i]) throw "matrixC::AllocMem(): Error!";
 		#endif
 	}
 }
@@ -237,8 +229,7 @@ matrixC matrixC::operator=(const matrixC& mt)
 matrixC matrixC::operator+(const matrixC& mt) const
 {
 	#ifdef _DEBUG
-	if(this->n!=mt.n || this->m!=mt.m)
-		throw " matrixC::operator+ : Error! ";
+	if(this->n!=mt.n || this->m!=mt.m) throw " matrixC::operator+ : Error! ";
 	#endif
 	matrixC m(mt);
 	for(unsigned int i=0; i<mt.n; i++)
@@ -249,8 +240,7 @@ matrixC matrixC::operator+(const matrixC& mt) const
 matrixC matrixC::operator-(const matrixC &mt) const
 {
 	#ifdef _DEBUG
-	if(this->n!=mt.n || this->m!=mt.m)
-		throw " matrixC::operator- : Error!. ";
+	if(this->n!=mt.n || this->m!=mt.m) throw " matrixC::operator- : Error!. ";
 	#endif
 	matrixC rez(*this);
 	for(unsigned int i=0; i<mt.n; i++)
@@ -282,8 +272,7 @@ matrixC matrixC::operator*(const complex& z) const
 matrixC matrixC::operator*(const matrixC &mt) const
 {
 	#ifdef _DEBUG
-	if(this->m!=mt.n)
-		throw " matrixC::operator* : Error! ";
+	if(this->m!=mt.n) throw " matrixC::operator* : Error! ";
 	#endif
 	matrixC rez(this->n, mt.m);
 	for(unsigned int i=0; i<rez.n; i++) // this loop is by elements if result matrix
@@ -298,8 +287,7 @@ matrixC matrixC::operator*(const matrixC &mt) const
 matrixC matrixC::operator/(const complex &z) const
 {
 	#ifdef _DEBUG
-	if(z+1 == 1)
-		throw " matrixC::operator/ : Error! ";
+	if(z+1 == 1) throw " matrixC::operator/ : Error! ";
 	#endif
 	matrixC rez(this->n, this->m);
 	for(unsigned int i=0; i<rez.n; i++)

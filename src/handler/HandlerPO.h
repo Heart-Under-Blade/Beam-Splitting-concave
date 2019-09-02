@@ -33,4 +33,3 @@ protected:
 	bool isNanOccured = false;
 	bool isNan = false;
 };
-

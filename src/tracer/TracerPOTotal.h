@@ -5,7 +5,7 @@
 class TracerPOTotal : public TracerPO
 {
 public:
-	TracerPOTotal(Particle *particle, int nActs, const std::string &resultFileName);
-	void TraceRandom(const AngleRange &betaRange,
-					 const AngleRange &gammaRange) override;
+	TracerPOTotal(Particle *particle, Scattering *scattering,
+				  const std::string &resultFileName);
+	void TraceRandom(const OrientationRange &range) override;
 };

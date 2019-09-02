@@ -5,6 +5,8 @@
 #include "compl.hpp"
 #include "geometry_lib.h"
 #include "Facet.h"
+#include "Orientation.h"
+
 #include <vector>
 
 #define ROT_MTR_RANK 3
@@ -26,6 +28,7 @@ class Particle
 {
 public:
 	Particle();
+	Particle(int nFacets, bool isNonConvex = false);
 
 	void SetFromFile(const std::string &filename);
 
@@ -33,7 +36,6 @@ public:
 	void Move(float dx, float dy, float dz);
 	void Fix();
 	void Resize(double size);
-
 	void Concate(const std::vector<Particle> &parts);
 
 	/**
@@ -43,22 +45,44 @@ public:
 	 */
 	double LongRadius() const;
 
-	/**
-	 * @brief A sum of areas of each facet of the particle
-	 * @return value of area
-	 */
-	double Area();
-
 	double MaximalDimention() const;
 
 	const complex &GetRefractiveIndex() const;
 	void SetRefractiveIndex(const complex &value);
 
-	const Symmetry &GetSymmetry() const;
 	virtual void GetParticalFacetIdRangeByFacetId(
 			int /*id*/, int &/*begin*/, int &/*end*/) const {}
 
 	bool IsConcave() const;
+
+	/**
+	 * @brief Area of the particle. Computes with summarising areas
+	 * of all facets of the particle
+	 * @return value of area
+	 */
+	double Area() const;
+
+	/**
+	 * @brief Compute the volume of the particle
+	 * with splitting into tetrahedrons
+	 * @return volume of the particle
+	 */
+	double Volume() const;
+
+	/**
+	 * @brief Distance between two the most distant vertices of the particle
+	 * @return value of distance
+	 */
+	double MaximalDimension() const;
+
+	/**
+	 * @brief Geomertical center of the particle
+	 * @return coordinates of center
+	 */
+	Point3f Center() const;
+
+	const Orientation &GetSymmetry() const;
+	virtual void GetPartByFacet(Facet */*facet*/, Array<Facet*> &facets);
 
 	void Output();
 
@@ -72,20 +96,21 @@ public:
 protected:
 	Facet defaultFacets[MAX_FACET_NUM];
 
-	Symmetry m_symmetry;		///< angle of particle symmetry
-
 	complex m_refractiveIndex;	///< complex value of refractive index of the particle
-	bool isConcave;
+	Orientation m_symmetry;		///< angle of particle symmetry
+	bool m_isNonConvex;
 
 protected:
 	void Init(int facetCount, const complex &refrIndex);
 
 	void SetDefaultNormals();
 	void SetDefaultCenters();
+
 	void Reset();
 	void Scale(double ratio);
-	void SetSymmetry(double beta, double gamma, double alpha = 0);
-
+	void ResetPosition();
+	void SetSymmetry(double beta, double gamma);
+	void GetFacets(int end, int begin, Array<Facet*> &facets);
 	virtual void SetFacetParams() {}
 
 private:

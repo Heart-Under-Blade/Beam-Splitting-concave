@@ -7,7 +7,7 @@ class TracerGO : public Tracer
 public:
 	TracerGO(Particle *particle, int reflNum, const std::string &resultFileName);
 
-	void TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange);
+	void TraceRandom(const OrientationRange &range) override;
 	void TraceFixed(const double &beta, const double &gamma);
 
 protected:

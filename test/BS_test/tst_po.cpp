@@ -61,7 +61,12 @@ void PO::test_Absorption()
 	sc->SetSplitting(pt);
 
 	vector<Beam> outBeams;
+<<<<<<< HEAD
 	pt->Rotate(179.34, 37, 0);
+=======
+	pt->Rotate(Angle3d(0, Angle3d::DegToRad(179.34), Angle3d::DegToRad(37)));
+//	sc->RotateParticle(Angle(0, 179.34, 37));
+>>>>>>> origin/refactor
 	sc->ScatterLight(outBeams);
 
 	QVERIFY(outBeams.size() == 434);
@@ -136,7 +141,7 @@ void PO::test_Nan()
 void PO::test_NanCol()
 {
 	delete pt;
-	pt = new Hexagonal(complex(1.2893, 3.5365e-4), 68.9, 100);
+	pt = new Column(complex(1.2893, 3.5365e-4), 68.9, 100);
 	sc->SetSplitting(pt);
 
 	vector<Beam> outBeams;

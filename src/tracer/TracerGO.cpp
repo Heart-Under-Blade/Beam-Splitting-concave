@@ -1,27 +1,51 @@
 #include "TracerGO.h"
+<<<<<<< HEAD
 #include "handler/HandlerGO.h"
+=======
+
+#include "HandlerGO.h"
+
+>>>>>>> origin/refactor
 #include <iostream>
 
 using namespace std;
 
+<<<<<<< HEAD
 TracerGO::TracerGO(Particle *particle, int reflNum, const std::string &resultFileName)
 	: Tracer(particle, reflNum, resultFileName)
 {
 }
 
 void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaRange)
+=======
+TracerGO::TracerGO(Particle *particle, Scattering *scattering,
+				   const std::string &resultFileName)
+	: Tracer(particle, scattering, resultFileName)
+{
+}
+
+void TracerGO::TraceRandom(const OrientationRange &range)
+>>>>>>> origin/refactor
 {
 #ifdef _CHECK_ENERGY_BALANCE
 	m_incomingEnergy = 0;
 	m_outcomingEnergy = 0;
 #endif
+<<<<<<< HEAD
 
 	vector<Beam> outBeams;
 	double beta, gamma;
+=======
+	long long orNum = range.nZenith * range.nAzimuth;
+
+	vector<Beam> beams;
+	Orientation orientation;
+>>>>>>> origin/refactor
 
 	CalcTimer timer;
 	OutputStartTime(timer);
 
+<<<<<<< HEAD
 	for (int i = 0; i < betaRange.number; ++i)
 	{
 		beta = (i + 0.5)*betaRange.step;
@@ -34,18 +58,43 @@ void TracerGO::TraceRandom(const AngleRange &betaRange, const AngleRange &gammaR
 			m_scattering->ScatterLight(outBeams);
 			m_handler->HandleBeams(outBeams);
 			outBeams.clear();
+=======
+	long long count = 0;
+
+	for (int i = 0; i < range.nZenith; ++i)
+	{
+		orientation.zenith = (i + 0.5)*range.step.zenith;
+
+		for (int j = 0; j < range.nAzimuth; ++j)
+		{
+			orientation.azimuth = (j + 0.5)*range.step.azimuth;
+#ifdef _DEBUG // DEB
+//			angle.beta = Angle::DegToRad(179.34);
+//			angle.gamma = Angle::DegToRad(37);
+#endif
+			m_particle->Rotate(orientation);
+			m_scattering->ScatterLight(beams);
+			m_handler->HandleBeams(beams);
+			beams.clear();
+>>>>>>> origin/refactor
 
 #ifdef _CHECK_ENERGY_BALANCE
 			m_incomingEnergy += m_scattering->GetIncedentEnergy()*sin(beta);
 #endif
 //			m_handler->WriteLog(to_string(i) + ", " + to_string(j) + " ");
 //			OutputOrientationToLog(i, j, logfile);
+			OutputProgress(orNum, count++, timer);
 		}
+<<<<<<< HEAD
 
 		OutputProgress(betaRange.number, i, timer);
 	}
 
 	long long orNum = gammaRange.number * betaRange.number;
+=======
+	}
+
+>>>>>>> origin/refactor
 	double norm = CalcNorm(orNum);
 	m_handler->SetNormIndex(norm);
 

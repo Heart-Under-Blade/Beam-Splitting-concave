@@ -1,13 +1,21 @@
 #include "HandlerTracksGO.h"
 
+<<<<<<< HEAD
 
 HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float wavelength)
     : HandlerGO(particle, incidentLight, wavelength)
+=======
+using namespace std;
+
+HandlerTracksGO::HandlerTracksGO(Particle *particle, Light *incidentLight, float wavelength)
+	: HandlerGO(particle, incidentLight, wavelength)
+>>>>>>> origin/refactor
 {
 }
 
 void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
 {
+<<<<<<< HEAD
     m_sinZenith = sin(m_particle->rotAngle.beta);
 
     for (Beam &beam : beams)
@@ -36,6 +44,27 @@ void HandlerTracksGO::HandleBeams(std::vector<Beam> &beams)
             m_tracksContrib[groupId].AddMueller(z, zenith, m);
         }
     }
+=======
+	m_sinZenith = sin(m_particle->rotAngle.zenith);
+
+	for (Beam &beam : beams)
+	{
+		int groupId = m_tracks->FindGroupByTrackId(beam.id);
+
+		if (groupId >= 0)
+		{
+			beam.RotateSpherical(-m_incidentLight->direction,
+								 m_incidentLight->polarizationBasis);
+
+			const float &z = beam.direction.coordinates[2];
+			int zenith = round(Orientation::RadToDeg(acos(z)));
+			matrix m = ComputeMueller(zenith, beam);
+
+			m_totalContrib.AddMueller(z, zenith, m);
+			m_tracksContrib[groupId].AddMueller(z, zenith, m);
+		}
+	}
+>>>>>>> origin/refactor
 }
 
 void HandlerTracksGO::WriteMatricesToFile(std::string &destName)
@@ -57,5 +86,8 @@ void HandlerTracksGO::WriteMatricesToFile(std::string &destName)
     WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
 }
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> origin/refactor
