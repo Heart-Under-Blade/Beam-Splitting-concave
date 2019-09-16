@@ -27,6 +27,7 @@
 #include "HandlerPOTotal.h"
 #include "HandlerTotalGO.h"
 #include "HandlerTracksGO.h"
+#include "Sphere.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -39,6 +40,7 @@ using namespace chrono;
 
 enum class ParticleType : int
 {
+	Sphere = 0,
 	Hexagonal = 1,
 	Bullet = 2,
 	BulletRosette = 3,
@@ -183,9 +185,16 @@ int main(int argc, const char* argv[])
 
 		double sup;
 		int num;
+		double nPar, nMer, rad;
 
 		switch (type)
 		{
+		case ParticleType::Sphere:
+			nPar = args.GetIntValue("p", 1);
+			nMer = args.GetIntValue("p", 2);
+			rad = args.GetDoubleValue("p", 3);
+			particle = new Sphere(refrIndex, nPar, nMer, rad);
+			break;
 		case ParticleType::Hexagonal:
 			particle = new Hexagonal(refrIndex, diameter, height);
 			break;
@@ -218,6 +227,10 @@ int main(int argc, const char* argv[])
 			break;
 		}
 	}
+
+#ifdef _DEBUG // DEB
+	particle->Output();
+#endif
 
 	additionalSummary += "\n\tArea: " + to_string(particle->Area());
 	additionalSummary += "\n\tNumber of facets: " + to_string(particle->nFacets);
@@ -253,28 +266,41 @@ int main(int argc, const char* argv[])
 
 		if (args.IsCatched("fixed"))
 		{
+			HandlerPO *handler;
+
 			additionalSummary += ", fixed orientation";
 
+			TracerPO *tracer;
 			ScatteringSphere sphere = SetConus(args);
+
+			if (args.IsCatched("all"))
+			{
+				tracer = new TracerPOTotal(particle, reflNum, dirName);
+				trackGroups.push_back(TrackGroup());
+				handler = new HandlerPOTotal(particle, &tracer->m_incidentLight, wave);
+			}
+			else
+			{
+				tracer = new TracerPO(particle, reflNum, dirName);
+				handler = new HandlerPO(particle, &tracer->m_incidentLight, wave);
+			}
 
 			double beta  = args.GetDoubleValue("fixed", 0);
 			double gamma = args.GetDoubleValue("fixed", 1);
 
-			TracerPO tracer(particle, reflNum, dirName);
-			tracer.m_log = additionalSummary;
+			tracer->m_log = additionalSummary;
 
-			HandlerPO *handler = new HandlerPO(particle, &tracer.m_incidentLight, wave);
 			handler->SetTracks(&trackGroups);
 			handler->SetScatteringSphere(sphere);
 			handler->SetAbsorptionAccounting(isAbs);
 
-			tracer.SetIsOutputGroups(isOutputGroups);
-			tracer.SetHandler(handler);
+			tracer->SetIsOutputGroups(isOutputGroups);
+			tracer->SetHandler(handler);
 			additionalSummary += "Orientation: zenith - " +
 					to_string(beta) + "°, azimuth - " + to_string(gamma) +
 					"°\n\n";
-			tracer.m_log = additionalSummary;
-			tracer.TraceFixed(beta, gamma);
+			tracer->m_log = additionalSummary;
+			tracer->TraceFixed(beta, gamma);
 		}
 		else if (args.IsCatched("random"))
 		{

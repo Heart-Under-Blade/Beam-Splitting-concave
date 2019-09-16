@@ -724,7 +724,7 @@ double ScatteringNonConvex::MeasureOpticalPath(const Beam &beam,
 											  const Point3f sourcePoint,
 											  const std::vector<int> &track)
 {
-#ifndef _DEBUG // DEB
+#ifdef _DEBUG // DEB
 //	std::vector<double> lens;
 //	double path1 = 0;
 #endif
@@ -766,7 +766,7 @@ double ScatteringNonConvex::MeasureOpticalPath(const Beam &beam,
 		loc = nextLoc;
 	}
 
-#ifndef _DEBUG // DEB
+#ifdef _DEBUG // DEB
 //	path *= real(m_splitting.GetRi());
 //	Point3f nFar1 = m_incidentDir;
 //	Point3f nFar2 = -beam.direction;

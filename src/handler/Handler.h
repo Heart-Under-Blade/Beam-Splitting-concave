@@ -222,8 +222,10 @@ struct VertexOrder
 
 struct BeamInfo
 {
+	bool isShadow;
 	double area;
 	double projLenght;
+	double opticalPath;
 	double opticalLengths[3];
 	Point3f beamBasis;
 	Point3f centerf;

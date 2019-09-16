@@ -52,6 +52,11 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 		{
 			double radPhi = -p*m_sphere.azinuthStep;
 			matrix m = M(p, t);
+#ifdef _DEBUG // DEB
+			double fff1[4];
+			fff1[0] = m[0][0];
+			fff1[1] = m[0][1];
+#endif
 //			if (t == 100) {
 //				std::cout << p << ' ' << m[0][0] << ' ' << std::endl;
 //			}
@@ -76,10 +81,22 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 			{
 				sum += m*Lp;
 			}
+#ifdef _DEBUG // DEB
+			double fff[4];
+			fff[0] = sum[0][0];
+			fff[1] = sum[0][1];
+#endif
 		}
 
 		double dS2 = (t == 0 || t == (nT-1)) ? 1.0-cos(0.5*dT)
 											 : cos((t-0.5)*dT)-cos((t+0.5)*dT);
+#ifdef _DEBUG // DEB
+		double fff[4];
+		fff[0] = sum[0][0];
+		fff[1] = sum[0][1];
+		fff[2] = sum[1][0];
+		fff[3] = sum[1][1];
+#endif
 		dS2 *= M_2PI;
 		outFile << std::endl << tt << ' ' << dS2 << ' ';
 		outFile << sum/m_sphere.nAzimuth;
@@ -96,25 +113,20 @@ void HandlerPOTotal::AddToMueller()
 		{
 			for (int p = 0; p < m_sphere.nAzimuth; ++p)
 			{
+				if (t == 179)
+					m_logFile << std::endl;
+
 				matrix m = Mueller(diffM(p, t));
-#ifndef _DEBUG // DEB
+#ifdef _DEBUG // DEB
 				complex ddd[4];
 				ddd[0] = diffM(p, t)[0][0];
-				ddd[1] = diffM(p, t)[0][1];
-				ddd[2] = diffM(p, t)[1][0];
-				ddd[3] = diffM(p, t)[1][1];
 
 				double fff[4];
 				fff[0] = m[0][0];
-				fff[1] = m[0][1];
-				fff[2] = m[1][0];
-				fff[3] = m[1][1];
 #endif
 				m *= m_sinZenith;
 
-//				if (t == 100)
-//					m_logFile << m[0][0] << std::endl;
-
+				double ee = m[0][0];
 				M.insert(p, t, m);
 			}
 		}

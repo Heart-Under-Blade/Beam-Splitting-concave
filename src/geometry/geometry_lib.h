@@ -8,7 +8,13 @@
 #define MIN_VERTEX_NUM 3		///< minimum number of vertices in polygon
 #define MAX_VERTEX_NUM 64		///< maximum number of vertices in polygon
 #define MAX_POLYGON_NUM 512		///< maximum number of polygons in array of polygons
-#define MAX_FACET_NUM 256
+
+#ifdef _DEBUG // DEB
+#define MAX_FACET_NUM 4096
+#else
+//#define MAX_FACET_NUM 256
+#define MAX_FACET_NUM 4096
+#endif
 
 enum Location: bool
 {

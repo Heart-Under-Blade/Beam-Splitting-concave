@@ -63,13 +63,13 @@ public:
 	Point3f Normal() const;
 };
 
-class Polygon512
+class BigPolygon
 {
 public:
-	Point3f arr[512];
-	size_t nVertices = 0;
+	Point3f arr[16384];
+	int nVertices = 0;
 
-	Polygon512() {}
+	BigPolygon() {}
 
 	void AddVertex(const Point3f &v)
 	{

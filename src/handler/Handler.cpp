@@ -14,7 +14,8 @@ Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
 	  m_hasAbsorption(false),
 	  m_normIndex(1),
 	  m_sphere(0.0, 0, 0),
-	  m_nBadBeams(0)
+	  m_nBadBeams(0),
+	  m_sinZenith(1)
 {
 	m_wavenumber = M_2PI/m_wavelength;
 	m_wn2 = m_wavenumber*m_wavenumber;
@@ -207,11 +208,17 @@ BeamInfo Handler::ComputeBeamInfo(const Beam &beam)
 	info.center = info.centerf;
 	info.projectedCenter = ChangeCoordinateSystem(info.csAxes, info.normald,
 												  info.center);
-	if (m_hasAbsorption && beam.lastFacetId != INT_MAX)
+	info.isShadow = beam.lastFacetId == INT_MAX;
+
+	if (m_hasAbsorption && !info.isShadow)
 	{
 		ComputeOpticalLengths(beam, info);
 		ComputeLengthIndices(beam, info);
 		m_cAbsExp = m_complWave * exp(m_cAbs*info.lenIndices.z);
+	}
+	else
+	{
+		info.opticalPath = beam.opticalPath;
 	}
 
 	info.area = beam.Area();

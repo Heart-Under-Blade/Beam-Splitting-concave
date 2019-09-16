@@ -55,8 +55,10 @@ void TracerPO::TraceFixed(const double &beta, const double &gamma)
 	double b = DegToRad(beta);
 	double g = DegToRad(gamma);
 	m_particle->Rotate(b, g, 0);
+	m_scattering->ExtractShadowBeam(outBeams);
 	m_scattering->ScatterLight(outBeams);
 
+	m_handler->SetSinZenith(1);
 	m_handler->HandleBeams(outBeams);
 	outBeams.clear();
 	m_handler->WriteMatricesToFile(m_resultDirName);

@@ -92,7 +92,7 @@ void Scattering::SplitLightToBeams(int facetId, Beam &inBeam, Beam &outBeam)
 		double path = m_splitting.ComputeIncidentOpticalPath(m_incidentDir, p);
 		inBeam.opticalPath = 0;
 		outBeam.opticalPath = 0;
-#ifndef _DEBUG // DEB
+#ifdef _DEBUG // DEB
 //		inBeam.ops.push_back(path);
 //		outBeam.ops.push_back(path);
 #endif

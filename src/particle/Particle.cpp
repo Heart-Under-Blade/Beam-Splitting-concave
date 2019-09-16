@@ -202,7 +202,7 @@ double Particle::MaximalDimention() const
 	double Dmax = 0;
 	double newDmax;
 
-	Polygon512 pol;
+	BigPolygon pol;
 
 	for (int i = 0; i < nFacets; ++i)
 	{
@@ -267,6 +267,11 @@ void Particle::Output()
 {
 	std::ofstream M("particle.dat", std::ios::out);
 
+	M << (int)isConcave << std::endl;
+	M << (int)isAggregated << std::endl;
+	M << RadToDeg(m_symmetry.beta) << ' '
+	  << RadToDeg(m_symmetry.gamma) << std::endl << std::endl;
+
 	for (int i = 0; i < nFacets; ++i)
 	{
 		for (int j = 0; j < facets[i].nVertices; ++j)
@@ -274,12 +279,11 @@ void Particle::Output()
 			Point3f p = facets[i].arr[j];
 			M << p.coordinates[0] << ' '
 							<< p.coordinates[1] << ' '
-							<< p.coordinates[2] << ' '
-							<< i ;
+							<< p.coordinates[2];
 			M << std::endl;
 		}
 
-		M << std::endl << std::endl;;
+		M << std::endl;
 	}
 
 	M.close();

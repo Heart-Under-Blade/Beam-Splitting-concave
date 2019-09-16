@@ -20,6 +20,11 @@ void HandlerPO::CleanJ()
 	{
 		m_diffractedMatrices.push_back(tmp);
 	}
+
+	if (m_tracks->empty())
+	{
+		m_diffractedMatrices.push_back(tmp);
+	}
 }
 
 void HandlerPO::WriteMatricesToFile(std::string &destName)
@@ -100,7 +105,8 @@ matrixC HandlerPO::ComputeFnJones(const Matrix2x2c &matrix, const BeamInfo &info
 								  const Vector3d &direction)
 {
 	double dp = DotProductD(direction, info.center);
-	double arg = m_wavenumber*(info.projLenght - dp);
+	double arg = (info.isShadow) ? m_wavenumber*info.opticalPath
+								 : m_wavenumber*(info.projLenght - dp);
 	return matrix*exp_im(arg);
 }
 
