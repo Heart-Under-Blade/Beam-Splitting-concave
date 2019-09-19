@@ -2,21 +2,20 @@
 
 #define BEAM_DIR_LIM 0.9396 // cos(20)
 
-HandlerBackScatterPoint::HandlerBackScatterPoint(Particle *particle,
-												 Light *incidentLight,
+HandlerBackScatterPoint::HandlerBackScatterPoint(Scattering *scattering,
 												 double wavelength)
-	: HandlerPO(particle, incidentLight, wavelength)
+	: HandlerPO(scattering, wavelength)
 {
 }
 
 void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 {
 	Point3d backDirection(0, 0, 1);
-	Point3d vf = -m_incidentLight->polarizationBasis;
+	Point3d vf = -m_startBeam.polarizationBasis;
 
 	for (Beam &beam : beams)
 	{
-		if (beam.direction.cz < BEAM_DIR_LIM)
+		if (beam.direction.coordinates[2] < BEAM_DIR_LIM)
 		{
 			continue;
 		}
@@ -28,13 +27,13 @@ void HandlerBackScatterPoint::HandleBeams(std::vector<Beam> &beams)
 			continue;
 		}
 
-		beam.polarizationBasis = beam.RotateSpherical(-m_incidentLight->direction,
-													  m_incidentLight->polarizationBasis);
+		beam.polarizationBasis = beam.RotateSpherical(
+					-m_startBeam.direction, m_startBeam.polarizationBasis);
 
 		BeamInfo info = ComputeBeamInfo(beam);
 
-		matrixC diffractedMatrix = ApplyDiffraction(beam, info, backDirection, vf);
-
+		matrixC diffractedMatrix = ApplyDiffraction(beam, info, backDirection,
+													vf);
 		// correction
 		Matrix2x2c jonesCor = diffractedMatrix;
 		jonesCor.m12 -= jonesCor.m21;
@@ -69,7 +68,8 @@ void HandlerBackScatterPoint::OutputContribution(ScatteringFiles &files,
 												 bool isOutputGroups,
 												 std::string prefix)
 {
-	PointContribution *contrib = (prefix == "") ? originContrib : correctedContrib;
+	PointContribution *contrib = (prefix == "") ? originContrib
+												: correctedContrib;
 	contrib->SumTotal();
 
 	energy *= m_normIndex;

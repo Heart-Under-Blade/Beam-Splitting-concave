@@ -5,8 +5,7 @@
 class HandlerBackScatterPoint : public HandlerPO
 {
 public:
-	HandlerBackScatterPoint(Particle *particle, Light *incidentLight,
-							double wavelength = 0);
+	HandlerBackScatterPoint(Scattering *scattering, double wavelength = 0);
 
 	void HandleBeams(std::vector<Beam> &beams) override;
 	void SetTracks(Tracks *tracks) override;
