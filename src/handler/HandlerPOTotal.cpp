@@ -3,9 +3,8 @@
 #include "Mueller.hpp"
 #include <iostream>
 
-HandlerPOTotal::HandlerPOTotal(Particle *particle, Light *incidentLight,
-							   double wavelength)
-	: HandlerPO(particle, incidentLight, wavelength)
+HandlerPOTotal::HandlerPOTotal(Scattering *scattering, double wavelength)
+	: HandlerPO(scattering, wavelength)
 {
 	m_Lp = new matrix(4, 4);
 
@@ -43,17 +42,10 @@ void HandlerPOTotal::WriteMatricesToFile(std::string &destName)
 
 	int &nP = m_sphere.nAzimuth;
 
-<<<<<<< HEAD
-	for (int t = nT-1; t >= 0; --t)
+	for (int t = nT; t >= 0; --t)
 	{
 		sum.Fill(0.0);
-		double tt = 180.0 - RadToDeg(t*dT);
-=======
-    for (int t = nT; t >= 0; --t)
-    {
-        sum.Fill(0.0);
 		double tt = 180.0 - Orientation::RadToDeg(t*dT);
->>>>>>> origin/refactor
 
 		for (int p = 0; p <= nP; ++p)
 		{
@@ -104,7 +96,7 @@ void HandlerPOTotal::AddToMueller()
 			for (int p = 0; p < m_sphere.nAzimuth; ++p)
 			{
 				matrix m = Mueller(diffM(p, t));
-#ifndef _DEBUG // DEB
+#ifdef _DEBUG // DEB
 				complex ddd[4];
 				ddd[0] = diffM(p, t)[0][0];
 				ddd[1] = diffM(p, t)[0][1];

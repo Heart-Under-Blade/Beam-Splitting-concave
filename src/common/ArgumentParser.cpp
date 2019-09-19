@@ -57,6 +57,7 @@ void ArgumentParser::SetArgRules()
 	m_parser->AddRule("ri", 2); // refractive index (Re and Im parts)
 	m_parser->AddRule("n", 1); // number of internal reflection
 	m_parser->AddRule("pf", zero, true); // particle (filename)
+	m_parser->AddRule("rs", 1, true, "pf"); // resize particle (new size)
 	m_parser->AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
 	m_parser->AddRule("random", 2, true); // random orientarion (beta number, gamma number)
 	m_parser->AddRule("go", 0, true); // geometrical optics method
@@ -64,13 +65,12 @@ void ArgumentParser::SetArgRules()
 	m_parser->AddRule("w", 1, true); // wavelength
 	m_parser->AddRule("b", 2, true); // beta range (begin, end)
 	m_parser->AddRule("g", 2, true); // gamma range (begin, end)
-	m_parser->AddRule("conus", 3, true, "po"); // calculate only backscatter cone (radius, phi, theta)
+	m_parser->AddRule("grid", 3, true); // backscattering grid (radius, phi, theta)
 	m_parser->AddRule("point", zero, true, "po"); // calculate only backscatter poin
-	m_parser->AddRule("con20", zero, true, "po");
 	m_parser->AddRule("gr", zero, true);
 	m_parser->AddRule("tr", 1, true); // file with trajectories
 	m_parser->AddRule("all", 0, true); // calculate all trajectories
-	m_parser->AddRule("abs", zero, true, "w"); // accounting of absorbtion
+	m_parser->AddRule("abs", 1, true, "w"); // accounting of absorbtion
 	m_parser->AddRule("close", 0, true); // closing of program after calculation
 	m_parser->AddRule("o", 1, true); // output folder name
 }

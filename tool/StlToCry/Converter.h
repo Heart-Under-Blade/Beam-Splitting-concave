@@ -38,11 +38,14 @@ private:
 					 std::vector<Facet> &triangles);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	void Triangulate(const std::vector<std::vector<Point3f>> &facets,
 =======
 	void Triangulate(const std::vector<std::list<Point3f>> &facets,
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 	void Triangulate(const std::vector<std::list<Point3f>> &facets,
 =======
 
@@ -50,6 +53,9 @@ private:
 					 std::vector<Facet> &triangles);
 	void Triangulate(const std::vector<std::vector<Point3f>> &facets,
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 					 std::vector<Facet> &triangles);
 private:
@@ -57,15 +63,21 @@ private:
 	void MergeTriangles(std::vector<Facet> &rest, Facet &convex);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	void FindSameFacetTriangles(std::vector<Facet> &triangles,
 								std::vector<Facet> &oneFacetTriangles);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 	void FindSameFacetTriangles(std::vector<Facet> &triangles,
 								std::vector<Facet> &oneFacetTriangles);
 >>>>>>> feature/track_tree
 =======
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 };

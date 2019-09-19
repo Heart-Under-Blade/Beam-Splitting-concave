@@ -7,12 +7,12 @@ RegularIncidence::RegularIncidence()
 {
 }
 
-void RegularIncidence::ComputeDirections(Beam &beam,
-										 BeamPair<Beam> &beams) const
+void RegularIncidence::ComputeDirections(Beam &beam, BeamPair<Beam> &beams,
+										 bool isBeamInside) const
 {
-	beam.RotateJones(m_splitting->facetNormal);
+	beam.RotateJones(m_splitting->facetNormal, isBeamInside);
 
-	if (beam.isInside)
+	if (isBeamInside)
 	{
 		m_splitting->ComputeReflectedDirection(beams.internal.direction);
 		m_splitting->ComputeRefractedDirection(beams.external.direction);
@@ -27,13 +27,13 @@ void RegularIncidence::ComputeDirections(Beam &beam,
 	beams.external.polarizationBasis = beam.polarizationBasis;
 }
 
-void RegularIncidence::ComputeJonesMatrices(Beam &beam,
-											BeamPair<Beam> &beams) const
+void RegularIncidence::ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams,
+											bool isBeamInside) const
 {
 	beams.internal.Jones = beam.Jones;
 	beams.external.Jones = beam.Jones;
 
-	if (beam.isInside)
+	if (isBeamInside)
 	{
 		double cosG = Point3f::DotProduct(m_splitting->facetNormal, beams.external.direction);
 
@@ -44,11 +44,11 @@ void RegularIncidence::ComputeJonesMatrices(Beam &beam,
 		complex Th0 = tmp0 + cosG;
 
 		complex tmp = 2.0 * tmp0;
-		beams.external.MultiplyJonesMatrix(tmp/Tv0, tmp/Th0);
+		beams.external.MultiplyByFresnel(tmp/Tv0, tmp/Th0);
 
 		complex Tv = m_splitting->cosA - tmp1;
 		complex Th = tmp0 - cosG;
-		beams.internal.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
+		beams.internal.MultiplyByFresnel(Tv/Tv0, Th/Th0);
 	}
 	else
 	{
@@ -62,9 +62,9 @@ void RegularIncidence::ComputeJonesMatrices(Beam &beam,
 
 		complex Tv = tmp0 - cosB;
 		complex Th = m_splitting->cosA - tmp1;
-		beams.external.MultiplyJonesMatrix(Tv/Tv0, Th/Th0);
+		beams.external.MultiplyByFresnel(Tv/Tv0, Th/Th0);
 
 		double cos2A = 2.0*m_splitting->cosA;
-		beams.internal.MultiplyJonesMatrix(cos2A/Tv0, cos2A/Th0);
+		beams.internal.MultiplyByFresnel(cos2A/Tv0, cos2A/Th0);
 	}
 }

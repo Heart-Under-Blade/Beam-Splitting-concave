@@ -24,8 +24,7 @@ SRC = ../../src
 
 INCLUDEPATH += $$SRC
 
-SOURCES += tst_po.cpp  \
-    $$SRC/Tracks.cpp \
+SOURCES += tst_po.cpp
 
 HEADERS += \
     $$SRC/*.h \

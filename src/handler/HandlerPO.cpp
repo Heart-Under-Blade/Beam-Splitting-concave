@@ -2,11 +2,13 @@
 
 #include <iostream>
 
-#include "Mueller.hpp"
+#include "Mueller.hpp"\
 
-HandlerPO::HandlerPO(Particle *particle, Light *incidentLight, double wavelength)
-	: Handler(particle, incidentLight, wavelength)
+HandlerPO::HandlerPO(Scattering *scattering, double wavelength)
+	: Handler(scattering, wavelength)
 {
+	double path = m_scattering->GetFarFresnelZone() * 2;
+	m_shadowBeamPhaseOffset = exp_im(m_wavenumber * path);
 }
 
 void HandlerPO::CleanJ()
@@ -19,11 +21,16 @@ void HandlerPO::CleanJ()
 	{
 		m_diffractedMatrices.push_back(tmp);
 	}
+
+	if (m_tracks->empty())
+	{
+		m_diffractedMatrices.push_back(tmp);
+	}
 }
 
-void HandlerPO::WriteMatricesToFile(string &destName)
+void HandlerPO::WriteMatricesToFile(std::string &destName)
 {
-	ofstream outFile(destName, ios::app);
+	std::ofstream outFile(destName, std::ios::app);
 
 	outFile << std::to_string(m_sphere.radius) << ' '
 			<< std::to_string(m_sphere.nZenith) << ' '
@@ -36,31 +43,22 @@ void HandlerPO::WriteMatricesToFile(string &destName)
 		for (int p = 0; p <= m_sphere.nAzimuth; ++p)
 		{
 			double fi = -((double)p)*m_sphere.azinuthStep;
-<<<<<<< HEAD
-			double degPhi = RadToDeg(-fi);
-			outFile << std::endl << tt << " " << degPhi << " ";
-
-=======
 			double degPhi = Orientation::RadToDeg(-fi);
-			outFile << endl << tt << " " << degPhi << " ";
->>>>>>> origin/refactor
+			outFile << std::endl << tt << " " << degPhi << " ";
 			matrix m = M(p, t);
 			outFile << m;
 		}
 	}
 }
 
-<<<<<<< HEAD
-=======
-matrixC HandlerPO::ComputeFnJones(const Matrix2x2c &matrix, const BeamInfo &info,
-								  const Vector3d &direction)
+complex HandlerPO::ComputePhaseOffset(const BeamInfo &info,
+									  const Vector3d &direction)
 {
 	double dp = Point3d::DotProduct(direction, info.center);
 	double arg = m_wavenumber*(info.projLenght - dp);
-	return matrix*exp_im(arg);
+	return exp_im(arg);
 }
 
->>>>>>> origin/refactor
 void HandlerPO::RotateJones(const Beam &beam, const BeamInfo &info,
 							const Vector3d &vf, const Vector3d &direction,
 							matrixC &matrix) const
@@ -99,33 +97,18 @@ matrixC HandlerPO::ApplyDiffraction(const Beam &beam, const BeamInfo &info,
 									const Vector3d &direction,
 									const Vector3d &vf)
 {
-	matrixC fnJones = ComputeFnJones(beam.Jones, info, direction);
+	complex phaseOffset = (info.isShadow) ? m_shadowBeamPhaseOffset
+										  : ComputePhaseOffset(info, direction);
 	matrixC jones_rot(2, 2);
 	RotateJones(beam, info, vf, direction, jones_rot);
 
-<<<<<<< HEAD
-	complex fresnel = (m_hasAbsorption && beam.lastFacetId != INT_MAX &&
-			beam.nActs > 0)
-=======
-	complex fresnel = (m_hasAbsorption && !beam.IsShadow())
->>>>>>> origin/refactor
+	complex fresnel = (m_hasAbsorption && !info.isShadow)
 			? DiffractInclineAbs(info, beam, direction)
 			: DiffractIncline(info, beam, direction);
 
-	return fresnel*jones_rot*fnJones;
+	return fresnel*jones_rot*(beam.Jones * phaseOffset);
 }
 
-<<<<<<< HEAD
-matrixC HandlerPO::ComputeFnJones(const Matrix2x2c &matrix, const BeamInfo &info,
-								  const Vector3d &direction)
-{
-	double dp = DotProductD(direction, info.center);
-	double arg = m_wavenumber*(info.projLenght - dp);
-	return matrix*exp_im(arg);
-}
-
-=======
->>>>>>> origin/refactor
 void HandlerPO::AddToMueller()
 {
 	for (size_t q = 0; q < m_diffractedMatrices.size(); ++q)
@@ -142,77 +125,13 @@ void HandlerPO::AddToMueller()
 	}
 }
 
-<<<<<<< HEAD
-=======
-BeamInfo HandlerPO::ComputeBeamInfo(const Beam &beam)
-{
-	BeamInfo info;
-	info.normal = beam.Normal();
-	info.normald = Point3d(info.normal.coordinates[0],
-			info.normal.coordinates[1], info.normal.coordinates[2]);
-
-	info.order = Point3f::DotProduct(info.normal, beam.direction) > 0;
-
-	if (!info.order)
-	{
-		info.normal = -info.normal;
-		info.normald = -info.normald;
-	}
-
-	ComputeCoordinateSystemAxes(info.normald, info.horAxis, info.verAxis);
-
-	info.center = beam.Center();
-	info.projectedCenter = ChangeCoordinateSystem(info.horAxis, info.verAxis,
-												  info.normald, info.center);
-	if (m_hasAbsorption && !beam.IsShadow())
-	{
-		ComputeOpticalLengths(beam, info);
-		ComputeLengthIndices(beam, info);
-	}
-
-	info.area = beam.Area();
-
-	if (beam.IsShadow())
-	{
-		info.projLenght = 20000 + Point3d::DotProduct(info.center, beam.direction);
-	}
-	else
-	{
-		OpticalPath opticalPath = ComputeOpticalPath(beam);
-		info.projLenght = opticalPath.GetTotal() + Point3d::DotProduct(info.center, beam.direction);
-	}
-
-	info.beamBasis = Point3f::CrossProduct(beam.polarizationBasis, beam.direction);
-	info.beamBasis = info.beamBasis/Point3f::Length(info.beamBasis); // basis of beam
-
-	return info;
-}
-
->>>>>>> origin/refactor
 void HandlerPO::SetScatteringSphere(const ScatteringSphere &grid)
 {
 	m_sphere = grid;
 	M = Arr2D(m_sphere.nAzimuth+1, m_sphere.nZenith+1, 4, 4);
-
-	m_sphere.ComputeSphereDirections(*m_incidentLight);
+	m_sphere.ComputeSphereDirections(m_startBeam.polarizationBasis);
 }
 
-<<<<<<< HEAD
-=======
-void HandlerPO::ComputeOpticalLengths(const Beam &beam, BeamInfo &info)
-{
-	std::vector<int> tr;
-	m_tracks->RecoverTrack(beam, tr);
-
-	for (int i = 0; i < 3; ++i)
-	{
-		OpticalPath op = m_scattering->ComputeOpticalPath(beam, Point3f(info.center.x, info.center.y, info.center.z), tr);
-		info.opticalLengths[i] = op.GetTotal();
-	}
-	//	ExtropolateOpticalLenght(beam, tr);
-}
-
->>>>>>> origin/refactor
 void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 {
 #ifdef _DEBUG // DEB
@@ -223,16 +142,11 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 
 	for (Beam &beam : beams)
 	{
-//		std::cout << cc++ << std::endl;
 		m_isBadBeam = false;
 #ifdef _DEBUG // DEB
 //		cc++;
 //		if (cc == 330)
 //			int ddddddd = 0;
-//		std::vector<int> tr;
-//		Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
-//		if (tr.size() == 2 && tr[0] == 2 && tr[1] == 4)
-//			int fff = 0;
 #endif
 		if (m_tracks->shouldComputeTracksOnly)
 		{
@@ -245,46 +159,19 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 		}
 
 		beam.polarizationBasis = beam.RotateSpherical(
-					-m_incidentLight->direction,
-					m_incidentLight->polarizationBasis);
+					-m_startBeam.direction, m_startBeam.polarizationBasis);
 
 		BeamInfo info = ComputeBeamInfo(beam);
-
-<<<<<<< HEAD
-//		if (cc == 3)
-//			std::cout << "-" << std::endl;
 
 		if (m_isBadBeam)
 		{
 			continue;
 		}
 
-//		if (beam.lastFacetId != INT_MAX && beam.nActs > 0)
-//		{
-//			std::vector<int> tr;
-//			Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
-
-////			std::cout << tr.size() << std::endl;
-//			double path = m_scattering->MeasureOpticalPath(beam, info.centerf, tr);
-
-//			if (path > DBL_EPSILON)
-//			{
-//				double abs = exp(m_cAbs*path);
-//				beam.J *= abs;
-//			}
-//		}
-=======
-		if (!beam.IsShadow())
+		if (!m_isNewAbs && !info.isShadow && m_hasAbsorption && beam.actNo > 0)
 		{
-			OpticalPath path = ComputeOpticalPath(beam);
-
-			if (path.GetTotal() > DBL_EPSILON)
-			{
-				double abs = exp(m_cAbs*path.GetTotal());
-				beam.Jones *= abs;
-			}
+			ApplyAbsorption(info);
 		}
->>>>>>> origin/refactor
 
 		for (int i = 0; i <= m_sphere.nAzimuth; ++i)
 		{
@@ -295,7 +182,7 @@ void HandlerPO::HandleBeams(std::vector<Beam> &beams)
 				matrixC diffractedMatrix = ApplyDiffraction(beam, info, dir, vf);
 #ifdef _DEBUG // DEB
 				complex fff = diffractedMatrix[0][0];
-				if (isnan(real(fff)))
+				if (std::isnan(real(fff)))
 					int fff = 0;
 //					m_logFile << cc << std::endl;
 #endif

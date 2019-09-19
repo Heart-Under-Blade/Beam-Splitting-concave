@@ -41,7 +41,7 @@ public:
 class HandlerGO : public Handler
 {
 public:
-	HandlerGO(Particle *particle, Light *incidentLight, double wavelength = 0);
+	HandlerGO(Scattering *scattering, double wavelength = 0);
 
 	void SetTracks(Tracks *tracks) override;
 
@@ -66,8 +66,10 @@ protected:
 
 	double ComputeOpticalPathAbsorption(const Beam &beam);
 	Point3f CalcK(std::vector<int> &tr);
+	BeamInfo ComputeBeamInfo(Beam &beam) override;
 
 private:
 	void ExtractPeaks(double *b, double *f, double norm,
 					  const std::string &destDir);
+
 };

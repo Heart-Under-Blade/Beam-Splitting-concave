@@ -6,6 +6,7 @@
 #include "MullerMatrix.h"
 #include "Tracks.h"
 #include "ScatteringFiles.h"
+#include "common.h"
 
 class ScatteringSphere
 {
@@ -14,10 +15,10 @@ public:
 		: radius(radius), nAzimuth(phiCount), nZenith(thetaCount)
 	{
 		azinuthStep = M_2PI/phiCount;
-		zenithStep = M_PI/**DegToRad(radius)*//(thetaCount-1);
+		zenithStep = Orientation::DegToRad(radius)/thetaCount;
 	}
 
-	void ComputeSphereDirections(const Light &incidentLight)
+	void ComputeSphereDirections(const Point3f &polarizationBasis)
 	{
 		double sinAz;
 		double cosAz;
@@ -43,7 +44,7 @@ public:
 			}
 		}
 
-		vf.push_back(-incidentLight.polarizationBasis);
+		vf.push_back(-polarizationBasis);
 	}
 
 public:
@@ -60,7 +61,7 @@ public:
 class PointContribution
 {
 public:
-	PointContribution(size_t nGroups, double normIndex)
+	PointContribution(int nGroups, double normIndex)
 		: m_nGroups(nGroups),
 		  m_normIndex(normIndex)
 	{
@@ -76,14 +77,14 @@ public:
 		rest += m;
 	}
 
-	void AddToGroup(const Matrix2x2c &jones, size_t groupId)
+	void AddToGroup(const Matrix2x2c &jones, int groupId)
 	{
 		groupJones[groupId] += jones;
 	}
 
 	void SumGroupTotal()
 	{
-		for (size_t gr = 0; gr < m_nGroups; ++gr)
+		for (int gr = 0; gr < m_nGroups; ++gr)
 		{
 			MuellerMatrix m(groupJones[gr]);
 			m *= m_normIndex;
@@ -115,7 +116,7 @@ public:
 		return rest;
 	}
 
-	const MuellerMatrix &GetGroupMueller(size_t groupID)
+	const MuellerMatrix &GetGroupMueller(int groupID)
 	{
 		return groupMuellers.at(groupID);
 	}
@@ -140,7 +141,7 @@ private:
 	MuellerMatrix rest;
 	MuellerMatrix total;
 
-	size_t m_nGroups;
+	int m_nGroups;
 	double m_normIndex;
 
 	void ResetJones()
@@ -152,86 +153,39 @@ private:
 	}
 };
 
-struct Axes
-{
-	Point3d horisontal;
-	Point3d vertical;
-};
-
-struct VertexOrder
-{
-	int begin;
-	int startIndex;
-	int endIndex;
-	int inc;
-
-	VertexOrder() {}
-
-	void SetOrder(bool isCcw, int nVertices)
-	{
-		if (isCcw)
-		{
-			begin = 0;
-			startIndex = nVertices-1;
-			endIndex = -1;
-			inc = -1;
-		}
-		else
-		{
-			begin = nVertices-1;
-			startIndex = 0;
-			endIndex = nVertices;
-			inc = 1;
-		}
-	}
-};
-
-struct BeamInfo
-{
-	double area;
-	double projLenght;
-	double opticalLengths[3];
-	Point3f beamBasis;
-	Point3f centerf;
-	Point3f normal;
-	Point3d center;
-	Point3d projectedCenter;
-	Point3d normald;
-	Point3d lenIndices;
-	Axes csAxes; // coordinate system axes
-	VertexOrder order; // order of vertices
-};
-
 class Handler
 {
 public:
-	Handler(Particle *particle, Light *incidentLight, double wavelength = 0);
+	Handler(Scattering *scattering, double wavelength = 0);
 
 	virtual void HandleBeams(std::vector<Beam> &beams);
 	virtual void SetTracks(Tracks *tracks);
 	Tracks *GetTracks() const;
 	void SetScattering(Scattering *scattering);
 	virtual void WriteMatricesToFile(std::string &destName);
-	void SetAbsorptionAccounting(bool value);
+	void EnableAbsorption(bool isNew);
 
 	void SetNormIndex(double value);
 	void SetSinZenith(double value);
 
-	Light *m_incidentLight;
-	ScatteringSphere m_sphere;			// back scattering conus
-
-	double m_sinZenith;
 	std::ofstream m_logFile;
 
 	int m_nBadBeams;
 	bool m_isBadBeam;
 
-	BeamInfo ComputeBeamInfo(const Beam &beam);
+	void OutputPaths(BeamInfo &info, const OpticalPath &path);
+
+	Beam m_startBeam;
+	double m_sinZenith;
+	double m_wavelength; // must be double type!!!
+	Tracks *m_tracks;
+	ScatteringSphere m_sphere; // back scattering conus
+
+	virtual BeamInfo ComputeBeamInfo(Beam &beam);
 
 protected:
 	double BeamCrossSection(const Beam &beam) const;
-
-	void ApplyAbsorption(Beam &beam);
+	void ApplyAbsorption(BeamInfo &info);
 
 	/**
 	 * @brief Calculate the diffraction of beam in given direction
@@ -259,14 +213,14 @@ protected:
 
 protected:
 	Scattering *m_scattering;
-	Tracks *m_tracks;
 
 	Particle *m_particle;
-	double m_wavelength; // must be double type!!!
 	bool m_hasAbsorption;
 	double m_normIndex;
 	double m_cAbs;
 	complex m_cAbsExp;
+	bool m_isNewAbs;
+	std::ofstream m_absLogFile;
 
 	complex m_ri;
 	double m_riIm;
@@ -280,6 +234,8 @@ protected:
 	double m_eps1;
 	double m_eps2;
 	double m_eps3;
+
+	int count = 0;
 
 private:
 	void ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr);

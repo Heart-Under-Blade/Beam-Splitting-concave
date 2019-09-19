@@ -1,17 +1,14 @@
 #pragma once
 
 #include "Beam.h"
-#include "Facet.h"
 
-#define EPS_COS_90		1.7453292519943295769148298069306e-10	//cos(89.99999999)
-#define EPS_COS_00		0.99999999998254670756866631966593		//1 - cos(89.99999999)
+#define EPS_ORTO_FACET 0.0001
 
-enum class SplittingType
+enum class IncidenceType
 {
-	OutIn,
-	OutOut,
-	InOut,
-	InIn
+	Regular,
+	Normal,
+	TotalReflection
 };
 
 /**
@@ -25,76 +22,65 @@ public:
 	T external;
 };
 
+/**
+ * @brief Defines a type of incidence and beam directions
+ */
 class Splitting
 {
 public:
-	Splitting(bool isOpticalPath);
-	void ComputeRiParams(const complex &ri);
+	Splitting(const complex &ri);
 
-	void ComputeCosA(const Point3f &normal, const Point3f &incidentDir);
+	void ComputeSplittingParams(const Vector3f &dir, const Vector3f &normal,
+								bool isInside);
+
 	void ComputeSplittingParams(const Point3f &dir, const Point3f &normal);
 
-	bool IsCompleteReflection();
-	bool IsNormalIncidence();
-	bool IsIncident();
+	IncidenceType GetIncidenceType() const;
+	void SetBeams(const Polygon &beamShape);
 
-	double ComputeEffectiveReRi() const;
+	double ComputeEffectiveReRi(double cosA2) const;
 
-	double ComputeIncidentOpticalPath(const Point3f &direction,
-									  const Point3f &facetPoint);
-	double ComputeOutgoingOpticalPath(const Beam &beam);
-	double ComputeSegmentOpticalPath(const Beam &beam,
-									 const Point3f &facetPoint) const;
+	void ComputeReflectedDirection(Vector3f &dir) const
+	{
+		dir = r - facetNormal;
+		Point3f::Normalize(dir); // REF, OPT: нужно ли это нормализовать всегда?
+	}
 
-	void ComputeCRBeamParams(const Point3f &normal, const Beam &incidentBeam,
-							 Beam &inBeam);
-
-	void ComputeNormalBeamParams(const Beam &incidentBeam,
-								 Beam &inBeam, Beam &outBeam);
-	void ComputeNormalBeamParamsExternal(const Light &incidentLight,
-										 Beam &inBeam, Beam &outBeam);
-
-	void ComputeRegularBeamsParams(const Point3f &normal,
-								   const Beam &incidentBeam,
-								   Beam &inBeam, Beam &outBeam);
-	void ComputeRegularBeamParamsExternal(const Point3f &facetNormal,
-										  Beam &incidentBeam,
-										  Beam &inBeam, Beam &outBeam);
-
-	Point3f ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
-								bool oldLoc, bool loc);
-
-	Point3f ChangeBeamDirectionConvex(const Vector3f &oldDir,
-									  const Vector3f &normal, bool loc);
-private:
-	Point3f m_r;
-	double reRiEff;
-	double s;
-//	double cosA;
-	bool m_isOpticalPath;
-
-	complex m_ri;	//  refractive index
-	double m_cRiRe;
-	double m_cRiRe2;
-	double m_cRiIm;
-
-public:
-	double cosA;
-	const double FAR_ZONE_DISTANCE = 10000.0; ///< distance from the center of coordinate system to the "far zone"
+	void ComputeRefractedDirection(Vector3f &dir) const
+	{
+		dir = r/sqrt(s) + facetNormal;
+		Point3f::Normalize(dir); // REF, OPT: нужно ли это нормализовать всегда?
+	}
 
 	complex GetRi() const;
 
-private:
-	void ComputeCRJonesParams(complex &cv, complex &ch);
+	Point3f ChangeBeamDirection(const Vector3f &oldDir, const Vector3f &normal,
+								bool isInOld, bool isInNew);
 
-	void ComputeRegularJonesParams(const Point3f &normal,
-								   const Beam &incidentBeam,
-								   Beam &inBeam, Beam &outBeam);
+	Point3f ChangeBeamDirectionConvex(const Vector3f &oldDir,
+									  const Vector3f &normal, bool isIn);
+public:
+	BeamPair<Beam> beams;
+	complex m_ri;	///< Refractive index of a Particle
+
+	double cosA;			///< Angle of incidence
+	double cosA2;			// cosA^2
+	double reRiEff;			///< Real part of effective refractive index
+	Vector3f facetNormal;	///< Normal of current facet
+	double s;
+	Vector3f r;
+	IncidenceType type;
+
+private:
+	double m_cRi0;
+	double m_cRi1;
+	double m_cRi2;
+
 	void RefractIn(const Vector3f &r, const Vector3f &normal,
 				   Vector3f &newDir);
 
 	void ReflectExternal(const Vector3f &oldDir, const Vector3f &normal,
-					Vector3f &newDir);
+						 Vector3f &newDir);
 
 	void ReflectInternal(const Vector3f &oldDir, const Vector3f &normal,
 						 Vector3f &newDir);
@@ -106,11 +92,11 @@ private:
 class FacetChecker
 {
 public:
-	virtual bool IsVisibleFacet(Facet *facet, const Beam &beam)
+	virtual bool IsVisibleFacet(Facet *facet, const Beam &beam, bool isBeamInside)
 	{
 		if (facet->index != beam.facet->index)
 		{
-			const Point3f &facetNormal = facet->normal[beam.isInside];
+			const Point3f &facetNormal = facet->normal[isBeamInside];
 			double cosA = Point3f::DotProduct(facetNormal, beam.direction);
 			return cosA > FLT_EPSILON;
 		}
@@ -129,12 +115,12 @@ public:
 class BeamFacetChecker : public FacetChecker
 {
 public:
-	bool IsVisibleFacet(Facet *facet, const Beam &beam) override
+	bool IsVisibleFacet(Facet *facet, const Beam &beam, bool isBeamInside) override
 	{
-		if (FacetChecker::IsVisibleFacet(facet, beam))
+		if (FacetChecker::IsVisibleFacet(facet, beam, isBeamInside))
 		{
 			Point3f vectorFromBeamToFacet = facet->center - beam.facet->center;
-			const Point3f &beamNormal = beam.facet->normal[!beam.isInside];
+			const Point3f &beamNormal = beam.facet->normal[!isBeamInside];
 			double cosBF = Point3f::DotProduct(beamNormal, vectorFromBeamToFacet);
 			return (cosBF >= EPS_ORTO_FACET);
 		}

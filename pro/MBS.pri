@@ -1,5 +1,6 @@
 INCLUDEPATH += \
     $$SRC/math \
+    $$SRC/handler \
     $$SRC/common \
     $$SRC/handler \
     $$SRC/incidence \

@@ -1,21 +1,24 @@
 #include "Handler.h"
 
-#include "Mueller.hpp"
 #include <iostream>
 #include <limits>
 #include <iomanip>
+#include <algorithm>
+
+#include "Mueller.hpp"
 
 using namespace std;
 
-Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
-	: m_incidentLight(incidentLight),
-	  m_particle(particle),
+Handler::Handler(Scattering *scattering, double wavelength)
+	: m_scattering(scattering),
 	  m_wavelength(wavelength),
 	  m_hasAbsorption(false),
 	  m_normIndex(1),
 	  m_sphere(0.0, 0, 0),
-	  m_nBadBeams(0)
+	  m_nBadBeams(0),
+	  m_sinZenith(1)
 {
+	m_startBeam = m_scattering->GetStartBeam();
 	m_wavenumber = M_2PI/m_wavelength;
 	m_wn2 = m_wavenumber*m_wavenumber;
 
@@ -26,6 +29,8 @@ Handler::Handler(Particle *particle, Light *incidentLight, double wavelength)
 	m_eps1 = 1e9*DBL_EPSILON;
 	m_eps2 = 1e6*DBL_EPSILON;
 	m_eps3 = 1e2;
+
+	m_riIm = imag(m_ri);
 
 	m_logFile.open("log1.txt", std::ios::out);
 	m_logFile << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
@@ -54,75 +59,84 @@ void Handler::SetSinZenith(double value)
 	m_sinZenith = value;
 }
 
-void Handler::SetAbsorptionAccounting(bool value)
-{
-	m_hasAbsorption = value;
-	m_ri = m_particle->GetRefractiveIndex();
-	m_riIm = imag(m_ri);
-	m_cAbs = -m_riIm*m_wavenumber;
-}
-
 void Handler::SetScattering(Scattering *scattering)
 {
 	m_scattering = scattering;
 }
 
-void Handler::ExtropolateOpticalLenght(Beam &beam, const std::vector<int> &tr)
+double Handler::BeamCrossSection(const Beam &beam) const
 {
-	std::vector<double> lengths;
+	Point3f &normal = beam.facet->ex_normal; // normal of last facet of beam
+	double cosA = Point3f::DotProduct(normal, beam.direction);
+	double e = fabs(cosA);
 
-	for (int i = 0; i < beam.nVertices; ++i)
+	if (e > m_eps1)
 	{
-		double d = m_scattering->MeasureOpticalPath(
-					beam, beam.arr[i], tr);
-		lengths.push_back(d);
+		double area = beam.Area();
+		double len = Point3f::Length(normal);
+		return (e*area)/len;
 	}
-
-	Vector3f _n = beam.Normal();
-	Point3d n = Point3d(_n.cx, _n.cy, _n.cz);
-
-	Axes csAxes;
-	ComputeCoordinateSystemAxes(n, csAxes);
-
-	Point3f cntr = beam.Center();
-	Point3d center = ChangeCoordinateSystem(csAxes, n,
-											Point3d(cntr.cx, cntr.cy, cntr.cz));
-	double ls[3];
-	ls[0] = lengths[0];
-	ls[1] = lengths[1];
-	ls[2] = lengths[2];
-
-//	Point3d lens = ComputeLengthIndices(beam, info);
-
-//	for (int i = 3; i < beam.nVertices; ++i)
-//	{
-//		Point3d newP = ChangeCoordinateSystem(hor, ver, n, beam.arr[i]) - center;
-//		double newL = lens.z + lens.x*newP.x + lens.y*newP.y;
-//		double err = fabs((lengths[i] - newL)/lengths[i])*100;
-//		if (err > 5)
-//			m_logFile << Polygon(beam) << "Area: " << beam.Area() << ' '
-//					  << i << ", " << "Error: " << err << std::endl;
-//	}
+	else
+	{
+		return 0;
+	}
 }
 
-void Handler::ApplyAbsorption(Beam &beam)
+void Handler::EnableAbsorption(bool isNew)
 {
-	vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
+	m_hasAbsorption = true;
+	m_isNewAbs = isNew;
+	m_cAbs = -m_wavenumber*imag(m_scattering->m_refractiveIndex);
 
-//	double opAbs = CalcOpticalPathAbsorption(beam);
-	double path = m_scattering->MeasureOpticalPath(beam, beam.Center(), tr);
+	m_absLogFile.open("abslog1.txt", ios::out);
+	m_absLogFile << setprecision(10);
+	m_absLogFile << "No" << ' '
+				 << "CtrPath" << ' '
+				 << "AvgPath" << ' '
+				 << "Max-Min" << ' '
+				 << "Nact" << ' '
+				 << "Npt" << ' '
+				 << "Tr" << ' '
+				 << endl;
+}
 
-#ifdef _DEBUG // DEB
-//	double ddd = fabs(path - beam.opticalPath);
-//	if (fabs(path - beam.opticalPath) >= 10e-4)
-//		int ggg = 0;
-#endif
+void Handler::OutputPaths(BeamInfo &info, const OpticalPath &path)
+{
+	vector<double> ps;
+	double sum = 0;
 
-	if (path > DBL_EPSILON)
+	for (int i = 0; i < info.beam->nVertices; ++i)
 	{
-		double abs = exp(m_cAbs*path);
-		beam.J *= abs;
+		OpticalPath p0 = m_scattering->ComputeOpticalPath(info, info.centerf);
+		ps.push_back(p0.internal);
+		sum += p0.internal;
+	}
+
+	double maxPath = *std::max_element(ps.begin(), ps.end());
+	double minPath = *std::min_element(ps.begin(), ps.end());
+	double delta = fabs(path.internal - sum/ps.size());
+
+	if (delta >= 10e-4)
+	{
+		m_absLogFile << ++count << ' ' << path.internal << ' '
+					 << sum/ps.size() << ' ' << maxPath - minPath << ' '
+					 << info.beam->actNo << ' ' << info.beam->nVertices << ' '
+					 << Tracks::TrackToStr(info.track) << endl;
+	}
+}
+
+void Handler::ApplyAbsorption(BeamInfo &info)
+{
+	auto path = m_scattering->ComputeOpticalPath(info, info.centerf);
+
+	if (path.internal > DBL_EPSILON)
+	{
+#ifdef _DEBUG // DEB
+//		OutputPaths(beam, path);
+//		if (fabs(path.GetTotal() - beam.opticalPath) >= 10e-4)
+//			int ggg = 0;
+#endif
+		info.beam->Jones *= exp(m_cAbs*path.internal);
 	}
 }
 
@@ -130,10 +144,10 @@ Point3d Handler::ChangeCoordinateSystem(const Axes &axes, const Point3d& normal,
 										const Point3d& point) const
 {
 	// расчёт коор-т в СК наблюдателя
-	const Point3d p_pr = point - normal*DotProductD(normal, point);
+	const Point3d p_pr = point - normal*Point3d::DotProduct(normal, point);
 
-	return Point3d(DotProductD(p_pr, axes.horisontal),
-				   DotProductD(p_pr, axes.vertical), 0);
+	return Point3d(Point3d::DotProduct(p_pr, axes.horizontal),
+				   Point3d::DotProduct(p_pr, axes.vertical), 0);
 }
 
 void Handler::ComputeCoordinateSystemAxes(const Point3d& normal,
@@ -141,14 +155,14 @@ void Handler::ComputeCoordinateSystemAxes(const Point3d& normal,
 {
 	if (fabs(normal.z) > 1-DBL_EPSILON)
 	{
-		axes.horisontal = Point3d(0, -normal.z, 0);
+		axes.horizontal = Point3d(0, -normal.z, 0);
 		axes.vertical = Point3d(1, 0, 0);
 	}
 	else
 	{
 		const double tmp = sqrt(SQR(normal.x) + SQR(normal.y));
-		axes.horisontal = Point3d(normal.y/tmp, -normal.x/tmp, 0);
-		axes.vertical = CrossProductD(normal, axes.horisontal);
+		axes.horizontal = Point3d(normal.y/tmp, -normal.x/tmp, 0);
+		axes.vertical = Point3d::CrossProduct(normal, axes.horizontal);
 	}
 }
 
@@ -156,16 +170,14 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 {
 	auto *lens = info.opticalLengths;
 
-	Point3d p1 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[0])
+	Point3d p1 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.vertices[0])
 			- info.projectedCenter;
-	Point3d p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[1])
+	Point3d p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.vertices[1])
 			- info.projectedCenter;
-	Point3d p3 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[2])
+	Point3d p3 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.vertices[2])
 			- info.projectedCenter;
 
-	double den = p1.x*p2.y - p1.x*p3.y -
-			p2.x*p1.y + p2.x*p3.y +
-			p3.x*p1.y - p3.x*p2.y;
+	double den = p1.x*(p2.y - p3.y) - p2.x*(p1.y + p3.y) + p3.x*(p1.y - p2.y);
 
 	if (fabs(den) < 1e-3)
 	{
@@ -173,26 +185,28 @@ void Handler::ComputeLengthIndices(const Beam &beam, BeamInfo &info)
 		++m_nBadBeams;
 	}
 
-	info.lenIndices.z = (lens[0]*p2.x*p3.y - lens[0]*p3.x*p2.y -
-			lens[1]*p1.x*p3.y + lens[1]*p3.x*p1.y +
-			lens[2]*p1.x*p2.y - lens[2]*p2.x*p1.y) / den;
+	info.lenIndices.z = (lens[0]*(p2.x*p3.y - p3.x*p2.y) -
+			lens[1]*(p1.x*p3.y + p3.x*p1.y) +
+			lens[2]*(p1.x*p2.y - p2.x*p1.y)) / den;
 
-	info.lenIndices.x = (lens[0]*p2.y - lens[0]*p3.y -
-			lens[1]*p1.y + lens[1]*p3.y +
-			lens[2]*p1.y - lens[2]*p2.y) / den;
+	info.lenIndices.x = (lens[0]*(p2.y - p3.y) -
+			lens[1]*(p1.y + p3.y) +
+			lens[2]*(p1.y - p2.y)) / den;
 
-	info.lenIndices.y = -(lens[0]*p2.x - lens[0]*p3.x -
-			lens[1]*p1.x + lens[1]*p3.x +
-			lens[2]*p1.x - lens[2]*p2.x) / den;
+	info.lenIndices.y = -(lens[0]*(p2.x - p3.x) -
+			lens[1]*(p1.x + p3.x) +
+			lens[2]*(p1.x - p2.x)) / den;
 }
 
-BeamInfo Handler::ComputeBeamInfo(const Beam &beam)
+BeamInfo Handler::ComputeBeamInfo(Beam &beam)
 {
 	BeamInfo info;
+	info.beam = &beam;
 	info.normal = beam.Normal();
-	info.normald = Point3d(info.normal.cx, info.normal.cy, info.normal.cz);
+	info.normald = Point3d(info.normal.coordinates[0],
+			info.normal.coordinates[1], info.normal.coordinates[2]);
 
-	bool isCcwOrder = DotProduct(info.normal, beam.direction) > 0;
+	bool isCcwOrder = Point3f::DotProduct(info.normal, beam.direction) > 0;
 	info.order.SetOrder(isCcwOrder, beam.nVertices);
 
 	if (!isCcwOrder)
@@ -207,32 +221,44 @@ BeamInfo Handler::ComputeBeamInfo(const Beam &beam)
 	info.center = info.centerf;
 	info.projectedCenter = ChangeCoordinateSystem(info.csAxes, info.normald,
 												  info.center);
-	if (m_hasAbsorption && beam.lastFacetId != INT_MAX)
-	{
-		ComputeOpticalLengths(beam, info);
-		ComputeLengthIndices(beam, info);
-		m_cAbsExp = m_complWave * exp(m_cAbs*info.lenIndices.z);
-	}
-
 	info.area = beam.Area();
 
-	info.projLenght = beam.opticalPath + DotProductD(info.center, beam.direction);
+	double opticalPath;
 
-	info.beamBasis = CrossProduct(beam.polarizationBasis, beam.direction);
-	info.beamBasis = info.beamBasis/Length(info.beamBasis); // basis of beam
+	info.isShadow = beam.IsShadow();
+
+	if (!info.isShadow)
+	{
+		m_tracks->RecoverTrack(beam, info.track);
+
+		if (m_hasAbsorption)
+		{
+			ComputeOpticalLengths(beam, info);
+			ComputeLengthIndices(beam, info);
+			m_cAbsExp = m_complWave * exp(m_cAbs*info.lenIndices.z);
+			opticalPath = (info.opticalLengths[0] + info.opticalLengths[1] + info.opticalLengths[2])/3;
+		}
+		else
+		{
+			OpticalPath path = m_scattering->ComputeOpticalPath(info, info.centerf);
+			opticalPath = path.GetTotal();
+		}
+
+		info.projLenght = opticalPath + Point3d::DotProduct(info.center, beam.direction);
+	}
+
+	info.beamBasis = Point3f::CrossProduct(beam.polarizationBasis, beam.direction);
+	info.beamBasis = info.beamBasis/Point3f::Length(info.beamBasis); // basis of beam
 
 	return info;
 }
 
 void Handler::ComputeOpticalLengths(const Beam &beam, BeamInfo &info)
 {
-	std::vector<int> tr;
-	Tracks::RecoverTrack(beam, m_particle->nFacets, tr);
-
 	for (int i = 0; i < 3; ++i)
 	{
 		info.opticalLengths[i] = m_scattering->MeasureOpticalPath(
-					beam, beam.arr[i], tr);
+					info, beam.vertices[i]);
 	}
 	//	ExtropolateOpticalLenght(beam, tr);
 }
@@ -266,7 +292,7 @@ complex Handler::ComputeAvgBeamEnergy(const Polygon &pol, const BeamInfo &info,
 
 	for (int i = order.startIndex; i != order.endIndex; i += order.inc)
 	{
-		p2 = ChangeCoordinateSystem(info.csAxes, info.normald, pol.arr[i])
+		p2 = ChangeCoordinateSystem(info.csAxes, info.normald, pol.vertices[i])
 				- info.projectedCenter;
 
 		ai = (p12 - p22)/(p11 - p21);
@@ -308,7 +334,8 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 									const Point3d &direction) const
 {
 	const Point3f &beamDir = beam.direction;
-	Point3d k_k0 = -direction + Point3d(beamDir.cx, beamDir.cy, beamDir.cz);
+	Point3d k_k0 = -direction + Point3d(beamDir.coordinates[0],
+			beamDir.coordinates[1], beamDir.coordinates[2]);
 
 	Point3d	pProj = ChangeCoordinateSystem(info.csAxes, info.normald, k_k0);
 
@@ -318,7 +345,7 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 	if (abs(A) > m_eps2 || abs(B) > m_eps2)
 	{
 		Point3d p1 = ChangeCoordinateSystem(info.csAxes, info.normald,
-											beam.arr[info.order.begin])
+											beam.vertices[info.order.begin])
 				- info.projectedCenter;
 		Point3d p2;
 
@@ -343,29 +370,11 @@ complex Handler::DiffractInclineAbs(const BeamInfo &info, const Beam &beam,
 	}
 }
 
-double Handler::BeamCrossSection(const Beam &beam) const
-{
-	Point3f normal = m_particle->facets[beam.lastFacetId].ex_normal; // normal of last facet of beam
-	double cosA = DotProduct(normal, beam.direction);
-	double e = fabs(cosA);
-
-	if (e > m_eps1)
-	{
-		double area = beam.Area();
-		double len = Length(normal);
-		return (e*area)/len;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
 complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 								 const Point3d &direction) const
 {
 	const Point3f &dir = beam.direction;
-	Point3d k_k0 = -direction + Point3d(dir.cx, dir.cy, dir.cz);
+	Point3d k_k0 = -direction + Point3d(dir);
 
 	Point3d	pt_proj = ChangeCoordinateSystem(info.csAxes, info.normald, k_k0);
 	const double A = pt_proj.x;
@@ -382,21 +391,17 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 	complex s(0, 0);
 
 	Point3d p1 = ChangeCoordinateSystem(info.csAxes, info.normald,
-										beam.arr[info.order.begin])
+										beam.vertices[info.order.begin])
 			- info.projectedCenter;
+
 	Point3d p2;
 
 	if (absB > absA)
 	{
 		for (int i = info.order.startIndex; i != info.order.endIndex; i += info.order.inc)
 		{
-			p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[i])
+			p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.vertices[i])
 					- info.projectedCenter;
-
-			const double ai = (p1.y - p2.y)/(p1.x - p2.x);
-			const double Ci = A+ai*B;
-
-			complex tmp;
 
 			if (fabs(p1.x - p2.x) > m_eps1)
 			{
@@ -429,7 +434,7 @@ complex Handler::DiffractIncline(const BeamInfo &info, const Beam &beam,
 	{
 		for (int i = info.order.startIndex; i != info.order.endIndex; i += info.order.inc)
 		{
-			p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.arr[i])
+			p2 = ChangeCoordinateSystem(info.csAxes, info.normald, beam.vertices[i])
 					- info.projectedCenter;
 
 			if (fabs(p1.y - p2.y) > m_eps1)

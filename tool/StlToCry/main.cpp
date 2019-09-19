@@ -2,10 +2,14 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 //#include "common.h"
 =======
 #include "common.h"
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+#include "common.h"
+>>>>>>> origin/refactor
 =======
 #include "common.h"
 >>>>>>> origin/refactor
@@ -26,6 +30,10 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
+>>>>>>> origin/refactor
 =======
 void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
 >>>>>>> origin/refactor
@@ -49,8 +57,11 @@ struct ParticleProperties
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 =======
 //#include "common.h"
 #include "ArgPP.h"
@@ -62,6 +73,9 @@ struct ParticleProperties
 #define SIZE_INDEX 1
 
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 using namespace std;
 
@@ -81,6 +95,7 @@ void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 //	Point3f center(0, 0, 0);
 
 //	for (Facet &facet : facets)
@@ -94,11 +109,14 @@ void WriteCry(std::vector<Facet> &facets, const std::string &outFile)
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 >>>>>>> origin/refactor
+=======
+>>>>>>> origin/refactor
 	ofile << facets.at(0);
 
 	for (int i = 1; i < facets.size(); ++i)
 	{
 		ofile << std::endl;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 //	for (Facet &facet : facets)
@@ -142,6 +160,8 @@ void Verify(const std::vector<Facet> &triangles,
 =======
 =======
 >>>>>>> origin/refactor
+=======
+>>>>>>> origin/refactor
 		ofile << facets.at(i) /*<< facet.arr[0]*/;
 	}
 
@@ -153,7 +173,10 @@ void AnalyseParticle(const std::vector<Facet> &triangles,
 {
 	double newLen;
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 
@@ -161,6 +184,7 @@ void AnalyseParticle(const std::vector<Facet> &triangles,
 	{
 		for (int i = 1; i <= tr.nVertices; ++i)
 		{
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 			newMin = (i == tr.nVertices)
@@ -172,6 +196,8 @@ void AnalyseParticle(const std::vector<Facet> &triangles,
 				minLenNFacet = tr.index;
 				minLen = newMin;
 =======
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 			newLen = (i == tr.nVertices)
@@ -188,7 +214,10 @@ void AnalyseParticle(const std::vector<Facet> &triangles,
 			{
 				props.maxLen = newLen;
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 			}
@@ -198,6 +227,7 @@ void AnalyseParticle(const std::vector<Facet> &triangles,
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		if (newArea < minArea)
 		{
 			minNFacet = tr.index;
@@ -205,18 +235,24 @@ void AnalyseParticle(const std::vector<Facet> &triangles,
 =======
 =======
 >>>>>>> origin/refactor
+=======
+>>>>>>> origin/refactor
 		if (newArea < props.minArea)
 		{
 			props.minAreaFacetNo = tr.index;
 			props.minArea = newArea;
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 		}
 	}
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 int main(int argc, const char *argv[])
@@ -232,6 +268,8 @@ int main(int argc, const char *argv[])
 		ArgPP parcer;
 		parcer.AddRule("i", 2); // input data type ("cry", "stl") and dir
 =======
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 void ParticleToCrystal(Particle *particle, std::vector<Facet> &mergedCrystal)
@@ -392,8 +430,11 @@ int main(int argc, const char *argv[])
 		parcer.AddRule("f", '+'); // input files of mask
 		parcer.AddRule("rs", 2, true);
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 //		parcer.AddRule("o", '*'); // output files ("cry", "stl", "nat")
 >>>>>>> feature/track_tree
 
@@ -526,11 +567,15 @@ int main(int argc, const char *argv[])
 	{
 		ArgPP parcer;
 		parcer.AddRule("i", 2); // input data type ("cry", "stl") and dir
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 //		parcer.AddRule("o", '*'); // output files ("cry", "stl", "nat")
 
 		parcer.Parse(argc, argv);
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 		auto type = parcer.GetStringValue("i", 1);
@@ -549,6 +594,10 @@ int main(int argc, const char *argv[])
 		std::cerr << "File \"" << "data/files.dat" << "\" is not found" << std::endl;
 =======
 		auto type = parcer.GetStringValue("t", 0);
+=======
+		auto type = parcer.GetStringValue("i", 1);
+		mask = parcer.GetStringValue("i", 2);
+>>>>>>> origin/refactor
 =======
 		auto type = parcer.GetStringValue("i", 1);
 		mask = parcer.GetStringValue("i", 2);
@@ -671,7 +720,10 @@ int main(int argc, const char *argv[])
 		std::cerr << "File \"" << path + "summary.txt" << "\" is not found"
 				  << std::endl;
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 		throw std::exception();
@@ -683,6 +735,7 @@ int main(int argc, const char *argv[])
 		{
 			//std::string filename = "particle.stl";
 			std::vector<Facet> triangles;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 			converter.ReadStl("data/" + filename, triangles);
@@ -726,6 +779,8 @@ int main(int argc, const char *argv[])
 				  << "), Dmax = " << particle->ComputeDmax()
 				  << std::endl;
 =======
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 			converter.ReadStl(path + filename, triangles);
@@ -773,10 +828,13 @@ int main(int argc, const char *argv[])
 			converter.WriteNat(mergedCrystal, file + "_nat");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 			OutputSummary(&ofile, mergedCrystal, filename, particle);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> origin/refactor
 int main()
 {
 	std::string filename = "particle.stl";
@@ -817,6 +875,9 @@ int main()
 				  << "), Dmax = " << particle->ComputeDmax()
 				  << std::endl;
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 			if (triangles.empty())
@@ -827,17 +888,23 @@ int main()
 			triangles.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 			Triangulate(crystal, triangles);
 
 =======
 			converter.Triangulate(mergedCrystal, triangles);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 			converter.Triangulate(mergedCrystal, triangles);
 =======
 			Triangulate(crystal, triangles);
 
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 			converter.WriteStl(triangles, filename);
 		}
@@ -846,6 +913,7 @@ int main()
 	{
 		for (auto filename : filelist)
 		{
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 			std::vector<Facet> crystal;
@@ -861,6 +929,8 @@ int main()
 
 			Triangulate(crystal, triangles);
 =======
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 			std::vector<Facet> mergedCrystal;
@@ -900,8 +970,11 @@ int main()
 
 			converter.Triangulate(mergedCrystal, triangles);
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 =======
 			std::vector<Facet> crystal;
 			std::vector<Facet> triangles;
@@ -916,6 +989,9 @@ int main()
 
 			Triangulate(crystal, triangles);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 			converter.WriteStl(triangles, filename);
 		}

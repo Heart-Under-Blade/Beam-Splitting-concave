@@ -41,7 +41,11 @@ int FindEqualPoint(const Point3f &p, const Facet &merged)
 	}
 	else if (p.IsEqualTo(merged.vertices[2], PNT_EPS))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> feature/track_tree
+>>>>>>> origin/refactor
 =======
 >>>>>>> feature/track_tree
 >>>>>>> origin/refactor
@@ -64,17 +68,23 @@ bool FindEqualPoints(const Facet &origin, const Facet &next, Array<int> &points)
 <<<<<<< HEAD
 		nextIndex = FindEqualPoint(origin.arr[i], next);
 =======
+<<<<<<< HEAD
 		nextIndex = FindEqualPoint(origin.vertices[i], next);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 <<<<<<< HEAD
 		nextIndex = FindEqualPoint(origin.arr[i], next);
 =======
+=======
+>>>>>>> origin/refactor
 		nextIndex = FindEqualPoint(origin.vertices[i], next);
 >>>>>>> feature/track_tree
 =======
 		nextIndex = FindEqualPoint(origin.arr[i], next);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 		if (nextIndex != -1)
@@ -251,13 +261,19 @@ void Converter::MergeCrystal(std::vector<Facet> triangles,
 		std::vector<Facet> oneFacetTriangles;
 		Point3f normal = triangles[0].Normal();
 <<<<<<< HEAD
+<<<<<<< HEAD
 		double d1 = -DotProduct(triangles[0].arr[0], -normal);
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> origin/refactor
 		double d1 = -Point3f::DotProduct(triangles[0].arr[0], -normal);
 =======
 		double d1 = -DotProduct(triangles[0].arr[0], -normal);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 		for (int i = 0; i < triangles.size(); ++i)
@@ -267,13 +283,19 @@ void Converter::MergeCrystal(std::vector<Facet> triangles,
 			if (normal.IsEqualTo(checking.Normal(), NRM_EPS))
 			{
 <<<<<<< HEAD
+<<<<<<< HEAD
 				double d2 = -DotProduct(checking.arr[0], -normal);
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> origin/refactor
 				double d2 = -Point3f::DotProduct(checking.arr[0], -normal);
 =======
 				double d2 = -DotProduct(checking.arr[0], -normal);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 				if (fabs(d1 - d2) < NRM_EPS)
@@ -296,8 +318,11 @@ void Converter::MergeCrystal(std::vector<Facet> triangles,
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> origin/refactor
 =======
+=======
+>>>>>>> origin/refactor
 void Converter::FindSameFacetTriangles(std::vector<Facet> &triangles,
 									   std::vector<Facet> &oneFacetTriangles)
 {
@@ -339,7 +364,13 @@ void Converter::MergeCrystal(std::vector<Facet> triangles,
 			// OutputFacets(oneFacetTriangles);
 			MergeTriangles(sameFacetTriangles, merged);
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> feature/track_tree
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> feature/track_tree
 =======
@@ -384,17 +415,23 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 <<<<<<< HEAD
 		merged.InsertVertex(place, checking.arr[pointToInsert]);
 =======
+<<<<<<< HEAD
 		merged.InsertVertex(place, checking.vertices[pointToInsert]);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 <<<<<<< HEAD
 		merged.InsertVertex(place, checking.arr[pointToInsert]);
 =======
+=======
+>>>>>>> origin/refactor
 		merged.InsertVertex(place, checking.vertices[pointToInsert]);
 >>>>>>> feature/track_tree
 =======
 		merged.InsertVertex(place, checking.arr[pointToInsert]);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 #ifdef _DEBUG // DEB
 		if (merged.nVertices > 200)
@@ -411,12 +448,19 @@ void Merge(const Array<int> &points, const Facet &checking, Facet &merged)
 			merged.DeleteVertex(points.elems[2]);
 =======
 			merged.RemoveVertex(points.elems[2]);
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 <<<<<<< HEAD
 			merged.DeleteVertex(points.elems[2]);
 =======
 			merged.RemoveVertex(points.elems[2]);
+>>>>>>> feature/track_tree
+=======
+			merged.DeleteVertex(points.elems[2]);
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
+=======
 >>>>>>> feature/track_tree
 =======
 			merged.DeleteVertex(points.elems[2]);
@@ -442,6 +486,7 @@ bool IsConvex(const Facet &merged)
 <<<<<<< HEAD
 	v1 = merged.arr[1] - merged.arr[0];
 	v2 = merged.arr[2] - merged.arr[0];
+<<<<<<< HEAD
 	dp1 = DotProduct(CrossProduct(v1, v2), n);
 =======
 	v1 = merged.vertices[1] - merged.vertices[0];
@@ -453,6 +498,8 @@ bool IsConvex(const Facet &merged)
 	v1 = merged.arr[1] - merged.arr[0];
 	v2 = merged.arr[2] - merged.arr[0];
 =======
+>>>>>>> origin/refactor
+=======
 	v1 = merged.vertices[1] - merged.vertices[0];
 	v2 = merged.vertices[2] - merged.vertices[0];
 >>>>>>> feature/track_tree
@@ -462,6 +509,9 @@ bool IsConvex(const Facet &merged)
 	v2 = merged.arr[2] - merged.arr[0];
 	dp1 = DotProduct(CrossProduct(v1, v2), n);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 	for (int i = 1; i < merged.nVertices; ++i)
@@ -486,6 +536,7 @@ bool IsConvex(const Facet &merged)
 <<<<<<< HEAD
 		v1 = merged.arr[i1] - merged.arr[i];
 		v2 = merged.arr[i2] - merged.arr[i];
+<<<<<<< HEAD
 		dp2 = DotProduct(CrossProduct(v1, v2), n);
 =======
 		v1 = merged.vertices[i1] - merged.vertices[i];
@@ -497,6 +548,8 @@ bool IsConvex(const Facet &merged)
 		v1 = merged.arr[i1] - merged.arr[i];
 		v2 = merged.arr[i2] - merged.arr[i];
 =======
+>>>>>>> origin/refactor
+=======
 		v1 = merged.vertices[i1] - merged.vertices[i];
 		v2 = merged.vertices[i2] - merged.vertices[i];
 >>>>>>> feature/track_tree
@@ -506,6 +559,9 @@ bool IsConvex(const Facet &merged)
 		v2 = merged.arr[i2] - merged.arr[i];
 		dp2 = DotProduct(CrossProduct(v1, v2), n);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 		if (dp2*dp1 < 0)
@@ -587,6 +643,7 @@ void Converter::Triangulate(const std::vector<Facet> &crystal,
 				Facet triangle;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 				triangle.AddVertex(facet.arr[0]); // base vertex
 				triangle.AddVertex(facet.arr[i]);
 				triangle.AddVertex(facet.arr[i+1]);
@@ -600,10 +657,18 @@ void Converter::Triangulate(const std::vector<Facet> &crystal,
 				triangle.AddVertex(facet.vertices[i]);
 				triangle.AddVertex(facet.vertices[i+1]);
 =======
+				triangle.AddVertex(facet.vertices[0]); // base vertex
+				triangle.AddVertex(facet.vertices[i]);
+				triangle.AddVertex(facet.vertices[i+1]);
+>>>>>>> origin/refactor
+=======
 				triangle.AddVertex(facet.arr[0]); // base vertex
 				triangle.AddVertex(facet.arr[i]);
 				triangle.AddVertex(facet.arr[i+1]);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 				triangles.push_back(triangle);
 			}
@@ -613,10 +678,17 @@ void Converter::Triangulate(const std::vector<Facet> &crystal,
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 void Converter::Triangulate(const std::vector<std::vector<Point3f>> &facets,
 =======
 void Converter::Triangulate(const std::vector<std::list<Point3f>> &facets,
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+void Converter::Triangulate(const std::vector<std::list<Point3f>> &facets,
+=======
+void Converter::Triangulate(const std::vector<std::vector<Point3f>> &facets,
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 void Converter::Triangulate(const std::vector<std::list<Point3f>> &facets,
 =======
@@ -642,7 +714,10 @@ void Converter::Triangulate(const std::vector<std::vector<Point3f>> &facets,
 		{
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 			Facet triangle;
 
 			for (const auto &p : facet)
@@ -654,6 +729,9 @@ void Converter::Triangulate(const std::vector<std::vector<Point3f>> &facets,
 					triangles.push_back(triangle);
 					triangle.Clear();
 				}
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 			std::vector<Point3f> vfacet{std::begin(facet), std::end(facet)};
@@ -672,6 +750,7 @@ void Converter::Triangulate(const std::vector<std::vector<Point3f>> &facets,
 				triangles.push_back(triangle);
 				p1 = p2;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 			Facet triangle;
 
@@ -685,6 +764,9 @@ void Converter::Triangulate(const std::vector<std::vector<Point3f>> &facets,
 					triangle.Clear();
 				}
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -720,11 +802,14 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 	{
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		Point3f n = facet.Normal();
 =======
 		const Point3f &n = facet.Normal();
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 		const Point3f &n = facet.Normal();
 		ofile << std::string(nSpaces, ' ') << "facet normal "
 <<<<<<< HEAD
@@ -738,6 +823,9 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 >>>>>>> feature/track_tree
 =======
 		Point3f n = facet.Normal();
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 		ofile << std::string(nSpaces, ' ') << "facet normal "
 			  << n.coordinates[0] << ' '
@@ -755,13 +843,20 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 			ofile << std::string(nSpaces, ' ') << "vertex "
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 				  << facet.arr[i].coordinates[0] << ' '
 				  << facet.arr[i].coordinates[1] << ' '
 				  << facet.arr[i].coordinates[2] << std::endl;
 =======
+				  << facet.arr[i].point[0] << ' '
+				  << facet.arr[i].point[1] << ' '
+				  << facet.arr[i].point[2] << std::endl;
+>>>>>>> origin/refactor
+=======
 				  << facet.vertices[i].coordinates[0] << ' '
 				  << facet.vertices[i].coordinates[1] << ' '
 				  << facet.vertices[i].coordinates[2] << std::endl;
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 <<<<<<< HEAD
@@ -772,12 +867,17 @@ void Converter::WriteStl(const std::vector<Facet> &triangles,
 				  << facet.vertices[i].coordinates[0] << ' '
 				  << facet.vertices[i].coordinates[1] << ' '
 				  << facet.vertices[i].coordinates[2] << std::endl;
+=======
+>>>>>>> origin/refactor
 >>>>>>> feature/track_tree
 =======
 				  << facet.arr[i].coordinates[0] << ' '
 				  << facet.arr[i].coordinates[1] << ' '
 				  << facet.arr[i].coordinates[2] << std::endl;
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 		}
 
@@ -851,18 +951,24 @@ void __fastcall " << crystalName <<  "::SetVertices(void)\n\
 <<<<<<< HEAD
 <<<<<<< HEAD
 			 const Point3f &p = crystal[i].arr[j];
+<<<<<<< HEAD
 =======
 			 const Point3f &p = crystal[i].vertices[j];
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 <<<<<<< HEAD
 			 const Point3f &p = crystal[i].arr[j];
+=======
+>>>>>>> origin/refactor
 			 ofile << "\tthis->p[" << vertexCount++ << "] = Point3d(" << p.point[0] << ", " << p.point[1] << ", " << p.point[2] << ");" << std::endl;
 =======
 			 const Point3f &p = crystal[i].vertices[j];
 =======
 			 const Point3f &p = crystal[i].arr[j];
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 			 ofile << "\tthis->p[" << vertexCount++ << "] = Point3d("
 				   << p.coordinates[0] << ", "

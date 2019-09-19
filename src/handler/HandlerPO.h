@@ -5,7 +5,7 @@
 class HandlerPO : public Handler
 {
 public:
-	HandlerPO(Particle *particle, Light *incidentLight, double wavelength = 0);
+	HandlerPO(Scattering *scattering, double wavelength = 0);
 
 	void HandleBeams(std::vector<Beam> &beams) override;
 	void WriteMatricesToFile(std::string &destName) override;
@@ -24,12 +24,13 @@ protected:
 					 const Vector3d &vf, const Vector3d &direction,
 					 matrixC &matrix) const;
 	void CleanJ();
-	matrixC ComputeFnJones(const Matrix2x2c &matrix, const BeamInfo &info,
-						   const Vector3d &direction);
+	complex ComputePhaseOffset(const BeamInfo &info,
+							   const Vector3d &direction);
 
 
 protected:
 	std::vector<Arr2DC> m_diffractedMatrices;	// Jones matrices
 	bool isNanOccured = false;
 	bool isNan = false;
+	complex m_shadowBeamPhaseOffset;
 };

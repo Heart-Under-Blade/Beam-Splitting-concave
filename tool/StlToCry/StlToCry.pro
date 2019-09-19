@@ -5,10 +5,17 @@ QT -= gui
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 DESTDIR = ../build
 
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+DESTDIR = ../build
+
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 DESTDIR = ../build
 

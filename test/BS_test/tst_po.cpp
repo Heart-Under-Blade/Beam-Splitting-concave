@@ -1,10 +1,9 @@
 #include <QtTest>
 
 #include "ScatteringConvex.h"
-#include "BulletRosette.h"
+#include "RegularColumn.h"
 #include "Tracks.h"
 #include "handler/HandlerPO.h"
-#include "global.h"
 
 using namespace std;
 
@@ -18,6 +17,8 @@ public:
 
 private slots:
 	void test_Absorption();
+	void test_Particle();
+	void test_BenchmarkScatter();
 	void test_Nan();
 	void test_NanCol();
 
@@ -25,27 +26,23 @@ private:
 	HandlerPO *h;
 	Particle *pt;
 	Scattering *sc;
-	Light incidentLight;
+	Tracks *trs;
 };
 
 PO::PO()
 {
-	incidentLight.direction = Point3f(0, 0, -1);
-	incidentLight.polarizationBasis = Point3f(0, 1, 0);
-
 //	pt = new BulletRosette(complex(1.3116, 0), 42.04, 100,
 //						   (42.04*sqrt(3)*tan(DegToRad(62)))/4);
 	pt = new Particle();
 	pt->SetFromFile("out15_mbs.dat");
-	sc = new ScatteringConvex(pt, &incidentLight, true, 5);
-	h = new HandlerPO(pt, &incidentLight, 1.6);
-	ScatteringSphere sp(1, 64, 181);
-	h->SetScattering(sc);
-	h->SetScatteringSphere(sp);
-	h->SetAbsorptionAccounting(true);
 
-	Point3f point = incidentLight.direction * pt->MaximalDimention()/2;
-	incidentLight.direction.d_param = DotProduct(point, incidentLight.direction);
+	sc = new ScatteringConvex(complex(), 5);
+	sc->SetActiveParticle(pt);
+
+	h = new HandlerPO(sc, 1.6);
+	ScatteringSphere sp(1, 64, 181);
+	h->SetScatteringSphere(sp);
+	h->EnableAbsorption(true);
 }
 
 PO::~PO()
@@ -53,64 +50,87 @@ PO::~PO()
 	delete pt;
 	delete sc;
 	delete h;
+	delete trs;
 }
 
 void PO::test_Absorption()
 {
-	pt->SetRefractiveIndex(complex(1.2893, 0));
-	sc->SetSplitting(pt);
+	sc->SetRefractiveIndex(complex(1.2893, 0));
 
 	vector<Beam> outBeams;
-<<<<<<< HEAD
-	pt->Rotate(179.34, 37, 0);
-=======
-	pt->Rotate(Angle3d(0, Angle3d::DegToRad(179.34), Angle3d::DegToRad(37)));
-//	sc->RotateParticle(Angle(0, 179.34, 37));
->>>>>>> origin/refactor
-	sc->ScatterLight(outBeams);
+
+	pt->Rotate(Orientation(179.34, 37));
+	sc->Scatter(&outBeams);
 
 	QVERIFY(outBeams.size() == 434);
 
 	// absorption
-	for (unsigned i = 0; i < outBeams.size(); ++i)
+//	for (unsigned i = 0; i < outBeams.size(); ++i)
+//	{
+//		Beam &beam = outBeams[i];
+//		BeamInfo info = h->ComputeBeamInfo(beam);
+
+//		if (beam.nActs > 0)
+//		{
+//			vector<int> tr;
+//			h->m_tracks->RecoverTrack(beam, tr);
+
+//			double path = sc->MeasureFullOpticalPath(info, beam.Center());
+//			QVERIFY(fabs(path - beam.opticalPath) < /*10e-4*/0.015);
+//		}
+//	}
+}
+
+void PO::test_Particle()
+{
+	// test normals
+	for (int i = 0; i < pt->nElems; ++i)
 	{
-		Beam &beam = outBeams[i];
+		Facet *f = pt->GetActualFacet(i);
+		Point3f v;
+		QVERIFY(fabs(Point3f::Length(f->normal[0]) - 1) < FLT_EPSILON);
+		QVERIFY(fabs(Point3f::Length(f->normal[1]) - 1) < FLT_EPSILON);
+	}
+}
 
-		if (beam.nActs > 0)
+void PO::test_BenchmarkScatter()
+{
+	vector<Beam> outBeams;
+
+	QBENCHMARK
+	{
+		for (double z = 0; z < 179.34; z += 2.1)
 		{
-			vector<int> tr;
-			Tracks::RecoverTrack(beam, pt->nFacets, tr);
-
-			double path = sc->MeasureFullOpticalPath(beam, beam.Center(), tr);
-#ifdef _DEBUG // DEB
-			if (fabs(path - beam.opticalPath) >= /*10e-4*/0.015)
-				int ggg = 0;
-#endif
-			QVERIFY(fabs(path - beam.opticalPath) < /*10e-4*/0.015);
+			pt->Rotate(Orientation(z, 37));
+			sc->Scatter(&outBeams);
 		}
 	}
 }
 
 void PO::test_Nan()
 {
-	pt->SetRefractiveIndex(complex(1.2893, 3.5365e-4));
-	sc->SetSplitting(pt);
+	trs = new Tracks(pt->nElems);
+	h->SetTracks(trs);
+
+	sc->SetRefractiveIndex(complex(1.2893, 3.5365e-4));
 
 	vector<Beam> outBeams;
-	pt->Rotate(M_PI-6*0.15707963267948966,
-			   M_PI+65*0.15707963267948966, 0);
-	sc->ScatterLight(outBeams);
+	pt->Rotate(Orientation(M_PI-6*0.15707963267948966,
+						   M_PI+65*0.15707963267948966));
+	sc->Scatter(&outBeams);
 
 	QVERIFY(outBeams.size() == 359);
 	QVERIFY(outBeams[3].nVertices == 6);
-	QVERIFY(outBeams[3].lastFacetId == 3);
-	QVERIFY(outBeams[3].nActs == 0);
-	QVERIFY(outBeams[3].front > -1.42 && outBeams[3].front < -1.41);
+	QVERIFY(outBeams[3].facet->index == 3);
+	QVERIFY(outBeams[3].actNo == 0);
+//	QVERIFY(outBeams[3].front > -1.42 && outBeams[3].front < -1.41);
+
+	const Beam &startBeam = sc->GetStartBeam();
 
 	for (Beam &beam : outBeams)
 	{
 		beam.polarizationBasis = beam.RotateSpherical(
-					-incidentLight.direction, incidentLight.polarizationBasis);
+					-startBeam.direction, startBeam.polarizationBasis);
 
 		BeamInfo info = h->ComputeBeamInfo(beam);
 
@@ -141,21 +161,33 @@ void PO::test_Nan()
 void PO::test_NanCol()
 {
 	delete pt;
-	pt = new Column(complex(1.2893, 3.5365e-4), 68.9, 100);
-	sc->SetSplitting(pt);
+	pt = new RegularColumn(Size(68.9, 100));
+	sc->SetRefractiveIndex(complex(1.2893, 3.5365e-4));
+
+	delete trs;
+	trs = new Tracks(pt->nElems);
+	h->SetTracks(trs);
 
 	vector<Beam> outBeams;
-	pt->Rotate(M_PI-0.15707963267948966,
-			   M_PI+1.5707963267948966, 0);
-	sc->ScatterLight(outBeams);
-
+	pt->Rotate(Orientation(M_PI-0.15707963267948966,
+						   M_PI+1.5707963267948966));
+	sc->Scatter(&outBeams);
+	const Beam &startBeam = sc->GetStartBeam();
+#ifdef _DEBUG // DEB
+	int cc = 0;
+#endif
 	for (Beam &beam : outBeams)
 	{
+#ifdef _DEBUG // DEB
+		++cc;
+		if (cc == 5)
+			int ffffd = 0;
+#endif
 		h->m_isBadBeam = false;
 
 		beam.polarizationBasis = beam.RotateSpherical(
-					-incidentLight.direction,
-					incidentLight.polarizationBasis);
+					-startBeam.direction,
+					startBeam.polarizationBasis);
 
 		BeamInfo info = h->ComputeBeamInfo(beam);
 
@@ -173,6 +205,8 @@ void PO::test_NanCol()
 				matrixC diffractedMatrix = h->ApplyDiffraction(beam, info, dir, vf);
 
 				complex fff = diffractedMatrix[0][0];
+				if (isnan(real(fff)))
+					int ffff = 0;
 				QVERIFY(!isnan(real(fff)));
 			}
 		}
@@ -182,22 +216,3 @@ void PO::test_NanCol()
 QTEST_APPLESS_MAIN(PO)
 
 #include "tst_po.moc"
-
-//#include <QtTest/QtTest>
-
-//class TestQString: public QObject
-//{
-//	Q_OBJECT
-//private slots:
-//	void toUpper();
-//};
-
-//void TestQString::toUpper()
-//{
-//	QString str = "Hello";
-//	QCOMPARE(str.toUpper(), QString("HELLO"));
-//}
-
-//QTEST_APPLESS_MAIN(TestQString)
-
-//#include "tst_po.moc"

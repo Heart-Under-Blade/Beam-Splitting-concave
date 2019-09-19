@@ -8,9 +8,15 @@ struct EdgeLine
 {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	int facetNo;
 =======
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+=======
+	int facetNo;
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 =======
 	int facetNo;
@@ -22,7 +28,10 @@ struct EdgeLine
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 typedef Point3f Intersection;
@@ -34,7 +43,12 @@ typedef Point3f Intersection;
 //};
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 =======
 >>>>>>> origin/feature/voronoi
@@ -62,10 +76,16 @@ struct OrthoPlane
 	Point3f center;  ///< Center of planes
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	double dParam;
 	double distance;
 =======
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+=======
+	double dParam;
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 =======
 	double dParam;
@@ -143,10 +163,16 @@ public:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 	Lattice(double latticeSize, int splitRatio)
 	{
 		size = splitRatio*splitRatio*splitRatio;
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 	Lattice(double latticeSize, int splitRatio, int removedLayers)
@@ -154,11 +180,15 @@ public:
 		int sr = splitRatio - removedLayers;
 		size = sr*sr*sr;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	Lattice(double latticeSize, int splitRatio)
 	{
 		size = splitRatio*splitRatio*splitRatio;
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -245,9 +275,15 @@ private:
 	}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 
 =======
@@ -279,9 +315,15 @@ public:
 private:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	int m_maxSiteDistance;
 =======
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+=======
+	int m_maxSiteDistance;
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 =======
 	int m_maxSiteDistance;
@@ -308,15 +350,21 @@ private:
 							 const Vector3f &planeNormal,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 							 std::list<Point3f> &points);
 =======
 							 std::list<Intersection> &points);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 							 std::list<Intersection> &points);
 =======
 							 std::list<Point3f> &points);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 	/**
@@ -328,7 +376,10 @@ private:
 	void RemoveExternalPoints(const std::vector<OrthoPlane> &sitePlanes,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 							 std::list<Intersection> &points);
 
 	void RemoveDuplicatedPoints(std::list<Intersection> &points);
@@ -336,6 +387,9 @@ private:
 
 	void OrderPoints(const Vector3f &planeNormal,
 					 std::list<Intersection> &points) const;
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 							 std::list<Point3f> &points);
@@ -346,6 +400,10 @@ private:
 	void OrderPoints(const Vector3f &planeNormal,
 					 std::list<Point3f> &points) const;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -355,13 +413,19 @@ private:
 					  bool isForGrapher = true);
 	void FixPointsOrder(const Vector3f &normal, std::list<Point3f> &points);
 <<<<<<< HEAD
+<<<<<<< HEAD
 	void FixPointsOrder(const Vector3f &normal, std::vector<Point3f> &points);
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> origin/refactor
 	bool RemoveDistantPlanes(const std::list<Intersection> &points,
 							const OrthoPlane &currentPlane,
 							std::vector<OrthoPlane> &sitePlanes);
 	void RemovePlane(int planeNo, std::vector<OrthoPlane> &sitePlanes);
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 	bool RemoveDistantPlanes(const std::list<Point3f> &points,
@@ -370,6 +434,7 @@ private:
 	void RemovePlane(int planeNo, std::vector<OrthoPlane> &sitePlanes);
 	void AddBorderPlane(std::vector<OrthoPlane> &sitePlanes, const Point3f &n,
 						const Point3f &c, double r, Cell &cell);
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 							 std::list<Intersection> &points);
@@ -388,6 +453,9 @@ private:
 							std::vector<OrthoPlane> &sitePlanes);
 	void RemovePlane(int planeNo, std::vector<OrthoPlane> &sitePlanes);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor

@@ -1,14 +1,13 @@
 #include "Particle.h"
+#include "common.h"
+#include "geometry_lib.h"
+
 #include <fstream>
 #include <iostream>
 #include <cstring>
-#include "global.h"
 
 Particle::Particle()
 {
-<<<<<<< HEAD
-	isConcave = false;
-=======
 	SetFacetIndices();
 }
 
@@ -31,10 +30,9 @@ void Particle::SetFacetIndices()
 Facet *Particle::GetActualFacet(int i)
 {
 	return &elems[i].actual;
->>>>>>> origin/refactor
 }
 
-void Particle::SetFromFile(const std::string &filename)
+void Particle::SetFromFile(const std::string &filename, double reduceSize)
 {
 	std::ifstream pfile(filename, std::ios::in);
 
@@ -47,13 +45,13 @@ void Particle::SetFromFile(const std::string &filename)
 	const int bufSize = 1024;
 	char *buff = (char*)malloc(sizeof(char) * bufSize);
 
-	nFacets = 0;
-	Facet *facet = &(defaultFacets[nFacets++]);
+	nElems = 0;
+	Facet *facet = &(elems[nElems++].original);
 
 	char *ptr, *trash;
 
 	pfile.getline(buff, bufSize);
-	isConcave = strtol(buff, &trash, 10);
+	m_isNonConvex = strtol(buff, &trash, 10);
 
 	pfile.getline(buff, bufSize);
 	isAggregated = strtol(buff, &trash, 10);
@@ -63,22 +61,26 @@ void Particle::SetFromFile(const std::string &filename)
 		pfile.getline(buff, bufSize);
 
 		ptr = strtok(buff, " ");
-		m_symmetry.beta = DegToRad(strtod(ptr, &trash));
+		m_symmetry.zenith = Orientation::DegToRad(strtod(ptr, &trash));
 
 		ptr = strtok(NULL, " ");
-		m_symmetry.gamma = DegToRad(strtod(ptr, &trash));
+		m_symmetry.azimuth = Orientation::DegToRad(strtod(ptr, &trash));
 	}
 
 	pfile.getline(buff, bufSize); // skip empty line
 
 	while (!pfile.eof()) // read vertices of facets
 	{
+#ifdef _DEBUG // DEB
+		if (nElems == 35)
+			int ff = 0;
+#endif
 		pfile.getline(buff, bufSize);
 		ptr = strtok(buff, " ");
 
 		if (strlen(buff) == 0)
 		{
-			facet = &(defaultFacets[nFacets++]);
+			facet = &(elems[nElems++].original);
 			continue;
 		}
 
@@ -86,12 +88,8 @@ void Particle::SetFromFile(const std::string &filename)
 
 		while (ptr != NULL)
 		{
-<<<<<<< HEAD
-			facet->arr[facet->nVertices].coordinates[c_i++] = strtod(ptr, &trash);
-=======
 			double value = strtod(ptr, &trash);
 			facet->vertices[facet->nVertices].coordinates[c_i++] = value;
->>>>>>> origin/refactor
 			ptr = strtok(NULL, " ");
 		}
 
@@ -101,138 +99,105 @@ void Particle::SetFromFile(const std::string &filename)
 	pfile.close();
 
 	// correction of number of facet
-<<<<<<< HEAD
-	while (defaultFacets[nFacets-1].nVertices == 0)
-=======
 	while (elems[nElems-1].original.nVertices == 0)
 	{
 		--nElems;
 	}
 
 	if (reduceSize > 0)
->>>>>>> origin/refactor
 	{
-		--nFacets;
+		ReduceSmallEdges(reduceSize);
 	}
 
 	SetDefaultNormals();
-	Reset();
+	ResetPosition();
 	SetDefaultCenters();
 
-	if (isConcave || isAggregated)
+	if (IsNonConvex() || isAggregated)
 	{
-		for (int i = 0; i < nFacets; ++i)
+		for (int i = 0; i < nElems; ++i)
 		{
-			defaultFacets[i].isVisibleIn = false;
-			defaultFacets[i].isVisibleOut = false;
-			facets[i].isVisibleIn = false;
-			facets[i].isVisibleOut = false;
+			elems[i].original.isOverlayedIn = true;
+			elems[i].original.isOverlayedOut = true;
+			elems[i].actual.isOverlayedIn = true;
+			elems[i].actual.isOverlayedOut = true;
 		}
 	}
 }
 
-void Particle::Init(int facetCount, const complex &refrIndex)
+void Particle::Rotate(const Orientation &orientation)
 {
-	nFacets = facetCount;
-	m_refractiveIndex = refrIndex;
-}
-
-void Particle::RotateCenters()
-{
-	for (int i = 0; i < nFacets; ++i)
-	{
-		RotatePoint(defaultFacets[i].center, facets[i].center);
-	}
-}
-
-void Particle::Rotate(double beta, double gamma, double alpha)
-{
-	rotAngle = Angle{alpha, beta, gamma};
-	SetRotateMatrix(beta, gamma, alpha);
+	rotAngle = orientation;
+	m_rotator.SetRotationAngle(rotAngle);
 
 	// REF: слить всё в один цикл
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-<<<<<<< HEAD
-		for (int j = 0; j < facets[i].nVertices; ++j)
-=======
 		auto &original = elems[i].original;
 		auto &actual = elems[i].actual;
 
 		for (int j = 0; j < original.nVertices; ++j)
->>>>>>> origin/refactor
 		{
-			RotatePoint(defaultFacets[i].arr[j], facets[i].arr[j]);
+			m_rotator.RotatePoint(original.vertices[j], actual.vertices[j]);
 		}
+
+		// centers
+		m_rotator.RotatePoint(original.center, actual.center);
 	}
 
 	RotateNormals();
-	RotateCenters();
 }
 
-<<<<<<< HEAD
-void Particle::Fix()
-{
-	for (int i = 0; i < nFacets; ++i)
-	{
-		for (int j = 0; j < facets[i].nVertices; ++j)
-		{
-			defaultFacets[i].arr[j] = facets[i].arr[j];
-		}
-	}
-}
-
-void Particle::Scale(double ratio)
-=======
 void Particle::CommitState()
->>>>>>> origin/refactor
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-<<<<<<< HEAD
-		for (int j = 0; j < defaultFacets[i].nVertices; ++j)
-=======
 		for (int j = 0; j < elems[i].actual.nVertices; ++j)
->>>>>>> origin/refactor
 		{
-			defaultFacets[i].arr[j].cx *= ratio;
-			defaultFacets[i].arr[j].cy *= ratio;
-			defaultFacets[i].arr[j].cz *= ratio;
+			elems[i].original.vertices[j] = elems[i].actual.vertices[j];
 		}
 	}
 }
 
-<<<<<<< HEAD
-void Particle::Resize(double size)
+void Particle::ProjectToXYPlane(std::vector<Point2f> &projection) const
 {
-	double dMax = MaximalDimention();
-	double ratio = size/dMax;
-	Scale(ratio);
-	Reset();
+	Point3f n(0, 0, 1);
+	n.d_param = MaximalDimension();
+
+	for (int i = 0; i < nElems; i++)
+	{
+		auto &f = elems[i].actual;
+
+		if (Vector3f::IsAcuteAngled(f.in_normal, -n))
+		{
+			for (int j = 0; j < f.nVertices; j++)
+			{
+				double tmp = (n.d_param - Point3f::DotProduct(n, f.vertices[j]));
+				auto p = f.vertices[j] + n*tmp;
+				projection.push_back(Point2f(p.coordinates[0], p.coordinates[1]));
+			}
+		}
+	}
 }
 
-=======
->>>>>>> origin/refactor
-void Particle::Concate(const std::vector<Particle> &parts)
+void Particle::Concatenate(const std::vector<Particle> &parts)
 {
 	int i = 0;
-	nFacets = 0;
+	nElems = 0;
 
 	for (const Particle &part : parts)
 	{
-		nFacets += part.nFacets;
+		nElems += part.nElems;
 
-		for (int j = 0; j < part.nFacets; ++j)
+		for (int j = 0; j < part.nElems; ++j)
 		{
-			defaultFacets[i++] = part.facets[j];
+			elems[i++].original = part.elems[j].actual;
 		}
 	}
 
 	isAggregated = true;
 }
 
-<<<<<<< HEAD
-=======
 void Particle::RemoveFacet(int index)
 {
 	for (int i = index+1; i < nElems; ++i)
@@ -245,25 +210,20 @@ void Particle::RemoveFacet(int index)
 	SetFacetIndices();
 }
 
->>>>>>> origin/refactor
 double Particle::LongRadius() const
 {
 	Point3f p0(0, 0, 0);
 
 	double radius = 0;
 
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-<<<<<<< HEAD
-		for (int j = 0; j < facets[i].nVertices; ++j)
-=======
 		const Facet &facet = elems[i].actual;
 
 		for (int j = 0; j < facet.nVertices; ++j)
->>>>>>> origin/refactor
 		{
-			Point3f v_len = facets[i].arr[j] - p0;
-			double len = Length(v_len);
+			Point3f v_len = facet.vertices[j] - p0;
+			double len = Point3f::Length(v_len);
 
 			if (len > radius)
 			{
@@ -275,53 +235,18 @@ double Particle::LongRadius() const
 	return radius;
 }
 
-<<<<<<< HEAD
-double Particle::MaximalDimention() const
-{
-	double Dmax = 0;
-	double newDmax;
-
-	Polygon512 pol;
-
-	for (int i = 0; i < nFacets; ++i)
-	{
-		pol.Concat(defaultFacets[i]);
-	}
-
-	for (int i = 0; i < pol.nVertices; ++i)
-	{
-		for (int j = 0; j < pol.nVertices; ++j)
-		{
-			newDmax = Length(pol.arr[j] - pol.arr[i]);
-
-			if (newDmax > Dmax)
-			{
-				Dmax = newDmax;
-			}
-		}
-	}
-
-	return Dmax;
-}
-
-double Particle::Area()
-=======
 double Particle::Area() const
->>>>>>> origin/refactor
 {
 	double area = 0;
 
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		area += facets[i].Area();
+		area += elems[i].original.Area();
 	}
 
 	return area;
 }
 
-<<<<<<< HEAD
-const complex &Particle::GetRefractiveIndex() const
-=======
 Point3f Particle::Center() const
 {
 	Point3f center = Point3f(0, 0, 0);
@@ -376,6 +301,14 @@ void Particle::Scale(double ratio)
 	SetDefaultCenters();
 }
 
+void Particle::Resize(double size)
+{
+	double dMax = MaximalDimension();
+	double ratio = size/dMax;
+	Scale(ratio);
+	ResetPosition();
+}
+
 double Particle::MaximalDimension() const
 {
 	double Dmax = 0;
@@ -405,16 +338,11 @@ double Particle::MaximalDimension() const
 }
 
 const Orientation &Particle::GetSymmetry() const
->>>>>>> origin/refactor
 {
 	return m_symmetry;
 }
 
-<<<<<<< HEAD
-const Symmetry &Particle::GetSymmetry() const
-=======
-void Particle::GetFacets(int end, int begin, Array<Facet*> &facets)
->>>>>>> origin/refactor
+void Particle::GetFacets(int begin, int end, Array<Facet*> &facets)
 {
 	for (int i = begin; i < end; ++i)
 	{
@@ -423,73 +351,59 @@ void Particle::GetFacets(int end, int begin, Array<Facet*> &facets)
 	}
 }
 
-void Particle::GetPartByFacet(Facet */*facet*/, Array<Facet*> &facets)
+void Particle::GetPartByFacet(Facet *facet, Array<Facet*> &facets)
 {
+	UNUSED(facet);
 	GetFacets(0, nElems, facets);
 }
 
 void Particle::Move(float dx, float dy, float dz)
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-<<<<<<< HEAD
-		for (int j = 0; j < defaultFacets[i].nVertices; ++j)
-=======
 		auto &origin = elems[i].original;
 		auto &actual = elems[i].actual;
 
 		for (int j = 0; j < origin.nVertices; ++j)
->>>>>>> origin/refactor
 		{
-			facets[i].arr[j] = defaultFacets[i].arr[j] + Point3f(dx, dy, dz);
+			actual.vertices[j] = origin.vertices[j] + Point3f(dx, dy, dz);
 		}
 	}
 }
 
-bool Particle::IsConcave() const
+bool Particle::IsNonConvex() const
 {
-	return isConcave;
+	return m_isNonConvex;
 }
 
 void Particle::Output()
 {
-	std::ofstream M("particle.dat", std::ios::out);
+	std::ofstream file("particle.dat", std::ios::out);
 
-	for (int i = 0; i < nFacets; ++i)
+	file << (int)m_isNonConvex << std::endl;
+	file << (int)isAggregated << std::endl;
+	file << Orientation::RadToDeg(m_symmetry.zenith) << ' '
+		 << Orientation::RadToDeg(m_symmetry.azimuth) << std::endl << std::endl;
+
+	for (int i = 0; i < nElems; ++i)
 	{
-<<<<<<< HEAD
-		for (int j = 0; j < facets[i].nVertices; ++j)
-		{
-			Point3f p = facets[i].arr[j];
-			M << p.coordinates[0] << ' '
-							<< p.coordinates[1] << ' '
-							<< p.coordinates[2] << ' '
-							<< i ;
-=======
 		Facet &facet = elems[i].actual;
 
 		for (int j = 0; j < facet.nVertices; ++j)
 		{
 			Point3f p = facet.vertices[j];
-			M << p.coordinates[0]
+			file << p.coordinates[0]
 					<< ' ' << p.coordinates[1]
-					<< ' ' << p.coordinates[2]
-					<< ' ' << i ;
->>>>>>> origin/refactor
-			M << std::endl;
+					<< ' ' << p.coordinates[2];
+			file << std::endl;
 		}
 
-		M << std::endl << std::endl;;
+		file << std::endl;
 	}
 
-	M.close();
+	file.close();
 }
 
-<<<<<<< HEAD
-void Particle::SetRefractiveIndex(const complex &value)
-{
-	m_refractiveIndex = value;
-=======
 int Particle::ReduceEdge(int facetNo, int i1, int i2)
 {
 	auto &p1 = elems[facetNo].original.vertices[i1];
@@ -592,94 +506,62 @@ void Particle::ReduceSmallEdges(double minSize)
 			}
 		}
 	} while (isReduced);
->>>>>>> origin/refactor
 }
 
 void Particle::SetDefaultNormals()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		defaultFacets[i].SetNormal();
+		elems[i].original.SetNormal();
 	}
 }
 
-void Particle::Reset()
+void Particle::ResetPosition()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		facets[i] = defaultFacets[i];
+		elems[i].actual = elems[i].original;
 	}
 }
 
 void Particle::SetDefaultCenters()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		defaultFacets[i].SetCenter();
+		elems[i].original.SetCenter();
 	}
-}
-
-void Particle::SetRotateMatrix(double beta, double gamma, double alpha)
-{
-	double cosA, cosB, cosG,
-			sinA, sinB, sinG;
-
-	sincos(alpha, &sinA, &cosA);
-	sincos(beta,  &sinB, &cosB);
-	sincos(gamma, &sinG, &cosG);
-
-	double cosAcosB = cosA*cosB;
-	double sinAcosG = sinA*cosG;
-	double sinAsinG = sinA*sinG;
-
-	m_rotMatrix[0][0] = cosAcosB*cosG - sinAsinG;
-	m_rotMatrix[1][0] = sinAcosG*cosB + cosA*sinG;
-	m_rotMatrix[2][0] = -sinB*cosG;
-
-	m_rotMatrix[0][1] = -(cosAcosB*sinG + sinAcosG);
-	m_rotMatrix[1][1] = cosA*cosG - sinAsinG*cosB;
-	m_rotMatrix[2][1] = sinB*sinG;
-
-	m_rotMatrix[0][2] = cosA*sinB;
-	m_rotMatrix[1][2] = sinA*sinB;
-	m_rotMatrix[2][2] = cosB;
 }
 
 void Particle::RotateNormals()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		RotatePoint(defaultFacets[i].in_normal, facets[i].in_normal);
+		auto &facet = elems[i];
+		m_rotator.RotatePoint(facet.original.in_normal, facet.actual.in_normal);
 	}
 
 	SetDParams();
 
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		facets[i].ex_normal = -facets[i].in_normal;
-		facets[i].ex_normal.d_param = -facets[i].in_normal.d_param;
+		Facet &facet = elems[i].actual;
+		facet.ex_normal = -facet.in_normal;
+		facet.ex_normal.d_param = -facet.in_normal.d_param;
 	}
 }
 
 void Particle::SetDParams()
 {
-	for (int i = 0; i < nFacets; ++i)
+	for (int i = 0; i < nElems; ++i)
 	{
-		double d = DotProduct(facets[i].arr[0], facets[i].in_normal);
-		facets[i].in_normal.d_param = -d;
+		Facet &facet = elems[i].actual;
+		double d = Point3f::DotProduct(facet.vertices[0], facet.in_normal);
+		facet.in_normal.d_param = -d;
 	}
 }
 
-void Particle::RotatePoint(const Point3f &point, Point3f &result)
+void Particle::SetSymmetry(double beta, double gamma)
 {
-	result.cx = point.cx*m_rotMatrix[0][0] + point.cy*m_rotMatrix[0][1] + point.cz*m_rotMatrix[0][2];
-	result.cy = point.cx*m_rotMatrix[1][0] + point.cy*m_rotMatrix[1][1] + point.cz*m_rotMatrix[1][2];
-	result.cz = point.cx*m_rotMatrix[2][0] + point.cy*m_rotMatrix[2][1] + point.cz*m_rotMatrix[2][2];
-}
-
-void Particle::SetSymmetry(double beta, double gamma, double alpha)
-{
-	m_symmetry.beta = beta;
-	m_symmetry.gamma = gamma;
-	m_symmetry.alpha = alpha;
+	m_symmetry.zenith = beta;
+	m_symmetry.azimuth = gamma;
 }

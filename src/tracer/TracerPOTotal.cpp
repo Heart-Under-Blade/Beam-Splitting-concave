@@ -1,10 +1,11 @@
 #include "TracerPOTotal.h"
 
-#include "handler/HandlerPO.h"
+#include <iostream>
+
+#include "HandlerPO.h"
 #include "Mueller.hpp"
 #include "PhysMtr.hpp"
 #include "MullerMatrix.h"
-#include <iostream>
 
 using namespace std;
 
@@ -18,11 +19,7 @@ void TracerPOTotal::TraceRandom(const OrientationRange &range)
 {
 	CalcTimer timer;
 	long long count = 0;
-<<<<<<< HEAD:src/tracer/TracerPOTotal.cpp
-	long long nOrientations = (betaRange.number + 1) * gammaRange.number;
-=======
 	long long nOrientations = range.nZenith * range.nAzimuth;
->>>>>>> origin/refactor:src/scattering/TracerPOTotal.cpp
 	ofstream outFile(m_resultDirName + "_out.dat", ios::out);
 
 	if (!outFile.is_open())
@@ -41,55 +38,26 @@ void TracerPOTotal::TraceRandom(const OrientationRange &range)
 	++nOrientations;
 	timer.Start();
 
-<<<<<<< HEAD:src/tracer/TracerPOTotal.cpp
-	for (int i = 0; i <= betaRange.number; ++i)
-//	for (int i = 6; i <= 6/*betaRange.number*/; ++i)
-=======
 	for (int i = 0; i <= range.nZenith; ++i)
->>>>>>> origin/refactor:src/scattering/TracerPOTotal.cpp
 	{
 		angle.zenith = i*range.step.zenith;
 
-<<<<<<< HEAD:src/tracer/TracerPOTotal.cpp
-//#ifdef _DEBUG // DEB
-//		beta = DegToRad(170);
-//#endif
-		double sinZenith = (i == 0 || i == betaRange.number)
-				? (1.0-cos(0.5*betaRange.step))/normIndex
-				: (cos((i-0.5)*betaRange.step) -
-				   cos((i+0.5)*betaRange.step))/normIndex;
-=======
 		double sinZenith = (i == 0 || i == range.nZenith)
 				? (1.0-cos(0.5*range.step.zenith))/normIndex
 				: (cos((i-0.5)*range.step.zenith) -
 				   cos((i+0.5)*range.step.zenith))/normIndex;
->>>>>>> origin/refactor:src/scattering/TracerPOTotal.cpp
 
-//		std::cout << sinZenith << std::endl;
 		m_handler->SetSinZenith(sinZenith);
 
-<<<<<<< HEAD:src/tracer/TracerPOTotal.cpp
-		for (int j = 0; j < gammaRange.number; ++j)
-//		for (int j = 65; j < 67/*gammaRange.number*/; ++j)
-		{
-			gamma = j*gammaRange.step;
-//			m_particle->Rotate(179.34, 37, 0);
-			m_particle->Rotate(M_PI-beta, M_PI+gamma, 0);
-			m_scattering->ExtractShadowBeam(outBeams);
-			m_scattering->ScatterLight(outBeams);
-//			std::cout << "0" << std::endl;
-=======
 		for (int j = 0; j < range.nAzimuth; ++j)
 		{
 			angle.azimuth = j*range.step.azimuth;
 
-			m_particle->Rotate(angle);
-			outBeams.push_back(m_scattering->SetShadowBeam());
-			m_scattering->ScatterLight(outBeams);
->>>>>>> origin/refactor:src/scattering/TracerPOTotal.cpp
+			m_particle->Rotate(Orientation(M_PI-angle.zenith, M_PI+angle.azimuth));
+			outBeams.push_back(m_scattering->ExtractShadowBeam());
+			m_scattering->Scatter(&outBeams);
 
 			m_handler->HandleBeams(outBeams);
-//			std::cout << "exit" << std::endl;
 
 			outBeams.clear();
 

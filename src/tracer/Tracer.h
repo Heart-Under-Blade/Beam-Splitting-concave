@@ -53,7 +53,6 @@ public:
 
 	void OutputLogPO(CalcTimer &timer, long long orNumber, const std::string &path);
 
-	Light m_incidentLight;
 	std::string m_log;
 
 protected:
@@ -82,5 +81,4 @@ protected:
 
 private:
 //	void HandleBeamsPO2(std::vector<Beam> &outBeams, const Conus &bsCone, int groupID);
-	void SetIncidentLight(Particle *particle);
 };

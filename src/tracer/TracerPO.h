@@ -9,5 +9,5 @@ public:
 			 const std::string &resultFileName);
 
 	void TraceRandom(const OrientationRange &range) override;
-	void TraceFixed(const double &beta, const double &gamma);
+	void TraceFixed(const Orientation &orientation);
 };

@@ -17,31 +17,33 @@ void NormalIncidence::SetSplitting(Splitting *splitting)
 	fresnels[3] = (m_splitting->m_ri - 1.0)/tmp;
 }
 
-void NormalIncidence::ComputeDirections(Beam &beam, BeamPair<Beam> &beams)
+void NormalIncidence::ComputeDirections(Beam &beam, BeamPair<Beam> &beams,
+										bool isBeamInside) const
 {
-	beams.internal.direction = (beam.isInside) ? -beam.direction
+	beams.internal.direction = (isBeamInside) ? -beam.direction
 												: beam.direction;
 
-	beams.external.direction = (beam.isInside) ? beam.direction
+	beams.external.direction = (isBeamInside) ? beam.direction
 											   : -beam.direction;
 
 	beams.internal.polarizationBasis = beam.polarizationBasis;
 	beams.external.polarizationBasis = beam.polarizationBasis;
 }
 
-void NormalIncidence::ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams)
+void NormalIncidence::ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams,
+										   bool isBeamInside) const
 {
 	beams.internal.Jones = beam.Jones;
 	beams.external.Jones = beam.Jones;
 
-	if (beam.isInside)
+	if (isBeamInside)
 	{
-		beams.external.MultiplyJonesMatrix(fresnels[0], fresnels[0]);
-		beams.internal.MultiplyJonesMatrix(fresnels[1], -fresnels[1]);
+		beams.external.MultiplyByFresnel(fresnels[0], fresnels[0]);
+		beams.internal.MultiplyByFresnel(fresnels[1], -fresnels[1]);
 	}
 	else
 	{
-		beams.external.MultiplyJonesMatrix(fresnels[2], fresnels[2]);
-		beams.internal.MultiplyJonesMatrix(fresnels[3], -fresnels[3]);
+		beams.external.MultiplyByFresnel(fresnels[2], fresnels[2]);
+		beams.internal.MultiplyByFresnel(fresnels[3], -fresnels[3]);
 	}
 }

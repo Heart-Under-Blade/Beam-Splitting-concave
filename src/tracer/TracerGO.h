@@ -5,10 +5,10 @@
 class TracerGO : public Tracer
 {
 public:
-	TracerGO(Particle *particle, int reflNum, const std::string &resultFileName);
+	TracerGO(Particle *particle, Scattering *scattering, const std::string &resultFileName);
 
 	void TraceRandom(const OrientationRange &range) override;
-	void TraceFixed(const double &beta, const double &gamma);
+	void TraceFixed(const Orientation &orientation);
 
 protected:
 	double CalcNorm(long long orNum);

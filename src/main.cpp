@@ -1,46 +1,42 @@
 #include <iostream>
-#include <fstream>
-#include <assert.h>
-#include <float.h>
-#include <chrono>
 #include <iomanip>
+#include <fstream>
+#include <chrono>
+#include <assert.h>
+#include <math.h>
+#include <float.h>
 
-#include "CalcTimer.h"
-#include "macro.h"
-
-#include "Mueller.hpp"
-#include "CertainAggregate.h"
-#include "Bullet.h"
-#include "BulletRosette.h"
-#include "Beam.h"
+#include "Sphere.h"
 #include "RegularColumn.h"
 #include "HollowColumn.h"
-#include "HexagonalAggregate.h"
-#include "CertainAggregate.h"
 #include "Bullet.h"
 #include "BulletRosette.h"
+#include "CertainAggregate.h"
 #include "DistortedColumn.h"
+#include "HexagonalAggregate.h"
+
+#include "Mueller.hpp"
+#include "Beam.h"
+#include "Bullet.h"
 #include "common.h"
 #include "PhysMtr.hpp"
-#include "TracerGO.h"
-#include "TracerPOTotal.h"
-#include "TracerBackScatterPoint.h"
-#include "HandlerBackScatterPoint.h"
 #include "ArgPP.h"
 #include "Tracks.h"
+#include "ArgumentParser.h"
 
-#include "HandlerBackscatterPoint.h"
 #include "HandlerTotalGO.h"
 #include "HandlerTracksGO.h"
 #include "HandlerPOTotal.h"
-
-#include "ArgumentParser.h"
-
-#include "ScatteringConvex.h"
-#include "ScatteringNonConvex.h"
+#include "HandlerBackscatterPoint.h"
 
 #include "ScatteringConvex.h"
 #include "ScatteringNonConvex.h"
+
+#include "TracerGO.h"
+#include "TracerPOTotal.h"
+#include "TracerBackScatterPoint.h"
+
+#include "macro.h"
 
 #ifdef _OUTPUT_NRG_CONV
 ofstream energyFile("energy.dat", ios::out);
@@ -48,48 +44,23 @@ double SSconfined=0;
 int bcount=0;
 #endif
 
-using namespace std;
-using namespace chrono;
+using namespace std::chrono;
 
 enum class ParticleType : int
 {
-	Hexagonal = 1,
+	Sphere = 0,
+	RegularColumn = 1,
 	Bullet = 2,
 	BulletRosette = 3,
-	ConcaveHexagonal = 10,
-	TiltedHexagonal = 11,
+	HollowColumn = 10,
+	DistortedColumn = 11,
 	HexagonalAggregate = 12,
 	CertainAggregate = 999
 };
 
 Tracks trackGroups;
 
-void SetArgRules(ArgPP &parser)
-{
-	int zero = 0;
-	parser.AddRule("p", '+'); // particle (type, size, ...)
-	parser.AddRule("ri", 2); // refractive index (Re and Im parts)
-	parser.AddRule("n", 1); // number of internal reflection
-	parser.AddRule("pf", zero, true); // particle (filename)
-	parser.AddRule("rs", 1, true, "pf"); // resize particle (new size)
-	parser.AddRule("fixed", 2, true); // fixed orientarion (beta, gamma)
-	parser.AddRule("random", 2, true); /* random orientarion (beta number,
-gamma number)*/
-	parser.AddRule("go", 0, true); // geometrical optics method
-	parser.AddRule("po", 0, true); // phisical optics method
-	parser.AddRule("w", 1, true); // wavelength
-	parser.AddRule("b", 2, true, "po"); // beta range (begin, end)
-	parser.AddRule("g", 2, true, "po"); // gamma range (begin, end)
-	parser.AddRule("grid", 3, true); // backscattering grid (radius, phi, theta)
-	parser.AddRule("point", zero, true, "po"); // calculate only backscatter point
-	parser.AddRule("tr", 1, true); // file with trajectories
-	parser.AddRule("all", 0, true); // calculate all trajectories
-	parser.AddRule("abs", 1, true, "w"); // accounting of absorbtion
-	parser.AddRule("close", 0, true); // closing of program after calculation
-	parser.AddRule("o", 1, true); // output folder name
-}
-
-ScatteringSphere SetConus(ArgPP &parser)
+ScatteringSphere SetScatteringSphere(ArgPP &parser)
 {
 	double radius = parser.GetDoubleValue("grid", 0);
 	int nPhi = parser.GetDoubleValue("grid", 1);
@@ -135,7 +106,7 @@ AngleRange GetRange(const ArgPP &parser, const std::string &key,
 	}
 	else
 	{
-		cerr << "Error! " << __FUNCTION__;
+		std::cerr << "Error! " << __FUNCTION__;
 		throw std::exception();
 	}
 
@@ -146,13 +117,14 @@ int main(int argc, const char* argv[])
 {
 	if (argc <= 1) // no arguments
 	{
-		cout << "No arguments. Press any key to exit..." << endl;
+		std::cout << "No arguments. Press any key to exit..." << std::endl;
 		getchar();
 		return 1;
 	}
 
 	ArgPP args;
-	SetArgRules(args);
+	ArgumentParser parser(&args);
+	parser.SetArgRules();
 	args.Parse(argc, argv);
 
 	bool isNew = false;
@@ -160,19 +132,19 @@ int main(int argc, const char* argv[])
 
 	if (isAbs)
 	{
-		std::string absType = args.GetStringValue("abs");
+		std::string absMethod = args.GetStringValue("abs");
 
-		if (absType == "new")
+		if (absMethod == "new")
 		{
-			isAbs = true;
+			isNew = true;
 		}
-		else if (absType == "old")
+		else if (absMethod == "old")
 		{
-			isAbs = false;
+			isNew = false;
 		}
 		else
 		{
-			assert(false && "ERROR! Incorrect type of absorption.");
+			assert(false && "ERROR! Incorrect method of absorption.");
 		}
 	}
 
@@ -195,7 +167,7 @@ int main(int argc, const char* argv[])
 		particle->SetFromFile(filename);
 
 		double origDMax = particle->MaximalDimension();
-		cout << "from file: " << filename << endl;
+		std::cout << "from file: " << filename << std::endl;
 		additionalSummary += "\n\nOriginal Dmax: " + std::to_string(origDMax);
 
 		if (args.IsCatched("rs"))
@@ -211,14 +183,22 @@ int main(int argc, const char* argv[])
 	else
 	{
 		ParticleType type = (ParticleType)args.GetIntValue("p", 0);
-		double height = args.GetDoubleValue("p", 1);
-		double diameter = args.GetDoubleValue("p", 2);
+
+		Size size;
+		size.height = args.GetDoubleValue("p", 1);
+		size.diameter = args.GetDoubleValue("p", 2);
 
 		double sup;
 		int num;
+		double nPar, nMer, rad;
 
 		switch (type)
 		{
+		case ParticleType::Sphere:
+			nPar = args.GetIntValue("p", 1);
+			nMer = args.GetIntValue("p", 2);
+			rad = args.GetDoubleValue("p", 3);
+			particle = new Sphere(nPar, nMer, rad);
 		case ParticleType::RegularColumn:
 			particle = new RegularColumn(size);
 			break;
@@ -234,10 +214,6 @@ int main(int argc, const char* argv[])
 //			sup = parser.argToValue<double>(vec[3]);
 //			particle = new TiltedHexagonal(r, hh, ri, sup);
 //			break;
-		case ParticleType::ConcaveHexagonal:
-			sup = args.GetDoubleValue("p", 3);
-			particle = new DistortedColumn(size, sup);
-			break;
 		case ParticleType::HollowColumn:
 			sup = args.GetDoubleValue("p", 3);
 			particle = new HollowColumn(size, sup);
@@ -256,47 +232,44 @@ int main(int argc, const char* argv[])
 		}
 	}
 
-	additionalSummary += "\n\tArea: " + to_string(particle->Area());
-	additionalSummary += "\n\tNumber of facets: " + to_string(particle->nFacets);
-	additionalSummary += "\n\nRefractive index: " + to_string(re);
+	additionalSummary += "\n\tArea: " + std::to_string(particle->Area());
+	additionalSummary += "\n\tNumber of facets: " +
+			std::to_string(particle->nElems);
+	additionalSummary += "\n\nRefractive index: " + std::to_string(re);
 
 	if (fabs(im) > FLT_EPSILON)
 	{
-		additionalSummary += " + i" + to_string(im);
+		additionalSummary += " + i" + std::to_string(im);
 	}
 
-	cout << endl;
-	cout << "Area: " << particle->Area() << endl;
-
 	int maxActNo = args.GetDoubleValue("n");
-	additionalSummary += "\nNumber of secondary reflections: " + to_string(reflNum);
+	additionalSummary += "\nNumber of secondary reflections: " + std::to_string(maxActNo);
 
 	Scattering *scattering;
-	Light incidentLight = SetIncidentLight(particle);
 
 	if (particle->IsNonConvex())
 	{
-		scattering = new ScatteringNonConvex(particle, incidentLight, maxActNo,
-											 refrIndex);
+		scattering = new ScatteringNonConvex(refrIndex, maxActNo);
 	}
 	else
 	{
-		scattering = new ScatteringConvex(particle, incidentLight, maxActNo,
-										  refrIndex);
+		scattering = new ScatteringConvex(refrIndex, maxActNo);
 	}
+
+	scattering->SetActiveParticle(particle);
 
 	Tracks trackGroups;
 
-	string dirName = (args.IsCatched("o")) ? args.GetStringValue("o") : "M";
+	std::string dirName = (args.IsCatched("o")) ? args.GetStringValue("o")
+												: "M";
 	bool isOutputGroups = args.IsCatched("gr");
 	double wave = args.IsCatched("w") ? args.GetDoubleValue("w") : 0;
-	additionalSummary += "\nWavelength (um): " + to_string(wave);
+	additionalSummary += "\nWavelength (um): " + std::to_string(wave);
 
 	if (args.IsCatched("tr"))
 	{
-		string trackFileName = args.GetStringValue("tr");
-
-		trackGroups.ImportTracks(particle->nFacets, trackFileName);
+		std::string trackFileName = args.GetStringValue("tr");
+		trackGroups.ImportTracks(particle, trackFileName);
 		trackGroups.shouldComputeTracksOnly = !args.IsCatched("all");
 	}
 
@@ -305,18 +278,28 @@ int main(int argc, const char* argv[])
 	if (args.IsCatched("po"))
 	{
 		additionalSummary += "Physical optics";
-
-		Tracer *tracer;
+		TracerPO *tracer;
 		HandlerPO *handler;
 
 		if (args.IsCatched("fixed"))
 		{
-			ScatteringSphere sphere = SetConus(args);
-			additionalSummary += ", fixed orientation" << endl << endl;
+			additionalSummary += ", fixed orientation";
+			ScatteringSphere sphere = SetScatteringSphere(args);
 
-			tracer = new TracerPO(particle, scattering, dirName);
+			if (args.IsCatched("all"))
+			{
+				tracer = new TracerPOTotal(particle, scattering, dirName);
+				trackGroups.push_back(TrackGroup());
+				handler = new HandlerPOTotal(scattering, wave);
+			}
+			else
+			{
+				tracer = new TracerPO(particle, scattering, dirName);
+				handler = new HandlerPO(scattering, wave);
+			}
+
 			tracer->m_log = additionalSummary;
-			handler = new HandlerPO(particle, &incidentLight, wave);
+
 			handler->SetScatteringSphere(sphere);
 			handler->SetTracks(&trackGroups);
 
@@ -328,45 +311,49 @@ int main(int argc, const char* argv[])
 			tracer->SetIsOutputGroups(isOutputGroups);
 			tracer->SetHandler(handler);
 
+			Orientation orientation;
+			orientation.zenith  = args.GetDoubleValue("fixed", 0);
+			orientation.azimuth = args.GetDoubleValue("fixed", 1);
+
 			additionalSummary += "Orientation: zenith - " +
-					to_string(beta) + "°, azimuth - " + to_string(gamma) +
-					"°\n\n";
-			tracer.m_log = additionalSummary;
-			tracer.TraceFixed(beta, gamma);
+					std::to_string(orientation.zenith) + "°, azimuth - " +
+					std::to_string(orientation.azimuth) + "°\n\n";
+			tracer->m_log += additionalSummary;
+
+			tracer->TraceFixed(orientation);
 		}
 		else if (args.IsCatched("random"))
 		{
 			additionalSummary += ", random orientation";
 
 			double normIndex;
-			OrientationRange range = args.GetRange(particle->GetSymmetry());
+			OrientationRange range = parser.GetRange(particle->GetSymmetry());
 
 			if (args.IsCatched("point"))
 			{
-				TracerBackScatterPoint tracer(particle, scattering, dirName);
-				tracer.m_log = additionalSummary;
+				tracer = new TracerBackScatterPoint(particle, scattering,
+													dirName);
+				tracer->m_log += additionalSummary;
 
-				handler = new HandlerBackScatterPoint
-						(particle, &tracer.m_incidentLight, wave);
+				handler = new HandlerBackScatterPoint(scattering, wave);
 
 				normIndex = range.step.azimuth /
 						(range.to.azimuth - range.from.azimuth);
 			}
 			else
 			{
-				TracerPO *tracer;
-				ScatteringSphere conus = SetConus(args);
+				ScatteringSphere conus = SetScatteringSphere(args);
 
 				if (args.IsCatched("all"))
 				{
 					tracer = new TracerPOTotal(particle, scattering, dirName);
 					trackGroups.push_back(TrackGroup());
-					handler = new HandlerPOTotal(particle, &incidentLight, wave);
+					handler = new HandlerPOTotal(scattering, wave);
 				}
 				else
 				{
 					tracer = new TracerPO(particle, scattering, dirName);
-					handler = new HandlerPO (particle, &incidentLight, wave);
+					handler = new HandlerPO(scattering, wave);
 				}
 
 				normIndex = 2 * range.nAzimuth;
@@ -383,15 +370,16 @@ int main(int argc, const char* argv[])
 
 			tracer->SetIsOutputGroups(isOutputGroups);
 			tracer->SetHandler(handler);
-			additionalSummary += "\nGrid: " + to_string(beta.number) + "x" +
-					to_string(gamma.number) + "\n\n";
+			additionalSummary += "\nGrid: " +
+					std::to_string(range.nZenith) + "x" +
+					std::to_string(range.nAzimuth) + "\n\n";
 			tracer->m_log = additionalSummary;
-			cout << additionalSummary;
+			std::cout << additionalSummary;
 			tracer->TraceRandom(range);
 		}
 		else
 		{
-			cout << endl << "error";
+			std::cout << std::endl << "error";
 		}
 	}
 	else // go
@@ -399,19 +387,19 @@ int main(int argc, const char* argv[])
 		additionalSummary += "Geometrical optics";
 
 		TracerGO tracer(particle, scattering, dirName);
-		tracer.m_summary = additionalSummary;
+		tracer.m_log = additionalSummary;
 		tracer.SetIsOutputGroups(isOutputGroups);
 
 		HandlerGO *handler;
 
 		if (args.IsCatched("tr"))
 		{
-			handler = new HandlerTracksGO(particle, &tracer.m_incidentLight, wave);
+			handler = new HandlerTracksGO(scattering, wave);
 			handler->SetTracks(&trackGroups);
 		}
 		else
 		{
-			handler = new HandlerTotalGO(particle, &tracer.m_incidentLight, wave);
+			handler = new HandlerTotalGO(scattering, wave);
 		}
 
 		if (isAbs)
@@ -428,10 +416,10 @@ int main(int argc, const char* argv[])
 			orient.azimuth = args.GetDoubleValue("fixed", 1);
 
 			additionalSummary += ", fixed orientation";
-			additionalSummary += "Orientation: zenith - " +
-					to_string(beta) + "°, azimuth - " + to_string(gamma) +
-					"°\n\n";
-			cout << additionalSummary;
+			additionalSummary +=
+					"Orientation: zenith - " + std::to_string(orient.zenith) +
+					"°, azimuth - " + std::to_string(orient.azimuth) + "°\n\n";
+			std::cout << additionalSummary;
 			tracer.m_log = additionalSummary;
 			tracer.TraceFixed(orient);
 		}
@@ -439,9 +427,10 @@ int main(int argc, const char* argv[])
 		{
 			additionalSummary += ", random orientation";
 			OrientationRange range = parser.GetRange(particle->GetSymmetry());
-			additionalSummary += "\nGrid: " + to_string(beta.number) + "x" +
-					to_string(gamma.number) + "\n\n";
-			cout << additionalSummary;
+			additionalSummary += "\nGrid: " +
+					std::to_string(range.nZenith) + "x" +
+					std::to_string(range.nAzimuth) + "\n\n";
+			std::cout << additionalSummary;
 			tracer.m_log = additionalSummary;
 			tracer.TraceRandom(range);
 		}
@@ -449,7 +438,7 @@ int main(int argc, const char* argv[])
 		delete handler;
 	}
 
-	cout << endl << "done";
+	std::cout << std::endl << "done";
 
 	if (!args.IsCatched("close"))
 	{

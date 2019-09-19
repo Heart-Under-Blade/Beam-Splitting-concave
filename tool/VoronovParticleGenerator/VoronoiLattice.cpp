@@ -15,11 +15,17 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 #define EPS_SAME_FACET 0.003
 //#define EPS_SAME_FACET 0.43921
 #define EPS_DUPLICATE 0.003
 #define EPS_SAME_LINE 0.003
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 // cell_2
@@ -48,6 +54,7 @@ void VoronoiLattice::AddBorderPlane(std::vector<OrthoPlane> &sitePlanes,
 	}
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #define EPS_SAME_FACET 0.003
 //#define EPS_SAME_FACET 0.43921
@@ -57,12 +64,20 @@ void VoronoiLattice::AddBorderPlane(std::vector<OrthoPlane> &sitePlanes,
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 
 VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 	: m_size(latticeSize)
 {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+	Lattice lattice(latticeSize, splitRatio);
+=======
+>>>>>>> origin/refactor
 =======
 	Lattice lattice(latticeSize, splitRatio);
 =======
@@ -72,9 +87,13 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 
 	Lattice lattice(latticeSize, splitRatio, nRemovedLayers);
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	Lattice lattice(latticeSize, splitRatio);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -85,7 +104,10 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 	int nRemovedLayers = 2;
 	int count = 0;
 
@@ -94,6 +116,9 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 		for (int j = nRemovedLayers; j < lattice.sideSize-nRemovedLayers; ++j)
 		{
 			for (int k = nRemovedLayers; k < lattice.sideSize-nRemovedLayers; ++k)
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 	m_maxSiteDistance = 2.0*sqrt(2)*lattice.cellSize;
@@ -108,6 +133,7 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 		{
 			for (int k = startLayer; k < endLayer; ++k)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	int nRemovedLayers = 2;
 	int count = 0;
@@ -118,6 +144,9 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 		{
 			for (int k = nRemovedLayers; k < lattice.sideSize-nRemovedLayers; ++k)
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -132,6 +161,10 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> origin/refactor
 =======
 =======
 >>>>>>> origin/refactor
@@ -149,8 +182,12 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 //							   Point3f(-r,cell.site.coordinates[1],cell.site.coordinates[2]), r, cell);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -164,7 +201,10 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 				dfile << std::endl;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 #endif
 				int planeCount = 0;
 
@@ -234,6 +274,9 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 					++planeCount;
 //					ffile.close();
 //					std::cout << "count = " << std::to_string(count) << ", " << planeCount << std::endl;
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 				if (count == 13)
@@ -337,6 +380,7 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 	//					std::cout << "count = " << std::to_string(count) << ", " << planeCount << std::endl;
 					}
 <<<<<<< HEAD
+<<<<<<< HEAD
 				}
 
 				auto facets = lattice.ToFacets(&cell);
@@ -419,6 +463,9 @@ VoronoiLattice::VoronoiLattice(double latticeSize, int splitRatio)
 					++planeCount;
 //					ffile.close();
 //					std::cout << "count = " << std::to_string(count) << ", " << planeCount << std::endl;
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -576,15 +623,21 @@ void VoronoiLattice::OutputFacets(const std::string &filename,
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 bool VoronoiLattice::RemoveDistantPlanes(const std::list<Point3f> &points,
 =======
 bool VoronoiLattice::RemoveDistantPlanes(const std::list<Intersection> &points,
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 bool VoronoiLattice::RemoveDistantPlanes(const std::list<Intersection> &points,
 =======
 bool VoronoiLattice::RemoveDistantPlanes(const std::list<Point3f> &points,
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 										 const OrthoPlane &currentPlane,
 										 std::vector<OrthoPlane> &sitePlanes)
@@ -631,15 +684,21 @@ void VoronoiLattice::DefineIntersections(
 		const std::vector<EdgeLine> &edgeLines, const Vector3f &planeNormal,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		std::list<Point3f> &points)
 =======
 		std::list<Intersection> &points)
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 		std::list<Intersection> &points)
 =======
 		std::list<Point3f> &points)
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 {
 	for (int i = 0; i < edgeLines.size(); ++i)
@@ -657,6 +716,11 @@ void VoronoiLattice::DefineIntersections(
 				{
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+//					points.push_back(Intersection{x, 0, 0});
+=======
+>>>>>>> origin/refactor
 =======
 //					points.push_back(Intersection{x, 0, 0});
 =======
@@ -668,9 +732,13 @@ void VoronoiLattice::DefineIntersections(
 						int d = 0;
 #endif
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //					points.push_back(Intersection{x, 0, 0});
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
@@ -684,7 +752,10 @@ void VoronoiLattice::DefineIntersections(
 void VoronoiLattice::RemoveExternalPoints(
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/refactor
 		const std::vector<OrthoPlane> &sitePlanes,
 		std::list<Intersection> &points)
 {
@@ -701,6 +772,9 @@ void VoronoiLattice::RemoveExternalPoints(
 			return res;
 //			return DotProduct(n, p.point-c) > EPS_SAME_FACET;
 		});
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 		const std::vector<OrthoPlane> &sitePlanes, std::list<Point3f> &points)
@@ -734,6 +808,7 @@ void VoronoiLattice::RemoveExternalPoints(
 			break;
 		}
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 		const std::vector<OrthoPlane> &sitePlanes,
 		std::list<Intersection> &points)
@@ -755,6 +830,9 @@ void VoronoiLattice::RemoveExternalPoints(
 =======
 >>>>>>> origin/feature/voronoi
 >>>>>>> origin/refactor
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 	}
 
 	if (points.size() < 3)
@@ -765,15 +843,21 @@ void VoronoiLattice::RemoveExternalPoints(
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 void VoronoiLattice::RemoveDuplicatedPoints(std::list<Point3f> &points)
 =======
 void VoronoiLattice::RemoveDuplicatedPoints(std::list<Intersection> &points)
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 void VoronoiLattice::RemoveDuplicatedPoints(std::list<Intersection> &points)
 =======
 void VoronoiLattice::RemoveDuplicatedPoints(std::list<Point3f> &points)
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 {
 	for (auto it0 = points.begin(); it0 != points.end(); ++it0)
@@ -784,9 +868,15 @@ void VoronoiLattice::RemoveDuplicatedPoints(std::list<Point3f> &points)
 			{
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //				double len = Length((*it1).point - (*it0).point);
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+//				double len = Length((*it1).point - (*it0).point);
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 //				double len = Length((*it1).point - (*it0).point);
 =======
@@ -812,10 +902,17 @@ void VoronoiLattice::RemoveDuplicatedPoints(std::list<Point3f> &points)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 void VoronoiLattice::RemoveSameLinePoints(std::list<Point3f> &points)
 =======
 void VoronoiLattice::RemoveSameLinePoints(std::list<Intersection> &points)
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+void VoronoiLattice::RemoveSameLinePoints(std::list<Intersection> &points)
+=======
+void VoronoiLattice::RemoveSameLinePoints(std::list<Point3f> &points)
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 void VoronoiLattice::RemoveSameLinePoints(std::list<Intersection> &points)
 =======
@@ -830,15 +927,21 @@ void VoronoiLattice::RemoveSameLinePoints(std::list<Point3f> &points)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	std::vector<Point3f> _points{std::begin(points), std::end(points)};
 =======
 	std::vector<Intersection> _points{std::begin(points), std::end(points)};
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 	std::vector<Intersection> _points{std::begin(points), std::end(points)};
 =======
 	std::vector<Point3f> _points{std::begin(points), std::end(points)};
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 	for (int i = 0; i < _points.size()-1; ++i)
@@ -847,9 +950,15 @@ void VoronoiLattice::RemoveSameLinePoints(std::list<Point3f> &points)
 		{
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //			Vector3f vBase = _points[j].point - _points[i].point;
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+//			Vector3f vBase = _points[j].point - _points[i].point;
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 //			Vector3f vBase = _points[j].point - _points[i].point;
 =======
@@ -874,9 +983,15 @@ void VoronoiLattice::RemoveSameLinePoints(std::list<Point3f> &points)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //				Vector3f vLast = _points[k].point - _points[i].point;
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+//				Vector3f vLast = _points[k].point - _points[i].point;
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 //				Vector3f vLast = _points[k].point - _points[i].point;
 =======
@@ -923,8 +1038,11 @@ void VoronoiLattice::RemoveSameLinePoints(std::list<Point3f> &points)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	points = std::list<Point3f>{std::begin(_points), std::end(_points)};
 =======
+=======
+>>>>>>> origin/refactor
 	points = std::list<Intersection>{std::begin(_points), std::end(_points)};
 >>>>>>> origin/refactor
 }
@@ -958,6 +1076,9 @@ void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
 =======
 		std::vector<Point3f> _points{std::begin(points), std::end(points)};
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 		Point3f pBase = _points.back();
 
@@ -965,9 +1086,15 @@ void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
 		{
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //			Vector3f vBase = _points[iNext].point - pBase;
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+//			Vector3f vBase = _points[iNext].point - pBase;
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 //			Vector3f vBase = _points[iNext].point - pBase;
 =======
@@ -980,9 +1107,15 @@ void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
 				int iLast = (i == _points.size()) ? 0 : i;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //				Vector3f vLast = _points[iLast].point - pBase;
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+//				Vector3f vLast = _points[iLast].point - pBase;
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 //				Vector3f vLast = _points[iLast].point - pBase;
 =======
@@ -996,9 +1129,15 @@ void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
 					std::swap(_points[iNext], _points[iLast]);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //					vBase = _points[iNext].point - pBase;
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
+=======
+//					vBase = _points[iNext].point - pBase;
+=======
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
 =======
 //					vBase = _points[iNext].point - pBase;
 =======
@@ -1010,6 +1149,7 @@ void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 			pBase = _points[iNext];
 		}
 
@@ -1022,6 +1162,8 @@ void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
 		points = std::list<Intersection>{std::begin(_points), std::end(_points)};
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 //			pBase = _points[iNext].point;
 			pBase = _points[iNext];
 		}
@@ -1033,6 +1175,9 @@ void VoronoiLattice::OrderPoints(const Vector3f &planeNormal,
 
 		points = std::list<Point3f>{std::begin(_points), std::end(_points)};
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 	}
 }
@@ -1079,8 +1224,11 @@ void VoronoiLattice::DefineFacetEdgeLines(
 
 			Point3f edgeV = CrossProduct(pBase.normal, pCurr.normal);
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 
 			Point3f v0ToEdge = CrossProduct(pCurr.normal, edgeV);
@@ -1088,17 +1236,24 @@ void VoronoiLattice::DefineFacetEdgeLines(
 
 //			bool isOk = false;
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 =======
 			Point3f v0ToEdge = CrossProduct(pCurr.normal, edgeV);
 
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 			bool isOk = true;
 			Vector3f n = pBase.normal;
 			n.coordinates[3] = -DotProduct(pBase.center, pBase.normal);
 			Point3f x = ProjectPointToPlane(pCurr.center, v0ToEdge, n);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 
@@ -1111,12 +1266,15 @@ void VoronoiLattice::DefineFacetEdgeLines(
 					int d = 0;
 #endif
 =======
+=======
+>>>>>>> origin/refactor
 //			Point3f x = IntersectVectors(pCurr.center, pBase.center,
 //										 v0ToEdge, v1ToEdge, edgeV, isOk);
 			if (isOk)
 			{
 				edgeV.coordinates[3] = -DotProduct(x, edgeV);
 				edgeLines.push_back(EdgeLine{edgeV, x});
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 //			Point3f x = IntersectVectors(pCurr.center, pBase.center,
@@ -1126,12 +1284,17 @@ void VoronoiLattice::DefineFacetEdgeLines(
 				edgeV.coordinates[3] = -DotProduct(x, edgeV);
 				edgeLines.push_back(EdgeLine{edgeV, x});
 =======
+>>>>>>> origin/refactor
+=======
 
 			if (isOk)
 			{
 				edgeV.coordinates[3] = -DotProduct(x, edgeV);
 				edgeLines.push_back(EdgeLine{pCurr.cell->id, edgeV, x});
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 			}
 		}
@@ -1144,17 +1307,23 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	int maxSiteDistance = 2.0*sqrt(2)*lattice.cellSize;
 	const auto &ids = baseCell.checkedSiteIds;
 
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 	int maxSiteDistance = 2.0*sqrt(2)*lattice.cellSize;
 	const auto &ids = baseCell.checkedSiteIds;
 
 =======
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 	for (int i = 0; i < lattice.sideSize; ++i)
 	{
@@ -1165,6 +1334,7 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 				Cell &cell = lattice.cells[i][j][k];
 
 				if (cell.id != baseCell.id)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 				{	// site has not been checked yet
@@ -1184,6 +1354,8 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 											 Length(baseCell.site - cell.site)});
 						cell.checkedSiteIds.push_back(baseCell.id);
 =======
+=======
+>>>>>>> origin/refactor
 =======
 >>>>>>> origin/refactor
 				{
@@ -1206,8 +1378,11 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 							cell.checkedSiteIds.push_back(baseCell.id);
 						}
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
+=======
+>>>>>>> origin/refactor
 =======
 				{	// site has not been checked yet
 					Point3f normal = cell.site - baseCell.site;
@@ -1225,6 +1400,9 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 														normal.coordinates[3]});
 						cell.checkedSiteIds.push_back(baseCell.id);
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 					}
 				}
@@ -1234,6 +1412,7 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #ifdef _DEBUG // DEB
 	int fff = 0;
 #endif
@@ -1241,10 +1420,15 @@ void VoronoiLattice::DefineOrthogonalPlanes(const Cell &baseCell,
 >>>>>>> 03452a781c85ee0d91303dc91c948c61e251ec46
 =======
 =======
+>>>>>>> origin/refactor
+=======
 #ifdef _DEBUG // DEB
 	int fff = 0;
 #endif
 >>>>>>> origin/feature/voronoi
+<<<<<<< HEAD
+>>>>>>> origin/refactor
+=======
 >>>>>>> origin/refactor
 	// sort by distance
 	std::sort(sitePlanes.begin(), sitePlanes.end(),

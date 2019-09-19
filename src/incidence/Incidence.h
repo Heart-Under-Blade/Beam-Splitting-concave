@@ -1,6 +1,5 @@
 #pragma once
 
-#include "PathedBeam.h"
 #include "Splitting.h"
 
 /**
@@ -13,11 +12,10 @@ public:
 
 	void SetSplitting(Splitting *splitting);
 
-	virtual void ComputeDirections(Beam &/*beam*/, BeamPair<Beam> &/*beams*/) const {};
-	virtual void ComputeJonesMatrices(Beam &/*beam*/, BeamPair<Beam> &/*beams*/) const {};
-
-	virtual void ComputeOpticalPaths(const PathedBeam &beam,
-									 BeamPair<PathedBeam> &beams) const;
+	virtual void ComputeDirections(Beam &beam, BeamPair<Beam> &beams,
+								   bool isBeamInside) const = 0;
+	virtual void ComputeJonesMatrices(Beam &beam, BeamPair<Beam> &beams,
+									  bool isBeamInside) const = 0;
 
 protected:
 	Splitting *m_splitting;

@@ -1,11 +1,12 @@
 #include "Polygon.h"
-#include <math.h>
+
+#include <cmath>
+#include <limits.h>
 
 #define EPS_NORMAL 0.1
 
 Polygon::Polygon()
 {
-
 }
 
 Polygon::Polygon(int size) : nVertices(size) {}
@@ -16,7 +17,7 @@ Polygon::Polygon(const Polygon &other)
 
 	for (int i = 0; i < other.nVertices; ++i)
 	{
-		arr[i] = other.arr[i];
+		vertices[i] = other.vertices[i];
 	}
 }
 
@@ -26,7 +27,7 @@ Polygon::Polygon(Polygon &&other)
 
 	for (int i = 0; i < nVertices; ++i)
 	{
-		arr[i] = other.arr[i];
+		vertices[i] = other.vertices[i];
 	}
 
 	other.nVertices = 0;
@@ -34,7 +35,63 @@ Polygon::Polygon(Polygon &&other)
 
 void Polygon::AddVertex(const Point3f &v)
 {
-	arr[nVertices++] = v;
+	vertices[nVertices++] = v;
+}
+
+void Polygon::Concat(const Polygon &other)
+{
+	for (int i = 0; i < other.nVertices; ++i)
+	{
+		AddVertex(other.vertices[i]);
+	}
+}
+
+void Polygon::Reverse()
+{
+	Point3f buf;
+
+	for (int i = 1; i < nVertices/2; ++i)
+	{
+		buf = vertices[i-1];
+		vertices[i-1] = vertices[nVertices-i];
+		vertices[nVertices-i] = buf;
+	}
+}
+
+Polygon Polygon::ReversePolygon() const
+{
+	Polygon pol = *this;
+	int size = pol.nVertices;
+	--size;
+
+	for (int i = 0; i <= size; ++i)
+	{
+		pol.vertices[i] = vertices[size-i];
+	}
+
+	return pol;
+}
+
+void Polygon::InsertVertex(int index, const Point3f &v)
+{
+	++nVertices;
+
+	for (int i = nVertices-1; i > index; --i)
+	{
+		vertices[i] = vertices[i-1];
+	}
+
+	vertices[index] = v;
+}
+
+void Polygon::RemoveVertex(int index)
+{
+	for (int i = index+1; i < nVertices; ++i)
+	{
+		vertices[i-1] = vertices[i];
+	}
+
+	--nVertices;
 }
 
 Polygon &Polygon::operator =(const Polygon &other)
@@ -45,7 +102,7 @@ Polygon &Polygon::operator =(const Polygon &other)
 
 		for (int i = 0; i < nVertices; ++i)
 		{
-			arr[i] = other.arr[i];
+			vertices[i] = other.vertices[i];
 		}
 	}
 
@@ -60,7 +117,7 @@ Polygon &Polygon::operator = (Polygon &&other)
 
 		for (int i = 0; i < nVertices; ++i)
 		{
-			arr[i] = other.arr[i];
+			vertices[i] = other.vertices[i];
 		}
 
 		other.nVertices = 0;
@@ -69,37 +126,28 @@ Polygon &Polygon::operator = (Polygon &&other)
 	return *this;
 }
 
-std::ostream &operator <<(std::ostream &os, const Polygon &beam)
+std::ostream &operator <<(std::ostream &os, const Polygon &p)
 {
-	using namespace std;
-
-	os << "polygon: {" << endl;
-
-	for (int i = 0; i < beam.nVertices; ++i)
+	for (int i = 0; i < p.nVertices; ++i)
 	{
-		os << "\t" << i << ": "
-		   << beam.arr[i].cx << ", "
-		   << beam.arr[i].cy << ", "
-		   << beam.arr[i].cz << ", "
-		   << beam.arr[i].d_param << endl;
+		os << p.vertices[i] << std::endl;
 	}
 
-	os << "}" << endl << endl;
 	return os;
 }
 
 double Polygon::Area() const
 {
 	double square = 0;
-	const Point3f &basePoint = arr[0];
-	Point3f p1 = arr[1] - basePoint;
+	const Point3f &basePoint = vertices[0];
+	Point3f p1 = vertices[1] - basePoint;
 
 	for (int i = 2; i < nVertices; ++i)
 	{
-		Point3f p2 = arr[i] - basePoint;
+		Point3f p2 = vertices[i] - basePoint;
 		Point3f res;
-		CrossProduct(p1, p2, res);
-		square += Length(res);
+		Point3f::CrossProduct(p1, p2, res);
+		square += Point3f::Length(res);
 		p1 = p2;
 	}
 
@@ -108,11 +156,19 @@ double Polygon::Area() const
 
 Point3f Polygon::Center() const
 {
+#ifdef _DEBUG // DEB
+	if (nVertices == 0)
+	{
+		std::cerr << "ERROR! Polygon is empty." << std::endl
+				  << __FILE__ << ", " << __FUNCTION__ << std::endl;
+		throw std::exception();
+	}
+#endif
 	Point3f p(0, 0, 0);
 
 	for (int i = 0; i < nVertices; ++i)
 	{
-		p = p + arr[i];
+		p = p + vertices[i];
 	}
 
 	return p/nVertices;
@@ -131,13 +187,19 @@ Point3f Polygon::Normal() const
 		start = (start + 1 != nVertices) ? start + 1 : 0;
 		first = (start + 1 != nVertices) ? start + 1 : 0;
 		next  = (first + 1 != nVertices) ? first + 1 : 0;
-		Point3f p1 = arr[first] - arr[start];
-		Point3f p2 = arr[next] - arr[start];
-		CrossProduct(p1, p2, normal);
-		Normalize(normal);
+
+		Point3f p1 = vertices[first] - vertices[start];
+		Point3f p2 = vertices[next] - vertices[start];
+		Point3f::CrossProduct(p1, p2, normal);
+		Point3f::Normalize(normal);
 		++count;
 	}
-	while (isnan(normal.cx) && count < nVertices);
+	while (std::isnan(normal.coordinates[0]) && count < nVertices);
 
 	return normal;
+}
+
+void Polygon::Clear()
+{
+	nVertices = 0;
 }

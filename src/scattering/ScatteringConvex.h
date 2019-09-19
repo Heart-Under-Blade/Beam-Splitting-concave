@@ -5,21 +5,25 @@
 class ScatteringConvex : public Scattering
 {
 public:
-	ScatteringConvex(Particle *particle, const Light &incidentLight,
-					 int maxActNo, const complex &m_refractiveIndex);
+	ScatteringConvex(const complex &refractiveIndex,
+					 int maxActNo, double minBeamEnergy = MIN_BEAM_NRG,
+					 double farFresnelZone = FAR_FRESNEL_ZONE);
 
-	void ScatterLight(TrackNode *trackTree, std::vector<Beam> &scatteredBeams);
+	void Scatter(TrackNode *trackTree, std::vector<Beam> &scatteredBeams);
 
-	double MeasureOpticalPath(const Beam &beam, const Point3f sourcePoint,
-							 const std::vector<int> &track) override;
+	double MeasureOpticalPath(const BeamInfo &info,
+							  const Point3f sourcePoint) override;
 
-	double MeasureFullOpticalPath(const Beam &beam, const Point3f sourcePoint,
-								  const std::vector<int> &track) override;
+	double MeasureFullOpticalPath(const BeamInfo &info,
+								  const Point3f sourcePoint) override;
 protected:
-	void SplitOriginalBeam(std::vector<Beam> &externalBeams) override;
-	void SelectVisibleFacets(const Beam &beam, Array<Facet *> &facets) override;
-	void PushBeamsToBuffer(Facet *facet, BeamPair<Beam> &beams,
-						   std::vector<Beam> &scatteredBeams);
+	void SplitStartBeam() override;
+	void SplitSecondaryBeams() override;
+	void SelectVisibleFacets(const Beam &beam, Array<Facet *> *facets) override;
+	void ResolveExternalBeam(const Beam &beam) override;
+
 private:
 	void SetWorkFacetsFromTracks();
+
+	Point3f lastPoint;
 };

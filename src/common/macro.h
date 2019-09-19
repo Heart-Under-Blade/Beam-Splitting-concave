@@ -10,4 +10,4 @@
 //	throw false; \
 //}
 
-void OutputOrientationToLog(int i, int j);
+void OutputState(int i, int j);

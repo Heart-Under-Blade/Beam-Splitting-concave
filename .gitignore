@@ -47,9 +47,13 @@ log.txt
 bin/btm_d.exe
 doc/macke-code-src/rt-crystal/rt-crystal.prj
 doc/macke-code-src/rt-crystal/Makefile
+<<<<<<< HEAD
 tool/StlToCry - копия/
 bin/mbs_without.exe
 bin/mbs_with.exe
+=======
+<<<<<<< HEAD
+>>>>>>> origin/refactor
 <<<<<<< HEAD
 src_bcp/
 test/build-BS_test-Desktop-Release/
@@ -59,5 +63,16 @@ test/build-BS_test-Desktop-Debug/
 test/build-BS_test-Desktop-Debug/
 *.txt
 backup/
+<<<<<<< HEAD
 test/build-BS_test-Desktop-Release/
 >>>>>>> fix
+=======
+=======
+tool/StlToCry - копия/main.cpp
+tool/StlToCry - копия/StlToCry.pro
+tool/StlToCry - копия/Converter.h
+tool/StlToCry - копия/Converter.cpp
+bin/mbs_without.exe
+bin/mbs_with.exe
+>>>>>>> origin/feature/voronoi
+>>>>>>> origin/refactor
