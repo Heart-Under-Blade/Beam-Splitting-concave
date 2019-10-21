@@ -53,6 +53,10 @@ void ScatteringConvex::TraceInternalBeams(std::vector<Beam> &outBeams)
 {
 	while (m_treeSize != 0)
 	{
+#ifdef _DEBUG // DEB
+		if (outBeams.size() == 15)
+			int ddd = 0;
+#endif
 		Beam beam = m_beamTree[--m_treeSize];
 
 		if (IsTerminalAct(beam))

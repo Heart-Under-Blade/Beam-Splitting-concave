@@ -113,8 +113,8 @@ void HandlerPOTotal::AddToMueller()
 		{
 			for (int p = 0; p < m_sphere.nAzimuth; ++p)
 			{
-				if (t == 179)
-					m_logFile << std::endl;
+//				if (t == 179)
+//					m_logFile << std::endl;
 
 				matrix m = Mueller(diffM(p, t));
 #ifdef _DEBUG // DEB
@@ -126,7 +126,7 @@ void HandlerPOTotal::AddToMueller()
 #endif
 				m *= m_sinZenith;
 
-				double ee = m[0][0];
+//				double ee = m[0][0];
 				M.insert(p, t, m);
 			}
 		}

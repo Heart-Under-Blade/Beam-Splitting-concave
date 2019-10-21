@@ -18,6 +18,8 @@ public:
 
 private slots:
 	void test_Absorption();
+	void test_BenchmarkScatter();
+	void test_BenchmarkHandle();
 	void test_Nan();
 	void test_NanCol();
 
@@ -82,6 +84,38 @@ void PO::test_Absorption()
 				int ggg = 0;
 #endif
 			QVERIFY(fabs(path - beam.opticalPath) < /*10e-4*/0.015);
+		}
+	}
+}
+
+void PO::test_BenchmarkScatter()
+{
+	vector<Beam> outBeams;
+
+	QBENCHMARK_ONCE
+	{
+		for (double z = 0; z < 179.34; z += 2.1)
+		{
+			pt->Rotate(z, 37, 0);
+			sc->ScatterLight(outBeams);
+		}
+	}
+}
+
+void PO::test_BenchmarkHandle()
+{
+	Tracks *trs = new Tracks();
+	h->SetTracks(trs);
+	vector<Beam> outBeams;
+
+	/*for (*/double z = 0; /*z < 179.34; z += 2.1)*/
+	{
+		pt->Rotate(z, 37, 0);
+		sc->ScatterLight(outBeams);
+
+		QBENCHMARK_ONCE
+		{
+			h->HandleBeams(outBeams);
 		}
 	}
 }
