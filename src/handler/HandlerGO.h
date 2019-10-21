@@ -10,6 +10,7 @@ class HandlerGO : public Handler
 public:
 	HandlerGO(Particle *particle, Light *incidentLight, double wavelength = 0);
 
+	void SetScatteringSphere(const ScatteringSphere &sphere);
 	void SetTracks(Tracks *tracks) override;
 
 	double ComputeTotalScatteringEnergy();
@@ -18,8 +19,8 @@ public:
 	void MultiplyMueller(const Beam &beam, matrix &m);
 
 protected:
-	ContributionGO m_totalContrib;	// result scattering martices contribution
-	std::vector<ContributionGO> m_tracksContrib; // group contibution of beams
+	ContributionGO *m_totalContrib;	// result scattering martices contribution
+	std::vector<ContributionGO*> m_tracksContrib; // group contibution of beams
 
 protected:
 	matrix ComputeMueller(float zenAng, Beam &beam);

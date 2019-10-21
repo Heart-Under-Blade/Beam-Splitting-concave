@@ -11,6 +11,16 @@ HandlerGO::HandlerGO(Particle *particle, Light *incidentLight, double wavelength
 {
 }
 
+void HandlerGO::SetScatteringSphere(const ScatteringSphere &sphere)
+{
+	m_totalContrib = new ContributionGO(sphere.radius);
+
+	for (int i = 0; i < m_tracksContrib.size(); ++i)
+	{
+		m_tracksContrib[i] = new ContributionGO(sphere.radius);
+	}
+}
+
 void HandlerGO::SetTracks(Tracks *tracks)
 {
 	Handler::SetTracks(tracks);
@@ -142,15 +152,15 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 				"M31/M11 M32/M11 M33/M11 M34/M11 "\
 				"M41/M11 M42/M11 M43/M11 M44/M11";
 
-	for (int j = SPHERE_RING_NUM; j >= 0; j--)
+	for (int j = 0; j < m_totalContrib->size; ++j)
 	{
-		double tmp0 = 180.0/SPHERE_RING_NUM*(SPHERE_RING_NUM-j);
-		double tmp1 = (j == 0) ? -(0.25*180.0)/SPHERE_RING_NUM : 0;
-		double tmp2 = (j == (int)SPHERE_RING_NUM) ? (0.25*180.0)/SPHERE_RING_NUM : 0;
+		double tmp0 = j*m_totalContrib->m_step;
+		double tmp1 = (tmp0 + DBL_EPSILON > SPHERE_RING_NUM && m_totalContrib->size <= 181) ? -(0.25*180.0)/SPHERE_RING_NUM : 0;
+		double tmp2 = (tmp0 - DBL_EPSILON < 0 && m_totalContrib->size <= 181) ? (0.25*180.0)/SPHERE_RING_NUM : 0;
 
-		double sn = (j == 0 || j == (int)SPHERE_RING_NUM)
+		double sn = ((tmp0 - DBL_EPSILON < 0 || tmp0 + DBL_EPSILON > SPHERE_RING_NUM) && m_totalContrib->size <= 181)
 				? 1-cos(BIN_SIZE/2.0)
-				: (cos((j-0.5)*BIN_SIZE)-cos((j+0.5)*BIN_SIZE));
+				: (cos((tmp0-0.5)*BIN_SIZE)-cos((tmp0+0.5)*BIN_SIZE));
 
 		// Special case in first and last step
 		allFile << '\n' << tmp0 + tmp1 + tmp2 << ' ' << (M_2PI*sn);
@@ -163,6 +173,11 @@ void HandlerGO::WriteToFile(ContributionGO &contrib, double norm,
 		}
 		else
 		{
+#ifdef _DEBUG // DEB
+			double ddd = bf[0][0];
+			if (bf[0][0]*norm/(M_2PI*sn) < 0)
+				int dddd = 0;
+#endif
 			allFile << ' ' << bf[0][0]*norm/(M_2PI*sn)
 					<< ' ' << bf[0][1]/bf[0][0]
 					<< ' ' << bf[0][2]/bf[0][0] // usually = 0
@@ -225,11 +240,11 @@ double HandlerGO::ComputeOpticalPathAbsorption(const Beam &beam)
 
 double HandlerGO::ComputeTotalScatteringEnergy()
 {
-	double D_tot = m_totalContrib.back[0][0] + m_totalContrib.forward[0][0];
+	double D_tot = m_totalContrib->back[0][0] + m_totalContrib->forward[0][0];
 
 	for (int i = 0; i <= SPHERE_RING_NUM; ++i)
 	{
-		D_tot += m_totalContrib.muellers(0, i, 0, 0);
+		D_tot += m_totalContrib->muellers(0, i, 0, 0);
 	}
 
 	return D_tot * m_normIndex;

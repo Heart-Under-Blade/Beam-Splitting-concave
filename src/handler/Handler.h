@@ -156,9 +156,11 @@ private:
 class ContributionGO
 {
 public:
-	ContributionGO() : muellers(0, 0, 0, 0), back(4, 4), forward(4, 4)
+	ContributionGO(double thetaStep)
+		: muellers(0, 0, 0, 0), back(4, 4), forward(4, 4), m_step(thetaStep)
 	{
-		muellers = Arr2D(1, 180 + 1/*TODO: this is 'thetaNum',
+		size = 180/thetaStep + 1;
+		muellers = Arr2D(1, size/*TODO: this is 'thetaNum',
 				   should i do smth with it?*/, 4, 4);
 		muellers.ClearArr();
 		back.Fill(0);
@@ -177,13 +179,16 @@ public:
 		}
 		else
 		{
-			muellers.insert(0, angle, m);
+			int index = round((fAngle + m_step/2)/m_step);
+			muellers.insert(0, index, m);
 		}
 	}
 
 	Arr2D muellers;		///< Scattering matrices
 	matrix back;		///< Mueller matrix in backward direction
 	matrix forward;		///< Mueller matrix in forward direction
+	double m_step;
+	int size;
 };
 
 struct Axes

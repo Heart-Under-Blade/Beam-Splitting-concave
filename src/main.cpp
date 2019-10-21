@@ -381,6 +381,8 @@ int main(int argc, const char* argv[])
 			handler = new HandlerTotalGO(particle, &tracer.m_incidentLight, wave);
 		}
 
+		ScatteringSphere sphere = SetConus(args);
+		handler->SetScatteringSphere(sphere);
 		handler->SetAbsorptionAccounting(isAbs);
 		tracer.SetHandler(handler);
 

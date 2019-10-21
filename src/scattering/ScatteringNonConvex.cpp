@@ -356,14 +356,20 @@ int ScatteringNonConvex::FindFacetId(int facetId, const IntArray &arr)
 void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 {
 #ifdef _DEBUG // DEB
-//	int count = 0;
+	std::ofstream log("fo.txt", std::ios::out);
+	int count = 0;
+	int scBs= 0;
+	log << "************************************" << count;
 #endif
 	while (m_treeSize != 0)
 	{
 		Beam beam = m_beamTree[--m_treeSize];
 
 #ifdef _DEBUG // DEB
-//	++count;
+		log << "Iter: " << count;
+		++count;
+		if (count == 34)
+			int fff = 0;
 #endif
 		if (!IsTerminalAct(beam)) // REF, OPT: перенести проверку во все места, где пучок закидывается в дерево, чтобы пучки заранее не закидывались в него
 		{
@@ -399,6 +405,11 @@ void ScatteringNonConvex::SplitBeams(std::vector<Beam> &scaterredBeams)
 		{
 			CutExternalBeam(beam, scaterredBeams);
 		}
+#ifdef _DEBUG // DEB
+		log << ", Out: " << scaterredBeams.size() - scBs << std::endl;
+		scBs = scaterredBeams.size();
+#endif
+
 	}
 }
 
@@ -599,7 +610,7 @@ void ScatteringNonConvex::SortFacets(const Point3f &beamDir, IntArray &facetIds)
 }
 
 double ScatteringNonConvex::CalcMinDistanceToFacet(const Polygon &facet,
-											  const Point3f &beamDir)
+												   const Point3f &beamDir)
 {
 	double dist = FLT_MAX;
 	const Point3f *pol = facet.arr;
@@ -609,7 +620,7 @@ double ScatteringNonConvex::CalcMinDistanceToFacet(const Polygon &facet,
 
 	for (int i = 0; i < facet.nVertices; ++i)
 	{
-		/// REF: заменить на сущ. фуyкцию ProjectPointToPlane
+		/// REF: заменить на сущ. функцию ProjectPointToPlane
 		// measure dist
 		double t = DotProduct(pol[i], beamDir);
 		t = t + beamDir.d_param;
@@ -639,6 +650,8 @@ void ScatteringNonConvex::PushBeamPartsToTree(const Beam &beam,
 	for (unsigned i = 0; i < parts.size; ++i)
 	{
 		tmp = parts.arr[i];
+		if (m_treeSize >= MAX_BEAM_REFL_NUM)
+			int ooo = 0;
 		assert(m_treeSize < MAX_BEAM_REFL_NUM);
 		m_beamTree[m_treeSize++] = tmp;
 	}

@@ -25,12 +25,12 @@ void HandlerTotalGO::HandleBeams(std::vector<Beam> &beams)
 		int zenith = round(z);
 		matrix m = ComputeMueller(zenith, beam);
 
-		m_totalContrib.AddMueller(z, zenith, m);
+		m_totalContrib->AddMueller(z, zenith, m);
 	}
 }
 
 void HandlerTotalGO::WriteMatricesToFile(std::string &destName)
 {
-	AverageOverAlpha(true, m_normIndex, m_totalContrib, destName);
-	WriteToFile(m_totalContrib, m_normIndex, destName + "_all");
+	AverageOverAlpha(true, m_normIndex, *m_totalContrib, destName);
+	WriteToFile(*m_totalContrib, m_normIndex, destName + "_all");
 }
